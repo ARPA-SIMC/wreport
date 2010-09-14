@@ -124,10 +124,10 @@ AC_CONFIG_FILES([
 Makefile
 wreport/Makefile
 tables/Makefile
+testdata/Makefile
 libwreport.pc
 ])
 #tools/Makefile
-#extra/Makefile
 #doc/Makefile
 #doc/libwreport.dox
 AC_OUTPUT
