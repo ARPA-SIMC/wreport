@@ -1,0 +1,6 @@
+wreport (1.0-1) unstable; urgency=low
+
+  * Initial upload, forked from DB-All.e.  Closes: bug#FIXME.
+
+ -- Enrico Zini <enrico@debian.org>  Sat, 30 Sep 2006 17:42:22 +0200
+

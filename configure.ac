@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(dballe, 5.0, [enrico@enricozini.org])
+AC_INIT(wreport, 1.0, [enrico@enricozini.org])
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AM_CONFIG_HEADER(config.h)
@@ -125,11 +125,11 @@ Makefile
 wreport/Makefile
 tables/Makefile
 testdata/Makefile
+doc/Makefile
+doc/libwreport.dox
 libwreport.pc
 ])
 #tools/Makefile
-#doc/Makefile
-#doc/libwreport.dox
 AC_OUTPUT
 
 AC_MSG_NOTICE([

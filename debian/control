@@ -1,0 +1,58 @@
+Source: wreport
+Section: misc
+Priority: optional
+Maintainer: Enrico Zini <enrico@debian.org>
+Build-Depends: debhelper (>= 7.0.50~), dh-buildinfo, doxygen, libwibble-dev, gperf, pkg-config, liblua5.1-0-dev
+Standards-Version: 3.8.4.0
+Homepage: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
+
+Package: libwreport-dev
+Section: libdevel
+Architecture: any
+Depends: libwreport1 (= ${binary:Version}), ${misc:Depends}
+Recommends: pkg-config
+Description: library for working with weather reports
+ libwreport is a C++ library to read and write weather reports in BUFR and CREX
+ formats.
+ .
+ It also provides a useful abstraction to handle values found in weather
+ reports, with awareness of significant digits, measurement units, variable
+ descriptions, unit conversion and attributes on variables.
+ .
+ Features provided:
+ .
+  * Unit conversion
+  * Handling of physical variables
+  * Read and write BUFR version 2, 3, and 4
+  * Read and write CREX
+
+Package: libwreport-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}
+Description: documentation for libwreport
+ libwreport is a C++ library to read and write weather reports in BUFR and CREX
+ formats.
+ .
+ This is the documentation for the library.
+
+Package: libwreport1
+Section: libs
+Architecture: any
+Depends: wreport-common, ${shlibs:Depends}, ${misc:Depends}
+Description: shared library for working with weather reports
+ libwreport is a C++ library to read and write weather reports in BUFR and CREX
+ formats.
+ .
+ This is the shared library for C programs.
+
+Package: wreport-common
+Section: misc
+Architecture: any
+Depends: ${misc:Depends}
+Description: common data files for libwreport
+ libwreport is a C++ library to read and write weather reports in BUFR and CREX
+ formats.
+ .
+ This package contains common wreport data files, such as variable metadata and
+ BUFR and CREX decoding tables.

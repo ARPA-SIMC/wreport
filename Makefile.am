@@ -3,10 +3,9 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = wreport tables testdata
-# extra tools tables
-#if DO_DOCS
-#SUBDIRS += doc
-#endif
+if DO_DOCS
+SUBDIRS += doc
+endif
 SUBDIRS += .
 
 pkgconfigdir = $(libdir)/pkgconfig

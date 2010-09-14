@@ -1,0 +1,8 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_fixperms:
+	dh_fixperms
+	test -e /usr/bin/dh_buildinfo && dh_buildinfo
