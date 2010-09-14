@@ -22,6 +22,7 @@
 #include <wibble/tests.h>
 #include <wreport/varinfo.h>
 #include <wreport/bulletin.h>
+#include <wreport/tests.h>
 #include <string>
 #include <vector>
 #include <memory>
@@ -32,45 +33,6 @@ namespace wreport {
 struct Var;
 
 namespace tests {
-
-#define ensure_contains(x, y) wreport::tests::impl_ensure_contains(wibble::tests::Location(__FILE__, __LINE__, #x " == " #y), (x), (y))
-#define inner_ensure_contains(x, y) wreport::tests::impl_ensure_contains(wibble::tests::Location(loc, __FILE__, __LINE__, #x " == " #y), (x), (y))
-static inline void impl_ensure_contains(const wibble::tests::Location& loc, const std::string& haystack, const std::string& needle)
-{
-	if( haystack.find(needle) == std::string::npos )
-	{
-		std::stringstream ss;
-		ss << "'" << haystack << "' does not contain '" << needle << "'";
-		throw tut::failure(loc.msg(ss.str()));
-	}
-}
-
-#define ensure_not_contains(x, y) arki::tests::impl_ensure_not_contains(wibble::tests::Location(__FILE__, __LINE__, #x " == " #y), (x), (y))
-#define inner_ensure_not_contains(x, y) arki::tests::impl_ensure_not_contains(wibble::tests::Location(loc, __FILE__, __LINE__, #x " == " #y), (x), (y))
-static inline void impl_ensure_not_contains(const wibble::tests::Location& loc, const std::string& haystack, const std::string& needle)
-{
-	if( haystack.find(needle) != std::string::npos )
-	{
-		std::stringstream ss;
-		ss << "'" << haystack << "' must not contain '" << needle << "'";
-		throw tut::failure(loc.msg(ss.str()));
-	}
-}
-
-#define ensure_varcode_equals(x, y) wreport::tests::_ensure_varcode_equals(wibble::tests::Location(__FILE__, __LINE__, #x " == " #y), (x), (y))
-#define inner_ensure_varcode_equals(x, y) wreport::tests::_ensure_varcode_equals(wibble::tests::Location(loc, __FILE__, __LINE__, #x " == " #y), (x), (y))
-void _ensure_varcode_equals(const wibble::tests::Location& loc, wreport::Varcode actual, wreport::Varcode expected);
-
-#define ensure_var_equals(x, y) wreport::tests::_ensure_var_equals(wibble::tests::Location(__FILE__, __LINE__, #x " == " #y), (x), (y))
-#define inner_ensure_var_equals(x, y) wreport::tests::_ensure_var_equals(wibble::tests::Location(loc, __FILE__, __LINE__, #x " == " #y), (x), (y))
-void _ensure_var_equals(const wibble::tests::Location& loc, const Var& var, int val);
-void _ensure_var_equals(const wibble::tests::Location& loc, const Var& var, double val);
-void _ensure_var_equals(const wibble::tests::Location& loc, const Var& var, const std::string& val);
-
-#define ensure_var_undef(x) wreport::tests::_ensure_var_undef(wibble::tests::Location(__FILE__, __LINE__, #x " is undef"), (x))
-#define inner_ensure_var_undef(x) wreport::tests::_ensure_var_undef(wibble::tests::Location(loc, __FILE__, __LINE__, #x " is undef"), (x))
-void _ensure_var_undef(const wibble::tests::Location& loc, const Var& var);
-
 
 /// Return the pathname of a test file
 std::string datafile(const std::string& fname);
@@ -125,25 +87,6 @@ struct MsgTester
 	void run(const char* tag, const BULLETIN& msg)
 	{
 		(*this)(tag, msg);
-	}
-};
-
-/* Test environment */
-class LocalEnv
-{
-	std::string key;
-	std::string oldVal;
-public:
-	LocalEnv(const std::string& key, const std::string& val)
-		: key(key)
-	{
-		const char* v = getenv(key.c_str());
-		oldVal = v == NULL ? "" : v;
-		setenv(key.c_str(), val.c_str(), 1);
-	}
-	~LocalEnv()
-	{
-		setenv(key.c_str(), oldVal.c_str(), 1);
 	}
 };
 

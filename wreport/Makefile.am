@@ -20,7 +20,8 @@ wreportinclude_HEADERS = \
 	subset.h \
 	var.h \
 	varinfo.h \
-	vartable.h
+	vartable.h \
+	tests.h
 
 lib_LTLIBRARIES = libwreport.la
 libwreport_la_SOURCES = \

@@ -60,35 +60,6 @@ std::string slurpfile(const std::string& name)
 	return res;
 }
 
-void _ensure_varcode_equals(const wibble::tests::Location& loc, Varcode actual, Varcode expected)
-{
-	if( expected != actual )
-	{
-		char buf[40];
-		snprintf(buf, 40, "expected %01d%02d%03d actual %01d%02d%03d",
-				WR_VAR_F(expected), WR_VAR_X(expected), WR_VAR_Y(expected),
-				WR_VAR_F(actual), WR_VAR_X(actual), WR_VAR_Y(actual));
-		throw tut::failure(loc.msg(buf));
-	}
-}
-
-void _ensure_var_undef(const wibble::tests::Location& loc, const Var& var)
-{
-	inner_ensure_equals(var.value(), (const char*)0);
-}
-void _ensure_var_equals(const wibble::tests::Location& loc, const Var& var, int val)
-{
-	inner_ensure_equals(var.enqi(), val);
-}
-void _ensure_var_equals(const wibble::tests::Location& loc, const Var& var, double val)
-{
-	inner_ensure_equals(var.enqd(), val);
-}
-void _ensure_var_equals(const wibble::tests::Location& loc, const Var& var, const string& val)
-{
-	inner_ensure_equals(string(var.enqc()), val);
-}
-
 } // namespace tests
 } // namespace wreport
 
