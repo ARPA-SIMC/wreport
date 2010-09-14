@@ -1,0 +1,24 @@
+/** @mainpage wreport library
+
+\section intro Introduction
+
+This library provides BUFR and CREX encoding and decoding functions, supported
+by function to manage weather bulletin variables.
+
+The infrastructure for working with variable is based on wreport::Var variables
+(see @ref var.h) that are described by wreport::Varinfo structures (see @ref
+varinfo.h) that can be created on the fly or read from on-disk tables (see @ref
+vartable.h).
+
+All variables are annotated with information including significant digits and
+measurement units, and unit conversions (see @ref conv.h) are performed when
+needed.
+
+Weather bulletins (see @ref bulletin.h) can be decoded and encoded in WMO FM 94
+BUFR and WMO FM 95 CREX formats.
+
+Error handling is done via exceptions. wreport has its own lightweight
+exception tree (see @ref error.h) with a common root on wreport::error, which
+in turn descends from std::exception, meaning error handling works as
+expected..
+*/
