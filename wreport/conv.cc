@@ -20,8 +20,11 @@
  */
 
 #include "conv.h"
+#include "error.h"
 
 #include <math.h>
+
+namespace wreport {
 
 /*
 Cloud type VM		Cloud type 20012
@@ -54,140 +57,127 @@ Per i cloud type nei 4 gruppi ripetuti del synop:
 	/ -> 59
 */
 
-#if 0
-dba_err dba_convert_WMO0500_to_BUFR20012(int from, int* to)
+int convert_WMO0500_to_BUFR20012(int from)
 {
 	if (from >= 0 && from <= 9)
-		*to = from;
+		return from;
 	else if (from == -1) /* FIXME: check what is the value for '/' */
-		*to = 59;
+		return 59;
 	else
-		return dba_error_notfound("value %d not found in WMO code table 0500", from);
-	return dba_error_ok();
+		error_domain::throwf("value %d not found in WMO code table 0500", from);
 }
 
-dba_err dba_convert_BUFR20012_to_WMO0500(int from, int* to)
+int convert_BUFR20012_to_WMO0500(int from)
 {
 	if (from >= 0 && from <= 9)
-		*to = from;
+		return from;
 	else if (from == 59)
-		*to = -1; /* FIXME: check what is the value for '/' */
+		return -1; /* FIXME: check what is the value for '/' */
 	else
-		return dba_error_notfound(
+		error_domain::throwf(
 				"BUFR 20012 value %d cannot be represented with WMO code table 0500",
 				from);
-	return dba_error_ok();
 }
 
-dba_err dba_convert_WMO0509_to_BUFR20012(int from, int* to)
+int convert_WMO0509_to_BUFR20012(int from)
 {
 	if (from >= 0 && from <= 9)
-		*to = from + 10;
+		return from + 10;
 	else if (from == -1) /* FIXME: check what is the value for '/' */
-		*to = 60;
+		return 60;
 	else
-		return dba_error_notfound("value %d not found in WMO code table 0509", from);
-	return dba_error_ok();
+		error_domain::throwf("value %d not found in WMO code table 0509", from);
 }
 
-dba_err dba_convert_BUFR20012_to_WMO0509(int from, int* to)
+int convert_BUFR20012_to_WMO0509(int from)
 {
 	if (from >= 10 && from <= 19)
-		*to = from - 10;
+		return from - 10;
 	else if (from == 60)
-		*to = -1; /* FIXME: check what is the value for '/' */
+		return -1; /* FIXME: check what is the value for '/' */
 	else
-		return dba_error_notfound(
+		error_domain::throwf(
 				"BUFR 20012 value %d cannot be represented with WMO code table 0509",
 				from);
-	return dba_error_ok();
 }
 
-dba_err dba_convert_WMO0515_to_BUFR20012(int from, int* to)
+int convert_WMO0515_to_BUFR20012(int from)
 {
 	if (from >= 0 && from <= 9)
-		*to = from + 20;
+		return from + 20;
 	else if (from == -1) /* FIXME: check what is the value for '/' */
-		*to = 61;
+		return 61;
 	else
-		return dba_error_notfound("value %d not found in WMO code table 0515", from);
-	return dba_error_ok();
+		error_domain::throwf("value %d not found in WMO code table 0515", from);
 }
 
-dba_err dba_convert_BUFR20012_to_WMO0515(int from, int* to)
+int convert_BUFR20012_to_WMO0515(int from)
 {
 	if (from >= 20 && from <= 29)
-		*to = from - 20;
+		return from - 20;
 	else if (from == 61)
-		*to = -1; /* FIXME: check what is the value for '/' */
+		return -1; /* FIXME: check what is the value for '/' */
 	else
-		return dba_error_notfound(
+		error_domain::throwf(
 				"BUFR 20012 value %d cannot be represented with WMO code table 0515",
 				from);
-	return dba_error_ok();
 }
 
-dba_err dba_convert_WMO0513_to_BUFR20012(int from, int* to)
+int convert_WMO0513_to_BUFR20012(int from)
 {
 	if (from >= 0 && from <= 9)
-		*to = from + 30;
+		return from + 30;
 	else if (from == -1) /* FIXME: check what is the value for '/' */
-		*to = 62;
+		return 62;
 	else
-		return dba_error_notfound("value %d not found in WMO code table 0513", from);
-	return dba_error_ok();
+		error_domain::throwf("value %d not found in WMO code table 0513", from);
 }
 
-dba_err dba_convert_BUFR20012_to_WMO0513(int from, int* to)
+int convert_BUFR20012_to_WMO0513(int from)
 {
 	if (from >= 30 && from <= 39)
-		*to = from - 30;
+		return from - 30;
 	else if (from == 62)
-		*to = -1; /* FIXME: check what is the value for '/' */
+		return -1; /* FIXME: check what is the value for '/' */
 	else
-		return dba_error_notfound(
+		error_domain::throwf(
 				"BUFR 20012 value %d cannot be represented with WMO code table 0513",
 				from);
-	return dba_error_ok();
 }
 
-dba_err dba_convert_WMO4677_to_BUFR20003(int from, int* to)
+int convert_WMO4677_to_BUFR20003(int from)
 {
 	if (from <= 99)
-		*to = from;
+		return from;
 	else
-		return dba_error_consistency("cannot handle WMO4677 present weather (%d) values above 99", from);
-	return dba_error_ok();
+		error_domain::throwf("cannot handle WMO4677 present weather (%d) values above 99", from);
 }
 
-dba_err dba_convert_BUFR20003_to_WMO4677(int from, int* to)
+int convert_BUFR20003_to_WMO4677(int from)
 {
 	if (from <= 99)
-		*to = from;
+		return from;
 	else
-		return dba_error_consistency("cannot handle BUFR 20003 present weather (%d) values above 99", from);
-	return dba_error_ok();
+		error_domain::throwf("cannot handle BUFR 20003 present weather (%d) values above 99", from);
 }
 
-dba_err dba_convert_WMO4561_to_BUFR20004(int from, int* to)
+int convert_WMO4561_to_BUFR20004(int from)
 {
 	if (from <= 9)
-		*to = from;
+		return from;
 	else
-		return dba_error_consistency("cannot handle WMO4561 past weather (%d) values above 9", from);
-	return dba_error_ok();
+		error_domain::throwf("cannot handle WMO4561 past weather (%d) values above 9", from);
 }
 
-dba_err dba_convert_BUFR20004_to_WMO4561(int from, int* to)
+int convert_BUFR20004_to_WMO4561(int from)
 {
 	if (from <= 9)
-		*to = from;
+		return from;
 	else
-		return dba_error_consistency("cannot handle BUFR 20004 present weather (%d) values above 9", from);
-	return dba_error_ok();
+		error_domain::throwf("cannot handle BUFR 20004 present weather (%d) values above 9", from);
 }
 
-dba_err dba_convert_icao_to_press(double from, double* to)
+double convert_icao_to_press(double from)
 {
 	static const double ZA = 5.252368255329;
 	static const double ZB = 44330.769230769;
@@ -197,38 +187,37 @@ dba_err dba_convert_icao_to_press(double from, double* to)
 
 	if (from <= 11000)
 		/* We are below 11 km */
-		*to = P0 * pow(1 - from / ZB, ZA);
+		return P0 * pow(1 - from / ZB, ZA);
 	else
 		/* We are above 11 km */
-		*to = P11 * exp(-ZC * (from - 11000));
-
-	return dba_error_ok();
+		return P11 * exp(-ZC * (from - 11000));
 }
 
-dba_err dba_convert_press_to_icao(double from, double* to)
+double convert_press_to_icao(double from)
 {
-	return dba_error_unimplemented("converting pressure to ICAO height");
+	throw error_unimplemented("converting pressure to ICAO height is not implemented");
 }
 
-dba_err dba_convert_AOFVSS_to_BUFR08001(int from, int* to)
+int convert_AOFVSS_to_BUFR08001(int from)
 {
-	*to = 0;
+	int res = 0;
 	if (from & (1 << 0))	/* Maximum wind level	*/
-		*to |= 8;
+		res |= 8;
 	if (from & (1 << 1))	/* Tropopause		*/
-		*to |= 16;
+		res |= 16;
 	/* Skipped */		/* Part D, non-standard level data, p < 100hPa */
 	if (from & (1 << 3))	/* Part C, standard level data, p < 100hPa */
-		*to |= 32;
+		res |= 32;
 	/* Skipped */		/* Part B, non-standard level data, p > 100hPa */
 	if (from & (1 << 5))	/* Part A, standard level data, p > 100hPa */
-		*to |= 32;
+		res |= 32;
 	if (from & (1 << 6))	/* Surface */
-		*to |= 64;
+		res |= 64;
 	if (from & (1 << 7))	/* Significant wind level */
-		*to |= 2;
+		res |= 2;
 	if (from & (1 << 8))	/* Significant temperature level */
-		*to |= 4;
-	return dba_error_ok();
+		res |= 4;
+	return res;
 }
-#endif
+
+}

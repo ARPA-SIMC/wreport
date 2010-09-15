@@ -45,13 +45,55 @@ namespace wreport {
  */
 double convert_units(const char* from, const char* to, double val);
 
+/**
+ * Convert ICAO height (in meters) to pressure (in hpa) and back
+ */
+double convert_icao_to_press(double from);
+
+/**
+ * Convert pressure (in hpa) to ICAO height (in meters)
+ */
+double convert_press_to_icao(double from);
+
+/**
+ * Convert vertical sounding significance from the AOF encoding to BUFR code
+ * table 08001.
+ */
+int convert_AOFVSS_to_BUFR08001(int from);
+
+/**
+ * Conversion functions between various code tables
+ * @{ */
+/** Cloud type */
+int convert_WMO0500_to_BUFR20012(int from);
+/** Cloud type (CH) */
+int convert_WMO0509_to_BUFR20012(int from);
+/** Cloud type (CM) */
+int convert_WMO0515_to_BUFR20012(int from);
+/** Cloud type (CL) */
+int convert_WMO0513_to_BUFR20012(int from);
+/** Present weather */
+int convert_WMO4677_to_BUFR20003(int from);
+/** Past weather */
+int convert_WMO4561_to_BUFR20004(int from);
+
+/** Cloud type */
+int convert_BUFR20012_to_WMO0500(int from);
+/** Cloud type (CH) */
+int convert_BUFR20012_to_WMO0509(int from);
+/** Cloud type (CM) */
+int convert_BUFR20012_to_WMO0515(int from);
+/** Cloud type (CL) */
+int convert_BUFR20012_to_WMO0513(int from);
+/** Present weather */
+int convert_BUFR20003_to_WMO4677(int from);
+/** Past weather */
+int convert_BUFR20004_to_WMO4561(int from);
+/* @} */
+
 }
 
 #if 0
-#ifdef  __cplusplus
-extern "C" {
-#endif
-
 /**
  * Get the multiplier used in the given conversion
  *
@@ -78,51 +120,6 @@ dba_err dba_convert_units_get_mul(const char* from, const char* to, double* mul)
  */
 int dba_convert_units_allowed(const char* from, const char* to);
 
-/**
- * Convert ICAO height (in meters) to pressure (in hpa) and back
- */
-dba_err dba_convert_icao_to_press(double from, double* to);
-
-/**
- * Convert pressure (in hpa) to ICAO height (in meters)
- */
-dba_err dba_convert_press_to_icao(double from, double* to);
-
-/**
- * Convert vertical sounding significance from the AOF encoding to BUFR code
- * table 08001.
- */
-dba_err dba_convert_AOFVSS_to_BUFR08001(int from, int* to);
-
-/**
- * Conversion functions between various code tables
- * @{ */
-/** Cloud type */
-dba_err dba_convert_WMO0500_to_BUFR20012(int from, int* to);
-/** Cloud type (CH) */
-dba_err dba_convert_WMO0509_to_BUFR20012(int from, int* to);
-/** Cloud type (CM) */
-dba_err dba_convert_WMO0515_to_BUFR20012(int from, int* to);
-/** Cloud type (CL) */
-dba_err dba_convert_WMO0513_to_BUFR20012(int from, int* to);
-/** Present weather */
-dba_err dba_convert_WMO4677_to_BUFR20003(int from, int* to);
-/** Past weather */
-dba_err dba_convert_WMO4561_to_BUFR20004(int from, int* to);
-
-/** Cloud type */
-dba_err dba_convert_BUFR20012_to_WMO0500(int from, int* to);
-/** Cloud type (CH) */
-dba_err dba_convert_BUFR20012_to_WMO0509(int from, int* to);
-/** Cloud type (CM) */
-dba_err dba_convert_BUFR20012_to_WMO0515(int from, int* to);
-/** Cloud type (CL) */
-dba_err dba_convert_BUFR20012_to_WMO0513(int from, int* to);
-/** Present weather */
-dba_err dba_convert_BUFR20003_to_WMO4677(int from, int* to);
-/** Past weather */
-dba_err dba_convert_BUFR20004_to_WMO4561(int from, int* to);
-/* @} */
 
 #ifdef  __cplusplus
 }
