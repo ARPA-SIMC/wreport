@@ -107,7 +107,7 @@ public:
 	bool loaded() const { return !m_id.empty(); }
 
 	/// Load contents from the table with the given ID
-	void load(const char* id);
+	void load(const std::pair<std::string, std::string>& idfile);
 
 	/**
 	 * Query the Vartable. Throws an exception if not found.
@@ -145,6 +145,7 @@ public:
 	 *   ID of the Vartable data to access
 	 */
 	static const Vartable* get(const char* id);
+	static const Vartable* get(const std::pair<std::string, std::string>& idfile);
 
 #if 0
 	/**
@@ -162,18 +163,17 @@ public:
 	static Varinfo query_local(Varcode code);
 #endif
 
-	/// Convert a Vartable ID to a pathname
-	static std::string id_to_pathname(const char* id);
-
 	/**
-	 * Check if the given Vartable exists on disk
-	 * 
-	 * @param id
-	 *   ID of the Vartable data to check
+	 * Look for a table for one of the given table IDs.
+	 *
+	 * The IDs are tried in order on the various configured paths and on
+	 * those configured in the environment
+	 *
 	 * @return
-	 *   true if the Vartable file exists, else false
+	 *   A pair (the ID selected for the table, the pathname to the table)
 	 */
-	static bool exists(const char* id);
+	static std::pair<std::string, std::string> find_table(const std::vector<std::string>& ids);
+	static std::pair<std::string, std::string> find_table(const std::string& id);
 };
 
 #if 0

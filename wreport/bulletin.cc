@@ -93,9 +93,8 @@ void BufrBulletin::load_tables()
 
 /* fprintf(stderr, "ce %d sc %d mt %d lt %d\n", ce, sc, mt, lt); */
 
-	int found = 0;
-	int i;
-	for (i = 0; !found && i < 3; ++i)
+	vector<string> ids;
+	for (int i = 0; i < 3; ++i)
 	{
 		if (i == 1)
 		{
@@ -114,33 +113,31 @@ void BufrBulletin::load_tables()
 		{
 			case 2:
 				sprintf(id, "B%05d%02d%02d", ce, mt, lt);
-				if ((found = Vartable::exists(id)))
-					break;
+				ids.push_back(id);
 			case 3:
 				sprintf(id, "B00000%03d%03d%02d%02d",
 						0, ce, mt, lt);
 				/* Some tables used by BUFR3 are
 				 * distributed using BUFR4 names
 				 */
-				if ((found = Vartable::exists(id)))
-					break;
-				else
-					sc = 0;
+				ids.push_back(id);
+				sc = 0;
 			case 4:
 				sprintf(id, "B00%03d%04d%04d%03d%03d",
 						0, sc, ce, mt, lt);
-				found = Vartable::exists(id);
+				ids.push_back(id);
 				break;
 			default:
-				error_consistency::throwf("BUFR edition number is %d but I can only load tables for 3 or 4", edition);
+				error_consistency::throwf("BUFR edition number is %d but I can only load tables for 2, 3 or 4", edition);
 		}
 	}
 
-	btable = Vartable::get(id);
+	btable = Vartable::get(Vartable::find_table(ids));
 	/* TRACE(" -> loaded B table %s\n", id); */
 
-	id[0] = 'D';
-	dtable = DTable::get(id);
+	for (vector<string>::iterator i = ids.begin(); i != ids.end(); ++i)
+		(*i)[0] = 'D';
+	dtable = DTable::get(Vartable::find_table(ids));
 	/* TRACE(" -> loaded D table %s\n", id); */
 }
 

@@ -58,7 +58,7 @@ public:
 	const std::string& id() const throw () { return m_id; }
 
 	bool loaded() const throw () { return !m_id.empty(); }
-	void load(const std::string& id);
+	void load(const std::pair<std::string, std::string>& idfile);
 
 	/**
 	 * Query the DTable
@@ -84,6 +84,7 @@ public:
 	 *   ID of the DTable data to access
 	 */
 	static const DTable* get(const char* id);
+	static const DTable* get(const std::pair<std::string, std::string>& idfile);
 };
 
 }

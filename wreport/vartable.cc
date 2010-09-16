@@ -130,36 +130,23 @@ Varinfo Vartable::query_altered(Varcode var, Alteration change) const
 	return Varinfo(i);
 }
 
-
 const Vartable* Vartable::get(const char* id)
 {
+	return get(find_table(id));
+}
+const Vartable* Vartable::get(const std::pair<std::string, std::string>& idfile)
+{
 	// Return it from cache if we have it
-	std::map<string, Vartable>::const_iterator i = tables.find(id);
+	std::map<string, Vartable>::const_iterator i = tables.find(idfile.first);
 	if (i != tables.end())
 		return &(i->second);
 
 	// Else, instantiate it
-	Vartable* res = &tables[id];
-	res->load(id);
-
-#if 0
-	if (!local_vars && strcmp(id, "dballe") == 0)
-		local_vars = res;
-#endif
+	Vartable* res = &tables[idfile.first];
+	res->load(idfile);
 
 	return res;
 }
-
-#if 0
-Varinfo Vartable::query_local(Varcode code)
-{
-	/* Load wreport WMO parameter resolution table */
-	if (local_vars == NULL)
-		Vartable::get("dballe");
-	return local_vars->query(code);
-}
-#endif
-
 
 namespace {
 struct fd_closer
@@ -186,14 +173,15 @@ static long getnumber(char* str)
 }
 }
 
-void Vartable::load(const char* id)
+void Vartable::load(const std::pair<std::string, std::string>& idfile)
 {
-	string file = id_to_pathname(id);
+	const std::string& id = idfile.first;
+	const std::string& file = idfile.second;
 	FILE* in = fopen(file.c_str(), "rt");
 	char line[200];
 	int line_no = 0;
 	Varcode last_code = 0;
-	bool is_bufr = strlen(id) != 7;
+	bool is_bufr = id.size() != 7;
 
 	if (in == NULL)
 		throw error_system("opening BUFR/CREX table file " + file);
@@ -387,7 +375,14 @@ dba_err dba_vartable_iterate(dba_vartable table, dba_vartable_iterator func, voi
 
 #endif
 
-std::string Vartable::id_to_pathname(const char* id)
+std::pair<std::string, std::string> Vartable::find_table(const std::string& id)
+{
+	vector<string> ids;
+	ids.push_back(id);
+	return find_table(ids);
+}
+
+std::pair<std::string, std::string> Vartable::find_table(const std::vector<std::string>& ids)
 {
 	static const char* exts[] = { ".txt", ".TXT", 0 };
 
@@ -402,39 +397,47 @@ std::string Vartable::id_to_pathname(const char* id)
 		dirlist[envcount++] = TABLE_DIR;
 
 	// For each search path
-	for (int i = 0; i < envcount && dirlist[i]; ++i)
-	{
-		// Split on :
-		size_t beg = 0;
-		while (dirlist[i][beg])
+	for (vector<string>::const_iterator id = ids.begin(); id != ids.end(); ++id)
+		for (int i = 0; i < envcount && dirlist[i]; ++i)
 		{
-			size_t len = strcspn(dirlist[i] + beg, ":;");
-			if (len)
+			// Split on :
+			size_t beg = 0;
+			while (dirlist[i][beg])
 			{
-				for (const char** ext = exts; *ext; ++ext)
+				size_t len = strcspn(dirlist[i] + beg, ":;");
+				if (len)
 				{
-					string pathname = string(dirlist[i], beg, len) + "/" + id + *ext;
-					if (access(pathname.c_str(), R_OK) == 0)
-						return pathname;
+					for (const char** ext = exts; *ext; ++ext)
+					{
+						string pathname = string(dirlist[i], beg, len) + "/" + *id + *ext;
+						if (access(pathname.c_str(), R_OK) == 0)
+							return make_pair(*id, pathname);
+					}
 				}
+				beg = beg + len + strspn(dirlist[i] + beg + len, ":;");
 			}
-			beg = beg + len + strspn(dirlist[i] + beg + len, ":;");
 		}
-	}
 
-	if (envcount == 1)
-		error_notfound::throwf("Cannot find %s.txt or %s.TXT after trying in %s",
-				id, id, dirlist[0]);
+	if (ids.empty())
+		error_consistency::throwf("find_table called with no candidates");
+
+	string list;
+	if (ids.size() == 1)
+		list = ids[0];
 	else
-		error_notfound::throwf("Cannot find %s.txt or %s.TXT after trying in %s and %s",
-				id, id, dirlist[0], dirlist[1]);
+	{
+		list = "{" + ids[0];
+		for (size_t i = 1; i < ids.size(); ++i)
+			list += "," + ids[i];
+		list += "}";
+	}
+	if (envcount == 1)
+		error_notfound::throwf("Cannot find %s.{txt,TXT} after trying in %s",
+				list.c_str(), dirlist[0]);
+	else
+		error_notfound::throwf("Cannot find %s.{txt,TXT} after trying in %s and %s",
+				list.c_str(), dirlist[0], dirlist[1]);
 }
-
-bool Vartable::exists(const char* id)
-{
-	return access(id_to_pathname(id).c_str(), F_OK) == 0;
-}
-
 
 }
 

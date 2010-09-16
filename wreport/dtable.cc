@@ -50,9 +50,10 @@ struct fd_closer
 };
 }
 
-void DTable::load(const std::string& id)
+void DTable::load(const std::pair<std::string, std::string>& idfile)
 {
-	std::string file = Vartable::id_to_pathname(id.c_str());
+	const std::string& id = idfile.first;
+	const std::string& file = idfile.second;
 	FILE* in = fopen(file.c_str(), "rt");
 	char line[200];
 	int line_no = 0;
@@ -126,14 +127,18 @@ static std::map<string, DTable> tables;
 
 const DTable* DTable::get(const char* id)
 {
+	return get(Vartable::find_table(id));
+}
+const DTable* DTable::get(const std::pair<std::string, std::string>& idfile)
+{
 	// Return it from cache if we have it
-	std::map<string, DTable>::const_iterator i = tables.find(id);
+	std::map<string, DTable>::const_iterator i = tables.find(idfile.first);
 	if (i != tables.end())
 		return &(i->second);
 
 	// Else, instantiate it
-	DTable* res = &tables[id];
-	res->load(id);
+	DTable* res = &tables[idfile.first];
+	res->load(idfile);
 
 	return res;
 }
