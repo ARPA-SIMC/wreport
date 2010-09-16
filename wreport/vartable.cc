@@ -389,14 +389,45 @@ dba_err dba_vartable_iterate(dba_vartable table, dba_vartable_iterator func, voi
 
 std::string Vartable::id_to_pathname(const char* id)
 {
-	// First check the DBA_TABLES env var; if that doesn't exist, then use
-	// the TABLE_DIR constant from autoconf
-	char* env = getenv("WREPORT_TABLES");
-	string res = env ? env : TABLE_DIR;
-	res += '/';
-	res += id;
-	res += ".txt";
-	return res;
+	static const char* exts[] = { ".txt", ".TXT", 0 };
+
+	// Build a list of table search paths
+	const char* dirlist[2] = { 0, 0 };
+	int envcount = 0;
+	if (char* env = getenv("WREPORT_EXTRA_TABLES"))
+		dirlist[envcount++] = env;
+	if (char* env = getenv("WREPORT_TABLES"))
+		dirlist[envcount++] = env;
+	else
+		dirlist[envcount++] = TABLE_DIR;
+
+	// For each search path
+	for (int i = 0; i < envcount && dirlist[i]; ++i)
+	{
+		// Split on :
+		size_t beg = 0;
+		while (dirlist[i][beg])
+		{
+			size_t len = strcspn(dirlist[i] + beg, ":;");
+			if (len)
+			{
+				for (const char** ext = exts; *ext; ++ext)
+				{
+					string pathname = string(dirlist[i], beg, len) + "/" + id + *ext;
+					if (access(pathname.c_str(), R_OK) == 0)
+						return pathname;
+				}
+			}
+			beg = beg + len + strspn(dirlist[i] + beg + len, ":;");
+		}
+	}
+
+	if (envcount == 1)
+		error_notfound::throwf("Cannot find %s.txt or %s.TXT after trying in %s",
+				id, id, dirlist[0]);
+	else
+		error_notfound::throwf("Cannot find %s.txt or %s.TXT after trying in %s and %s",
+				id, id, dirlist[0], dirlist[1]);
 }
 
 bool Vartable::exists(const char* id)
