@@ -22,6 +22,7 @@
 #include <cstring>
 
 using namespace wreport;
+using namespace std;
 
 namespace tut {
 
@@ -85,15 +86,21 @@ void to::test<2>()
 template<> template<>
 void to::test<3>()
 {
-	MutableVarinfo info = MutableVarinfo::create_singleuse(WR_VAR(2, 20, 0));
+	MutableVarinfo info = MutableVarinfo::create_singleuse();
+	info->set_string(WR_VAR(2, 20, 0), "test", 10);
 	ensure_equals(info->var, WR_VAR(2, 20, 0));
+	ensure_equals(string(info->desc), "test");
+	ensure_equals(string(info->unit), "CCITTIA5");
+	ensure_equals(string(info->bufr_unit), "CCITTIA5");
+	ensure_equals(info->len, 10);
+	ensure_equals(info->bit_len, 80);
 }
 
 /* Test the calculation of bounds */
 template<> template<>
 void to::test<4>()
 {
-	MutableVarinfo info = MutableVarinfo::create_singleuse(WR_VAR(0, 15, 194));
+	MutableVarinfo info = MutableVarinfo::create_singleuse();
 	info->set(WR_VAR(0, 15, 194),		// Var
 		  "[SIM] O3 Concentration",	// Desc
 		  "KG/M**3",			// Unit
@@ -108,7 +115,7 @@ void to::test<4>()
 template<> template<>
 void to::test<5>()
 {
-	MutableVarinfo info = MutableVarinfo::create_singleuse(WR_VAR(0, 6, 2));
+	MutableVarinfo info = MutableVarinfo::create_singleuse();
 	info->set(WR_VAR(0, 6, 2),		// Var
 		  "LONGITUDE (COARSE ACCURACY)",// Desc
 		  "DEGREE",			// Unit

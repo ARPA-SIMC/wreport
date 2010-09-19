@@ -269,6 +269,7 @@ struct _Varinfo
 	 * It also calls compute_range
 	 */
 	void set(Varcode var, const char* desc, const char* unit, int scale = 0, int ref = 0, int len = 0, int bit_ref = 0, int bit_len = 0, int flags = 0, const char* bufr_unit = 0, int bufr_scale = 0);
+	void set_string(Varcode var, const char* desc, int len);
 
 	/**
 	 * Compute the valid variable range and store it in the *min and *max
@@ -308,13 +309,12 @@ public:
 	 * and needs to be deallocated explicitly when it is not needed
 	 * anymore.
 	 *
-	 * The various fields of the resulting varinfo will be zeroed, except var (set
-	 * to \a code) and flags (which will have VARINFO_FLAG_SINGLEUSE set)
+	 * The various fields of the resulting varinfo will be zeroed.
 	 * 
 	 * @param code
 	 *   The wreport::Varcode of the variable to query
 	 */
-	static MutableVarinfo create_singleuse(Varcode code);
+	static MutableVarinfo create_singleuse();
 
 	friend class wreport::Varinfo;
 };

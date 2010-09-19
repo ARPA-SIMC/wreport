@@ -59,11 +59,10 @@ _Varinfo::_Varinfo()
 {
 }
 
-MutableVarinfo MutableVarinfo::create_singleuse(Varcode code)
+MutableVarinfo MutableVarinfo::create_singleuse()
 {
 	MutableVarinfo res(new _Varinfo);
 	res->reset();
-	res->var = code;
 	return res;
 }
 
@@ -103,6 +102,11 @@ void _Varinfo::set(Varcode var, const char* desc, const char* unit, int scale, i
 	this->bufr_scale = bufr_scale;
 
 	compute_range();
+}
+
+void _Varinfo::set_string(Varcode var, const char* desc, int len)
+{
+	set(var, desc, "CCITTIA5", 0, 0, len, 0, len * 8);
 }
 
 /* Postprocess the data, filling in minval and maxval */

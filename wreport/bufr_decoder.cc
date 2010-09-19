@@ -993,12 +993,8 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	bitmapstr[count] = 0;
 
 	// Create a single use varinfo to store the bitmap
-	MutableVarinfo info(MutableVarinfo::create_singleuse(code));
-	strcpy(info->desc, "DATA PRESENT BITMAP");
-	strcpy(info->unit, "CCITTIA5");
-	strcpy(info->bufr_unit, "CCITTIA5");
-	info->len = count;
-	info->bit_len = info->len * 8;
+	MutableVarinfo info(MutableVarinfo::create_singleuse());
+	info->set_string(code, "DATA PRESENT BITMAP", count);
 
 	// Store the bitmap
 	Var bmp(info, bitmapstr);
