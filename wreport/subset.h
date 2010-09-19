@@ -37,7 +37,8 @@ namespace wreport {
 /**
  * Represent a BUFR/CREX data subset as a list of decoded variables
  */
-struct Subset : public std::vector<Var> {
+struct Subset : public std::vector<Var>
+{
 	/// dba_vartable used to lookup B table codes
 	const Vartable* btable;
 
@@ -105,42 +106,38 @@ struct Subset : public std::vector<Var> {
 	 */
 	void store_variable_undef(Varcode code);
 
+	/**
+	 * Compute and append a data present bitmap
+	 *
+	 * @param ccode
+	 *   The C code that uses this bitmap
+	 * @param size
+	 *   The size of the bitmap
+	 * @param attr
+	 *   The code of the attribute that the bitmap will represent.  See @ref vartable.h
+	 * @return
+	 *   The number of attributes that will be encoded (for which the dpb has '+')
+	 */
+	int append_dpb(Varcode ccode, int size, Varcode attr);
+
+	/**
+	 * Append a fixed-size data present bitmap with all zeros
+	 *
+	 * @param ccode
+	 *   The C code that uses this bitmap
+	 * @param size
+	 *   The size of the bitmap
+	 */
+	void append_fixed_dpb(Varcode ccode, int size);
+
 	/// Compute the differences between two wreport subsets
 	unsigned diff(const Subset& s2, FILE* out) const;
+
+protected:
+	void append_c_with_dpb(Varcode ccode, int count, const char* bitmap);
 };
 
 #if 0
-/**
- * Compute and append a data present bitmap
- *
- * @param subset
- *   The message to operate on
- * @param ccode
- *   The C code that uses this bitmap
- * @param size
- *   The size of the bitmap
- * @param attr
- *   The code of the attribute that the bitmap will represent.  See @ref vartable.h
- * @retval count
- *   The number of attributes that will be encoded (for which the dpb has '+')
- * @return
- *   The error indicator for the function.  See @ref error.h
- */
-dba_err bufrex_subset_append_dpb(bufrex_subset subset, dba_varcode ccode, int size, dba_varcode attr, int* count);
-
-/**
- * Append a fixed-size data present bitmap with all zeros
- *
- * @param subset
- *   The message to operate on
- * @param ccode
- *   The C code that uses this bitmap
- * @param size
- *   The size of the bitmap
- * @return
- *   The error indicator for the function.  See @ref error.h
- */
-dba_err bufrex_subset_append_fixed_dpb(bufrex_subset subset, dba_varcode ccode, int size);
 
 /**
  * Scan the first 'size' variables appending the attribute 'attr' when found.

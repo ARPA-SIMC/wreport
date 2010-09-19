@@ -69,53 +69,30 @@ void Subset::store_variable_undef(Varcode code)
 	push_back(Var(info));
 }
 
-#if 0
-static dba_err bufrex_subset_append_c_with_dpb(bufrex_subset subset, dba_varcode ccode, int count, const char* bitmap)
+void Subset::append_c_with_dpb(Varcode ccode, int count, const char* bitmap)
 {
-	dba_err err = DBA_OK;
-	dba_varinfo info = NULL;
-	dba_var var = NULL;
-
 	/* Create a single use varinfo to store the bitmap */
-	DBA_RUN_OR_GOTO(cleanup, dba_varinfo_create_singleuse(ccode, &info));
-	strcpy(info->desc, "DATA PRESENT BITMAP");
-	strcpy(info->unit, "CCITTIA5");
-	strcpy(info->bufr_unit, "CCITTIA5");
-	info->len = count;
-	info->bit_len = info->len * 8;
+	MutableVarinfo info = MutableVarinfo::create_singleuse();
+	info->set_string(ccode, "DATA PRESENT BITMAP", count);
 
 	/* Create the dba_var with the bitmap */
-	DBA_RUN_OR_GOTO(cleanup, dba_var_createc(info, bitmap, &var));
-	info = NULL;
+	Var var(info, bitmap);
 
 	/* Store the variable in the subset */
-	DBA_RUN_OR_GOTO(cleanup, bufrex_subset_store_variable(subset, var));
-	var = NULL;
-
-cleanup:
-	if (info != NULL) dba_varinfo_delete(info);
-	if (var != NULL) dba_var_delete(var);
-
-	return err == DBA_OK ? dba_error_ok() : err;
+	store_variable(var);
 }
 
-dba_err bufrex_subset_append_dpb(bufrex_subset subset, dba_varcode ccode, int size, dba_varcode attr, int* count)
+int Subset::append_dpb(Varcode ccode, int size, Varcode attr)
 {
-	dba_err err = DBA_OK;
-	char* bitmap = (char*)malloc(size + 1);
+	char bitmap[size + 1];
 	int src, dst;
-	*count = 0;
-
-	if (bitmap == 0)
-		return dba_error_alloc("Allocating space for building a data present bitmap");
+	int count = 0;
 
 	/* Scan first 'size' variables checking for the presence of 'attr' */
-	for (src = 0, dst = 0; src < subset->vars_count && dst < size; dst++)
+	for (src = 0, dst = 0; src < this->size() && dst < size; dst++)
 	{
-		dba_var test_var;
-
 		/* Skip extra, special vars */
-		while (src < subset->vars_count && WR_VAR_F(dba_var_code(subset->vars[src])) != 0)
+		while (src < this->size() && WR_VAR_F((*this)[src].code()) != 0)
 			++src;
 
 #if 0
@@ -127,44 +104,33 @@ dba_err bufrex_subset_append_dpb(bufrex_subset subset, dba_varcode ccode, int si
 #endif
 
 		/* Check if the variable has the attribute we want */
-		DBA_RUN_OR_GOTO(cleanup, dba_var_enqa(subset->vars[src], attr, &test_var));
-
-		if (test_var == NULL)
+		if ((*this)[src].enqa(attr) == NULL)
 			bitmap[dst] = '-';
 		else
 		{
 			bitmap[dst] = '+';
-			++*count;
+			++count;
 		}
 	}
 	bitmap[size] = 0;
 
-	/* Append the bitmap to the message */
-	DBA_RUN_OR_GOTO(cleanup, bufrex_subset_append_c_with_dpb(subset, ccode, size, bitmap));
+	// Append the bitmap to the message
+	append_c_with_dpb(ccode, size, bitmap);
 
-cleanup:
-	if (bitmap != NULL) free(bitmap);
-
-	return err == DBA_OK ? dba_error_ok() : err;
+	return count;
 }
 
-dba_err bufrex_subset_append_fixed_dpb(bufrex_subset subset, dba_varcode ccode, int size)
+void Subset::append_fixed_dpb(Varcode ccode, int size)
 {
-	dba_err err = DBA_OK;
-	char* bitmap = (char*)malloc(size + 1);
+	char bitmap[size + 1];
 
 	memset(bitmap, '+', size);
 	bitmap[size] = 0;
 
-	/* Append the bitmap to the message */
-	DBA_RUN_OR_GOTO(cleanup, bufrex_subset_append_c_with_dpb(subset, ccode, size, bitmap));
-
-cleanup:
-	if (bitmap != NULL) free(bitmap);
-
-	return err == DBA_OK ? dba_error_ok() : err;
+	append_c_with_dpb(ccode, size, bitmap);
 }
 
+#if 0
 dba_err bufrex_subset_append_attrs(bufrex_subset subset, int size, dba_varcode attr)
 {
 	int i;
