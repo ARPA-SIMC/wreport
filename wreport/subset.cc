@@ -169,6 +169,15 @@ dba_err bufrex_subset_append_attrs(bufrex_subset subset, int size, dba_varcode a
 }
 #endif
 
+void Subset::print(FILE* out) const
+{
+	for (unsigned i = 0; i < size(); ++i)
+	{
+		fprintf(out, "%d ", i);
+		(*this)[i].print(out);
+	}
+}
+
 unsigned Subset::diff(const Subset& s2, FILE* out) const
 {
 	// Compare btables

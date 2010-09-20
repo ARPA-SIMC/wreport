@@ -130,6 +130,9 @@ struct Subset : public std::vector<Var>
 	 */
 	void append_fixed_dpb(Varcode ccode, int size);
 
+	/// Dump the contents of this subset
+	void print(FILE* out) const;
+
 	/// Compute the differences between two wreport subsets
 	unsigned diff(const Subset& s2, FILE* out) const;
 
