@@ -296,18 +296,6 @@ struct CrexBulletin : public Bulletin
 dba_err bufrex_msg_get_table_id(bufrex_msg msg, const char** id);
 
 /**
- * Try to generate a data description section by scanning the variable codes of
- * the variables in the first data subset.
- *
- * @param msg
- *   The message to act on
- * @returns
- *   The error indicator for the function.  See @ref error.h
- */
-dba_err bufrex_msg_generate_datadesc(bufrex_msg msg);
-#endif
-
-/**
  * Parse a string containing a bufr/crex template selector.
  *
  * The string can be 3 numbers separated by dots (type.subtype.localsubtype) or
