@@ -36,6 +36,16 @@
 
 #include <map>
 
+// #define TRACE_LOADER
+
+#ifdef TRACE_LOADER
+#define TRACE(...) fprintf(stderr, __VA_ARGS__)
+#define IFTRACE if (1)
+#else
+#define TRACE(...) do { } while (0)
+#define IFTRACE if (0)
+#endif
+
 using namespace std;
 
 namespace wreport {
@@ -410,8 +420,13 @@ std::pair<std::string, std::string> Vartable::find_table(const std::vector<std::
 					for (const char** ext = exts; *ext; ++ext)
 					{
 						string pathname = string(dirlist[i], beg, len) + "/" + *id + *ext;
+						TRACE("Trying pathname %s: ", pathname.c_str());
 						if (access(pathname.c_str(), R_OK) == 0)
+						{
+							TRACE("found.\n");
 							return make_pair(*id, pathname);
+						} else
+							TRACE("not found.\n");
 					}
 				}
 				beg = beg + len + strspn(dirlist[i] + beg + len, ":;");
