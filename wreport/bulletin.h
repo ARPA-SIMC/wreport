@@ -294,6 +294,7 @@ struct CrexBulletin : public Bulletin
  *   The error indicator for the function (See @ref error.h)
  */
 dba_err bufrex_msg_get_table_id(bufrex_msg msg, const char** id);
+#endif
 
 /**
  * Parse a string containing a bufr/crex template selector.
