@@ -636,7 +636,7 @@ unsigned opcode_interpreter::decode_b_data(const Opcodes& ops)
 	}
 
 	Varinfo info = d.out.btable->query_altered(ops.head(),
-				DBA_ALT(c_width_change, c_scale_change));
+				WR_ALT(c_width_change, c_scale_change));
 
 	IFTRACE {
 		TRACE("Parsing @%d+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", cursor, 8-pbyte_len,

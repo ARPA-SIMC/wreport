@@ -97,7 +97,7 @@ typedef short unsigned int Varcode;
  * This is useful only in rare cases, such as when parsing tables; use
  * dba_descriptor_code to parse proper entry names such as "B01003" or "D21301".
  */
-#define DBA_STRING_TO_VAR(str) ((wreport::Varcode)( \
+#define WR_STRING_TO_VAR(str) ((wreport::Varcode)( \
 		(( ((str)[0] - '0')*10 + ((str)[1] - '0') ) << 8) | \
 		( ((str)[2] - '0')*100 + ((str)[3] - '0')*10 + ((str)[4] - '0') ) \
 ))
@@ -123,7 +123,7 @@ typedef short unsigned int Varcode;
  *   The 6-byte string descriptor as FXXYYY
  *
  * @return
- *   The short integer code that can be queried with the DBA_GET_* macros
+ *   The short integer code that can be queried with the WR_GET_* macros
  */
 Varcode descriptor_code(const char* desc);
 
@@ -138,17 +138,17 @@ typedef short unsigned int Alteration;
 /**
  * Create a variable alteration value
  */
-#define DBA_ALT(width, scale) (((width)+128) << 8 | ((scale)+128))
+#define WR_ALT(width, scale) (((width)+128) << 8 | ((scale)+128))
 
 /**
  * Read the width part of a variable alteration value
  */
-#define DBA_ALT_WIDTH(code) (((code) >> 8) - 128)
+#define WR_ALT_WIDTH(code) (((code) >> 8) - 128)
 
 /**
  * Read the scale part of a variable alteration value
  */
-#define DBA_ALT_SCALE(code) (((code) & 0xff) - 128)
+#define WR_ALT_SCALE(code) (((code) & 0xff) - 128)
 
 /**
  * Varinfo flags

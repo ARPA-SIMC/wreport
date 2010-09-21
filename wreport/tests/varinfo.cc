@@ -54,10 +54,10 @@ void to::test<1>()
 	ensure_equals(WR_VAR(2, 63, 255), 0xbfff);
 	ensure_equals(WR_VAR(3, 63, 255), 0xffff);
 
-	ensure_equals(DBA_STRING_TO_VAR("12345"), WR_VAR(0, 12, 345));
-	ensure_equals(DBA_STRING_TO_VAR("00345"), WR_VAR(0, 0, 345));
-	ensure_equals(DBA_STRING_TO_VAR("00000"), WR_VAR(0, 0, 0));
-	ensure_equals(DBA_STRING_TO_VAR("63255"), WR_VAR(0, 63, 255));
+	ensure_equals(WR_STRING_TO_VAR("12345"), WR_VAR(0, 12, 345));
+	ensure_equals(WR_STRING_TO_VAR("00345"), WR_VAR(0, 0, 345));
+	ensure_equals(WR_STRING_TO_VAR("00000"), WR_VAR(0, 0, 0));
+	ensure_equals(WR_STRING_TO_VAR("63255"), WR_VAR(0, 63, 255));
 
 	ensure_equals(descriptor_code("B12345"), WR_VAR(0, 12, 345));
 	ensure_equals(descriptor_code("R00345"), WR_VAR(1, 0, 345));
@@ -73,13 +73,13 @@ void to::test<1>()
 template<> template<>
 void to::test<2>()
 {
-	Alteration a = DBA_ALT(1, 2);
-	ensure_equals(DBA_ALT_WIDTH(a), 1);
-	ensure_equals(DBA_ALT_SCALE(a), 2);
+	Alteration a = WR_ALT(1, 2);
+	ensure_equals(WR_ALT_WIDTH(a), 1);
+	ensure_equals(WR_ALT_SCALE(a), 2);
 
-	a = DBA_ALT(-1, -2);
-	ensure_equals(DBA_ALT_WIDTH(a), -1);
-	ensure_equals(DBA_ALT_SCALE(a), -2);
+	a = WR_ALT(-1, -2);
+	ensure_equals(WR_ALT_WIDTH(a), -1);
+	ensure_equals(WR_ALT_SCALE(a), -2);
 }
 
 /* Test instantiation of singleuse Varinfos */

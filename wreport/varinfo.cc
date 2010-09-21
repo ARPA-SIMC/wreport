@@ -51,7 +51,7 @@ Varcode descriptor_code(const char* entry)
 		default:
 			return varcode_alias_resolve(entry);
 	}
-	return res | DBA_STRING_TO_VAR(entry+1);
+	return res | WR_STRING_TO_VAR(entry+1);
 }
 
 _Varinfo::_Varinfo()

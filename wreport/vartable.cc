@@ -84,7 +84,7 @@ Varinfo Vartable::query(Varcode var) const
 
 Varinfo Vartable::query_altered(Varcode var, Alteration change) const
 {
-	if (change == 0 || change == DBA_ALT(0, 0))
+	if (change == 0 || change == WR_ALT(0, 0))
 		return query(var);
 
 	/* Get the normal variable */
@@ -111,17 +111,17 @@ Varinfo Vartable::query_altered(Varcode var, Alteration change) const
 
 #if 0
 		fprintf(stderr, "Before alteration(w:%d,s:%d): bl %d len %d scale %d\n",
-				DBA_ALT_WIDTH(change), DBA_ALT_SCALE(change),
+				WR_ALT_WIDTH(change), WR_ALT_SCALE(change),
 				i->bit_len, i->len, i->scale);
 #endif
 
 		/* Apply the alterations */
-		if ((alt = DBA_ALT_WIDTH(change)) != 0)
+		if ((alt = WR_ALT_WIDTH(change)) != 0)
 		{
 			newvi->bit_len += alt;
 			newvi->len = (int)ceil(log10(1 << i->bit_len));
 		}
-		if ((alt = DBA_ALT_SCALE(change)) != 0)
+		if ((alt = WR_ALT_SCALE(change)) != 0)
 		{
 			newvi->scale += alt;
 			newvi->bufr_scale += alt;
@@ -129,7 +129,7 @@ Varinfo Vartable::query_altered(Varcode var, Alteration change) const
 
 #if 0
 		fprintf(stderr, "After alteration(w:%d,s:%d): bl %d len %d scale %d\n",
-				DBA_ALT_WIDTH(change), DBA_ALT_SCALE(change),
+				WR_ALT_WIDTH(change), WR_ALT_SCALE(change),
 				i->bit_len, i->len, i->scale);
 #endif
 
@@ -218,7 +218,7 @@ void Vartable::load(const std::pair<std::string, std::string>& idfile)
 
 		/* Read starting B code */
 		/*fprintf(stderr, "Entry: B%05d\n", bcode);*/
-		entry->var = DBA_STRING_TO_VAR(line + 2);
+		entry->var = WR_STRING_TO_VAR(line + 2);
 
 		if (entry->var < last_code)
 			throw error_parse(file.c_str(), line_no, "input file is not sorted");
