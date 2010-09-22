@@ -116,6 +116,7 @@ LIBWREPORT_VERSION_INFO=`echo $VERSION | awk -F. '{ printf "%d:%d:%d", $1+$2, $3
 AC_SUBST(LIBWREPORT_VERSION_INFO)
 
 CFLAGS="-Wall $CFLAGS"
+CXXFLAGS="-Wall $CFLAGS"
 
 AM_CONDITIONAL([DO_DOCS], [test x"$enable_docs" = x"yes"])
 AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
