@@ -121,6 +121,21 @@ error_regexp::error_regexp(int code, void* re, const std::string& msg)
 	this->msg = msg + ": " + details;
 }
 
+void error_regexp::throwf(int code, void* re, const char* fmt, ...)
+{
+	// Format the arguments
+	va_list ap;
+	va_start(ap, fmt);
+	char* cmsg;
+	vasprintf(&cmsg, fmt, ap);
+	va_end(ap);
+
+	// Convert to string
+	std::string msg(cmsg);
+	free(cmsg);
+	throw error_regexp(code, re, msg);
+}
+
 MAKE_THROWF(error_unimplemented)
 MAKE_THROWF(error_domain)
 

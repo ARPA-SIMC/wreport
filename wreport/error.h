@@ -235,6 +235,8 @@ struct error_regexp : public error
 	ErrorCode code() const throw () { return WR_ERR_REGEX; }
 
 	virtual const char* what() const throw () { return msg.c_str(); }
+
+	static void throwf(int code, void* re, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4);
 };
 
 /// Reports that a feature is still not implemented.
