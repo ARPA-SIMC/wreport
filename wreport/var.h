@@ -136,6 +136,16 @@ public:
 	/// Set the value from a string value
 	void setc(const char* val);
 
+	/**
+	 * Shortcuts (use with care, as the semanthics are slightly different
+	 * depending on the type)
+	 * @{
+	 */
+	void set(int val) { seti(val); }
+	void set(double val) { setd(val); }
+	void set(const char* val) { setc(val); }
+	/// @}
+
 	/// Unset the value of a dba_var
 	void unset();
 
