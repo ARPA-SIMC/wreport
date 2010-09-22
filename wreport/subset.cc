@@ -85,11 +85,11 @@ void Subset::append_c_with_dpb(Varcode ccode, int count, const char* bitmap)
 int Subset::append_dpb(Varcode ccode, int size, Varcode attr)
 {
 	char bitmap[size + 1];
-	int src, dst;
-	int count = 0;
+	size_t src, dst;
+	size_t count = 0;
 
 	/* Scan first 'size' variables checking for the presence of 'attr' */
-	for (src = 0, dst = 0; src < this->size() && dst < size; dst++)
+	for (src = 0, dst = 0; src < this->size() && dst < size; ++dst, ++src)
 	{
 		/* Skip extra, special vars */
 		while (src < this->size() && WR_VAR_F((*this)[src].code()) != 0)
