@@ -28,11 +28,6 @@ Makefile
 /stamp-h1
 /m4/lt*.m4
 /m4/libtool.m4
-/wreport/aliases.cc
-/wreport/aliases.dox
-/wreport/aliases.tex
 /wreport/btable.dox
 /wreport/uniconv.cc
-/wreport/template-aliases.cc
-/wreport/template-aliases.tex
 /wreport/tut_test
