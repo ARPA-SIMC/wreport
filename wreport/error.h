@@ -39,6 +39,7 @@ providing C or Fortran bindings.
 
 namespace wreport {
 
+/// C-style error codes used by exceptions
 enum ErrorCode {
 	/** No error */
 	WR_ERR_NONE			=  0,
@@ -70,21 +71,33 @@ enum ErrorCode {
 	WR_ERR_DOMAIN			= 13
 };
 
-
+/**
+ * Tell the compiler that a function always throws and expects printf-style
+ * arguments
+ */
 #define WREPORT_THROWF_ATTRS(a, b) __attribute__ ((noreturn, format(printf, a, b)))
 
 /// Base class for DB-All.e exceptions
 struct error : public std::exception
 {
+	/**
+	 * Exception-specific error code
+	 *
+	 * This is useful to map C++ exceptions to C or Fortran error codes
+	 */
 	virtual ErrorCode code() const throw () = 0;
 
+	/// Error message
+	virtual const char* what() const throw () = 0;
+
+	/// String description for an error code
 	static const char* strerror(ErrorCode code);
 };
 
 /// Reports that a search-like function could not find what was requested.
 struct error_notfound : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
 	error_notfound(const std::string& msg) : msg(msg) {}
 	~error_notfound() throw () {}
@@ -93,6 +106,7 @@ struct error_notfound : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
@@ -102,7 +116,7 @@ struct error_notfound : public error
  */
 struct error_type : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
 	error_type(const std::string& msg) : msg(msg) {}
 	~error_type() throw () {}
@@ -111,19 +125,21 @@ struct error_type : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /// Reports that memory allocation has failed.
 struct error_alloc : public error
 {
-	const char* msg;
+	const char* msg; ///< error message returned by what()
 
 	error_alloc(const char* msg) : msg(msg) {}
 	~error_alloc() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_ALLOC; }
 
+	/// Throw the exception, building the message printf-style
 	virtual const char* what() const throw () { return msg; }
 };
 
@@ -134,7 +150,7 @@ struct error_alloc : public error
  */
 struct error_handles : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
 	error_handles(const std::string& msg) : msg(msg) {}
 	~error_handles() throw () {}
@@ -143,13 +159,14 @@ struct error_handles : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /// Report an error with a buffer being to short for the data it needs to fit.
 struct error_toolong : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
 	error_toolong(const std::string& msg) : msg(msg) {}
 	~error_toolong() throw () {}
@@ -158,6 +175,7 @@ struct error_toolong : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
@@ -167,7 +185,7 @@ struct error_toolong : public error
  */
 struct error_system : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
 	error_system(const std::string& msg);
 	error_system(const std::string& msg, int errno_val);
@@ -177,13 +195,14 @@ struct error_system : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /// Report an error when a consistency check failed.
 struct error_consistency : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
 	error_consistency(const std::string& msg) : msg(msg) {};
 	~error_consistency() throw () {}
@@ -192,21 +211,24 @@ struct error_consistency : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /// Report an error when parsing informations.
 struct error_parse : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
+	error_parse(const std::string& msg) : msg(msg) {}
 	/**
 	 * @param file
 	 *   The file that is being parsed
 	 * @param line
 	 *   The line of the file where the problem has been found
+	 * @param msg
+	 *   The error message
 	 */
-	error_parse(const std::string& msg) : msg(msg) {}
 	error_parse(const char* file, int line, const std::string& msg);
 	~error_parse() throw () {}
 
@@ -214,13 +236,14 @@ struct error_parse : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(const char* file, int line, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4);
 };
 
 /// Report an error while handling regular expressions
 struct error_regexp : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
 	/**
 	 * @param code
@@ -228,6 +251,8 @@ struct error_regexp : public error
 	 * @param re
 	 *   The pointer to the regex_t structure that was being used when the error
 	 *   occurred.
+	 * @param msg
+	 *   The error message
 	 */
 	error_regexp(int code, void* re, const std::string& msg);
 	~error_regexp() throw () {}
@@ -236,13 +261,14 @@ struct error_regexp : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(int code, void* re, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4);
 };
 
 /// Reports that a feature is still not implemented.
 struct error_unimplemented : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
 	error_unimplemented(const std::string& msg) : msg(msg) {};
 	~error_unimplemented() throw () {}
@@ -251,13 +277,14 @@ struct error_unimplemented : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /// Report an error with a buffer being to short for the data it needs to fit.
 struct error_domain : public error
 {
-	std::string msg;
+	std::string msg; ///< error message returned by what()
 
 	error_domain(const std::string& msg) : msg(msg) {}
 	~error_domain() throw () {}
@@ -266,6 +293,7 @@ struct error_domain : public error
 
 	virtual const char* what() const throw () { return msg.c_str(); }
 
+	/// Throw the exception, building the message printf-style
 	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 

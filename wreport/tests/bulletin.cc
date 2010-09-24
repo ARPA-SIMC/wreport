@@ -40,6 +40,9 @@ TESTGRP(bufrex_msg);
 template<> template<>
 void to::test<1>()
 {
+#if 0
+	// No more template parsing
+
 	int c, sc, lc;
 
 	parse_template("1.2.3", &c, &sc, &lc);
@@ -61,6 +64,7 @@ void to::test<1>()
 	ensure_equals(c, 2);
 	ensure_equals(sc, 255);
 	ensure_equals(lc, 101);
+#endif
 }
 
 }

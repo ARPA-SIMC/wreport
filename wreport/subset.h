@@ -72,7 +72,7 @@ struct Subset : public std::vector<Var>
 	 * Store a new variable in the message, providing its value as an int
 	 *
 	 * @param code
-	 *   The ::dba_varcode of the variable to add.  See @ref vartable.h
+	 *   The Varcode of the variable to add.  See @ref vartable.h
 	 * @param val
 	 *   The value for the variable
 	 */
@@ -82,7 +82,7 @@ struct Subset : public std::vector<Var>
 	 * Store a new variable in the message, providing its value as a double
 	 *
 	 * @param code
-	 *   The ::dba_varcode of the variable to add.  See @ref vartable.h
+	 *   The Varcode of the variable to add.  See @ref vartable.h
 	 * @param val
 	 *   The value for the variable
 	 */
@@ -92,7 +92,7 @@ struct Subset : public std::vector<Var>
 	 * Store a new variable in the message, providing its value as a string
 	 *
 	 * @param code
-	 *   The ::dba_varcode of the variable to add.  See @ref vartable.h
+	 *   The Varcode of the variable to add.  See @ref vartable.h
 	 * @param val
 	 *   The value for the variable
 	 */
@@ -102,7 +102,7 @@ struct Subset : public std::vector<Var>
 	 * Store a new, undefined variable in the message
 	 *
 	 * @param code
-	 *   The ::dba_varcode of the variable to add.  See @ref vartable.h
+	 *   The Varcode of the variable to add.  See @ref vartable.h
 	 */
 	void store_variable_undef(Varcode code);
 
@@ -118,7 +118,7 @@ struct Subset : public std::vector<Var>
 	 * @return
 	 *   The number of attributes that will be encoded (for which the dpb has '+')
 	 */
-	int append_dpb(Varcode ccode, int size, Varcode attr);
+	int append_dpb(Varcode ccode, unsigned size, Varcode attr);
 
 	/**
 	 * Append a fixed-size data present bitmap with all zeros
@@ -137,6 +137,7 @@ struct Subset : public std::vector<Var>
 	unsigned diff(const Subset& s2, FILE* out) const;
 
 protected:
+	/// Append a C operator with a \a count long bitmap
 	void append_c_with_dpb(Varcode ccode, int count, const char* bitmap);
 };
 

@@ -453,20 +453,21 @@ void Encoder::bitmap_next()
 	TRACE("bitmap_next pre %d %d %d\n", bitmap_use_cur, bitmap_subset_cur, bitmap_to_encode->info()->len);
 	++bitmap_use_cur;
 	++bitmap_subset_cur;
-	while (bitmap_use_cur < bitmap_to_encode->info()->len &&
-		(bitmap_use_cur < 0 || bitmap_to_encode->value()[bitmap_use_cur] == '-'))
+	while (bitmap_use_cur < 0 || (
+		(unsigned)bitmap_use_cur < bitmap_to_encode->info()->len &&
+		bitmap_to_encode->value()[bitmap_use_cur] == '-'))
 	{
 		TRACE("INCR\n");
 		++bitmap_use_cur;
 		++bitmap_subset_cur;
 
-		while (bitmap_subset_cur < subset->size() &&
+		while ((unsigned)bitmap_subset_cur < subset->size() &&
 			WR_VAR_F((*subset)[bitmap_subset_cur].code()) != 0)
 			++bitmap_subset_cur;
 	}
-	if (bitmap_use_cur > bitmap_to_encode->info()->len)
+	if ((unsigned)bitmap_use_cur > bitmap_to_encode->info()->len)
 		throw error_consistency("moved past end of data present bitmap");
-	if (bitmap_subset_cur == subset->size())
+	if ((unsigned)bitmap_subset_cur == subset->size())
 		throw error_consistency("end of data reached when applying attributes");
 	TRACE("bitmap_next post %d %d\n", bitmap_use_cur, bitmap_subset_cur);
 }
@@ -491,7 +492,7 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 	
 	// Choose which value we should encode
 	if (WR_VAR_F(ops.head()) == 0 && WR_VAR_X(ops.head()) == 33
-		   && bitmap_to_encode != NULL && bitmap_use_cur < bitmap_to_encode->info()->len)
+		   && bitmap_to_encode != NULL && (unsigned)bitmap_use_cur < bitmap_to_encode->info()->len)
 	{
 		// Attribute of the variable pointed by the bitmap
 		TRACE("Encode attribute %01d%02d%03d %d/%d subset %d/%zd\n",
@@ -536,9 +537,9 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 		add_bits(0xffffffff, len);
 	} else if (info->is_string()) {
 		const char* val = var->value();
-		int i, bi;
-		int smax = strlen(val);
-		for (i = 0, bi = 0; bi < len; i++)
+		unsigned i, bi;
+		unsigned smax = strlen(val);
+		for (i = 0, bi = 0; bi < len; ++i)
 		{
 			TRACE("len: %d, smax: %d, i: %d, bi: %d\n", len, smax, i, bi);
 			/* Strings are space-padded in BUFR */
@@ -657,7 +658,7 @@ unsigned Encoder::encode_r_data(const Opcodes& ops, Varqueue& vars, const Var* b
 			error_consistency::throwf("bitmap data descriptor is %d%02d%03d instead of B31031",
 					WR_VAR_F(ops[used]), WR_VAR_X(ops[used]), WR_VAR_Y(ops[used]));
 
-		for (int i = 0; i < bitmap->info()->len; ++i)
+		for (unsigned i = 0; i < bitmap->info()->len; ++i)
 			// One bit from the current bitmap
 			add_bits(bitmap->value()[i] == '+' ? 0 : 1, 1);
 		TRACE("Encoded %d bitmap entries\n", bitmap->info()->len);
@@ -678,7 +679,7 @@ unsigned Encoder::encode_bitmap(const Opcodes& ops, Varqueue& vars)
 	unsigned used = 0;
 
 	Varcode code = vars.peek().code();
-	if (bitmap_to_encode != NULL && bitmap_encode_cur < bitmap_to_encode->info()->len)
+	if (bitmap_to_encode != NULL && (unsigned)bitmap_encode_cur < bitmap_to_encode->info()->len)
 		throw error_consistency("request to encode a bitmap before we finished encoding the previous one");
 	if (WR_VAR_F(code) != 2)
 		error_consistency::throwf("request to encode a bitmap but the input variable is %01d%02d%03d",

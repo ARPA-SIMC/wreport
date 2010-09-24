@@ -20,6 +20,13 @@ AC_ARG_ENABLE([docs],
     [],
     [enable_docs="yes"])
 
+AC_ARG_ENABLE([doxy-undoc-warnings],
+    [AS_HELP_STRING(
+	[--enable-doxy-undoc-warnings],
+        [enable building of the documentation])],
+    [],
+    [enable_doxy_undoc_warnings="no"])
+
 AC_CHECK_PROG(have_rst2html, rst2html, yes, no)
 AC_CHECK_PROG(have_swig, swig, yes, no)
 
@@ -115,8 +122,16 @@ dnl AC_DEFINE_UNQUOTED(TABLE_DIR, "$def_tabledir", "Default location for table f
 LIBWREPORT_VERSION_INFO=`echo $VERSION | awk -F. '{ printf "%d:%d:%d", $1+$2, $3, $2 }'`
 AC_SUBST(LIBWREPORT_VERSION_INFO)
 
-CFLAGS="-Wall $CFLAGS"
-CXXFLAGS="-Wall $CFLAGS"
+CFLAGS="-Wall -Werror $CFLAGS"
+CXXFLAGS="-Wall -Werror $CFLAGS"
+
+if test x"$enable_doxy_undoc_warnings" = x"no"
+then
+	DOXYGEN_WARN_IF_UNDOCUMENTED=NO
+else
+	DOXYGEN_WARN_IF_UNDOCUMENTED=YES
+fi
+AC_SUBST(DOXYGEN_WARN_IF_UNDOCUMENTED)
 
 AM_CONDITIONAL([DO_DOCS], [test x"$enable_docs" = x"yes"])
 AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])

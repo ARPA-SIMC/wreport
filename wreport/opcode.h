@@ -31,15 +31,29 @@
 
 namespace wreport {
 
+/**
+ * Sequence of opcodes, as a slice of a Varcode vector.
+ *
+ * This is used for BUFR and CREX encoding and decoding.
+ *
+ * It can be considered as a sort of subroutine to be interpreted by the
+ * encoders/decoders.
+ */
 struct Opcodes
 {
+	/// Reference to the vector with all the expanded varcodes
 	const std::vector<Varcode>& vals;
+	/// First element of the varcode sequence in Opcodes::vals
 	unsigned begin;
+	/// One-past-the-last element of the varcode sequence in Opcodes::vals
 	unsigned end;
 
+	/// Sequence spanning the whole vector
 	Opcodes(const std::vector<Varcode>& vals) : vals(vals), begin(0), end(vals.size()) {}
+	/// Sequence from begin (inclusive) to end (excluded)
 	Opcodes(const std::vector<Varcode>& vals, unsigned begin, unsigned end)
 		: vals(vals), begin(begin), end(end) {}
+	/// Copy constructor
 	Opcodes(const Opcodes& o) : vals(o.vals), begin(o.begin), end(o.end) {}
 
 	/**
@@ -90,6 +104,7 @@ struct Opcodes
 			return Opcodes(vals, begin+1, end);
 	}
 
+	/// Return the opcodes from \a skip until the end
 	Opcodes sub(unsigned skip) const
 	{
 		if (begin + skip > end)
@@ -98,6 +113,7 @@ struct Opcodes
 			return Opcodes(vals, begin + skip, end);
 	}
 
+	/// Return \a len opcodes starting from \a skip
 	Opcodes sub(unsigned skip, unsigned len) const
 	{
 		if (begin + skip > end)

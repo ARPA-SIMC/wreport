@@ -95,7 +95,7 @@ void to::test<2>()
 	try {
 		table->query(WR_VAR(0, 2, 99));
 	} catch (error_notfound& e) {
-		ensure(string(e.what()).find("002099") != -1);
+		ensure(string(e.what()).find("002099") != string::npos);
 	}
 
 	Varinfo info = table->query(WR_VAR(0, 1, 6));
@@ -150,7 +150,7 @@ void to::test<3>()
 	try {
 		table->query(WR_VAR(0, 2, 99));
 	} catch (error_notfound& e) {
-		ensure(string(e.what()).find("002099") != -1);
+		ensure(string(e.what()).find("002099") != string::npos);
 	}
 
 	Varinfo info = table->query(WR_VAR(0, 1, 6));

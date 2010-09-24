@@ -10,7 +10,6 @@ wreportincludedir = $(includedir)/wreport
 
 # Include the .cc files that contain template definitions
 wreportinclude_HEADERS = \
-	aliases.h \
 	conv.h \
 	dtable.h \
 	error.h \
@@ -29,10 +28,8 @@ libwreport_la_SOURCES = \
 	uniconv.cc \
 	conv.cc \
 	varinfo.cc \
-	aliases.cc \
 	vartable.cc \
 	var.cc \
-	template-aliases.cc \
 	opcode.cc \
 	dtable.cc \
 	subset.cc \
@@ -51,31 +48,8 @@ libwreport_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@ $(LUA_LIBS)
 uniconv.cc: uniconv.gperf
 	if ! gperf < $< > $@; then rm $@; /bin/false; fi
 
-aliases.cc: aliases.gperf
-	if ! gperf < $< > $@; then rm $@; /bin/false; fi
-
-template-aliases.cc: template-aliases.gperf
-	if ! gperf < $< > $@; then rm $@; /bin/false; fi
-
-template-aliases.tex: template-aliases.gperf mktaliases
-	if ! $(srcdir)/mktaliases < $< ; then rm $@; /bin/false; fi
-	
-aliases.dox: aliases.gperf mkaliasdoc
-	$(srcdir)/mkaliasdoc dox < $< > $@
-
-aliases.tex: aliases.gperf mkaliasdoc
-	$(srcdir)/mkaliasdoc tex < $< > $@
-
-#btable.dox: $(top_srcdir)/tables/dballe.txt $(top_srcdir)/tables/mkbdoc
-#	$(top_srcdir)/tables/mkbdoc dox < $< > $@ 
-
-distclean-local:
-	rm -f template-aliases.tex aliases.dox aliases.tex
-
-noinst_DATA = aliases.dox aliases.tex
-
-BUILT_SOURCES = aliases.cc uniconv.cc template-aliases.cc template-aliases.tex
-EXTRA_DIST = aliases.gperf mkaliasdoc uniconv.gperf template-aliases.gperf mktaliases
+BUILT_SOURCES = uniconv.cc
+EXTRA_DIST = uniconv.gperf
 
 #
 # Unit testing
@@ -97,7 +71,6 @@ tut_test_SOURCES = \
 	tests/conv.cc \
 	tests/fast.cc \
 	tests/varinfo.cc \
-	tests/aliases.cc \
 	tests/vartable.cc \
 	tests/var.cc \
 	tests/opcode.cc \

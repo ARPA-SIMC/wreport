@@ -21,6 +21,8 @@ uninstall-local:
 mainpages = ../wreport/main.dox 
 
 libwreport.doxytags apidocs/index.html: $(cdoxdeps) $(mainpages)
+	@test $(DOXYGEN_WARN_IF_UNDOCUMENTED) = NO && \
+		echo "No doxygen warnings about undocumented functions. Use ./configure --enable-doxy-undoc-warnings to turn them on"
 	doxygen $<
 endif
 

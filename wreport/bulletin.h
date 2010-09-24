@@ -79,12 +79,10 @@ struct Bulletin
 	Bulletin();
 	virtual ~Bulletin();
 
+	/// Reset the bulletin
 	virtual void clear();
 
-#if 0
-	/** Type of source/target encoding data */
-	virtual const Encoding encoding() const throw () = 0;
-#endif
+	/** Type of source/target encoding */
 	virtual const char* encoding_name() const throw () = 0;
 
 	/**
@@ -157,15 +155,11 @@ struct Bulletin
 
 	/// Diff format-specific details
 	virtual unsigned diff_details(const Bulletin& msg, FILE* out) const;
-
-#if 0
-	/**
-	 * Create a Bulletin for the given encoding
-	 */
-	static std::auto_ptr<Bulletin> create(Encoding encoding);
-#endif
 };
 
+/**
+ * BUFR bulletin implementation
+ */
 struct BufrBulletin : public Bulletin
 {
 	/** BUFR-specific encoding options */
@@ -193,7 +187,6 @@ struct BufrBulletin : public Bulletin
 	virtual ~BufrBulletin();
 
 	void clear();
-	//const Encoding encoding() const throw () { return BUFR; }
 	virtual const char* encoding_name() const throw () { return "BUFR"; }
 	virtual void load_tables();
 	virtual void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0);
@@ -201,9 +194,6 @@ struct BufrBulletin : public Bulletin
 	virtual void encode(std::string& buf) const;
 	virtual void print_details(FILE* out) const;
 	virtual unsigned diff_details(const Bulletin& msg, FILE* out) const;
-
-	// Get encoding for class, to use in templates
-	//static Encoding class_encoding() { return BUFR; }
 
 	/**
 	 * Read an encoded BUFR message from a stream
@@ -232,6 +222,9 @@ struct BufrBulletin : public Bulletin
 	static void write(const std::string& buf, FILE* out, const char* fname = 0);
 };
 
+/**
+ * CREX bulletin implementation
+ */
 struct CrexBulletin : public Bulletin
 {
 	/** CREX-specific encoding options */
@@ -244,7 +237,6 @@ struct CrexBulletin : public Bulletin
 	int has_check_digit;
 
 	void clear();
-	//const Encoding encoding() const throw () { return CREX; }
 	virtual const char* encoding_name() const throw () { return "CREX"; }
 	virtual void load_tables();
 	virtual void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0);
@@ -252,9 +244,6 @@ struct CrexBulletin : public Bulletin
 	virtual void encode(std::string& buf) const;
 	virtual void print_details(FILE* out) const;
 	virtual unsigned diff_details(const Bulletin& msg, FILE* out) const;
-
-	// Get encoding for class, to use in templates
-	//static Encoding class_encoding() { return CREX; }
 
 	/**
 	 * Read an encoded BUFR message from a stream
@@ -282,38 +271,6 @@ struct CrexBulletin : public Bulletin
 	 */
 	static void write(const std::string& buf, FILE* out, const char* fname = 0);
 };
-
-#if 0
-/**
- * Get the ID of the table used by this bufrex_msg
- *
- * @retval id
- *   The table id, as a pointer to an internal string.  It must not be
- *   deallocated by the caller.  It is set to NULL when no table has been set.
- * @returns
- *   The error indicator for the function (See @ref error.h)
- */
-dba_err bufrex_msg_get_table_id(bufrex_msg msg, const char** id);
-#endif
-
-/**
- * Parse a string containing a bufr/crex template selector.
- *
- * The string can be 3 numbers separated by dots (type.subtype.localsubtype) or
- * an alias among those listed in template-aliases.txt
- *
- * @param str
- *   The string to parse
- * @retval cat
- *   The parsed message category
- * @retval subcat
- *   The parsed message subcategory
- * @retval localsubcat
- *   The parsed local category
- * @return
- *   The error indicator for the function.  See @ref error.h
- */
-void parse_template(const char* str, int* cat, int* subcat, int* localsubcat);
 
 }
 

@@ -123,6 +123,7 @@ Var& Var::operator=(const Var& var)
 
 	// Copy attributes
 	copy_attrs(var);
+	return *this;
 }
 
 
@@ -280,7 +281,7 @@ void Var::setc(const char* val)
 		throw error_alloc("allocating space for Var value");
 
 	/* Guard against overflows */
-	int len = strlen(val);
+	unsigned len = strlen(val);
 	/* Tweak the length to account for the extra leading '-' allowed for
 	 * negative numeric values */
 	if (!m_info->is_string() && val[0] == '-')

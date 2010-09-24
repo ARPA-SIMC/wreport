@@ -32,10 +32,16 @@ namespace wreport {
  */
 
 namespace dtable {
+/**
+ * D-table entry
+ */
 struct Entry
 {
+	/// Varcode to be expanded
 	Varcode code;
+	/// Position in the main table where the expansion begins
 	unsigned begin;
+	/// Position in the main table one past where the expansion ends
 	unsigned end;
 
 	Entry(Varcode code, unsigned begin, unsigned end)
@@ -43,21 +49,42 @@ struct Entry
 };
 }
 
+/**
+ * D-table with Dxxyyy aggregate code expansions
+ */
 struct DTable
 {
 protected:
+	/// Table ID
 	std::string m_id;
 
 public:
+	/**
+	 * One single table with the concatenation of all the expansion
+	 * varcodes
+	 */
 	std::vector<Varcode> varcodes;
+
+	/**
+	 * Expansion entries with pointers inside \a varcodes
+	 */
 	std::vector<dtable::Entry> entries;
 
 	DTable();
 	~DTable();
 
+	/// Table ID
 	const std::string& id() const throw () { return m_id; }
 
+	/// True if the table has been loaded
 	bool loaded() const throw () { return !m_id.empty(); }
+
+	/**
+	 * Load a table
+	 *
+	 * @param idfile
+	 *   pair of (table id, pathname of the table on disk)
+	 */
 	void load(const std::pair<std::string, std::string>& idfile);
 
 	/**
@@ -84,6 +111,13 @@ public:
 	 *   ID of the DTable data to access
 	 */
 	static const DTable* get(const char* id);
+
+	/**
+	 * Same as get(), but explicitly specifies the pathname.
+	 *
+	 * @param idfile
+	 *   pair of (table id, pathname of the table on disk)
+	 */
 	static const DTable* get(const std::pair<std::string, std::string>& idfile);
 };
 

@@ -44,18 +44,11 @@
  *
  * There are many B tables with slight differences used by different
  * meteorological centre or equipment.  This module allows to access 
- * different vartables using dba_vartable_create().
+ * different vartables using Vartable::get().
  *
- * DB-All.e provides a default B table called the "local B table" which is used
- * for the encoding-independent values.  The local B table has the desirable
- * property of having unambiguous entries for the various physical values:
- * normal B tables can have more than one, for example low accuracy and
- * high accuracy latitudes.  The local B table can be queried using
- * dba_varinfo_query_local().
- *
- * ::dba_vartable and ::dba_varinfo have special memory management: they are never
+ * Vartable and Varinfo have special memory management: they are never
  * deallocated.  This is a precise design choice to speed up passing and
- * copying ::dba_varinfo values, that are used very intensely as they accompany
+ * copying Varinfo values, that are used very intensely as they accompany
  * all the physical values processed by DB-All.e and its components.
  * This behaviour should not be a cause of memory leaks, since a software would
  * only need to access a limited amount of B tables during its lifetime.
@@ -72,9 +65,6 @@
  *
  * The normal text representation of a wreport::Varcode for a WMO B table uses the
  * format Bxxyyy.
- *
- * See @ref local_b_table for the contents of the local B table and their
- * relative wreport::Varcode values.
  */
 
 
@@ -94,6 +84,7 @@ namespace wreport {
 class Vartable : public std::vector<_Varinfo>
 {
 protected:
+	/// ID of the table
 	std::string m_id;
 
 public:
@@ -126,8 +117,8 @@ public:
 	 * @param change
 	 *   WMO C table entry specify a change on the variable characteristics
 	 * @return
-	 *   the ::dba_varinfo structure with the results of the query.  The returned
-	 *   dba_varinfo is stored inside the dba_vartable, can be freely copied around
+	 *   the wreport::Varinfo structure with the results of the query.  The returned
+	 *   Varinfo is stored inside the dba_vartable, can be freely copied around
 	 *   and does not need to be deallocated.
 	 */
 	Varinfo query_altered(Varcode var, Alteration change) const;
@@ -145,23 +136,14 @@ public:
 	 *   ID of the Vartable data to access
 	 */
 	static const Vartable* get(const char* id);
-	static const Vartable* get(const std::pair<std::string, std::string>& idfile);
 
-#if 0
 	/**
-	 * Query informations about the DBALLE variable definitions
-	 * 
-	 * @param code
-	 *   The wreport::Varcode of the variable to query
-	 * @retval info
-	 *   the wreport::Varinfo structure with the results of the query.  The returned
-	 *   Varinfo is stored inside the Vartable, can be freely copied around
-	 *   and does not need to be deallocated.
-	 * @return
-	 *   The error indicator for this function (See @ref error.h)
+	 * Return a Vartable by id and pathname
+	 *
+	 * @param idfile
+	 *   a pair (id, pathname) identifying the table to load
 	 */
-	static Varinfo query_local(Varcode code);
-#endif
+	static const Vartable* get(const std::pair<std::string, std::string>& idfile);
 
 	/**
 	 * Look for a table for one of the given table IDs.
@@ -173,74 +155,15 @@ public:
 	 *   A pair (the ID selected for the table, the pathname to the table)
 	 */
 	static std::pair<std::string, std::string> find_table(const std::vector<std::string>& ids);
+
+	/**
+	 * Look for the table file given a table ID
+	 *
+	 * @return
+	 *   A pair (id, pathname to the table)
+	 */
 	static std::pair<std::string, std::string> find_table(const std::string& id);
 };
-
-#if 0
-
-/**
- * Query informations about the DBALLE variable definitions
- * 
- * @param code
- *   The ::dba_varcode of the variable to query
- * @param change
- *   WMO C table entry specify a change on the variable characteristics
- * @retval info
- *   the ::dba_varinfo structure with the results of the query.  The returned
- *   dba_varinfo is stored inside the Vartable, can be freely copied around
- *   and does not need to be deallocated.
- * @return
- *   The error indicator for this function (See @ref error.h)
- */
-dba_err dba_varinfo_query_local_altered(dba_varcode code, dba_alteration change, const dba_varinfo* info);
-
-/**
- * Get a reference to the local B table
- *
- * @retval table
- *   The local B table.  Vartable structures are never deallocated: the
- *   pointer will be valid through the entire lifetime of the program, and can
- *   be freely copied.
- * @return
- *   The error indicator for this function (See @ref error.h)
- */
-dba_err dba_varinfo_get_local_table(Vartable* table);
-
-/**
- * Return the ID for the given table
- *
- * @param table
- *   The table to query
- * @return
- *   The table id.  It is a pointer to the internal value, and does not need to
- *   be deallocated.
- */
-const char* dba_vartable_id(dba_vartable table);
-
-/**
- * Type of callback called by dba_vartable_iterate() on every member of a dba_vartable
- *
- * @param info
- *   Element of the table that is currently visited.
- * @param data
- *   Arbitrary user-supplied data given as the data parameter in dba_vartable_iterate()
- */
-typedef void (*dba_vartable_iterator)(dba_varinfo info, void* data);
-
-/**
- * Iterate through all elements in a dba_vartable
- *
- * @param table
- *   Table to iterate.
- * @param func
- *   Callback to be called for every item of the table.
- * @param data
- *   Arbitrary value passed as-is to the callback.
- * @return
- *   The error status (See @ref error.h)
- */
-dba_err dba_vartable_iterate(dba_vartable table, dba_vartable_iterator func, void* data);
-#endif
 
 }
 

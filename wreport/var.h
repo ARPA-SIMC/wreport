@@ -24,7 +24,7 @@
 
 /** @file
  * @ingroup core
- * Implement ::dba_var, an encapsulation of a measured variable.
+ * Implement wreport::Var, an encapsulation of a measured variable.
  */
 
 
@@ -44,7 +44,7 @@ namespace wreport {
  * \li a wreport::Varcode identifying what is measured.  See @ref vartable.h
  * \li a measured value, that can be an integer, double or string depending on
  *     the wreport::Varcode
- * \li zero or more attributes, in turn represented by ::dba_var structures
+ * \li zero or more attributes, in turn represented by wreport::Var structures
  */
 class Var
 {
@@ -95,7 +95,7 @@ public:
 	 *
 	 * @param info
 	 *   The wreport::Varinfo describing the variable to create
-	 * @param orig
+	 * @param var
 	 *   The variable with the value to use
 	 */
 	Var(Varinfo info, const Var& var);
@@ -107,6 +107,8 @@ public:
 
 	/// Equality
 	bool operator==(const Var& var) const;
+
+	/// Equality
 	bool operator!=(const Var& var) const { return !operator==(var); }
 
 	/// Retrieve the Varcode for a variable
@@ -144,9 +146,10 @@ public:
 	void set(int val) { seti(val); }
 	void set(double val) { setd(val); }
 	void set(const char* val) { setc(val); }
+	void set(const Var& var) { copy_val(var); }
 	/// @}
 
-	/// Unset the value of a dba_var
+	/// Unset the value
 	void unset();
 
 	/// Remove all attributes

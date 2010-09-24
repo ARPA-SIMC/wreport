@@ -90,12 +90,18 @@ static inline void _ensure_var_undef(const wibble::tests::Location& loc, const V
 	inner_ensure_equals(var.value(), (const char*)0);
 }
 
-/* Test environment */
+/// RAII-style override of an environment variable
 class LocalEnv
 {
+	/// name of the environment variable that we override
 	std::string key;
+	/// stored original value of the variable
 	std::string oldVal;
 public:
+	/**
+	 * @param key the environment variable to override
+	 * @param val the new value to assign to \a key
+	 */
 	LocalEnv(const std::string& key, const std::string& val)
 		: key(key)
 	{

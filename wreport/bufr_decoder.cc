@@ -129,7 +129,7 @@ struct Decoder
 		vasprintf(&message, fmt, ap);
 		va_end(ap);
 
-		asprintf(&context, "%s:%d+%d: %s", fname, offset, pos - start, message);
+		asprintf(&context, "%s:%zd+%d: %s", fname, offset, (int)(pos - start), message);
 
 		string msg(context);
 		free(context);
@@ -318,7 +318,7 @@ struct opcode_interpreter
 	int c_width_change;
 
 	/* Bit decoding data */
-	int cursor;
+	size_t cursor;
 	unsigned char pbyte;
 	int pbyte_len;
 
@@ -351,7 +351,7 @@ struct opcode_interpreter
 		vasprintf(&message, fmt, ap);
 		va_end(ap);
 
-		asprintf(&context, "%s:%d+%d: %s", d.fname, d.offset, cursor, message);
+		asprintf(&context, "%s:%zd+%zd: %s", d.fname, d.offset, cursor, message);
 		free(message);
 
 		string msg(context);
@@ -397,7 +397,7 @@ struct opcode_interpreter
 	/* Dump 'count' bits of 'buf', starting at the 'ofs-th' bit */
 	void dump_next_bits(int count, FILE* out)
 	{
-		int cursor = this->cursor;
+		size_t cursor = this->cursor;
 		int pbyte = this->pbyte;
 		int pbyte_len = this->pbyte_len;
 		int i;
@@ -427,19 +427,20 @@ struct opcode_interpreter
 			parse_error("no subsets created yet, but already applying a data present bitmap");
 		++bitmap_use_index;
 		++bitmap_subset_index;
-		while (bitmap_use_index < bitmap->info()->len &&
-			(bitmap_use_index < 0 || bitmap->value()[bitmap_use_index] == '-'))
+		while (bitmap_use_index < 0 || (
+			(unsigned)bitmap_use_index < bitmap->info()->len &&
+			bitmap->value()[bitmap_use_index] == '-'))
 		{
 			TRACE("INCR\n");
 			++bitmap_use_index;
 			++bitmap_subset_index;
-			while (bitmap_subset_index < d.out.subsets[0].size() &&
+			while ((unsigned)bitmap_subset_index < d.out.subsets[0].size() &&
 				WR_VAR_F(d.out.subsets[0][bitmap_subset_index].code()) != 0)
 				++bitmap_subset_index;
 		}
-		if (bitmap_use_index > bitmap->info()->len)
+		if ((unsigned)bitmap_use_index > bitmap->info()->len)
 			parse_error("moved past end of data present bitmap");
-		if (bitmap_subset_index == d.out.subsets[0].size())
+		if ((unsigned)bitmap_subset_index == d.out.subsets[0].size())
 			parse_error("end of data reached when applying attributes");
 		TRACE("bitmap_next post %d %d\n", bitmap_use_index, bitmap_subset_index);
 	}
@@ -526,8 +527,6 @@ struct opcode_interpreter
 
 	void run()
 	{
-		int i;
-
 		if (d.out.compression)
 		{
 			/* Only needs to parse once */
@@ -535,7 +534,7 @@ struct opcode_interpreter
 			decode_data_section(Opcodes(d.out.datadesc));
 		} else {
 			/* Iterate on the number of subgroups */
-			for (i = 0; i < d.subsets_no; ++i)
+			for (size_t i = 0; i < d.subsets_no; ++i)
 			{
 				current_subset = &d.out.obtain_subset(i);
 				decode_data_section(Opcodes(d.out.datadesc));
@@ -567,8 +566,6 @@ struct opcode_interpreter_compressed : public opcode_interpreter
 
 void Decoder::decode_data()
 {
-	int i;
-
 	// Once we filled the Bulletin header info, load decoding tables
 	out.load_tables();
 
@@ -669,7 +666,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 	/* Read a string */
 	Var var(info);
 	int toread = info->bit_len;
-	int len = 0;
+	size_t len = 0;
 	int missing = 1;
 
 	char str[info->bit_len / 8 + 2];
@@ -715,7 +712,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 		if (diffbits != 0)
 		{
 			/* For compressed strings, the reference value must be all zeros */
-			for (int i = 0; i < len; ++i)
+			for (size_t i = 0; i < len; ++i)
 				if (str[i] != 0)
 					error_unimplemented::throwf("compressed strings with %d bit deltas have non-zero reference value", diffbits);
 
@@ -723,11 +720,11 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 			 * difference characters is the same length as
 			 * the reference string */
 			if (diffbits > len)
-				error_unimplemented::throwf("compressed strings with %d characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
+				error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
 
-			for (int i = 0; i < d.subsets_no; ++i)
+			for (unsigned i = 0; i < d.subsets_no; ++i)
 			{
-				int j, missing = 1;
+				unsigned j, missing = 1;
 
 				/* Access the subset we are working on */
 				Subset& subset = d.out.obtain_subset(i);
@@ -765,7 +762,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 			}
 		} else {
 			/* Add the string to all the subsets */
-			for (int i = 0; i < d.subsets_no; ++i)
+			for (unsigned i = 0; i < d.subsets_no; ++i)
 			{
 				Subset& subset = d.out.obtain_subset(i);
 
@@ -848,7 +845,7 @@ void opcode_interpreter_compressed::decode_b_num(Varinfo info)
 
 	TRACE("Compressed number, base value %d diff bits %d\n", val, diffbits);
 
-	for (int i = 0; i < d.subsets_no; ++i)
+	for (unsigned i = 0; i < d.subsets_no; ++i)
 	{
 		/* Access the subset we are working on */
 		Subset& subset = d.out.obtain_subset(i);
@@ -913,7 +910,7 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
 			TRACE("Compressed delayed repetition, base value %d diff bits %d\n", count, diffbits);
 
 			uint32_t repval = 0;
-			for (int i = 0; i < d.subsets_no; ++i)
+			for (unsigned i = 0; i < d.subsets_no; ++i)
 			{
 				/* Decode the difference value */
 				uint32_t diff = get_bits(diffbits);
@@ -1002,7 +999,7 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	// Add var to subset(s)
 	if (d.out.compression)
 	{
-		for (int i = 0; i < d.subsets_no; ++i)
+		for (unsigned i = 0; i < d.subsets_no; ++i)
 		{
 			Subset& subset = d.out.obtain_subset(i);
 			add_var(subset, bmp);
@@ -1018,7 +1015,7 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 
 	IFTRACE {
 		TRACE("Decoded bitmap count %d: ", bitmap_count);
-		for (size_t i = 0; i < bitmap->info()->len; ++i)
+		for (unsigned i = 0; i < bitmap->info()->len; ++i)
 			TRACE("%c", bitmap->value()[i]);
 		TRACE("\n");
 	}

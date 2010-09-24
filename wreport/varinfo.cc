@@ -27,7 +27,6 @@
 #include <limits.h>		/* INT_MIN, INT_MAX */
 
 #include "varinfo.h"
-#include "aliases.h"
 
 namespace wreport {
 
@@ -48,8 +47,6 @@ Varcode descriptor_code(const char* entry)
 		case 'D':
 		case '3':
 			res = 3 << 14; break;
-		default:
-			return varcode_alias_resolve(entry);
 	}
 	return res | WR_STRING_TO_VAR(entry+1);
 }

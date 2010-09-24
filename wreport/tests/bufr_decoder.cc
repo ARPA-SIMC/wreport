@@ -549,7 +549,7 @@ void to::test<18>()
 			ensure_equals(msg.subset(2).size(), 225u);
 			ensure_equals(msg.subset(34).size(), 225u);
 
-			const Subset& s = msg.subset(0);
+			// const Subset& s = msg.subset(0);
 		}
 	} test;
 
@@ -865,7 +865,7 @@ void to::test<25>()
 			ensure_equals(msg.subset(3).size(), 115u);
 			ensure_equals(msg.subset(4).size(), 115u);
 
-			const Subset& s = msg.subset(0);
+			// const Subset& s = msg.subset(0);
 
 			/*
 			// FIXME Does it have this?
@@ -909,7 +909,7 @@ void to::test<26>()
 			ensure_equals(msg.subset(3).size(), 107u);
 			ensure_equals(msg.subset(4).size(), 107u);
 
-			const Subset& s = msg.subset(0);
+			// const Subset& s = msg.subset(0);
 
 			/*
 			// FIXME Does it have this?
@@ -954,7 +954,7 @@ void to::test<27>()
 			ensure_equals(msg.subset(5).size(), 120u);
 			ensure_equals(msg.subset(6).size(), 120u);
 
-			const Subset& s = msg.subset(0);
+			// const Subset& s = msg.subset(0);
 
 			/*
 			// FIXME Does it have this?

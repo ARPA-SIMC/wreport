@@ -38,11 +38,11 @@ namespace wreport {
  *
  * \li \b wreport::Varcode represents what is the quantity measured, and takes
  *    values from the WMO B tables used for BUFR and CREX encodings.
- *    The ::WR_VAR macro can be used to construct ::dba_varcode values, and the
+ *    The ::WR_VAR macro can be used to construct wreport::Varcode values, and the
  *    ::WR_VAR_F, ::WR_VAR_X and ::WR_VAR_Y macros can be used to access the
  *    various parts of the dba_varcode.
- * \li \b wreport::::Varinfo contains all the expanded information about a variable:
- *    its wreport::::Varcode, description, measurement units, significant digits,
+ * \li \b wreport::Varinfo contains all the expanded information about a variable:
+ *    its wreport::Varcode, description, measurement units, significant digits,
  *    minimum and maximum values it can have and other information useful for
  *    serialisation and deserialisation of values.
  *
@@ -50,21 +50,14 @@ namespace wreport {
  * meteorological centre or equipment.  This module allows to access 
  * different vartables using dba_vartable_create().
  *
- * DB-All.e provides a default B table called the "local B table" which is used
- * for the encoding-independent values.  The local B table has the desirable
- * property of having unambiguous entries for the various physical values:
- * normal B tables can have more than one, for example low accuracy and
- * high accuracy latitudes.  The local B table can be queried using
- * dba_varinfo_query_local().
- *
- * ::dba_vartable and ::dba_varinfo have special memory management: they are never
+ * wreport::Vartable and wreport::Varinfo have special memory management: they are never
  * deallocated.  This is a precise design choice to speed up passing and
- * copying ::dba_varinfo values, that are used very intensely as they accompany
+ * copying wreport::Varinfo values, that are used very intensely as they accompany
  * all the physical values processed by DB-All.e and its components.
  * This behaviour should not be a cause of memory leaks, since a software would
  * only need to access a limited amount of B tables during its lifetime.
  *
- * To construct a ::dba_varcode value one needs to provide three numbers: F, X
+ * To construct a wreport::Varcode value one needs to provide three numbers: F, X
  * and Y.
  *
  * \li \b F (2 bits) identifies the type of table entry represented by the
@@ -74,11 +67,8 @@ namespace wreport {
  * \li \b X (6 bits) identifies a section of the table.
  * \li \b Y (8 bits) identifies the value within the section.  
  *
- * The normal text representation of a ::dba_varcode for a WMO B table uses the
+ * The normal text representation of a wreport::Varcode for a WMO B table uses the
  * format Bxxyyy.
- *
- * See @ref local_b_table for the contents of the local B table and their
- * relative ::dba_varcode values.
  */
 
 /**
@@ -179,15 +169,15 @@ struct _Varinfo
 	int ref;
 	/** The length in digits of the integer representation of this variable
 	 * (after scaling and changing reference value) */
-	int len;
+	unsigned len;
 	/** The reference value for bit-encoding.  When the variable is encoded in
 	 * a bit string, it is added this value */
 	int bit_ref;
 	/** The length in bits of the variable when encoded in a bit string (after
 	 * scaling and changing reference value) */
-	int bit_len;
+	unsigned bit_len;
 	/** True if the variable is a string; false if it is a numeric value */
-	int flags;
+	unsigned flags;
 	/** Minimum unscaled value the field can have */
 	int imin;
 	/** Maximum unscaled value the field can have */
@@ -269,6 +259,14 @@ struct _Varinfo
 	 * It also calls compute_range
 	 */
 	void set(Varcode var, const char* desc, const char* unit, int scale = 0, int ref = 0, int len = 0, int bit_ref = 0, int bit_len = 0, int flags = 0, const char* bufr_unit = 0, int bufr_scale = 0);
+
+	/**
+	 * Initialise the varinfo to represent a string variable
+	 *
+	 * @param var the variable code
+	 * @param desc the variable description
+	 * @param len the maximum string length
+	 */
 	void set_string(Varcode var, const char* desc, int len);
 
 	/**
@@ -310,9 +308,6 @@ public:
 	 * anymore.
 	 *
 	 * The various fields of the resulting varinfo will be zeroed.
-	 * 
-	 * @param code
-	 *   The wreport::Varcode of the variable to query
 	 */
 	static MutableVarinfo create_singleuse();
 

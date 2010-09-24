@@ -198,8 +198,7 @@ struct Encoder
 			encode_data_section(Opcodes(in.datadesc), varqueue);
 
 			if (!varqueue.empty())
-				error_consistency::throwf("subset %d, %d variables left after processing all descriptors",
-						varqueue.size());
+				error_consistency::throwf("subset %d, %u variables left after processing all descriptors", i, varqueue.size());
 
 			/* Encode the subsection terminator */
 			if (i < in.subsets.size() - 1)

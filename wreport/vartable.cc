@@ -52,11 +52,6 @@ namespace wreport {
 
 static std::map<string, Vartable> tables;
 
-#if 0
-/* Table to use to resolve DB-All.e WMO parameter names */
-static const Vartable* local_vars = NULL;
-#endif
-
 Vartable::Vartable() {}
 Vartable::~Vartable() {}
 
@@ -280,7 +275,7 @@ void Vartable::load(const std::pair<std::string, std::string>& idfile)
 
 			if (entry->is_string() != crex_is_string)
 				error_parse::throwf(file.c_str(), line_no,
-						"CREX is_string (%d) is different than BUFR is_string (%s)",
+						"CREX is_string (%d) is different than BUFR is_string (%d)",
 						(int)crex_is_string, (int)entry->is_string());
 		}
 
@@ -299,91 +294,6 @@ void Vartable::load(const std::pair<std::string, std::string>& idfile)
 
 	m_id = id;
 }
-
-#if 0
-
-/**
- * Insert a new vartable index in 'tables', keeping it sorted
- *
- * @returns The position at which the new table index can now be found
- */
-static dba_err vartable_insert(dba_vartable v, int* index)
-{
-	int pos;
-
-	if (tables == NULL)
-	{
-		/* First initialization special case */
-		if ((tables = (dba_vartable*)malloc(sizeof(dba_vartable) * 10)) == NULL)
-			return dba_error_alloc("allocating space for a new vartable index");
-		tables_alloc_size = 10;
-		pos = 0;
-	} else {
-		/* Look for insertion point */
-		for (pos = 0; pos < tables_size && strcmp(v->id, tables[pos]->id) > 0; pos++)
-			;
-
-		/* Avoid double inserts */
-		if (pos < tables_size && strcmp(v->id, tables[pos]->id) == 0)
-			return dba_error_consistency("table %s already present", v->id);
-
-		/* Enlarge the buffer if needed */
-		if (tables_size + 1 > tables_alloc_size)
-		{
-			dba_vartable* old_tables = tables;
-
-			if ((tables = (dba_vartable*)realloc(tables, sizeof(dba_vartable) * (tables_alloc_size + 10))) == NULL)
-			{
-				tables = old_tables;
-				return dba_error_alloc("allocating space for 10 more vartable indexes");
-			}
-			tables_alloc_size += 10;
-		}
-
-		/* Shift the next items forward */
-		memmove(tables + pos + 1, tables + pos, (tables_size - pos) * sizeof(dba_vartable));
-	}
-
-	tables[pos] = v;
-	++tables_size;
-	*index = pos;
-
-	return dba_error_ok();
-}
-
-
-dba_err dba_varinfo_query_local_altered(dba_varcode code, dba_alteration change, const dba_varinfo* info)
-{
-	/* Load dballe WMO parameter resolution table */
-	if (local_vars == NULL)
-		DBA_RUN_OR_RETURN(dba_vartable_create("dballe", &local_vars));
-	return dba_vartable_query_altered(local_vars, code, change, info);
-}
-
-dba_err dba_varinfo_get_local_table(dba_vartable* table)
-{
-	/* Load dballe WMO parameter resolution table */
-	if (local_vars == NULL)
-		DBA_RUN_OR_RETURN(dba_vartable_create("dballe", &local_vars));
-	*table = local_vars;
-	return dba_error_ok();
-}
-
-const char* dba_vartable_id(dba_vartable table)
-{
-	return table->id;
-}
-
-dba_err dba_vartable_iterate(dba_vartable table, dba_vartable_iterator func, void* data)
-{
-	int i;
-	for (i = 0; i < table->size; i++)
-		func(table->items + i, data);
-	return dba_error_ok();
-}
-
-
-#endif
 
 std::pair<std::string, std::string> Vartable::find_table(const std::string& id)
 {

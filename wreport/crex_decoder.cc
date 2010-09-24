@@ -96,7 +96,7 @@ struct Decoder
 		vasprintf(&message, fmt, ap);
 		va_end(ap);
 
-		asprintf(&context, "%s:%d+%d: %s", fname, offset, cur - start, message);
+		asprintf(&context, "%s:%zd+%d: %s", fname, offset, (int)(cur - start), message);
 
 		string msg(context);
 		free(context);
@@ -193,7 +193,7 @@ struct Decoder
 					TRACE(" -> category %d, subcategory %d\n", val / 1000, val % 1000);
 					break;
 				default:
-					error_consistency::throwf("Cannot parse an A table indicator %d digits long", strlen(atable));
+					error_consistency::throwf("Cannot parse an A table indicator %zd digits long", strlen(atable));
 			}
 		}
 		skip_spaces();
@@ -300,7 +300,7 @@ void Decoder::parse_value(int len, int is_signed, const char** d_start, const ch
 			parse_error("check digit mismatch: expected %d, found %d, rest of message: %.*s",
 					expected_check_digit,
 					(*cur - '0'),
-					(start + in.size()) - cur,
+					(int)((start + in.size()) - cur),
 					cur);
 
 		expected_check_digit = (expected_check_digit + 1) % 10;

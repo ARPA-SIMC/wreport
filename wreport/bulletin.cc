@@ -196,7 +196,7 @@ void CrexBulletin::encode(std::string& buf) const
 
 void Bulletin::print(FILE* out) const
 {
-	fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %d subsets\n",
+	fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
 		encoding_name(), edition,
 		type, subtype, localsubtype,
 		rep_year, rep_month, rep_day, rep_hour, rep_minute, rep_second,
@@ -453,7 +453,7 @@ unsigned CrexBulletin::diff_details(const Bulletin& msg, FILE* out) const
 
 static bool seek_past_signature(FILE* fd, const char* sig, unsigned sig_len, const char* fname)
 {
-	int got = 0;
+	unsigned got = 0;
 	int c;
 
 	errno = 0;
@@ -467,10 +467,12 @@ static bool seek_past_signature(FILE* fd, const char* sig, unsigned sig_len, con
 	}
 
 	if (errno != 0)
+	{
 		if (fname)
 			error_system::throwf("looking for start of %.4s data in %s:", sig, fname);
 		else
 			error_system::throwf("looking for start of %.4s data", sig);
+	}
 	
 	if (got != sig_len)
 	{
