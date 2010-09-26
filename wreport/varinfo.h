@@ -322,6 +322,7 @@ protected:
 
 public:
 	Varinfo(const _Varinfo* impl) : m_impl(impl) { m_impl->do_ref(); }
+	Varinfo(const _Varinfo& impl) : m_impl(&impl) { m_impl->do_ref(); }
 	Varinfo(const Varinfo& vi) : m_impl(vi.m_impl) { m_impl->do_ref(); }
 	Varinfo(const MutableVarinfo& vi) : m_impl(vi.impl) { m_impl->do_ref(); }
 	~Varinfo() { if (m_impl->do_unref()) delete m_impl; }
