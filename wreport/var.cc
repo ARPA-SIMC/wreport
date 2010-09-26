@@ -1,7 +1,7 @@
 /*
  * wreport/var - Store a value and its informations
  *
- * Copyright (C) 2005,2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -173,6 +173,11 @@ Varinfo Var::info() const throw ()
 const char* Var::value() const throw ()
 {
 	return m_value;
+}
+
+bool Var::isset() const throw ()
+{
+	return m_value != NULL;
 }
 
 void Var::clear_attrs()
@@ -389,6 +394,22 @@ void Var::copy_attrs(const Var& src)
 	if (src.m_attrs)
 		m_attrs = new Var(*src.m_attrs);
 }
+
+std::string Var::format(const char* ifundef) const
+{
+	if (m_value == NULL)
+		return ifundef;
+	else if (info()->is_string())
+		return m_value;
+	else
+	{
+		Varinfo i = info();
+		char buf[30];
+		snprintf(buf, 20, "%.*f", i->scale > 0 ? i->scale : 0, enqd());
+		return buf;
+	}
+}
+
 
 void Var::print(FILE* out) const
 {

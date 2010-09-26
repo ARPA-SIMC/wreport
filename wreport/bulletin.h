@@ -42,9 +42,6 @@ struct DTable;
  */
 struct Bulletin
 {
-	/// Reference count
-	int _ref;
-
 	/** Message category */
 	int type;
 	/** International message subcategory */

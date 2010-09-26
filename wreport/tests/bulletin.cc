@@ -25,21 +25,29 @@ using namespace std;
 
 namespace tut {
 
-struct bufrex_msg_shar
+struct bulletin_shar
 {
-	bufrex_msg_shar()
+	bulletin_shar()
 	{
 	}
 
-	~bufrex_msg_shar()
+	~bulletin_shar()
 	{
 	}
 };
-TESTGRP(bufrex_msg);
+TESTGRP(bulletin);
 
 template<> template<>
 void to::test<1>()
 {
+	BufrBulletin b;
+	try {
+		b.obtain_subset(0);
+		ensure(false);
+	} catch (error_consistency& e) {
+		ensure_contains(e.what(), "B tables not loaded");
+	}
+	// b.subsets[0].store_variable_undef(WR_VAR(0, 1, 1));
 #if 0
 	// No more template parsing
 

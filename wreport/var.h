@@ -120,6 +120,9 @@ public:
 	/// Retrieve the internal string representation of the value for a variable.
 	const char* value() const throw ();
 
+	/// @returns true if the variable is defined, else false
+	bool isset() const throw ();
+
 	/// Get the value as an integer
 	int enqi() const;
 
@@ -215,6 +218,13 @@ public:
 	 */
 	void copy_attrs(const Var& src);
 
+	/**
+	 * Create a formatted string representation of the variable value
+	 *
+	 * @param ifundef
+	 *   String to use if the variable is undefiend
+	 */
+	std::string format(const char* ifundef = "(undef)") const;
 
 	/**
 	 * Print the variable to an output stream

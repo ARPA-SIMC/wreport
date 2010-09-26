@@ -31,7 +31,10 @@ using namespace std;
 
 namespace wreport {
 
-Subset::Subset(const Vartable* btable) : btable(btable) {}
+Subset::Subset(const Vartable* btable) : btable(btable)
+{
+	if (!btable) throw error_consistency("B tables not loaded");
+}
 Subset::~Subset() {}
 
 void Subset::store_variable(const Var& var)

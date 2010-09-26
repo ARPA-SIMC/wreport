@@ -35,7 +35,7 @@ using namespace std;
 
 namespace wreport {
 
-Bulletin::Bulletin() {}
+Bulletin::Bulletin() : btable(0), dtable(0) {}
 Bulletin::~Bulletin() {}
 
 void Bulletin::clear()

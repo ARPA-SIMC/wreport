@@ -1,8 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
 cdoxdeps = libwreport.dox \
-	  ../wreport/libwreport.la \
-	  ../wreport/aliases.dox
+	  ../wreport/libwreport.la
 
 doc_DATA =
 noinst_DATA =
