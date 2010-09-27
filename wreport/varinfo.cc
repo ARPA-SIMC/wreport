@@ -93,6 +93,8 @@ void _Varinfo::set(Varcode var, const char* desc, const char* unit, int scale, i
 	this->bit_ref = bit_ref;
 	this->bit_len = bit_len;
 	this->flags = flags;
+	if (strcmp(unit, "CCITTIA5") == 0)
+		this->flags |= VARINFO_FLAG_STRING;
 	this->alteration = 0;
 	this->alterations = 0;
 	strncpy(this->bufr_unit, bufr_unit ? bufr_unit : unit, 24);

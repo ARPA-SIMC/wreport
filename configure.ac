@@ -111,10 +111,10 @@ fi
 
 LIBS="$LIBS -lm"
 
-confdir='$(sysconfdir)'"/$PACKAGE"
+confdir='${sysconfdir}'"/$PACKAGE"
 AC_SUBST(confdir)
 
-tabledir='$(pkgdatadir)'
+tabledir='${datadir}'"/$PACKAGE"
 AC_SUBST(tabledir)
 dnl def_tabledir=`echo "${sharedstatedir}/lib/$PACKAGE/tables"`
 dnl AC_DEFINE_UNQUOTED(TABLE_DIR, "$def_tabledir", "Default location for table files")
