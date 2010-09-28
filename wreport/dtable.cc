@@ -64,7 +64,7 @@ void DTable::load(const std::pair<std::string, std::string>& idfile)
 	fd_closer closer(in); // Close `in' on exit
 
 	unsigned begin = 0; // Begin of the last code block
-	Varcode dcode;
+	Varcode dcode = 0;
 	while (fgets(line, 200, in) != NULL)
 	{
 		line_no++;
