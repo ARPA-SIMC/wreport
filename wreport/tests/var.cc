@@ -119,6 +119,8 @@ void to::test<3>()
 
 	Var var1 = var;
 	ensure_var_equals(var1, 234);
+	var.print(stderr);
+	var1.print(stderr);
 	ensure(var == var1);
 	ensure(var1 == var);
 
@@ -192,6 +194,21 @@ void to::test<6>()
 
 	// Query it back: it should be NULL
 	ensure(var.enqa(WR_VAR(0, 33, 7)) == NULL);
+}
+
+// Test that copying variables does not duplicate the attribute lists
+template<> template<>
+void to::test<7>()
+{
+	const Vartable* table = Vartable::get("B0000000000000014000");
+	Var var(table->query(WR_VAR(0, 1, 1)));
+	var.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 42)));
+	var.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33, 15)), 45)));
+	Var var1 = var;
+	size_t count = 0;
+	for (const Var* attr = var.next_attr(); attr; attr = attr->next_attr())
+		++count;
+	ensure_equals(count, 1u);
 }
 
 }
