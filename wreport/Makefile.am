@@ -49,7 +49,7 @@ uniconv.cc: uniconv.gperf
 	if ! gperf < $< > $@; then rm $@; /bin/false; fi
 
 BUILT_SOURCES = uniconv.cc
-EXTRA_DIST = uniconv.gperf
+EXTRA_DIST = uniconv.gperf main.dox
 
 #
 # Unit testing
