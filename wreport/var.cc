@@ -150,8 +150,17 @@ bool Var::operator==(const Var& var) const
 	}
 	else
 	{
-		if (enqd() != var.enqd())
+		// In FC12 [g++ (GCC) 4.4.4 20100630 (Red Hat 4.4.4-10)], for obscure
+		// reasons we cannot compare the two enqd()s directly: the test fails
+		// even if they have the same values.  Assigning them to doubles first
+		// works. WTH?
+		double a = enqd();
+		double b = var.enqd();
+		if (a != b)
+		//if (enqd() != var.enqd())
+		{
 			return false;
+		}
 	}
 
 	// Compare attrs
