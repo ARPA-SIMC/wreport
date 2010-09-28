@@ -11,4 +11,4 @@ SUBDIRS += .
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA=libwreport.pc
 
-EXTRA_DIST = libwreport.pc.in run-local
+EXTRA_DIST = libwreport.pc.in run-local runtest
