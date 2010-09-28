@@ -411,7 +411,7 @@ std::string Var::format(const char* ifundef) const
 }
 
 
-void Var::print(FILE* out) const
+void Var::print_without_attrs(FILE* out) const
 {
 	// Print info
 	fprintf(out, "%d%02d%03d %-.64s(%s): ",
@@ -425,12 +425,17 @@ void Var::print(FILE* out) const
 		fprintf(out, "%s\n", m_value);
 	else
 		fprintf(out, "%.*f\n", m_info->scale > 0 ? m_info->scale : 0, enqd());
+}
+
+void Var::print(FILE* out) const
+{
+	print_without_attrs(out);
 
 	// Print attrs
 	for (const Var* a = next_attr(); a; a = a->next_attr())
 	{
 		fputs("           ", out);
-		a->print(out);
+		a->print_without_attrs(out);
 	}
 }
 

@@ -235,6 +235,14 @@ public:
 	void print(FILE* out) const;
 
 	/**
+	 * Print the variable to an output stream, without its attributes
+	 *
+	 * @param out
+	 *   The output stream to use for printing
+	 */
+	void print_without_attrs(FILE* out) const;
+
+	/**
 	 * Print the difference between two variables to an output stream.
 	 * If there is no difference, it does not print anything.
 	 *
