@@ -91,9 +91,6 @@ int convert_BUFR20003_to_WMO4677(int from);
 int convert_BUFR20004_to_WMO4561(int from);
 /* @} */
 
-}
-
-#if 0
 /**
  * Get the multiplier used in the given conversion
  *
@@ -101,12 +98,10 @@ int convert_BUFR20004_to_WMO4561(int from);
  *   Unit of the value to convert (see ::dba_varinfo)
  * @param to
  *   Unit to convert to (see ::dba_varinfo)
- * @retval mul
- *   Multiplier factor used in the conversion
  * @returns
- *   The error indicator for the function (See @ref ::dba_err)
+ *   Multiplier factor used in the conversion
  */
-dba_err dba_convert_units_get_mul(const char* from, const char* to, double* mul);
+double convert_units_get_mul(const char* from, const char* to);
 
 /**
  * Check if conversion is possible among the given units
@@ -118,13 +113,8 @@ dba_err dba_convert_units_get_mul(const char* from, const char* to, double* mul)
  * @returns
  *   True if conversion is supported, else false.
  */
-int dba_convert_units_allowed(const char* from, const char* to);
-
-
-#ifdef  __cplusplus
+bool convert_units_allowed(const char* from, const char* to);
 }
-#endif
-#endif
 
 /* vim:set ts=4 sw=4: */
 #endif

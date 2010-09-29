@@ -41,6 +41,9 @@ template<> template<>
 void to::test<1>()
 {
 	ensure_similar(convert_units("C", "K", 0.7), 273.85, 0.0001);
+	ensure(convert_units_allowed("C", "K"));
+	ensure(not convert_units_allowed("C", "M"));
+	ensure_equals(convert_units_get_mul("C", "K"), 1.0);
 }
 	
 }

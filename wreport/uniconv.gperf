@@ -128,8 +128,7 @@ struct uniconv { const char* tag; double mul; double add; };
 "cal/h/cm**2->W/M**2",		11.63,		0
 %%
 
-#if 0
-int convert_units_allowed(const char* from, const char* to)
+bool convert_units_allowed(const char* from, const char* to)
 {
 	if (strcmp(from, to) == 0
 	    || strncmp(from, "CODE TABLE", 10) == 0
@@ -137,7 +136,7 @@ int convert_units_allowed(const char* from, const char* to)
 	    || strncmp(from, "FLAG TABLE", 10) == 0
 		|| strncmp(to, "FLAG TABLE", 10) == 0)
 	{
-		return 1;
+		return true;
 	} else {
 		char query[50];
 		int len = snprintf(query, 48, "%s->%s", from, to);
@@ -145,7 +144,6 @@ int convert_units_allowed(const char* from, const char* to)
 		return info != NULL;
 	}
 }
-#endif
 
 double convert_units(const char* from, const char* to, double val)
 {
@@ -165,8 +163,7 @@ double convert_units(const char* from, const char* to, double val)
 		return val * info->mul + info->add;
 }
 
-#if 0
-dba_err dba_convert_units_get_mul(const char* from, const char* to, double* mul)
+double convert_units_get_mul(const char* from, const char* to)
 {
 	if (strcmp(from, to) == 0
 	    || strncmp(from, "CODE TABLE", 10) == 0
@@ -174,22 +171,17 @@ dba_err dba_convert_units_get_mul(const char* from, const char* to, double* mul)
 	    || strncmp(from, "FLAG TABLE", 10) == 0
 		|| strncmp(to, "FLAG TABLE", 10) == 0)
 	{
-		*mul = 1;
-		return dba_error_ok();
+		return 1;
 	} else {
 		char query[50];
 		int len = snprintf(query, 48, "%s->%s", from, to);
 		struct uniconv* info = Uniconv::find(query, len);
 		if (info == NULL)
-			return dba_error_notfound("looking for conversion from \"%s\" to \"%s\"", from, to);
+			error_notfound::throwf("looking for conversion from \"%s\" to \"%s\"", from, to);
 		else
-		{
-			*mul = info->mul;
-			return dba_error_ok();
-		}
+			return info->mul;
 	}
 }
-#endif
 
 }
 /* vim:set ts=4 sw=4: */
