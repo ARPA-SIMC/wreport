@@ -1,5 +1,5 @@
 /*
- * dballe/rawmsg - annotated raw buffer
+ * wreport/rawmsg - annotated raw buffer
  *
  * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
@@ -19,12 +19,12 @@
  * Author: Enrico Zini <enrico@enricozini.com>
  */
 
-#ifndef DBALLE_RAWMSG_H
-#define DBALLE_RAWMSG_H
+#ifndef WREPORT_RAWMSG_H
+#define WREPORT_RAWMSG_H
 
 #include <string>
 
-namespace dballe {
+namespace wreport {
 
 /** @file
  * @ingroup io
@@ -32,54 +32,31 @@ namespace dballe {
  */
 
 /**
- * Supported encodings
- */
-typedef enum {
-	BUFR = 0,
-	CREX = 1,
-	AOF = 2,
-} Encoding;
-
-/**
- * Return a string with the name of the given encoding
- *
- * @param enc
- *   The encoding to name.
- * @return
- *   A short name for the encoding, such as "BUFR", "CREX", "AOF" or
- *   "(unknown)".  
- */
-const char* encoding_name(Encoding enc);
-
-struct File;
-
-/**
- * Dynamic storage for encoded messages.
+ * Annotated string buffer for encoded messages.
  */
 struct Rawmsg : public std::string
 {
 	/**
-	 * File where the dba_rawmsg has been read.  It can be NULL when not
-	 * applicable, such as when the message is created from scratch and not yet
-	 * written
+	 * Pathname of the file from where the Rawmsg has been read.  It can be
+	 * empty when not applicable, such as when the message is created from
+	 * scratch and not yet written
 	 */
-	const File* file;
+	std::string file;
 	/** Start offset of this message inside the file where it is found */
 	int offset;
 	/** Index of the message within the source */
 	int index;
 
-	/** Encoding of the raw data */
-	Encoding encoding;
-
-	Rawmsg();
-	~Rawmsg();
-
-	// Return the file name from which this message was read
-	std::string filename() const throw ();
+	Rawmsg() : offset(0), index(0) {}
 
 	// Clear all the contents of this dballe::Rawmsg
-	void clear() throw ();
+	void clear() throw ()
+	{
+		std::string::clear();
+		file.clear();
+		offset = 0;
+		index = 0;
+	}
 };
 
 }
