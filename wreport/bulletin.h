@@ -201,10 +201,12 @@ struct BufrBulletin : public Bulletin
 	 *   The buffer where the data will be written
 	 * @param fname
 	 *   File name to use in error messages
+	 * @retval offset
+	 *   The offset in the file of the beginning of the BUFR data
 	 * @returns
 	 *   true if a message was found, false on EOF
 	 */
-	static bool read(FILE* in, std::string& buf, const char* fname = 0);
+	static bool read(FILE* in, std::string& buf, const char* fname = 0, long* offset = 0);
 
 	/**
 	 * Write an encoded BUFR message to a stream
@@ -251,10 +253,12 @@ struct CrexBulletin : public Bulletin
 	 *   The buffer where the data will be written
 	 * @param fname
 	 *   File name to use in error messages
+	 * @retval offset
+	 *   The offset in the file of the beginning of the BUFR data
 	 * @returns
 	 *   true if a message was found, false on EOF
 	 */
-	static bool read(FILE* in, std::string& buf, const char* fname = 0);
+	static bool read(FILE* in, std::string& buf, const char* fname = 0, long* offset = 0);
 
 	/**
 	 * Write an encoded BUFR message to a stream

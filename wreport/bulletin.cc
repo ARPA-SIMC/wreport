@@ -482,7 +482,7 @@ static bool seek_past_signature(FILE* fd, const char* sig, unsigned sig_len, con
 	return true;
 }
 
-bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname)
+bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname, long* offset)
 {
 	/* A BUFR message is easy to just read: it starts with "BUFR", then the
 	 * message length encoded in 3 bytes */
@@ -494,6 +494,7 @@ bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname)
 	if (!seek_past_signature(fd, "BUFR", 4, fname))
 		return false;
 	buf += "BUFR";
+	if (offset) *offset = ftell(fd) - 4;
 
 	// Read the remaining 4 bytes of section 0
 	buf.resize(8);
@@ -541,7 +542,7 @@ void BufrBulletin::write(const std::string& buf, FILE* out, const char* fname)
 	}
 }
 
-bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname)
+bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname, long* offset)
 {
 /*
  * The CREX message starts with "CREX" and ends with "++\r\r\n7777".  Ideally
@@ -554,6 +555,7 @@ bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname)
 	if (!seek_past_signature(fd, "CREX++", 6, fname))
 		return false;
 	buf += "CREX++";
+	if (offset) *offset = ftell(fd) - 4;
 
 	/* Read until "\+\+(\r|\n)+7777" */
 	{
