@@ -67,6 +67,12 @@ void to::test<1>()
 	ensure_equals(descriptor_code("100345"), WR_VAR(1, 0, 345));
 	ensure_equals(descriptor_code("200000"), WR_VAR(2, 0, 0));
 	ensure_equals(descriptor_code("363255"), WR_VAR(3, 63, 255));
+
+	ensure_equals(varcode_format(WR_VAR(0, 1, 2)), "B01002");
+	ensure_equals(varcode_format(WR_VAR(1, 1, 2)), "R01002");
+	ensure_equals(varcode_format(WR_VAR(2, 1, 2)), "C01002");
+	ensure_equals(varcode_format(WR_VAR(3, 1, 2)), "D01002");
+	ensure_equals(varcode_format(WR_VAR(4000, 1, 2)), "B01002");
 }
 
 /* Test varcode alteration functions */

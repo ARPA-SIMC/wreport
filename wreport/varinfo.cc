@@ -25,6 +25,8 @@
 #include <cstring>		/* strcmp */
 #include <math.h>		/* rint */
 #include <limits.h>		/* INT_MIN, INT_MAX */
+#include <iostream>
+#include <cstdio>
 
 #include "varinfo.h"
 
@@ -49,6 +51,14 @@ Varcode descriptor_code(const char* entry)
 			res = 3 << 14; break;
 	}
 	return res | WR_STRING_TO_VAR(entry+1);
+}
+
+std::string varcode_format(Varcode code)
+{
+	static const char* fcodes = "BRCD";
+	char buf[8];
+	snprintf(buf, 8, "%c%02d%03d", fcodes[WR_VAR_F(code)], WR_VAR_X(code), WR_VAR_Y(code));
+	return buf;
 }
 
 _Varinfo::_Varinfo()

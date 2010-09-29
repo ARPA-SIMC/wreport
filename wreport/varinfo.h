@@ -23,6 +23,7 @@
 #define WREPORT_VARINFO_H
 
 #include <stdint.h>
+#include <string>
 
 namespace wreport {
 
@@ -75,6 +76,8 @@ namespace wreport {
  * Holds the WMO variable code of a variable
  */
 typedef short unsigned int Varcode;
+
+std::string varcode_format(Varcode code);
 
 /**
  * Create a WMO variable code from its F, X and Y components.
