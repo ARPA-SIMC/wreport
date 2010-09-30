@@ -13,6 +13,9 @@ noinst_DATA += apidocs/index.html
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/apidocs
 	find apidocs -type f -exec $(INSTALL_DATA) '{}' $(DESTDIR)$(docdir)/apidocs/ \; ;
+	$(mkinstalldirs) $(DESTDIR)$(docdir)/examples
+	find examplse -type f -exec $(INSTALL_DATA) '{}' $(DESTDIR)$(docdir)/examples/ \; ;
+
 
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)/apidocs
@@ -25,7 +28,7 @@ libwreport.doxytags apidocs/index.html: $(cdoxdeps) $(mainpages)
 	doxygen $<
 endif
 
-EXTRA_DIST = libwreport.dox
+EXTRA_DIST = libwreport.dox examples
 
 CLEANFILES = libwreport.doxytags
 
