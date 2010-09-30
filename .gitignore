@@ -31,3 +31,12 @@ Makefile
 /wreport/btable.dox
 /wreport/uniconv.cc
 /wreport/tut_test
+/debian/files
+/debian/*.debhelper.log
+/debian/*.substvars
+/debian/*.debhelper
+/debian/libwreport-dev/
+/debian/libwreport-doc/
+/debian/libwreport1/
+/debian/tmp/
+/debian/wreport-common/
