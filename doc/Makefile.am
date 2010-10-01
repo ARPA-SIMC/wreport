@@ -14,7 +14,7 @@ install-data-local:
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/apidocs
 	find apidocs -type f -exec $(INSTALL_DATA) '{}' $(DESTDIR)$(docdir)/apidocs/ \; ;
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/examples
-	find examplse -type f -exec $(INSTALL_DATA) '{}' $(DESTDIR)$(docdir)/examples/ \; ;
+	find examples -type f -exec $(INSTALL_DATA) '{}' $(DESTDIR)$(docdir)/examples/ \; ;
 
 
 uninstall-local:
