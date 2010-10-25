@@ -116,7 +116,7 @@ struct Decoder
 	{
 		if (start + datalen > this->start + in.size())
 			parse_error(start, "end of BUFR message while looking for %s", next);
-		TRACE("%s starts at %d and contains at least %d bytes\n", next, (int)(start - this->start), datalen);
+		TRACE("%s starts at %d and contains at least %zd bytes\n", next, (int)(start - this->start), datalen);
 	}
 
 	void parse_error(const unsigned char* pos, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4)
@@ -422,7 +422,7 @@ struct opcode_interpreter
 	{
 		if (bitmap == 0)
 			parse_error("applying a data present bitmap with no current bitmap");
-		TRACE("bitmap_next pre %d %d %zd\n", bitmap_use_index, bitmap_subset_index, bitmap->info()->len);
+		TRACE("bitmap_next pre %d %d %u\n", bitmap_use_index, bitmap_subset_index, bitmap->info()->len);
 		if (d.out.subsets.size() == 0)
 			parse_error("no subsets created yet, but already applying a data present bitmap");
 		++bitmap_use_index;
@@ -464,7 +464,7 @@ struct opcode_interpreter
 	{
 		if (bitmap && WR_VAR_X(var.code()) == 33)
 		{
-			TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%d\n",
+			TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
 					WR_VAR_F(var.code()),
 					WR_VAR_X(var.code()),
 					WR_VAR_Y(var.code()),
@@ -636,7 +636,7 @@ unsigned opcode_interpreter::decode_b_data(const Opcodes& ops)
 				WR_ALT(c_width_change, c_scale_change));
 
 	IFTRACE {
-		TRACE("Parsing @%d+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", cursor, 8-pbyte_len,
+		TRACE("Parsing @%zd+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", cursor, 8-pbyte_len,
 				info->bit_len, c_width_change,
 				info->scale, c_scale_change,
 				info->bit_ref,
@@ -692,7 +692,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 			str[len] = 0;
 	}
 
-	TRACE("bufr_message_decode_b_data len %d val %s missing %d info-len %d info-desc %s\n", len, str, missing, info->bit_len, info->desc);
+	TRACE("bufr_message_decode_b_data len %zd val %s missing %d info-len %d info-desc %s\n", len, str, missing, info->bit_len, info->desc);
 
 	if (WR_VAR_X(info->var) == 33 && bitmap)
 		bitmap_next();
