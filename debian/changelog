@@ -1,3 +1,10 @@
+wreport (1.1-1) unstable; urgency=low
+
+  * New upstream version 
+     - Fixed a segfault when handling large messages with bitmaps.
+
+ -- Enrico Zini <enrico@debian.org>  Mon, 25 Oct 2010 14:56:29 +0200
+
 wreport (1.0-1) unstable; urgency=low
 
   * Initial upload, forked from DB-All.e.  Closes: bug#FIXME.
