@@ -323,7 +323,9 @@ struct opcode_interpreter
 	int pbyte_len;
 
 	/* Data present bitmap */
-	const Var* bitmap;
+	char* bitmap;
+	/* Length of data present bitmap */
+	size_t bitmap_len;
 	/* Number of elements set to true in the bitmap */
 	int bitmap_count;
 	/* Next bitmap element for which we decode values */
@@ -339,7 +341,10 @@ struct opcode_interpreter
 	{
 	}
 
-	~opcode_interpreter() {}
+	~opcode_interpreter()
+	{
+		if (bitmap) delete[] bitmap;
+	}
 
 	void parse_error(const char* fmt, ...) WREPORT_THROWF_ATTRS(2, 3)
 	{
@@ -422,14 +427,14 @@ struct opcode_interpreter
 	{
 		if (bitmap == 0)
 			parse_error("applying a data present bitmap with no current bitmap");
-		TRACE("bitmap_next pre %d %d %u\n", bitmap_use_index, bitmap_subset_index, bitmap->info()->len);
+		TRACE("bitmap_next pre %d %d %u\n", bitmap_use_index, bitmap_subset_index, bitmap_len);
 		if (d.out.subsets.size() == 0)
 			parse_error("no subsets created yet, but already applying a data present bitmap");
 		++bitmap_use_index;
 		++bitmap_subset_index;
 		while (bitmap_use_index < 0 || (
-			(unsigned)bitmap_use_index < bitmap->info()->len &&
-			bitmap->value()[bitmap_use_index] == '-'))
+			(unsigned)bitmap_use_index < bitmap_len &&
+			bitmap[bitmap_use_index] == '-'))
 		{
 			TRACE("INCR\n");
 			++bitmap_use_index;
@@ -438,7 +443,7 @@ struct opcode_interpreter
 				WR_VAR_F(d.out.subsets[0][bitmap_subset_index].code()) != 0)
 				++bitmap_subset_index;
 		}
-		if ((unsigned)bitmap_use_index > bitmap->info()->len)
+		if ((unsigned)bitmap_use_index > bitmap_len)
 			parse_error("moved past end of data present bitmap");
 		if ((unsigned)bitmap_subset_index == d.out.subsets[0].size())
 			parse_error("end of data reached when applying attributes");
@@ -944,6 +949,7 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
 
 unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 {
+	if (bitmap) delete[] bitmap;
 	bitmap = 0;
 
 	int group;
@@ -980,21 +986,22 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 
 	// Read the bitmap
 	bitmap_count = 0;
-	char bitmapstr[count + 1];
+	bitmap = new char[count + 1];
 	for (int i = 0; i < count; ++i)
 	{
 		uint32_t val = get_bits(1);
-		bitmapstr[i] = (val == 0) ? '+' : '-';
+		bitmap[i] = (val == 0) ? '+' : '-';
 		if (val == 0) ++bitmap_count;
 	}
-	bitmapstr[count] = 0;
+	bitmap[count] = 0;
+	bitmap_len = count;
 
 	// Create a single use varinfo to store the bitmap
 	MutableVarinfo info(MutableVarinfo::create_singleuse());
 	info->set_string(code, "DATA PRESENT BITMAP", count);
 
 	// Store the bitmap
-	Var bmp(info, bitmapstr);
+	Var bmp(info, bitmap);
 
 	// Add var to subset(s)
 	if (d.out.compression)
@@ -1003,11 +1010,9 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 		{
 			Subset& subset = d.out.obtain_subset(i);
 			add_var(subset, bmp);
-			if (i == 0) bitmap = &(subset.back());
 		}
 	} else {
 		add_var(*current_subset, bmp);
-		bitmap = &(current_subset->back());
 	}
 
 	// Bitmap will stay set as a reference to the variable to use as the
@@ -1015,8 +1020,8 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 
 	IFTRACE {
 		TRACE("Decoded bitmap count %d: ", bitmap_count);
-		for (unsigned i = 0; i < bitmap->info()->len; ++i)
-			TRACE("%c", bitmap->value()[i]);
+		for (unsigned i = 0; i < bitmap_len; ++i)
+			TRACE("%c", bitmap[i]);
 		TRACE("\n");
 	}
 

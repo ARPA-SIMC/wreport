@@ -1141,18 +1141,18 @@ void to::test<31>()
 		void test(const BufrBulletin& msg)
 		{
 			ensure_equals(msg.edition, 3);
-			ensure_equals(msg.type, 1);
+			ensure_equals(msg.type, 2);
 			ensure_equals(msg.subtype, 255);
-			ensure_equals(msg.localsubtype, 21);
+			ensure_equals(msg.localsubtype, 101);
 			ensure_equals(msg.subsets.size(), 1);
 
 			const Subset& s = msg.subset(0);
-			ensure_equals(s.size(), 35u);
+			ensure_equals(s.size(), 129u);
 
-			ensure_varcode_equals(s[9].code(), WR_VAR(0, 5, 2));
-			ensure_equals(s[9].enqd(), 68.27);
-			ensure_varcode_equals(s[10].code(), WR_VAR(0, 6, 2));
-			ensure_equals(s[10].enqd(),  9.68);
+			ensure_varcode_equals(s[9].code(), WR_VAR(0, 5, 1));
+			ensure_equals(s[9].enqd(), 41.65);
+			ensure_varcode_equals(s[10].code(), WR_VAR(0, 6, 1));
+			ensure_equals(s[10].enqd(), 12.43);
 
 			ensure(s[0].enqa(WR_VAR(0, 33, 7)) != NULL);
 			ensure_equals(s[0].enqa(WR_VAR(0, 33, 7))->enqi(), 70);
