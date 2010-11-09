@@ -132,6 +132,12 @@ public:
 	/// Get the value as a string
 	const char* enqc() const;
 
+	template<typename T>
+	T enq() const
+	{
+		throw error_unimplemented("getting value of unsupported type");
+	}
+
 	/// Set the value from an integer value
 	void seti(int val);
 
@@ -268,6 +274,11 @@ public:
 	 */
 	static Var* lua_check(struct lua_State* L, int idx);
 };
+
+template<> inline int Var::enq() const { return enqi(); }
+template<> inline double Var::enq() const { return enqd(); }
+template<> inline const char* Var::enq() const { return enqc(); }
+
 
 }
 

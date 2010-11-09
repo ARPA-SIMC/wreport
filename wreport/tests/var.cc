@@ -194,6 +194,19 @@ void to::test<6>()
 	ensure(var.enqa(WR_VAR(0, 33, 7)) == NULL);
 }
 
+// Test templated enq
+template<> template<>
+void to::test<7>()
+{
+	const Vartable* table = Vartable::get("B0000000000000014000");
+	Var var(table->query(WR_VAR(0, 21, 143)));
+
+	var.set(1.0);
+	ensure_equals(var.enq<double>(), 1.0);
+	ensure_equals(var.enq<int>(), 100);
+	ensure_equals(string(var.enq<const char*>()), "100");
+}
+
 }
 
 /* vim:set ts=4 sw=4: */
