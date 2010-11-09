@@ -201,6 +201,10 @@ void to::test<7>()
 	const Vartable* table = Vartable::get("B0000000000000014000");
 	Var var(table->query(WR_VAR(0, 21, 143)));
 
+	ensure_equals(var.enq(2.0), 2.0);
+	ensure_equals(var.enq(42), 42);
+	ensure_equals(string(var.enq("foo")), "foo");
+
 	var.set(1.0);
 	ensure_equals(var.enq<double>(), 1.0);
 	ensure_equals(var.enq<int>(), 100);

@@ -132,10 +132,22 @@ public:
 	/// Get the value as a string
 	const char* enqc() const;
 
+	/// Templated version of enq
 	template<typename T>
 	T enq() const
 	{
 		throw error_unimplemented("getting value of unsupported type");
+	}
+
+	/**
+	 * Return the variable value, or the given default value if the variable is
+	 * not set
+	 */
+	template<typename T>
+	T enq(T default_value) const
+	{
+		if (!isset()) return default_value;
+		return enq<T>();
 	}
 
 	/// Set the value from an integer value
