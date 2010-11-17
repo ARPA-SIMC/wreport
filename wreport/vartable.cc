@@ -71,7 +71,7 @@ Varinfo Vartable::query(Varcode var) const
 	}
 	if (begin == -1 || (*this)[begin].var != var)
 		error_notfound::throwf(
-				"looking up variable informations for variable %d%02d%03d in table %s",
+				"missing variable %d%02d%03d in table %s",
 				WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var), m_id.c_str());
 	else
 		return Varinfo(&(*this)[begin]);

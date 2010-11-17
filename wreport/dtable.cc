@@ -163,7 +163,7 @@ Opcodes DTable::query(Varcode var) const
 	}
 	if (begin == -1 || entries[begin].code != var)
 		error_notfound::throwf(
-				"looking up D table expansion for variable %d%02d%03d in table %s",
+				"missing D table expansion for variable %d%02d%03d in table %s",
 				WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var), m_id.c_str());
 	else
 		return Opcodes(varcodes, entries[begin].begin, entries[begin].end);
