@@ -42,9 +42,6 @@ struct Subset : public std::vector<Var>
 	/// dba_vartable used to lookup B table codes
 	const Vartable* btable;
 
-	/// Decoded variables
-	std::vector<Var> vars;
-
 	/**
 	 * Create a new BUFR/CREX subset.
 	 *

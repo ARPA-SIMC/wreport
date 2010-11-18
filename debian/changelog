@@ -3,8 +3,10 @@ wreport (1.2-1) unstable; urgency=low
   * New upstream version 
      - Added templated version of Var::enq()
      - Added Var::enq(default_value)
+     - Better error messages on missing B and D table entries
+     - Removed unused field in Subset, may break ABI.
 
- -- Enrico Zini <enrico@debian.org>  Tue, 09 Nov 2010 14:56:59 +0000
+ -- Enrico Zini <enrico@debian.org>  Thu, 18 Nov 2010 10:51:30 +0000
 
 wreport (1.1-1) unstable; urgency=low
 
