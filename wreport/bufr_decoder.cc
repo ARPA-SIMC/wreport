@@ -1,7 +1,7 @@
 /*
  * wreport/bulletin - BUFR decoder
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,6 +51,7 @@
 using namespace std;
 
 namespace wreport {
+namespace {
 
 // Unmarshal a big endian integer value n bytes long
 static inline int readNumber(const unsigned char* buf, int bytes)
@@ -71,77 +72,90 @@ static inline uint32_t all_ones(int bitlen)
 	return ((1 << (bitlen - 1))-1) | (1 << (bitlen - 1));
 }
 
+/*
+// Section names to used to format nice error messages
+static const char* sec_names[] = {
+    "indicator section", // Section 0
+    "identification section", // Section 1
+    "optional section", // Section 2
+    "data descriptor section", // Section 3
+    "data section", // Section 4
+    "end section", // Section 5
+};
+*/
 
-namespace {
+struct Input
+{
+    /* Input message data */
+    const std::string& in;
+    /* File name to use for error messages */
+    const char* fname;
+    /* File offset to use for error messages */
+    size_t offset;
+    /* Offsets of the start of BUFR sections */
+    const unsigned char* sec[6];
+
+    Input(const std::string& in, const char* fname, size_t offset)
+        : in(in), fname(fname), offset(offset)
+    {
+        sec[0] = (const unsigned char*)in.data();
+        for (int i = 1; i < 6; ++i)
+            sec[i] = 0;
+    }
+    void parse_error(const unsigned char* pos, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4)
+    {
+        char* context;
+        char* message;
+
+        va_list ap;
+        va_start(ap, fmt);
+        vasprintf(&message, fmt, ap);
+        va_end(ap);
+
+        asprintf(&context, "%s:%zd+%d: %s", fname, offset, (int)(pos - sec[0]), message);
+        free(message);
+
+        string msg(context);
+        free(context);
+        throw error_parse(msg);
+    }
+
+    void check_available_data(unsigned const char* start, size_t datalen, const char* next)
+    {
+        if (start + datalen > sec[0] + in.size())
+            parse_error(start, "end of BUFR message while looking for %s", next);
+        TRACE("%s starts at %d and contains at least %zd bytes\n", next, (int)(start - sec[0]), datalen);
+    }
+
+    void read_section_size(int num)
+    {
+        if (sec[num] + 3 > sec[0] + in.size())
+            parse_error(sec[num], "end of BUFR message while looking for section %d (%s)", num, sec[num]);
+        sec[num+1] = sec[num] + readNumber(sec[num], 3);
+        if (sec[num+1] > sec[0] + in.size())
+            parse_error(sec[num], "section %d (%s) claims to end past the end of the BUFR message",
+                    num, sec[num]);
+    }
+};
 
 struct Decoder 
 {
-	/* Input message data */
-	const std::string& in;
-	/* Output decoded variables */
-	BufrBulletin& out;
+    /// Input data
+    Input input;
+    /* Output decoded variables */
+    BufrBulletin& out;
+    /// Number of expected subsets (read in decode_header, used in decode_data)
+    size_t expected_subsets;
 
-	/* File name to use for error messages */
-	const char* fname;
-	/* File offset to use for error messages */
-	size_t offset;
+    Decoder(const std::string& in, const char* fname, size_t offset, BufrBulletin& out)
+        : input(in, fname, offset), out(out)
+    {
+    }
 
-	/* Offset of the start of BUFR data */
-	const unsigned char* start;
-	/* Offset of the start of BUFR section 1 */
-	const unsigned char* sec1;
-	/* Offset of the start of BUFR section 2 */
-	const unsigned char* sec2;
-	/* Offset of the start of BUFR section 3 */
-	const unsigned char* sec3;
-	/* Offset of the start of BUFR section 4 */
-	const unsigned char* sec4;
-	/* Offset of the start of BUFR section 5 */
-	const unsigned char* sec5;
-
-	// Number of subsets advertised in the header
-	unsigned subsets_no;
-
-	Decoder(const std::string& in, const char* fname, size_t offset, BufrBulletin& out)
-		: in(in), out(out), fname(fname), offset(offset), sec1(0), sec2(0), sec3(0), sec4(0), sec5(0)
-	{
-		start = (const unsigned char*)in.data();
-	}
-
-	~Decoder()
-	{
-	}
-
-	void check_available_data(unsigned const char* start, size_t datalen, const char* next)
-	{
-		if (start + datalen > this->start + in.size())
-			parse_error(start, "end of BUFR message while looking for %s", next);
-		TRACE("%s starts at %d and contains at least %zd bytes\n", next, (int)(start - this->start), datalen);
-	}
-
-	void parse_error(const unsigned char* pos, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4)
-	{
-		char* context;
-		char* message;
-
-		va_list ap;
-		va_start(ap, fmt);
-		vasprintf(&message, fmt, ap);
-		va_end(ap);
-
-		asprintf(&context, "%s:%zd+%d: %s", fname, offset, (int)(pos - start), message);
-
-		string msg(context);
-		free(context);
-		free(message);
-		throw error_parse(msg);
-	}
-
-	void decode_sec1ed3()
-	{
+    void decode_sec1ed3()
+    {
+        const unsigned char* sec1 = input.sec[1];
 		// TODO: misses master table number in sec1[3]
-		// Update sequence number sec1[6]
-		out.update_sequence_number = sec1[6];
 		// Set length to 1 for now, will set the proper length later when we
 		// parse the section itself
 		out.optional_section_length = (sec1[7] & 0x80) ? 1 : 0;
@@ -149,6 +163,8 @@ struct Decoder
 		out.subcentre = (int)sec1[4];
 		// centre in sec1[5]
 		out.centre = (int)sec1[5];
+		// Update sequence number sec1[6]
+		out.update_sequence_number = sec1[6];
 		out.master_table = sec1[10];
 		out.local_table = sec1[11];
 		out.type = (int)sec1[8];
@@ -169,14 +185,16 @@ struct Decoder
 			out.rep_year = (int)sec1[17] * 100 + (out.rep_year % 100);
 	}
 
-	void decode_sec1ed4()
-	{
+    void decode_sec1ed4()
+    {
+        const unsigned char* sec1 = input.sec[1];
 		// TODO: misses master table number in sec1[3]
-		// TODO: misses update sequence number sec1[8]
 		// centre in sec1[4-5]
 		out.centre = readNumber(sec1+4, 2);
 		// subcentre in sec1[6-7]
 		out.subcentre = readNumber(sec1+6, 2);
+        // update sequence number sec1[8]
+        out.update_sequence_number = sec1[8];
 		// has_optional in sec1[9]
 		// Set length to 1 for now, will set the proper length later when we
 		// parse the section itself
@@ -205,28 +223,26 @@ struct Decoder
 		out.rep_second = (int)sec1[21];
 	}
 
-	/* Decode the message header only */
-	void decode_header()
-	{
-		int i;
+    /* Decode the message header only */
+    void decode_header()
+    {
+        int i;
 
-		/* Read BUFR section 0 (Indicator section) */
-		check_available_data(start, 8, "section 0 of BUFR message (indicator section)");
-		sec1 = start + 8;
-		if (memcmp(start, "BUFR", 4) != 0)
-			return parse_error(start, "data does not start with BUFR header (\"%.4s\" was read instead)", start);
-		TRACE(" -> is BUFR\n");
+        /* Read BUFR section 0 (Indicator section) */
+        input.check_available_data(input.sec[0], 8, "section 0 of BUFR message (indicator section)");
+        input.sec[1] = input.sec[0] + 8;
+        if (memcmp(input.sec[0], "BUFR", 4) != 0)
+            input.parse_error(input.sec[0], "data does not start with BUFR header (\"%.4s\" was read instead)", input.sec[0]);
+        TRACE(" -> is BUFR\n");
 
-		/* Check the BUFR edition number */
-		if (start[7] != 2 && start[7] != 3 && start[7] != 4)
-			return parse_error(start + 7, "Only BUFR edition 3 and 4 are supported (this message is edition %d)", (unsigned)start[7]);
-		out.edition = start[7];
+        /* Check the BUFR edition number */
+        out.edition = input.sec[0][7];
+        if (out.edition != 2 && out.edition != 3 && out.edition != 4)
+            input.parse_error(input.sec[0] + 7, "Only BUFR edition 3 and 4 are supported (this message is edition %d)", out.edition);
 
-		/* Read bufr section 1 (Identification section) */
-		check_available_data(sec1, 18, "section 1 of BUFR message (identification section)");
-		sec2 = sec1 + readNumber(sec1, 3);
-		if (sec2 > start + in.size())
-			return parse_error(sec1, "Section 1 claims to end past the end of the BUFR message");
+        /* Read bufr section 1 (Identification section) */
+        input.check_available_data(input.sec[1], out.edition == 4 ? 22 : 18, "section 1 of BUFR message (identification section)");
+        input.read_section_size(1);
 
 		switch (out.edition)
 		{
@@ -238,68 +254,41 @@ struct Decoder
 		}
 
 		TRACE(" -> opt %d upd %d origin %d.%d tables %d.%d type %d.%d %04d-%02d-%02d %02d:%02d\n", 
-				out.optional_section_length, (int)sec1[6],
+				out.optional_section_length, out.update_sequence_number,
 				out.centre, out.subcentre,
 				out.master_table, out.local_table,
 				out.type, out.subtype,
 				out.rep_year, out.rep_month, out.rep_day, out.rep_hour, out.rep_minute);
 
-#if 0
-		fprintf(stderr, "S1 Len %d  table #%d  osc %d  oc %d  seq #%d  optsec %x\n",
-				bufr_sec1_len,
-				master_table,
-				(int)psec1[4],
-				(int)psec1[5],
-				(int)psec1[6],
-				(int)psec1[7]);
-			
-		fprintf(stderr, "S1 cat %d  subc %d  verm %d verl %d  %d/%d/%d %d:%d\n",
-				(int)psec1[8],
-				(int)psec1[9],
-				(int)psec1[10],
-				(int)psec1[11],
+        /* Read BUFR section 2 (Optional section) */
+        if (out.optional_section_length)
+        {
+            input.read_section_size(2);
+            out.optional_section_length = readNumber(input.sec[2], 3) - 4;
+            out.optional_section = new char[out.optional_section_length];
+            if (out.optional_section == NULL)
+                throw error_alloc("allocating space for the optional section");
+            memcpy(out.optional_section, input.sec[2] + 4, out.optional_section_length);
+        } else
+            input.sec[3] = input.sec[2];
 
-				(int)psec1[12],
-				(int)psec1[13],
-				(int)psec1[14],
-				(int)psec1[15],
-				(int)psec1[16]);
-#endif
-		
-		/* Read BUFR section 2 (Optional section) */
-		if (out.optional_section_length)
-		{
-			check_available_data(sec2, 4, "section 2 of BUFR message (optional section)");
-			sec3 = sec2 + readNumber(sec2, 3);
-			out.optional_section_length = readNumber(sec2, 3) - 4;
-			out.optional_section = new char[out.optional_section_length];
-			if (out.optional_section == NULL)
-				throw error_alloc("allocating space for the optional section");
-			memcpy(out.optional_section, sec2 + 4, out.optional_section_length);
-			if (sec3 > start + in.size())
-				parse_error(sec2, "Section 2 claims to end past the end of the BUFR message");
-		} else
-			sec3 = sec2;
-
-		/* Read BUFR section 3 (Data description section) */
-		check_available_data(sec3, 8, "section 3 of BUFR message (data description section)");
-		sec4 = sec3 + readNumber(sec3, 3);
-		if (sec4 > start + in.size())
-			return parse_error(sec3, "Section 3 claims to end past the end of the BUFR message");
-		subsets_no = readNumber(sec3 + 4, 2);
-		out.compression = (sec3[6] & 0x40) ? 1 : 0;
-		for (i = 0; i < (sec4 - sec3 - 7)/2; i++)
-			out.datadesc.push_back((Varcode)readNumber(sec3 + 7 + i * 2, 2));
-		TRACE(" s3length %d subsets %d observed %d compression %d byte7 %x\n",
-				(int)(sec4 - sec3), subsets_no, (sec3[6] & 0x80) ? 1 : 0, out.compression, (unsigned int)sec3[6]);
-		/*
-		IFTRACE{
-			TRACE(" -> data descriptor section: ");
-			bufrex_opcode_print(msg->datadesc, stderr);
-			TRACE("\n");
-		}
-		*/
-	}
+        /* Read BUFR section 3 (Data description section) */
+        input.check_available_data(input.sec[3], 8, "section 3 of BUFR message (data description section)");
+        input.read_section_size(3);
+        expected_subsets = readNumber(input.sec[3] + 4, 2);
+        out.compression = (input.sec[3][6] & 0x40) ? 1 : 0;
+        for (i = 0; i < (input.sec[4] - input.sec[3] - 7)/2; i++)
+            out.datadesc.push_back((Varcode)readNumber(input.sec[3] + 7 + i * 2, 2));
+        TRACE(" s3length %d subsets %d observed %d compression %d byte7 %x\n",
+                (int)(input.sec[4] - input.sec[3]), expected_subsets, (input.sec[3][6] & 0x80) ? 1 : 0, out.compression, (unsigned int)input.sec[3][6]);
+        /*
+       IFTRACE{
+       TRACE(" -> data descriptor section: ");
+       bufrex_opcode_print(msg->datadesc, stderr);
+       TRACE("\n");
+       }
+       */
+    }
 
 	/* Decode message data section after the header has been decoded */
 	void decode_data();
@@ -356,7 +345,7 @@ struct opcode_interpreter
 		vasprintf(&message, fmt, ap);
 		va_end(ap);
 
-		asprintf(&context, "%s:%zd+%zd: %s", d.fname, d.offset, cursor, message);
+		asprintf(&context, "%s:%zd+%zd: %s", d.input.fname, d.input.offset, cursor, message);
 		free(message);
 
 		string msg(context);
@@ -369,7 +358,7 @@ struct opcode_interpreter
 	int offset() const { return cursor; }
 
 	/* Return the number of bits left in the message to be decoded */
-	int bits_left() const { return (d.in.size() - cursor) * 8 + pbyte_len; }
+	int bits_left() const { return (d.input.in.size() - cursor) * 8 + pbyte_len; }
 
 	/**
 	 * Get the integer value of the next 'n' bits from the decode input
@@ -379,7 +368,7 @@ struct opcode_interpreter
 	{
 		uint32_t result = 0;
 
-		if (cursor == d.in.size())
+		if (cursor == d.input.in.size())
 			parse_error("end of buffer while looking for %d bits of bit-packed data", n);
 
 		for (int i = 0; i < n; i++) 
@@ -387,7 +376,7 @@ struct opcode_interpreter
 			if (pbyte_len == 0) 
 			{
 				pbyte_len = 8;
-				pbyte = d.start[cursor++];
+				pbyte = d.input.sec[0][cursor++];
 			}
 			result <<= 1;
 			if (pbyte & 0x80)
@@ -409,12 +398,12 @@ struct opcode_interpreter
 
 		for (i = 0; i < count; ++i) 
 		{
-			if (cursor == d.in.size())
+			if (cursor == d.input.in.size())
 				break;
 			if (pbyte_len == 0) 
 			{
 				pbyte_len = 8;
-				pbyte = d.start[cursor++];
+				pbyte = d.input.sec[0][cursor++];
 				putc(' ', out);
 			}
 			putc((pbyte & 0x80) ? '1' : '0', out);
@@ -539,7 +528,7 @@ struct opcode_interpreter
 			decode_data_section(Opcodes(d.out.datadesc));
 		} else {
 			/* Iterate on the number of subgroups */
-			for (size_t i = 0; i < d.subsets_no; ++i)
+			for (size_t i = 0; i < d.out.subsets.size(); ++i)
 			{
 				current_subset = &d.out.obtain_subset(i);
 				decode_data_section(Opcodes(d.out.datadesc));
@@ -550,7 +539,7 @@ struct opcode_interpreter
 		if (bits_left() > 32)
 		{
 			fprintf(stderr, "The data section of %s:%zd still contains %d unparsed bits\n",
-					d.fname, d.offset, bits_left() - 32);
+					d.input.fname, d.input.offset, bits_left() - 32);
 			/*
 			err = dba_error_parse(msg->file->name, POS + vec->cursor,
 					"the data section still contains %d unparsed bits",
@@ -571,32 +560,32 @@ struct opcode_interpreter_compressed : public opcode_interpreter
 
 void Decoder::decode_data()
 {
-	// Once we filled the Bulletin header info, load decoding tables
-	out.load_tables();
+    // Once we filled the Bulletin header info, load decoding tables and allocate subsets
+    out.load_tables();
+    out.obtain_subset(expected_subsets - 1);
 
-	/* Read BUFR section 4 (Data section) */
-	check_available_data(sec4, 4, "section 4 of BUFR message (data section)");
-
-	sec5 = sec4 + readNumber(sec4, 3);
-	if (sec5 > start + in.size())
-		return parse_error(sec4, "Section 4 claims to end past the end of the BUFR message");
-	TRACE("section 4 is %d bytes long (%02x %02x %02x %02x)\n", readNumber(sec4, 3),
-			(unsigned int)*(sec4), (unsigned int)*(sec4+1), (unsigned int)*(sec4+2), (unsigned int)*(sec4+3));
+    /* Read BUFR section 4 (Data section) */
+    input.read_section_size(4);
+    TRACE("section 4 is %d bytes long (%02x %02x %02x %02x)\n", readNumber(input.sec[4], 3),
+            (unsigned int)*(input.sec[4]),
+            (unsigned int)*(input.sec[4]+1),
+            (unsigned int)*(input.sec[4]+2),
+            (unsigned int)*(input.sec[4]+3));
 
 	if (out.compression)
 	{
-		opcode_interpreter_compressed interpreter(*this, sec4 + 4 - start);
+		opcode_interpreter_compressed interpreter(*this, input.sec[4] + 4 - input.sec[0]);
 		interpreter.run();
 	} else {
-		opcode_interpreter interpreter(*this, sec4 + 4 - start);
+		opcode_interpreter interpreter(*this, input.sec[4] + 4 - input.sec[0]);
 		interpreter.run();
 	}
 
 	/* Read BUFR section 5 (Data section) */
-	check_available_data(sec5, 4, "section 5 of BUFR message (end section)");
+	input.check_available_data(input.sec[5], 4, "section 5 of BUFR message (end section)");
 
-	if (memcmp(sec5, "7777", 4) != 0)
-		parse_error(sec5, "section 5 does not contain '7777'");
+	if (memcmp(input.sec[5], "7777", 4) != 0)
+		input.parse_error(input.sec[5], "section 5 does not contain '7777'");
 
 #if 0
 	for (i = 0; i < out.subsets; ++i)
@@ -607,8 +596,8 @@ void Decoder::decode_data()
 		DBA_RUN_OR_RETURN(bufrex_subset_apply_attributes(subset));
 	}
 #endif
-	if (subsets_no != out.subsets.size())
-		parse_error(sec5, "header advertised %u subsets but only %zd found", subsets_no, out.subsets.size());
+    //if (subsets_no != out.subsets.size())
+    //    parse_error(sec5, "header advertised %u subsets but only %zd found", subsets_no, out.subsets.size());
 }
 
 }
@@ -727,7 +716,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 			if (diffbits > len)
 				error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
 
-			for (unsigned i = 0; i < d.subsets_no; ++i)
+			for (unsigned i = 0; i < d.out.subsets.size(); ++i)
 			{
 				unsigned j, missing = 1;
 
@@ -767,7 +756,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 			}
 		} else {
 			/* Add the string to all the subsets */
-			for (unsigned i = 0; i < d.subsets_no; ++i)
+			for (unsigned i = 0; i < d.out.subsets.size(); ++i)
 			{
 				Subset& subset = d.out.obtain_subset(i);
 
@@ -850,7 +839,7 @@ void opcode_interpreter_compressed::decode_b_num(Varinfo info)
 
 	TRACE("Compressed number, base value %d diff bits %d\n", val, diffbits);
 
-	for (unsigned i = 0; i < d.subsets_no; ++i)
+	for (unsigned i = 0; i < d.out.subsets.size(); ++i)
 	{
 		/* Access the subset we are working on */
 		Subset& subset = d.out.obtain_subset(i);
@@ -915,7 +904,7 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
 			TRACE("Compressed delayed repetition, base value %d diff bits %d\n", count, diffbits);
 
 			uint32_t repval = 0;
-			for (unsigned i = 0; i < d.subsets_no; ++i)
+			for (unsigned i = 0; i < d.out.subsets.size(); ++i)
 			{
 				/* Decode the difference value */
 				uint32_t diff = get_bits(diffbits);
@@ -1006,7 +995,7 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	// Add var to subset(s)
 	if (d.out.compression)
 	{
-		for (unsigned i = 0; i < d.subsets_no; ++i)
+		for (unsigned i = 0; i < d.out.subsets.size(); ++i)
 		{
 			Subset& subset = d.out.obtain_subset(i);
 			add_var(subset, bmp);
