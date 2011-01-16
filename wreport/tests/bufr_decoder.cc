@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1085,7 +1085,6 @@ void to::test<29>()
 template<> template<>
 void to::test<30>()
 {
-#if 0
 	// TODO: reenable after implementing C23000
 
 	struct Tester : public MsgTester {
@@ -1130,7 +1129,6 @@ void to::test<30>()
 
 	// FIXME: recoding might not work
 	test.run("bufr/C23000.bufr");
-#endif
 }
 
 // BUFR that gave segfault
