@@ -385,11 +385,11 @@ struct CompressedVarAdder : public VarAdder
 /// Add attributes to the current subset of an uncompressed BUFR
 struct PlainAttrAdder : public VarAdder
 {
-    Subset& current_subset;
     const Bitmap& bitmap;
+    Subset* current_subset;
 
-    PlainAttrAdder(Subset& current_subset, const Bitmap& bitmap)
-        : current_subset(current_subset), bitmap(bitmap) {}
+    PlainAttrAdder(const Bitmap& bitmap, Subset* current_subset=0)
+        : bitmap(bitmap), current_subset(current_subset) {}
 
     virtual void add_var(const Var& var, int subset=-1)
     {
@@ -402,7 +402,7 @@ struct PlainAttrAdder : public VarAdder
                 WR_VAR_X(subset[bitmap.subset_index].code()),
                 WR_VAR_Y(subset[bitmap.subset_index].code()),
                 bitmap.subset_index, subset.size());
-        current_subset[bitmap.subset_index].seta(var);
+        (*current_subset)[bitmap.subset_index].seta(var);
     }
 };
 
@@ -852,6 +852,7 @@ struct opcode_interpreter
     Bitmap bitmap;
     /// Currently active variable destination
     VarAdder* adder;
+    VarAdder* attr_adder;
 
 	/* Current value of scale change from C modifier */
 	int c_scale_change;
@@ -859,7 +860,7 @@ struct opcode_interpreter
 	int c_width_change;
 
 	opcode_interpreter(Decoder& d, DataSection& ds)
-		: d(d), ds(ds), bitmap(d.out), adder(0),
+		: d(d), ds(ds), bitmap(d.out), adder(0), attr_adder(0),
 		  c_scale_change(0), c_width_change(0)
 	{
 	}
@@ -868,20 +869,112 @@ struct opcode_interpreter
 	{
 	}
 
-	unsigned decode_b_data(const Opcodes& ops);
+    unsigned decode_b_data(const Opcodes& ops)
+    {
+        IFTRACE {
+            TRACE("bufr_message_decode_b_data: items: ");
+            ops.print(stderr);
+            TRACE("\n");
+        }
+
+        Varinfo info = d.out.btable->query_altered(ops.head(),
+                    WR_ALT(c_width_change, c_scale_change));
+
+        IFTRACE {
+            TRACE("Parsing @%zd+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", cursor, 8-pbyte_len,
+                    info->bit_len, c_width_change,
+                    info->scale, c_scale_change,
+                    info->bit_ref,
+                    WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var),
+                    info->desc, info->unit);
+            ds.dump_next_bits(64, stderr);
+            TRACE("\n");
+        }
+
+        if (c_scale_change > 0)
+            TRACE("Applied %d scale change\n", c_scale_change);
+        if (c_width_change > 0)
+            TRACE("Applied %d width change\n", c_width_change);
+
+        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
+        {
+            bitmap.next(ds);
+
+            /* Get the real datum */
+            if (info->is_string())
+            {
+                ds.decode_b_string(info, *attr_adder);
+            } else {
+                ds.decode_b_num(info, *attr_adder);
+            }
+        } else {
+            /* Get the real datum */
+            if (info->is_string())
+            {
+                ds.decode_b_string(info, *adder);
+            } else {
+                ds.decode_b_num(info, *adder);
+            }
+        }
+
+        return 1;
+    }
+
     unsigned decode_bitmap(const Opcodes& ops, Varcode code, VarAdder& adder);
 
-    virtual void decode_b_string(Varinfo info) = 0;
-    virtual void decode_b_num(Varinfo info) = 0;
+    /**
+     * Decode instant or delayed replication information.
+     *
+     * In case of delayed replication, store a variable in the subset(s)
+     * with the repetition count.
+     */
+    unsigned decode_replication_info(const Opcodes& ops, int& group, int& count, VarAdder& adder)
+    {
+        unsigned used = 1;
+        group = WR_VAR_X(ops.head());
+        count = WR_VAR_Y(ops.head());
 
-	/**
-	 * Decode instant or delayed replication information.
-	 *
-	 * In case of delayed replication, store a variable in the subset(s)
-	 * with the repetition count.
-	 */
-	unsigned decode_replication_info(const Opcodes& ops, int& group, int& count, VarAdder& adder);
-	unsigned decode_r_data(const Opcodes& ops);
+        if (count == 0)
+        {
+            // Delayed replication
+
+            // We also use the delayed replication factor opcode
+            ++used;
+
+            Varcode rep_op = ops[1];
+
+            // Fetch the repetition count
+            Varinfo rep_info = d.out.btable->query(rep_op);
+            count = ds.decode_delayed_replication_factor(rep_info, adder);
+
+            TRACE("decode_replication_info %d items %d times (delayed)\n", group, count);
+        } else
+            TRACE("decode_replication_info %d items %d times\n", group, count);
+
+        return used;
+    }
+
+    unsigned decode_r_data(const Opcodes& ops)
+    {
+        // Read replication information
+        int group, count;
+        unsigned first;
+        first = decode_replication_info(ops, group, count, *adder);
+
+        TRACE("R DATA %01d%02d%03d %d %d\n", 
+                WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
+
+        // Extract the first `group' nodes, to handle here
+        Opcodes group_ops = ops.sub(first, group);
+
+        // decode_data_section on it `count' times
+        for (int i = 0; i < count; ++i)
+            decode_data_section(group_ops);
+
+        // Number of items processed
+        return first + group;
+    }
+
 	unsigned decode_c_data(const Opcodes& ops);
 
 	/* Run the opcode interpreter to decode the data section */
@@ -929,41 +1022,23 @@ struct opcode_interpreter
 struct opcode_interpreter_plain : public opcode_interpreter
 {
     PlainVarAdder default_adder;
+    PlainAttrAdder default_attr_adder;
 
     opcode_interpreter_plain(Decoder& d, DataSection& ds)
-        : opcode_interpreter(d, ds)
+        : opcode_interpreter(d, ds),
+          default_attr_adder(bitmap)
     {
         adder = &default_adder;
+        attr_adder = &default_attr_adder;
     }
 
-    virtual void decode_b_string(Varinfo info)
-    {
-        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
-        {
-            bitmap.next(ds);
-            PlainAttrAdder adder(*default_adder.current_subset, bitmap);
-            ds.decode_b_string(info, adder);
-        } else
-            ds.decode_b_string(info, *adder);
-    }
-
-    virtual void decode_b_num(Varinfo info)
-    {
-        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
-        {
-            bitmap.next(ds);
-            PlainAttrAdder adder(*default_adder.current_subset, bitmap);
-            ds.decode_b_num(info, adder);
-        }
-        else
-            ds.decode_b_num(info, *adder);
-    }
     virtual void run()
     {
         /* Iterate on the number of subgroups */
         for (size_t i = 0; i < d.out.subsets.size(); ++i)
         {
             default_adder.current_subset = &d.out.obtain_subset(i);
+            default_attr_adder.current_subset = &d.out.obtain_subset(i);
             decode_data_section(Opcodes(d.out.datadesc));
         }
 
@@ -986,34 +1061,15 @@ struct opcode_interpreter_plain : public opcode_interpreter
 struct opcode_interpreter_compressed : public opcode_interpreter
 {
     CompressedVarAdder default_adder;
+    CompressedAttrAdder default_attr_adder;
 
     opcode_interpreter_compressed(Decoder& d, CompressedDataSection& ds)
-        : opcode_interpreter(d, ds), default_adder(d.out)
+        : opcode_interpreter(d, ds),
+          default_adder(d.out),
+          default_attr_adder(d.out, bitmap)
     {
         adder = &default_adder;
-    }
-
-    void decode_b_num(Varinfo info)
-    {
-        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
-        {
-            bitmap.next(ds);
-            CompressedAttrAdder adder(d.out, bitmap);
-            ds.decode_b_num(info, adder);
-        }
-        else
-            ds.decode_b_num(info, *adder);
-    }
-
-    virtual void decode_b_string(Varinfo info)
-    {
-        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
-        {
-            bitmap.next(ds);
-            CompressedAttrAdder adder(d.out, bitmap);
-            ds.decode_b_string(info, adder);
-        } else
-            ds.decode_b_string(info, *adder);
+        attr_adder = &default_attr_adder;
     }
 
     virtual void run()
@@ -1099,69 +1155,6 @@ void BufrBulletin::decode(const std::string& buf, const char* fname, size_t offs
 	d.decode_data();
 }
 
-unsigned opcode_interpreter::decode_b_data(const Opcodes& ops)
-{
-	IFTRACE {
-		TRACE("bufr_message_decode_b_data: items: ");
-		ops.print(stderr);
-		TRACE("\n");
-	}
-
-	Varinfo info = d.out.btable->query_altered(ops.head(),
-				WR_ALT(c_width_change, c_scale_change));
-
-	IFTRACE {
-		TRACE("Parsing @%zd+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", cursor, 8-pbyte_len,
-				info->bit_len, c_width_change,
-				info->scale, c_scale_change,
-				info->bit_ref,
-				WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var),
-				info->desc, info->unit);
-		ds.dump_next_bits(64, stderr);
-		TRACE("\n");
-	}
-
-	if (c_scale_change > 0)
-		TRACE("Applied %d scale change\n", c_scale_change);
-	if (c_width_change > 0)
-		TRACE("Applied %d width change\n", c_width_change);
-
-	/* Get the real datum */
-	if (info->is_string())
-	{
-		decode_b_string(info);
-	} else {
-		decode_b_num(info);
-	}
-	return 1;
-}
-
-
-unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& group, int& count, VarAdder& adder)
-{
-    unsigned used = 1;
-    group = WR_VAR_X(ops.head());
-    count = WR_VAR_Y(ops.head());
-
-    if (count == 0)
-    {
-        // Delayed replication
-
-        // We also use the delayed replication factor opcode
-        ++used;
-
-        Varcode rep_op = ops[1];
-
-        // Fetch the repetition count
-        Varinfo rep_info = d.out.btable->query(rep_op);
-        count = ds.decode_delayed_replication_factor(rep_info, adder);
-
-        TRACE("decode_replication_info %d items %d times (delayed)\n", group, count);
-    } else
-        TRACE("decode_replication_info %d items %d times\n", group, count);
-
-    return used;
-}
 
 unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code, VarAdder& adder)
 {
@@ -1240,27 +1233,6 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code, Var
 	}
 
 	return used;
-}
-
-unsigned opcode_interpreter::decode_r_data(const Opcodes& ops)
-{
-	// Read replication information
-	int group, count;
-	unsigned first;
-    first = decode_replication_info(ops, group, count, *adder);
-
-	TRACE("R DATA %01d%02d%03d %d %d\n", 
-			WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
-
-	// Extract the first `group' nodes, to handle here
-	Opcodes group_ops = ops.sub(first, group);
-
-	// decode_data_section on it `count' times
-	for (int i = 0; i < count; ++i)
-		decode_data_section(group_ops);
-
-	// Number of items processed
-	return first + group;
 }
 
 unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
