@@ -430,6 +430,72 @@ struct CompressedAttrAdder : public VarAdder
     }
 };
 
+struct PlainSubstituteAdder : public VarAdder
+{
+    const Bitmap& bitmap;
+    Subset* current_subset;
+
+    PlainSubstituteAdder(const Bitmap& bitmap, Subset* current_subset=0)
+        : bitmap(bitmap), current_subset(current_subset) {}
+
+    Varinfo expected_info() const
+    {
+        return (*current_subset)[bitmap.subset_index].info();
+    }
+
+    virtual void add_var(const Var& var, int subset=-1)
+    {
+        /*
+        TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(),
+                WR_VAR_F(subset[bitmap.subset_index].code()),
+                WR_VAR_X(subset[bitmap.subset_index].code()),
+                WR_VAR_Y(subset[bitmap.subset_index].code()),
+                bitmap.subset_index, subset.size());
+        (*current_subset)[bitmap.subset_index].seta(var);
+
+                // TODO: set target to "substituted value"
+                SubstituteVariableAdder adder(foobarbaz);
+        */
+    }
+};
+
+struct CompressedSubstituteAdder : public VarAdder
+{
+    BufrBulletin& out;
+    const Bitmap& bitmap;
+
+    CompressedSubstituteAdder(BufrBulletin& out, const Bitmap& bitmap)
+        : out(out), bitmap(bitmap) {}
+
+    Varinfo expected_info() const
+    {
+        return out.subsets[0][bitmap.subset_index].info();
+    }
+
+    virtual void add_var(const Var& var, int subset=-1)
+    {
+        /*
+        TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(),
+                WR_VAR_F(subset[bitmap.subset_index].code()),
+                WR_VAR_X(subset[bitmap.subset_index].code()),
+                WR_VAR_Y(subset[bitmap.subset_index].code()),
+                bitmap.subset_index, subset.size());
+        (*current_subset)[bitmap.subset_index].seta(var);
+
+                // TODO: set target to "substituted value"
+                SubstituteVariableAdder adder(foobarbaz);
+        */
+    }
+};
+
 struct DataSection
 {
     Input& input;
@@ -1281,6 +1347,47 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 							WR_VAR_X(code),
 							WR_VAR_Y(code));
 			break;
+        case 23:
+            if (WR_VAR_Y(code) == 0)
+            {
+                used += decode_bitmap(ops.sub(1), code, *adder);
+            } else if (WR_VAR_Y(code) == 255) {
+                if (!bitmap.bitmap)
+                    ds.parse_error("C23255 found but there is no active bitmap");
+                bitmap.next(ds);
+                // Read substituted value
+
+                // TODO: Get the varinfo at bitmap_subset_index
+                // TODO: use it for decoding the next value (this would honour C
+                // modifiers that were in effect for its encoding)
+
+                /// TODO vvvvvvvvv
+                VarIgnorer adder;
+                Varinfo info = d.out.subsets[0][bitmap.subset_index].info();
+                /*
+                Subset* subset = 0;
+                if (d.out.compression)
+                    subset = &(d.out.obtain_subset(0));
+                else
+                    subset = current_subset;
+                Varinfo info = (*subset)[bitmap->bitmap_subset_index].info();
+                // TODO: set target to "substituted value"
+                // (refactor to be able to set/override a 'set target function')
+                SubstituteVariableAdder adder(foobarbaz);
+                */
+                /// TODO ^^^^^^^^^
+                if (info->is_string())
+                {
+                    ds.decode_b_string(info, adder);
+                } else {
+                    ds.decode_b_num(info, adder);
+                }
+            } else
+                ds.parse_error("C modifier %d%02d%03d not yet supported",
+                        WR_VAR_F(code),
+                        WR_VAR_X(code),
+                        WR_VAR_Y(code));
+            break;
 		case 24:
 			if (WR_VAR_Y(code) == 0)
 			{
