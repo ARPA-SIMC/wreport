@@ -588,6 +588,14 @@ struct DataSection
         throw error_parse(msg);
     }
 
+    void decode_b_value(Varinfo info, VarAdder& adder)
+    {
+        if (info->is_string())
+            decode_b_string(info, adder);
+        else
+            decode_b_num(info, adder);
+    }
+
     virtual void decode_b_num(Varinfo info, VarAdder& out)
     {
         /* Read a value */
@@ -967,20 +975,10 @@ struct opcode_interpreter
             bitmap.next(ds);
 
             /* Get the real datum */
-            if (info->is_string())
-            {
-                ds.decode_b_string(info, *attr_adder);
-            } else {
-                ds.decode_b_num(info, *attr_adder);
-            }
+            ds.decode_b_value(info, *attr_adder);
         } else {
             /* Get the real datum */
-            if (info->is_string())
-            {
-                ds.decode_b_string(info, *adder);
-            } else {
-                ds.decode_b_num(info, *adder);
-            }
+            ds.decode_b_value(info, *adder);
         }
 
         return 1;
@@ -1376,12 +1374,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 SubstituteVariableAdder adder(foobarbaz);
                 */
                 /// TODO ^^^^^^^^^
-                if (info->is_string())
-                {
-                    ds.decode_b_string(info, adder);
-                } else {
-                    ds.decode_b_num(info, adder);
-                }
+                ds.decode_b_value(info, adder);
             } else
                 ds.parse_error("C modifier %d%02d%03d not yet supported",
                         WR_VAR_F(code),
