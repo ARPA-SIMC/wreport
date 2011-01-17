@@ -349,9 +349,9 @@ struct VarIgnorer : public VarAdder
 /// Add variables to the current subset of an uncompressed BUFR
 struct PlainVarAdder : public VarAdder
 {
-    Subset& current_subset;
+    Subset* current_subset;
 
-    PlainVarAdder(Subset& current_subset) : current_subset(current_subset) {}
+    PlainVarAdder(Subset* current_subset=0) : current_subset(current_subset) {}
 
     virtual void add_var(const Var& var, int subset=-1)
     {
@@ -360,7 +360,7 @@ struct PlainVarAdder : public VarAdder
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
                 var.value());
-        current_subset.store_variable(var);
+        current_subset->store_variable(var);
     }
 };
 
@@ -850,9 +850,8 @@ struct opcode_interpreter
     Decoder& d;
     DataSection& ds;
     Bitmap bitmap;
-
-	/* Current subset when decoding non-compressed BUFR messages */
-	Subset* current_subset;
+    /// Currently active variable destination
+    VarAdder* adder;
 
 	/* Current value of scale change from C modifier */
 	int c_scale_change;
@@ -860,7 +859,7 @@ struct opcode_interpreter
 	int c_width_change;
 
 	opcode_interpreter(Decoder& d, DataSection& ds)
-		: d(d), ds(ds), bitmap(d.out), current_subset(0),
+		: d(d), ds(ds), bitmap(d.out), adder(0),
 		  c_scale_change(0), c_width_change(0)
 	{
 	}
@@ -870,35 +869,10 @@ struct opcode_interpreter
 	}
 
 	unsigned decode_b_data(const Opcodes& ops);
-	unsigned decode_bitmap(const Opcodes& ops, Varcode code);
+    unsigned decode_bitmap(const Opcodes& ops, Varcode code, VarAdder& adder);
 
-    virtual void decode_b_string(Varinfo info)
-    {
-        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
-        {
-            bitmap.next(ds);
-            PlainAttrAdder adder(*current_subset, bitmap);
-            ds.decode_b_string(info, adder);
-        } else {
-            PlainVarAdder adder(*current_subset);
-            ds.decode_b_string(info, adder);
-        }
-    }
-
-    virtual void decode_b_num(Varinfo info)
-    {
-        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
-        {
-            bitmap.next(ds);
-            PlainAttrAdder adder(*current_subset, bitmap);
-            ds.decode_b_num(info, adder);
-        }
-        else
-        {
-            PlainVarAdder adder(*current_subset);
-            ds.decode_b_num(info, adder);
-        }
-    }
+    virtual void decode_b_string(Varinfo info) = 0;
+    virtual void decode_b_num(Varinfo info) = 0;
 
 	/**
 	 * Decode instant or delayed replication information.
@@ -909,32 +883,6 @@ struct opcode_interpreter
 	unsigned decode_replication_info(const Opcodes& ops, int& group, int& count, VarAdder& adder);
 	unsigned decode_r_data(const Opcodes& ops);
 	unsigned decode_c_data(const Opcodes& ops);
-
-	void add_var(Subset& subset, const Var& var)
-	{
-		if (bitmap.bitmap && WR_VAR_X(var.code()) == 33)
-		{
-			TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
-					WR_VAR_F(var.code()),
-					WR_VAR_X(var.code()),
-					WR_VAR_Y(var.code()),
-					var.value(),
-					WR_VAR_F(subset[bitmap.subset_index].code()),
-					WR_VAR_X(subset[bitmap.subset_index].code()),
-					WR_VAR_Y(subset[bitmap.subset_index].code()),
-					bitmap.subset_index, subset.size());
-			subset[bitmap.subset_index].seta(var);
-		}
-		else
-		{
-			TRACE("Adding var %01d%02d%03d %s to subset\n",
-					WR_VAR_F(var.code()),
-					WR_VAR_X(var.code()),
-					WR_VAR_Y(var.code()),
-					var.value());
-			subset.store_variable(var);
-		}
-	}
 
 	/* Run the opcode interpreter to decode the data section */
 	void decode_data_section(const Opcodes& ops)
@@ -975,42 +923,75 @@ struct opcode_interpreter
 		}
 	}
 
-	void run()
-	{
-		if (d.out.compression)
-		{
-			/* Only needs to parse once */
-			current_subset = NULL;
-			decode_data_section(Opcodes(d.out.datadesc));
-		} else {
-			/* Iterate on the number of subgroups */
-			for (size_t i = 0; i < d.out.subsets.size(); ++i)
-			{
-				current_subset = &d.out.obtain_subset(i);
-				decode_data_section(Opcodes(d.out.datadesc));
-			}
-		}
+    virtual void run() = 0;
+};
 
-		IFTRACE {
-		if (ds.bits_left() > 32)
-		{
-			fprintf(stderr, "The data section of %s:%zd still contains %d unparsed bits\n",
-					d.input.fname, d.input.offset, ds.bits_left() - 32);
-			/*
-			err = dba_error_parse(msg->file->name, POS + vec->cursor,
-					"the data section still contains %d unparsed bits",
-					bitvec_bits_left(vec));
-			goto fail;
-			*/
-		}
-		}
-	}
+struct opcode_interpreter_plain : public opcode_interpreter
+{
+    PlainVarAdder default_adder;
+
+    opcode_interpreter_plain(Decoder& d, DataSection& ds)
+        : opcode_interpreter(d, ds)
+    {
+        adder = &default_adder;
+    }
+
+    virtual void decode_b_string(Varinfo info)
+    {
+        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
+        {
+            bitmap.next(ds);
+            PlainAttrAdder adder(*default_adder.current_subset, bitmap);
+            ds.decode_b_string(info, adder);
+        } else
+            ds.decode_b_string(info, *adder);
+    }
+
+    virtual void decode_b_num(Varinfo info)
+    {
+        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
+        {
+            bitmap.next(ds);
+            PlainAttrAdder adder(*default_adder.current_subset, bitmap);
+            ds.decode_b_num(info, adder);
+        }
+        else
+            ds.decode_b_num(info, *adder);
+    }
+    virtual void run()
+    {
+        /* Iterate on the number of subgroups */
+        for (size_t i = 0; i < d.out.subsets.size(); ++i)
+        {
+            default_adder.current_subset = &d.out.obtain_subset(i);
+            decode_data_section(Opcodes(d.out.datadesc));
+        }
+
+        IFTRACE {
+            if (ds.bits_left() > 32)
+            {
+                fprintf(stderr, "The data section of %s:%zd still contains %d unparsed bits\n",
+                        d.input.fname, d.input.offset, ds.bits_left() - 32);
+                /*
+                   err = dba_error_parse(msg->file->name, POS + vec->cursor,
+                   "the data section still contains %d unparsed bits",
+                   bitvec_bits_left(vec));
+                   goto fail;
+                   */
+            }
+        }
+    }
 };
 
 struct opcode_interpreter_compressed : public opcode_interpreter
 {
+    CompressedVarAdder default_adder;
+
     opcode_interpreter_compressed(Decoder& d, CompressedDataSection& ds)
-        : opcode_interpreter(d, ds) {}
+        : opcode_interpreter(d, ds), default_adder(d.out)
+    {
+        adder = &default_adder;
+    }
 
     void decode_b_num(Varinfo info)
     {
@@ -1021,10 +1002,7 @@ struct opcode_interpreter_compressed : public opcode_interpreter
             ds.decode_b_num(info, adder);
         }
         else
-        {
-            CompressedVarAdder adder(d.out);
-            ds.decode_b_num(info, adder);
-        }
+            ds.decode_b_num(info, *adder);
     }
 
     virtual void decode_b_string(Varinfo info)
@@ -1034,9 +1012,27 @@ struct opcode_interpreter_compressed : public opcode_interpreter
             bitmap.next(ds);
             CompressedAttrAdder adder(d.out, bitmap);
             ds.decode_b_string(info, adder);
-        } else {
-            CompressedVarAdder adder(d.out);
-            ds.decode_b_string(info, adder);
+        } else
+            ds.decode_b_string(info, *adder);
+    }
+
+    virtual void run()
+    {
+        /* Only needs to parse once */
+        decode_data_section(Opcodes(d.out.datadesc));
+
+        IFTRACE {
+            if (ds.bits_left() > 32)
+            {
+                fprintf(stderr, "The data section of %s:%zd still contains %d unparsed bits\n",
+                        d.input.fname, d.input.offset, ds.bits_left() - 32);
+                /*
+                   err = dba_error_parse(msg->file->name, POS + vec->cursor,
+                   "the data section still contains %d unparsed bits",
+                   bitvec_bits_left(vec));
+                   goto fail;
+                   */
+            }
         }
     }
 };
@@ -1062,7 +1058,7 @@ void Decoder::decode_data()
         interpreter.run();
     } else {
         DataSection ds(input);
-        opcode_interpreter interpreter(*this, ds);
+        opcode_interpreter_plain interpreter(*this, ds);
         interpreter.run();
     }
 
@@ -1167,15 +1163,15 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
     return used;
 }
 
-unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
+unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code, VarAdder& adder)
 {
 	if (bitmap.bitmap) delete[] bitmap.bitmap;
 	bitmap.bitmap = 0;
 
     int group;
     int count;
-    VarIgnorer adder;
-    unsigned used = decode_replication_info(ops, group, count, adder);
+    VarIgnorer ignorer;
+    unsigned used = decode_replication_info(ops, group, count, ignorer);
 
 	// Sanity checks
 
@@ -1224,17 +1220,14 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	// Store the bitmap
 	Var bmp(info, bitmap.bitmap);
 
-	// Add var to subset(s)
-	if (d.out.compression)
-	{
-		for (unsigned i = 0; i < d.out.subsets.size(); ++i)
-		{
-			Subset& subset = d.out.obtain_subset(i);
-			add_var(subset, bmp);
-		}
-	} else {
-		add_var(*current_subset, bmp);
-	}
+    // Add var to subset(s)
+    if (d.out.compression)
+    {
+        for (unsigned i = 0; i < d.out.subsets.size(); ++i)
+            adder.add_var(bmp, i);
+    } else {
+        adder.add_var(bmp);
+    }
 
 	// Bitmap will stay set as a reference to the variable to use as the
 	// current bitmap. The subset(s) are taking care of memory managing it.
@@ -1254,14 +1247,7 @@ unsigned opcode_interpreter::decode_r_data(const Opcodes& ops)
 	// Read replication information
 	int group, count;
 	unsigned first;
-    if (!d.out.compression)
-    {
-        PlainVarAdder adder(*current_subset);
-        first = decode_replication_info(ops, group, count, adder);
-    } else {
-        CompressedVarAdder adder(d.out);
-        first = decode_replication_info(ops, group, count, adder);
-    }
+    first = decode_replication_info(ops, group, count, *adder);
 
 	TRACE("R DATA %01d%02d%03d %d %d\n", 
 			WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
@@ -1313,7 +1299,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 		case 22:
 			if (WR_VAR_Y(code) == 0)
 			{
-				used += decode_bitmap(ops.sub(1), code);
+				used += decode_bitmap(ops.sub(1), code, *adder);
 				// Move to first bitmap use index
 				bitmap.use_index = -1;
 				bitmap.subset_index = -1;
