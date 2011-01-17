@@ -279,7 +279,7 @@ struct Decoder
         out.compression = (input.sec[3][6] & 0x40) ? 1 : 0;
         for (i = 0; i < (input.sec[4] - input.sec[3] - 7)/2; i++)
             out.datadesc.push_back((Varcode)readNumber(input.sec[3] + 7 + i * 2, 2));
-        TRACE(" s3length %d subsets %d observed %d compression %d byte7 %x\n",
+        TRACE(" s3length %d subsets %zd observed %d compression %d byte7 %x\n",
                 (int)(input.sec[4] - input.sec[3]), expected_subsets, (input.sec[3][6] & 0x80) ? 1 : 0, out.compression, (unsigned int)input.sec[3][6]);
         /*
        IFTRACE{
@@ -398,10 +398,10 @@ struct PlainAttrAdder : public VarAdder
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
                 var.value(),
-                WR_VAR_F(subset[bitmap.subset_index].code()),
-                WR_VAR_X(subset[bitmap.subset_index].code()),
-                WR_VAR_Y(subset[bitmap.subset_index].code()),
-                bitmap.subset_index, subset.size());
+                WR_VAR_F((*current_subset)[bitmap.subset_index].code()),
+                WR_VAR_X((*current_subset)[bitmap.subset_index].code()),
+                WR_VAR_Y((*current_subset)[bitmap.subset_index].code()),
+                bitmap.subset_index, current_subset->size());
         (*current_subset)[bitmap.subset_index].seta(var);
     }
 };
@@ -422,10 +422,10 @@ struct CompressedAttrAdder : public VarAdder
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
                 var.value(),
-                WR_VAR_F(subset[bitmap.subset_index].code()),
-                WR_VAR_X(subset[bitmap.subset_index].code()),
-                WR_VAR_Y(subset[bitmap.subset_index].code()),
-                bitmap.subset_index, subset.size());
+                WR_VAR_F(out.subsets[subset][bitmap.subset_index].code()),
+                WR_VAR_X(out.subsets[subset][bitmap.subset_index].code()),
+                WR_VAR_Y(out.subsets[subset][bitmap.subset_index].code()),
+                bitmap.subset_index, out.subsets[subset].size());
         out.subsets[subset][bitmap.subset_index].seta(var);
     }
 };
@@ -896,7 +896,7 @@ void Bitmap::next(DataSection& ds)
 {
     if (bitmap == 0)
         ds.parse_error("applying a data present bitmap with no current bitmap");
-    TRACE("bitmap_next pre %d %d %u\n", bitmap_use_index, bitmap_subset_index, bitmap_len);
+    TRACE("bitmap_next pre %d %d %zd\n", use_index, subset_index, len);
     if (out.subsets.size() == 0)
         ds.parse_error("no subsets created yet, but already applying a data present bitmap");
     ++use_index;
@@ -955,7 +955,7 @@ struct opcode_interpreter
                     WR_ALT(c_width_change, c_scale_change));
 
         IFTRACE {
-            TRACE("Parsing @%zd+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", cursor, 8-pbyte_len,
+            TRACE("Parsing @%zd+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", ds.cursor, 8-ds.pbyte_len,
                     info->bit_len, c_width_change,
                     info->scale, c_scale_change,
                     info->bit_ref,
