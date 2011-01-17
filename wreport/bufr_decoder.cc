@@ -345,90 +345,29 @@ struct VarIgnorer : public VarAdder
     virtual void add_var(const Var&, int subset=-1) {}
 };
 
-/// Add variables to the current subset of an uncompressed BUFR
-struct PlainVarAdder : public VarAdder
+template<typename CLS>
+struct VarAdderProxy : public VarAdder
 {
-    Subset* current_subset;
+    typedef void (CLS::*adder_meth)(const Var&, int);
+    CLS& obj;
+    adder_meth adder;
 
-    PlainVarAdder(Subset* current_subset=0) : current_subset(current_subset) {}
+    VarAdderProxy(CLS& obj, adder_meth adder) : obj(obj), adder(adder) {}
 
     virtual void add_var(const Var& var, int subset=-1)
     {
-        TRACE("bulletin:adding var %01d%02d%03d %s to current subset\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value());
-        current_subset->store_variable(var);
+        (obj.*adder)(var, subset);
+        /*
+        bufr_decoder.cc:359: error: must use ‘.*’ or ‘->*’ to call pointer-to-member function in ‘
+            ((VarAdderProxy<opcode_interpreter_compressed>*)this)->VarAdderProxy<opcode_interpreter_compressed>::adder (...)’
+            , e.g. ‘
+            (... ->* ((VarAdderProxy<opcode_interpreter_compressed>*)this)->VarAdderProxy<opcode_interpreter_compressed>::adder) (...)’
+            */
+
     }
 };
 
-/// Add variables to the current subset of an uncompressed BUFR
-struct CompressedVarAdder : public VarAdder
-{
-    BufrBulletin& out;
-
-    CompressedVarAdder(BufrBulletin& out) : out(out) {}
-
-    virtual void add_var(const Var& var, int subset)
-    {
-        TRACE("bulletin:adding var %01d%02d%03d %s to subset %d\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value(), subset);
-        out.subsets[subset].store_variable(var);
-    }
-};
-
-/// Add attributes to the current subset of an uncompressed BUFR
-struct PlainAttrAdder : public VarAdder
-{
-    const Bitmap& bitmap;
-    Subset* current_subset;
-
-    PlainAttrAdder(const Bitmap& bitmap, Subset* current_subset=0)
-        : bitmap(bitmap), current_subset(current_subset) {}
-
-    virtual void add_var(const Var& var, int subset=-1)
-    {
-        TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value(),
-                WR_VAR_F((*current_subset)[bitmap.subset_index].code()),
-                WR_VAR_X((*current_subset)[bitmap.subset_index].code()),
-                WR_VAR_Y((*current_subset)[bitmap.subset_index].code()),
-                bitmap.subset_index, current_subset->size());
-        (*current_subset)[bitmap.subset_index].seta(var);
-    }
-};
-
-/// Add variables to the current subset of an uncompressed BUFR
-struct CompressedAttrAdder : public VarAdder
-{
-    BufrBulletin& out;
-    const Bitmap& bitmap;
-
-    CompressedAttrAdder(BufrBulletin& out, const Bitmap& bitmap)
-        : out(out), bitmap(bitmap) {}
-
-    virtual void add_var(const Var& var, int subset)
-    {
-        TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value(),
-                WR_VAR_F(out.subsets[subset][bitmap.subset_index].code()),
-                WR_VAR_X(out.subsets[subset][bitmap.subset_index].code()),
-                WR_VAR_Y(out.subsets[subset][bitmap.subset_index].code()),
-                bitmap.subset_index, out.subsets[subset].size());
-        out.subsets[subset][bitmap.subset_index].seta(var);
-    }
-};
-
+#if 0
 struct PlainSubstituteAdder : public VarAdder
 {
     const Bitmap& bitmap;
@@ -494,6 +433,7 @@ struct CompressedSubstituteAdder : public VarAdder
         */
     }
 };
+#endif
 
 struct DataSection
 {
@@ -920,12 +860,25 @@ void Bitmap::next(DataSection& ds)
 
 struct opcode_interpreter
 {
+    struct AttrMode
+    {
+        opcode_interpreter& i;
+        AttrMode(opcode_interpreter& i) : i(i)
+        {
+            i.set_attr_mode();
+        }
+        ~AttrMode()
+        {
+            i.set_normal_mode();
+        }
+    };
+
     Decoder& d;
     DataSection& ds;
     Bitmap bitmap;
     /// Currently active variable destination
-    VarAdder* adder;
-    VarAdder* attr_adder;
+    VarAdder* current_adder;
+    //VarAdder* attr_adder;
 
 	/* Current value of scale change from C modifier */
 	int c_scale_change;
@@ -933,7 +886,7 @@ struct opcode_interpreter
 	int c_width_change;
 
 	opcode_interpreter(Decoder& d, DataSection& ds)
-		: d(d), ds(ds), bitmap(d.out), adder(0), attr_adder(0),
+		: d(d), ds(ds), bitmap(d.out), current_adder(0),
 		  c_scale_change(0), c_width_change(0)
 	{
 	}
@@ -941,6 +894,9 @@ struct opcode_interpreter
 	~opcode_interpreter()
 	{
 	}
+
+    virtual void set_normal_mode() = 0;
+    virtual void set_attr_mode() = 0;
 
     unsigned decode_b_data(const Opcodes& ops)
     {
@@ -974,10 +930,11 @@ struct opcode_interpreter
             bitmap.next(ds);
 
             /* Get the real datum */
-            ds.decode_b_value(info, *attr_adder);
+            AttrMode am(*this);
+            ds.decode_b_value(info, *current_adder);
         } else {
             /* Get the real datum */
-            ds.decode_b_value(info, *adder);
+            ds.decode_b_value(info, *current_adder);
         }
 
         return 1;
@@ -1022,7 +979,7 @@ struct opcode_interpreter
         // Read replication information
         int group, count;
         unsigned first;
-        first = decode_replication_info(ops, group, count, *adder);
+        first = decode_replication_info(ops, group, count, *current_adder);
 
         TRACE("decode_r_data:%01d%02d%03d %d %d\n", 
                 WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
@@ -1084,15 +1041,48 @@ struct opcode_interpreter
 
 struct opcode_interpreter_plain : public opcode_interpreter
 {
-    PlainVarAdder default_adder;
-    PlainAttrAdder default_attr_adder;
+    Subset* current_subset;
+    VarAdderProxy<opcode_interpreter_plain> adder;
 
     opcode_interpreter_plain(Decoder& d, DataSection& ds)
         : opcode_interpreter(d, ds),
-          default_attr_adder(bitmap)
+          current_subset(0),
+          adder(*this, &opcode_interpreter_plain::add_var)
     {
-        adder = &default_adder;
-        attr_adder = &default_attr_adder;
+        current_adder = &adder;
+    }
+
+    virtual void set_normal_mode()
+    {
+        adder.adder = &opcode_interpreter_plain::add_var;
+    }
+    virtual void set_attr_mode()
+    {
+        adder.adder = &opcode_interpreter_plain::add_attr;
+    }
+
+    void add_var(const Var& var, int subset=-1)
+    {
+        TRACE("bulletin:adding var %01d%02d%03d %s to current subset\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value());
+        current_subset->store_variable(var);
+    }
+
+    void add_attr(const Var& var, int subset=-1)
+    {
+        TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(),
+                WR_VAR_F((*current_subset)[bitmap.subset_index].code()),
+                WR_VAR_X((*current_subset)[bitmap.subset_index].code()),
+                WR_VAR_Y((*current_subset)[bitmap.subset_index].code()),
+                bitmap.subset_index, current_subset->size());
+        (*current_subset)[bitmap.subset_index].seta(var);
     }
 
     virtual void run()
@@ -1100,8 +1090,7 @@ struct opcode_interpreter_plain : public opcode_interpreter
         /* Iterate on the number of subgroups */
         for (size_t i = 0; i < d.out.subsets.size(); ++i)
         {
-            default_adder.current_subset = &d.out.obtain_subset(i);
-            default_attr_adder.current_subset = &d.out.obtain_subset(i);
+            current_subset = &d.out.obtain_subset(i);
             decode_data_section(Opcodes(d.out.datadesc));
         }
 
@@ -1123,16 +1112,46 @@ struct opcode_interpreter_plain : public opcode_interpreter
 
 struct opcode_interpreter_compressed : public opcode_interpreter
 {
-    CompressedVarAdder default_adder;
-    CompressedAttrAdder default_attr_adder;
+    VarAdderProxy<opcode_interpreter_compressed> adder;
 
     opcode_interpreter_compressed(Decoder& d, CompressedDataSection& ds)
         : opcode_interpreter(d, ds),
-          default_adder(d.out),
-          default_attr_adder(d.out, bitmap)
+          adder(*this, &opcode_interpreter_compressed::add_var)
     {
-        adder = &default_adder;
-        attr_adder = &default_attr_adder;
+        current_adder = &adder;
+    }
+
+    virtual void set_normal_mode()
+    {
+        adder.adder = &opcode_interpreter_compressed::add_var;
+    }
+    virtual void set_attr_mode()
+    {
+        adder.adder = &opcode_interpreter_compressed::add_attr;
+    }
+
+    void add_var(const Var& var, int subset)
+    {
+        TRACE("bulletin:adding var %01d%02d%03d %s to subset %d\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(), subset);
+        d.out.subsets[subset].store_variable(var);
+    }
+
+    void add_attr(const Var& var, int subset)
+    {
+        TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(),
+                WR_VAR_F(d.out.subsets[subset][bitmap.subset_index].code()),
+                WR_VAR_X(d.out.subsets[subset][bitmap.subset_index].code()),
+                WR_VAR_Y(d.out.subsets[subset][bitmap.subset_index].code()),
+                bitmap.subset_index, d.out.subsets[subset].size());
+        d.out.subsets[subset][bitmap.subset_index].seta(var);
     }
 
     virtual void run()
@@ -1338,7 +1357,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 		case 22:
 			if (WR_VAR_Y(code) == 0)
 			{
-				used += decode_bitmap(ops.sub(1), code, *adder);
+				used += decode_bitmap(ops.sub(1), code, *current_adder);
 			} else
 				ds.parse_error("C modifier %d%02d%03d not yet supported",
 							WR_VAR_F(code),
@@ -1348,7 +1367,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
         case 23:
             if (WR_VAR_Y(code) == 0)
             {
-                used += decode_bitmap(ops.sub(1), code, *adder);
+                used += decode_bitmap(ops.sub(1), code, *current_adder);
             } else if (WR_VAR_Y(code) == 255) {
                 if (!bitmap.bitmap)
                     ds.parse_error("C23255 found but there is no active bitmap");
