@@ -548,6 +548,66 @@ struct DataSection
         }
         out.add_var(var);
     }
+
+    /**
+     * Read a string from the data section
+     *
+     * @param info
+     *   Description of how the string is encoded
+     * @param str
+     *   Buffer where the string is written. Must be big enough to contain the
+     *   longest string described by info, plus 2 bytes
+     * @return
+     *   true if we decoded a real string, false if we decoded a missing string
+     *   value
+     */
+    bool read_base_string(Varinfo info, char* str, size_t& len)
+    {
+        int toread = info->bit_len;
+        bool missing = true;
+        len = 0;
+
+        while (toread > 0)
+        {
+            int count = toread > 8 ? 8 : toread;
+            uint32_t bitval = get_bits(count);
+            /* Check that the string is not all 0xff, meaning missing value */
+            if (bitval != 0xff && bitval != 0)
+                missing = false;
+            str[len++] = bitval;
+            toread -= count;
+        }
+
+        if (!missing)
+        {
+            str[len] = 0;
+
+            /* Convert space-padding into zero-padding */
+            for (--len; len > 0 && isspace(str[len]);
+                    len--)
+                str[len] = 0;
+        }
+
+        TRACE("bufr_message_decode_b_data len %zd val %s missing %d info-len %d info-desc %s\n", len, str, (int)missing, info->bit_len, info->desc);
+
+        return !missing;
+    }
+
+    virtual void decode_b_string(Varinfo info, VarAdder& adder)
+    {
+        /* Read a string */
+        Var var(info);
+
+        char str[info->bit_len / 8 + 2];
+        size_t len;
+        bool missing = !read_base_string(info, str, len);
+
+        /* Store the variable that we found */
+        // Set the variable value
+        if (!missing)
+            var.setc(str);
+        adder.add_var(var);
+    }
 };
 
 struct CompressedDataSection : public DataSection
@@ -613,6 +673,87 @@ struct CompressedDataSection : public DataSection
             out.add_var(var, i);
         }
     }
+
+    void decode_b_string(Varinfo info, VarAdder& adder)
+    {
+        /* Read a string */
+        Var var(info);
+        //size_t len = 0;
+
+        char str[info->bit_len / 8 + 2];
+        size_t len;
+        bool missing = !read_base_string(info, str, len);
+
+        /* Store the variable that we found */
+
+        /* If compression is in use, then we just decoded the base value.  Now
+         * we need to decode all the offsets */
+
+        /* Decode the number of bits (encoded in 6 bits) that these difference
+         * values occupy */
+        uint32_t diffbits = get_bits(6);
+
+        TRACE("Compressed string, diff bits %d\n", diffbits);
+
+        if (diffbits != 0)
+        {
+            /* For compressed strings, the reference value must be all zeros */
+            for (size_t i = 0; i < len; ++i)
+                if (str[i] != 0)
+                    error_unimplemented::throwf("compressed strings with %d bit deltas have non-zero reference value", diffbits);
+
+            /* Let's also check that the number of
+             * difference characters is the same length as
+             * the reference string */
+            if (diffbits > len)
+                error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
+
+            for (unsigned i = 0; i < subset_count; ++i)
+            {
+                unsigned j, missing = 1;
+
+                /* Decode the difference value, reusing the str buffer */
+                for (j = 0; j < diffbits; ++j)
+                {
+                    uint32_t bitval = get_bits(8);
+                    /* Check that the string is not all 0xff, meaning missing value */
+                    if (bitval != 0xff && bitval != 0)
+                        missing = 0;
+                    str[j] = bitval;
+                }
+                str[j] = 0;
+
+                // Set the variable value
+                if (missing)
+                {
+                    /* Missing value */
+                    TRACE("Decoded[%d] as missing\n", i);
+                } else {
+                    /* Convert space-padding into zero-padding */
+                    for (--j; j > 0 && isspace(str[j]);
+                            j--)
+                        str[j] = 0;
+
+                    /* Compute the value for this subset */
+                    TRACE("Decoded[%d] as \"%s\"\n", i, str);
+
+                    var.setc(str);
+                }
+
+                /* Add it to this subset */
+                adder.add_var(var, i);
+            }
+        } else {
+            /* Add the string to all the subsets */
+            for (unsigned i = 0; i < subset_count; ++i)
+            {
+                // Set the variable value
+                if (!missing) var.setc(str);
+
+                adder.add_var(var, i);
+            }
+        }
+    }
 };
 
 void Bitmap::next(DataSection& ds)
@@ -668,7 +809,19 @@ struct opcode_interpreter
 
 	unsigned decode_b_data(const Opcodes& ops);
 	unsigned decode_bitmap(const Opcodes& ops, Varcode code);
-	virtual void decode_b_string(Varinfo info);
+
+    virtual void decode_b_string(Varinfo info)
+    {
+        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
+        {
+            bitmap.next(ds);
+            PlainAttrAdder adder(*current_subset, bitmap);
+            ds.decode_b_string(info, adder);
+        } else {
+            PlainVarAdder adder(*current_subset);
+            ds.decode_b_string(info, adder);
+        }
+    }
 
     virtual void decode_b_num(Varinfo info)
     {
@@ -811,6 +964,19 @@ struct opcode_interpreter_compressed : public opcode_interpreter
             ds.decode_b_num(info, adder);
         }
     }
+
+    virtual void decode_b_string(Varinfo info)
+    {
+        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
+        {
+            bitmap.next(ds);
+            CompressedAttrAdder adder(d.out, bitmap);
+            ds.decode_b_string(info, adder);
+        } else {
+            CompressedVarAdder adder(d.out);
+            ds.decode_b_string(info, adder);
+        }
+    }
 };
 
 void Decoder::decode_data()
@@ -912,123 +1078,6 @@ unsigned opcode_interpreter::decode_b_data(const Opcodes& ops)
 	return 1;
 }
 
-void opcode_interpreter::decode_b_string(Varinfo info)
-{
-	/* Read a string */
-	Var var(info);
-	int toread = info->bit_len;
-	size_t len = 0;
-	int missing = 1;
-
-	char str[info->bit_len / 8 + 2];
-
-	while (toread > 0)
-	{
-		int count = toread > 8 ? 8 : toread;
-		uint32_t bitval = ds.get_bits(count);
-		/* Check that the string is not all 0xff, meaning missing value */
-		if (bitval != 0xff && bitval != 0)
-			missing = 0;
-		str[len++] = bitval;
-		toread -= count;
-	}
-
-	if (!missing)
-	{
-		str[len] = 0;
-
-		/* Convert space-padding into zero-padding */
-		for (--len; len > 0 && isspace(str[len]);
-				len--)
-			str[len] = 0;
-	}
-
-	TRACE("bufr_message_decode_b_data len %zd val %s missing %d info-len %d info-desc %s\n", len, str, missing, info->bit_len, info->desc);
-
-	if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
-		bitmap.next(ds);
-
-	/* Store the variable that we found */
-	if (d.out.compression)
-	{
-		/* If compression is in use, then we just decoded the base value.  Now
-		 * we need to decode all the offsets */
-
-		/* Decode the number of bits (encoded in 6 bits) that these difference
-		 * values occupy */
-		uint32_t diffbits = ds.get_bits(6);
-
-		TRACE("Compressed string, diff bits %d\n", diffbits);
-
-		if (diffbits != 0)
-		{
-			/* For compressed strings, the reference value must be all zeros */
-			for (size_t i = 0; i < len; ++i)
-				if (str[i] != 0)
-					error_unimplemented::throwf("compressed strings with %d bit deltas have non-zero reference value", diffbits);
-
-			/* Let's also check that the number of
-			 * difference characters is the same length as
-			 * the reference string */
-			if (diffbits > len)
-				error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
-
-			for (unsigned i = 0; i < d.out.subsets.size(); ++i)
-			{
-				unsigned j, missing = 1;
-
-				/* Access the subset we are working on */
-				Subset& subset = d.out.obtain_subset(i);
-
-				/* Decode the difference value, reusing the str buffer */
-				for (j = 0; j < diffbits; ++j)
-				{
-					uint32_t bitval = ds.get_bits(8);
-					/* Check that the string is not all 0xff, meaning missing value */
-					if (bitval != 0xff && bitval != 0)
-						missing = 0;
-					str[j] = bitval;
-				}
-				str[j] = 0;
-
-				// Set the variable value
-				if (missing)
-				{
-					/* Missing value */
-					TRACE("Decoded[%d] as missing\n", i);
-				} else {
-					/* Convert space-padding into zero-padding */
-					for (--j; j > 0 && isspace(str[j]);
-							j--)
-						str[j] = 0;
-
-					/* Compute the value for this subset */
-					TRACE("Decoded[%d] as \"%s\"\n", i, str);
-
-					var.setc(str);
-				}
-
-				/* Add it to this subset */
-				add_var(subset, var);
-			}
-		} else {
-			/* Add the string to all the subsets */
-			for (unsigned i = 0; i < d.out.subsets.size(); ++i)
-			{
-				Subset& subset = d.out.obtain_subset(i);
-
-				// Set the variable value
-				if (!missing) var.setc(str);
-
-				add_var(subset, var);
-			}
-		}
-	} else {
-		// Set the variable value
-		if (!missing) var.setc(str);
-		add_var(*current_subset, var);
-	}
-}
 
 unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& group, int& count, bool store_in_subset)
 {
