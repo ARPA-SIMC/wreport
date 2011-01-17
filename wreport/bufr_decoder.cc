@@ -613,6 +613,21 @@ struct DataSection
             var.setc(str);
         adder.add_var(var);
     }
+
+    /**
+     * Decode a delayed replication factor, send the resulting variables to
+     * \a adder and return the replication count
+     */
+    virtual int decode_delayed_replication_factor(Varinfo info, VarAdder& adder)
+    {
+        // Fetch the repetition count
+        int count = get_bits(info->bit_len);
+
+        /* Insert the repetition count among the parsed variables */
+        adder.add_var(Var(info, count));
+
+        return count;
+    }
 };
 
 struct CompressedDataSection : public DataSection
@@ -758,6 +773,48 @@ struct CompressedDataSection : public DataSection
                 adder.add_var(var, i);
             }
         }
+    }
+
+    /**
+     * Decode a delayed replication factor, send the resulting variables to
+     * \a adder and return the replication count
+     */
+    int decode_delayed_replication_factor(Varinfo info, VarAdder& adder)
+    {
+        // Fetch the repetition count
+        int count = get_bits(info->bit_len);
+
+        /* Insert the repetition count among the parsed variables */
+
+        /* If compression is in use, then we just decoded the base value.  Now
+         * we need to decode all the repetition factors and see
+         * that they are the same */
+
+        /* Decode the number of bits (encoded in 6 bits) that these difference
+         * values occupy */
+        uint32_t diffbits = get_bits(6);
+
+        TRACE("Compressed delayed repetition, base value %d diff bits %d\n", count, diffbits);
+
+        uint32_t repval = 0;
+        for (unsigned i = 0; i < subset_count; ++i)
+        {
+            /* Decode the difference value */
+            uint32_t diff = get_bits(diffbits);
+
+            /* Compute the value for this subset */
+            uint32_t newval = count + diff;
+            TRACE("Decoded[%d] as %d+%d=%d\n", i, count, diff, newval);
+
+            if (i == 0)
+                repval = newval;
+            else if (repval != newval)
+                parse_error("compressed delayed replication factor has different values for subsets (%d and %d)", repval, newval);
+
+            adder.add_var(Var(info, (int)newval), i);
+        }
+
+        return count;
     }
 };
 
@@ -1086,61 +1143,28 @@ unsigned opcode_interpreter::decode_b_data(const Opcodes& ops)
 
 unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& group, int& count, VarAdder& adder)
 {
-	unsigned used = 1;
-	group = WR_VAR_X(ops.head());
-	count = WR_VAR_Y(ops.head());
+    unsigned used = 1;
+    group = WR_VAR_X(ops.head());
+    count = WR_VAR_Y(ops.head());
 
-	if (count == 0)
-	{
-		// Delayed replication
+    if (count == 0)
+    {
+        // Delayed replication
 
-		// We also use the delayed replication factor opcode
-		++used;
+        // We also use the delayed replication factor opcode
+        ++used;
 
-		Varcode rep_op = ops[1];
+        Varcode rep_op = ops[1];
 
-		// Fetch the repetition count
-		Varinfo rep_info = d.out.btable->query(rep_op);
-		count = ds.get_bits(rep_info->bit_len);
+        // Fetch the repetition count
+        Varinfo rep_info = d.out.btable->query(rep_op);
+        count = ds.decode_delayed_replication_factor(rep_info, adder);
 
-		/* Insert the repetition count among the parsed variables */
-		if (d.out.compression)
-		{
-			/* If compression is in use, then we just decoded the base value.  Now
-			 * we need to decode all the repetition factors and see
-			 * that they are the same */
+        TRACE("decode_replication_info %d items %d times (delayed)\n", group, count);
+    } else
+        TRACE("decode_replication_info %d items %d times\n", group, count);
 
-			/* Decode the number of bits (encoded in 6 bits) that these difference
-			 * values occupy */
-			uint32_t diffbits = ds.get_bits(6);
-
-			TRACE("Compressed delayed repetition, base value %d diff bits %d\n", count, diffbits);
-
-			uint32_t repval = 0;
-			for (unsigned i = 0; i < d.out.subsets.size(); ++i)
-			{
-				/* Decode the difference value */
-				uint32_t diff = ds.get_bits(diffbits);
-
-				/* Compute the value for this subset */
-				uint32_t newval = count + diff;
-				TRACE("Decoded[%d] as %d+%d=%d\n", i, count, diff, newval);
-
-				if (i == 0)
-					repval = newval;
-				else if (repval != newval)
-					ds.parse_error("compressed delayed replication factor has different values for subsets (%d and %d)", repval, newval);
-
-                adder.add_var(Var(rep_info, (int)newval), i);
-            }
-        } else
-            adder.add_var(Var(rep_info, count));
-
-		TRACE("decode_replication_info %d items %d times (delayed)\n", group, count);
-	} else
-		TRACE("decode_replication_info %d items %d times\n", group, count);
-
-	return used;
+    return used;
 }
 
 unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
