@@ -307,6 +307,7 @@ struct DataSection
         : input(input), cursor(input.sec[4] + 4 - input.sec[0]), pbyte(0), pbyte_len(0)
     {
     }
+    virtual ~DataSection() {}
 
     /* Return the current decoding byte offset */
     int offset() const { return cursor; }
@@ -386,10 +387,15 @@ struct DataSection
     }
 };
 
+struct CompressedDataSection : public DataSection
+{
+    CompressedDataSection(Input& input) : DataSection(input) {}
+};
+
 struct opcode_interpreter
 {
 	Decoder& d;
-    DataSection ds;
+    DataSection& ds;
 
 	/* Current subset when decoding non-compressed BUFR messages */
 	Subset* current_subset;
@@ -410,8 +416,8 @@ struct opcode_interpreter
 	/* Next subset element for which we decode attributes */
 	int bitmap_subset_index;
 
-	opcode_interpreter(Decoder& d)
-		: d(d), ds(d.input), current_subset(0),
+	opcode_interpreter(Decoder& d, DataSection& ds)
+		: d(d), ds(ds), current_subset(0),
 		  c_scale_change(0), c_width_change(0),
 		  bitmap(0), bitmap_count(0)
 	{
@@ -563,8 +569,8 @@ struct opcode_interpreter
 
 struct opcode_interpreter_compressed : public opcode_interpreter
 {
-    opcode_interpreter_compressed(Decoder& d)
-        : opcode_interpreter(d) {}
+    opcode_interpreter_compressed(Decoder& d, CompressedDataSection& ds)
+        : opcode_interpreter(d, ds) {}
     virtual void decode_b_num(Varinfo info);
 };
 
@@ -582,14 +588,16 @@ void Decoder::decode_data()
             (unsigned int)*(input.sec[4]+2),
             (unsigned int)*(input.sec[4]+3));
 
-	if (out.compression)
-	{
-		opcode_interpreter_compressed interpreter(*this);
-		interpreter.run();
-	} else {
-		opcode_interpreter interpreter(*this);
-		interpreter.run();
-	}
+    if (out.compression)
+    {
+        CompressedDataSection ds(input);
+        opcode_interpreter_compressed interpreter(*this, ds);
+        interpreter.run();
+    } else {
+        DataSection ds(input);
+        opcode_interpreter interpreter(*this, ds);
+        interpreter.run();
+    }
 
 	/* Read BUFR section 5 (Data section) */
 	input.check_available_data(input.sec[5], 4, "section 5 of BUFR message (end section)");
