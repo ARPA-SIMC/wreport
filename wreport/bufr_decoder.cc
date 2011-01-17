@@ -357,83 +357,8 @@ struct VarAdderProxy : public VarAdder
     virtual void add_var(const Var& var, int subset=-1)
     {
         (obj.*adder)(var, subset);
-        /*
-        bufr_decoder.cc:359: error: must use ‘.*’ or ‘->*’ to call pointer-to-member function in ‘
-            ((VarAdderProxy<opcode_interpreter_compressed>*)this)->VarAdderProxy<opcode_interpreter_compressed>::adder (...)’
-            , e.g. ‘
-            (... ->* ((VarAdderProxy<opcode_interpreter_compressed>*)this)->VarAdderProxy<opcode_interpreter_compressed>::adder) (...)’
-            */
-
     }
 };
-
-#if 0
-struct PlainSubstituteAdder : public VarAdder
-{
-    const Bitmap& bitmap;
-    Subset* current_subset;
-
-    PlainSubstituteAdder(const Bitmap& bitmap, Subset* current_subset=0)
-        : bitmap(bitmap), current_subset(current_subset) {}
-
-    Varinfo expected_info() const
-    {
-        return (*current_subset)[bitmap.subset_index].info();
-    }
-
-    virtual void add_var(const Var& var, int subset=-1)
-    {
-        /*
-        TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value(),
-                WR_VAR_F(subset[bitmap.subset_index].code()),
-                WR_VAR_X(subset[bitmap.subset_index].code()),
-                WR_VAR_Y(subset[bitmap.subset_index].code()),
-                bitmap.subset_index, subset.size());
-        (*current_subset)[bitmap.subset_index].seta(var);
-
-                // TODO: set target to "substituted value"
-                SubstituteVariableAdder adder(foobarbaz);
-        */
-    }
-};
-
-struct CompressedSubstituteAdder : public VarAdder
-{
-    BufrBulletin& out;
-    const Bitmap& bitmap;
-
-    CompressedSubstituteAdder(BufrBulletin& out, const Bitmap& bitmap)
-        : out(out), bitmap(bitmap) {}
-
-    Varinfo expected_info() const
-    {
-        return out.subsets[0][bitmap.subset_index].info();
-    }
-
-    virtual void add_var(const Var& var, int subset=-1)
-    {
-        /*
-        TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value(),
-                WR_VAR_F(subset[bitmap.subset_index].code()),
-                WR_VAR_X(subset[bitmap.subset_index].code()),
-                WR_VAR_Y(subset[bitmap.subset_index].code()),
-                bitmap.subset_index, subset.size());
-        (*current_subset)[bitmap.subset_index].seta(var);
-
-                // TODO: set target to "substituted value"
-                SubstituteVariableAdder adder(foobarbaz);
-        */
-    }
-};
-#endif
 
 struct DataSection
 {
@@ -872,6 +797,18 @@ struct opcode_interpreter
             i.set_normal_mode();
         }
     };
+    struct SubstMode
+    {
+        opcode_interpreter& i;
+        SubstMode(opcode_interpreter& i) : i(i)
+        {
+            i.set_subst_mode();
+        }
+        ~SubstMode()
+        {
+            i.set_normal_mode();
+        }
+    };
 
     Decoder& d;
     DataSection& ds;
@@ -897,6 +834,7 @@ struct opcode_interpreter
 
     virtual void set_normal_mode() = 0;
     virtual void set_attr_mode() = 0;
+    virtual void set_subst_mode() = 0;
 
     unsigned decode_b_data(const Opcodes& ops)
     {
@@ -1060,6 +998,10 @@ struct opcode_interpreter_plain : public opcode_interpreter
     {
         adder.adder = &opcode_interpreter_plain::add_attr;
     }
+    virtual void set_subst_mode()
+    {
+        adder.adder = &opcode_interpreter_plain::add_subst;
+    }
 
     void add_var(const Var& var, int subset=-1)
     {
@@ -1074,6 +1016,20 @@ struct opcode_interpreter_plain : public opcode_interpreter
     void add_attr(const Var& var, int subset=-1)
     {
         TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(),
+                WR_VAR_F((*current_subset)[bitmap.subset_index].code()),
+                WR_VAR_X((*current_subset)[bitmap.subset_index].code()),
+                WR_VAR_Y((*current_subset)[bitmap.subset_index].code()),
+                bitmap.subset_index, current_subset->size());
+        (*current_subset)[bitmap.subset_index].seta(var);
+    }
+
+    void add_subst(const Var& var, int subset=-1)
+    {
+        TRACE("bulletin:adding substitute value %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
                 WR_VAR_F(var.code()),
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
@@ -1129,6 +1085,10 @@ struct opcode_interpreter_compressed : public opcode_interpreter
     {
         adder.adder = &opcode_interpreter_compressed::add_attr;
     }
+    virtual void set_subst_mode()
+    {
+        adder.adder = &opcode_interpreter_compressed::add_subst;
+    }
 
     void add_var(const Var& var, int subset)
     {
@@ -1143,6 +1103,20 @@ struct opcode_interpreter_compressed : public opcode_interpreter
     void add_attr(const Var& var, int subset)
     {
         TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(),
+                WR_VAR_F(d.out.subsets[subset][bitmap.subset_index].code()),
+                WR_VAR_X(d.out.subsets[subset][bitmap.subset_index].code()),
+                WR_VAR_Y(d.out.subsets[subset][bitmap.subset_index].code()),
+                bitmap.subset_index, d.out.subsets[subset].size());
+        d.out.subsets[subset][bitmap.subset_index].seta(var);
+    }
+
+    void add_subst(const Var& var, int subset=-1)
+    {
+        TRACE("bulletin:adding substitute var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
                 WR_VAR_F(var.code()),
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
@@ -1374,26 +1348,12 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 bitmap.next(ds);
                 // Read substituted value
 
-                // TODO: Get the varinfo at bitmap_subset_index
-                // TODO: use it for decoding the next value (this would honour C
-                // modifiers that were in effect for its encoding)
-
-                /// TODO vvvvvvvvv
-                VarIgnorer adder;
+                // Use the details of the corrisponding variable for decoding
                 Varinfo info = d.out.subsets[0][bitmap.subset_index].info();
-                /*
-                Subset* subset = 0;
-                if (d.out.compression)
-                    subset = &(d.out.obtain_subset(0));
-                else
-                    subset = current_subset;
-                Varinfo info = (*subset)[bitmap->bitmap_subset_index].info();
-                // TODO: set target to "substituted value"
-                // (refactor to be able to set/override a 'set target function')
-                SubstituteVariableAdder adder(foobarbaz);
-                */
-                /// TODO ^^^^^^^^^
-                ds.decode_b_value(info, adder);
+                // Switch to 'add substituted value as attribute' mode
+                SubstMode sm(*this);
+                // Decode the value
+                ds.decode_b_value(info, *current_adder);
             } else
                 ds.parse_error("C modifier %d%02d%03d not yet supported",
                         WR_VAR_F(code),
