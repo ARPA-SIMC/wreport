@@ -294,8 +294,11 @@ struct Decoder
     void decode_data();
 };
 
+struct DataSection;
+
 struct Bitmap
 {
+    const BufrBulletin& out;
     /* Data present bitmap */
     char* bitmap;
     /* Length of data present bitmap */
@@ -307,14 +310,16 @@ struct Bitmap
     /* Next subset element for which we decode attributes */
     int subset_index;
 
-    Bitmap()
-        : bitmap(0), count(0)
+    Bitmap(const BufrBulletin& out)
+        : out(out), bitmap(0), count(0)
     {
     }
     ~Bitmap()
     {
         if (bitmap) delete[] bitmap;
     }
+
+    void next(DataSection& ds);
 };
 
 /**
@@ -610,6 +615,33 @@ struct CompressedDataSection : public DataSection
     }
 };
 
+void Bitmap::next(DataSection& ds)
+{
+    if (bitmap == 0)
+        ds.parse_error("applying a data present bitmap with no current bitmap");
+    TRACE("bitmap_next pre %d %d %u\n", bitmap_use_index, bitmap_subset_index, bitmap_len);
+    if (out.subsets.size() == 0)
+        ds.parse_error("no subsets created yet, but already applying a data present bitmap");
+    ++use_index;
+    ++subset_index;
+    while (use_index < 0 || (
+                (unsigned)use_index < len &&
+                bitmap[use_index] == '-'))
+    {
+        TRACE("INCR\n");
+        ++use_index;
+        ++subset_index;
+        while ((unsigned)subset_index < out.subsets[0].size() &&
+                WR_VAR_F(out.subsets[0][subset_index].code()) != 0)
+            ++subset_index;
+    }
+    if ((unsigned)use_index > len)
+        ds.parse_error("moved past end of data present bitmap");
+    if ((unsigned)subset_index == out.subsets[0].size())
+        ds.parse_error("end of data reached when applying attributes");
+    TRACE("bitmap_next post %d %d\n", use_index, subset_index);
+}
+
 struct opcode_interpreter
 {
     Decoder& d;
@@ -625,40 +657,13 @@ struct opcode_interpreter
 	int c_width_change;
 
 	opcode_interpreter(Decoder& d, DataSection& ds)
-		: d(d), ds(ds), current_subset(0),
+		: d(d), ds(ds), bitmap(d.out), current_subset(0),
 		  c_scale_change(0), c_width_change(0)
 	{
 	}
 
 	~opcode_interpreter()
 	{
-	}
-
-	void bitmap_next()
-	{
-		if (bitmap.bitmap == 0)
-			ds.parse_error("applying a data present bitmap with no current bitmap");
-		TRACE("bitmap_next pre %d %d %u\n", bitmap_use_index, bitmap_subset_index, bitmap_len);
-		if (d.out.subsets.size() == 0)
-			ds.parse_error("no subsets created yet, but already applying a data present bitmap");
-		++bitmap.use_index;
-		++bitmap.subset_index;
-		while (bitmap.use_index < 0 || (
-			(unsigned)bitmap.use_index < bitmap.len &&
-			bitmap.bitmap[bitmap.use_index] == '-'))
-		{
-			TRACE("INCR\n");
-			++bitmap.use_index;
-			++bitmap.subset_index;
-			while ((unsigned)bitmap.subset_index < d.out.subsets[0].size() &&
-				WR_VAR_F(d.out.subsets[0][bitmap.subset_index].code()) != 0)
-				++bitmap.subset_index;
-		}
-		if ((unsigned)bitmap.use_index > bitmap.len)
-			ds.parse_error("moved past end of data present bitmap");
-		if ((unsigned)bitmap.subset_index == d.out.subsets[0].size())
-			ds.parse_error("end of data reached when applying attributes");
-		TRACE("bitmap_next post %d %d\n", bitmap.use_index, bitmap.subset_index);
 	}
 
 	unsigned decode_b_data(const Opcodes& ops);
@@ -669,7 +674,7 @@ struct opcode_interpreter
     {
         if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
         {
-            bitmap_next();
+            bitmap.next(ds);
             PlainAttrAdder adder(*current_subset, bitmap);
             ds.decode_b_num(info, adder);
         }
@@ -796,7 +801,7 @@ struct opcode_interpreter_compressed : public opcode_interpreter
     {
         if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
         {
-            bitmap_next();
+            bitmap.next(ds);
             CompressedAttrAdder adder(d.out, bitmap);
             ds.decode_b_num(info, adder);
         }
@@ -941,7 +946,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 	TRACE("bufr_message_decode_b_data len %zd val %s missing %d info-len %d info-desc %s\n", len, str, missing, info->bit_len, info->desc);
 
 	if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
-		bitmap_next();
+		bitmap.next(ds);
 
 	/* Store the variable that we found */
 	if (d.out.compression)
