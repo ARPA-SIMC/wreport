@@ -294,9 +294,102 @@ struct Decoder
 	void decode_data();
 };
 
+struct DataSection
+{
+    Input& input;
+
+    /* Bit decoding data */
+    size_t cursor;
+    unsigned char pbyte;
+    int pbyte_len;
+
+    DataSection(Input& input)
+        : input(input), cursor(input.sec[4] + 4 - input.sec[0]), pbyte(0), pbyte_len(0)
+    {
+    }
+
+    /* Return the current decoding byte offset */
+    int offset() const { return cursor; }
+
+    /* Return the number of bits left in the message to be decoded */
+    int bits_left() const { return (input.in.size() - cursor) * 8 + pbyte_len; }
+
+    /**
+     * Get the integer value of the next 'n' bits from the decode input
+     * n must be <= 32.
+     */
+    uint32_t get_bits(int n)
+    {
+        uint32_t result = 0;
+
+        if (cursor == input.in.size())
+            parse_error("end of buffer while looking for %d bits of bit-packed data", n);
+
+        for (int i = 0; i < n; i++) 
+        {
+            if (pbyte_len == 0) 
+            {
+                pbyte_len = 8;
+                pbyte = input.sec[0][cursor++];
+            }
+            result <<= 1;
+            if (pbyte & 0x80)
+                result |= 1;
+            pbyte <<= 1;
+            pbyte_len--;
+        }
+
+        return result;
+    }
+
+    /* Dump 'count' bits of 'buf', starting at the 'ofs-th' bit */
+    void dump_next_bits(int count, FILE* out)
+    {
+        size_t cursor = this->cursor;
+        int pbyte = this->pbyte;
+        int pbyte_len = this->pbyte_len;
+        int i;
+
+        for (i = 0; i < count; ++i) 
+        {
+            if (cursor == input.in.size())
+                break;
+            if (pbyte_len == 0) 
+            {
+                pbyte_len = 8;
+                pbyte = input.sec[0][cursor++];
+                putc(' ', out);
+            }
+            putc((pbyte & 0x80) ? '1' : '0', out);
+            pbyte <<= 1;
+            --pbyte_len;
+        }
+    }
+
+    void parse_error(const char* fmt, ...) WREPORT_THROWF_ATTRS(2, 3)
+    {
+        char* context;
+        char* message;
+
+        va_list ap;
+        va_start(ap, fmt);
+        vasprintf(&message, fmt, ap);
+        va_end(ap);
+
+        asprintf(&context, "%s:%zd+%zd: %s", input.fname, input.offset, cursor, message);
+        free(message);
+
+        string msg(context);
+        free(context);
+
+        throw error_parse(msg);
+    }
+};
+
 struct opcode_interpreter
 {
 	Decoder& d;
+    DataSection ds;
 
 	/* Current subset when decoding non-compressed BUFR messages */
 	Subset* current_subset;
@@ -305,11 +398,6 @@ struct opcode_interpreter
 	int c_scale_change;
 	/* Current value of width change from C modifier */
 	int c_width_change;
-
-	/* Bit decoding data */
-	size_t cursor;
-	unsigned char pbyte;
-	int pbyte_len;
 
 	/* Data present bitmap */
 	char* bitmap;
@@ -322,10 +410,9 @@ struct opcode_interpreter
 	/* Next subset element for which we decode attributes */
 	int bitmap_subset_index;
 
-	opcode_interpreter(Decoder& d, int start_ofs)
-		: d(d), current_subset(0),
+	opcode_interpreter(Decoder& d)
+		: d(d), ds(d.input), current_subset(0),
 		  c_scale_change(0), c_width_change(0),
-		  cursor(start_ofs), pbyte(0), pbyte_len(0),
 		  bitmap(0), bitmap_count(0)
 	{
 	}
@@ -335,90 +422,13 @@ struct opcode_interpreter
 		if (bitmap) delete[] bitmap;
 	}
 
-	void parse_error(const char* fmt, ...) WREPORT_THROWF_ATTRS(2, 3)
-	{
-		char* context;
-		char* message;
-
-		va_list ap;
-		va_start(ap, fmt);
-		vasprintf(&message, fmt, ap);
-		va_end(ap);
-
-		asprintf(&context, "%s:%zd+%zd: %s", d.input.fname, d.input.offset, cursor, message);
-		free(message);
-
-		string msg(context);
-		free(context);
-
-		throw error_parse(msg);
-	}
-
-	/* Return the current decoding byte offset */
-	int offset() const { return cursor; }
-
-	/* Return the number of bits left in the message to be decoded */
-	int bits_left() const { return (d.input.in.size() - cursor) * 8 + pbyte_len; }
-
-	/**
-	 * Get the integer value of the next 'n' bits from the decode input
-	 * n must be <= 32.
-	 */
-	uint32_t get_bits(int n)
-	{
-		uint32_t result = 0;
-
-		if (cursor == d.input.in.size())
-			parse_error("end of buffer while looking for %d bits of bit-packed data", n);
-
-		for (int i = 0; i < n; i++) 
-		{
-			if (pbyte_len == 0) 
-			{
-				pbyte_len = 8;
-				pbyte = d.input.sec[0][cursor++];
-			}
-			result <<= 1;
-			if (pbyte & 0x80)
-				result |= 1;
-			pbyte <<= 1;
-			pbyte_len--;
-		}
-
-		return result;
-	}
-
-	/* Dump 'count' bits of 'buf', starting at the 'ofs-th' bit */
-	void dump_next_bits(int count, FILE* out)
-	{
-		size_t cursor = this->cursor;
-		int pbyte = this->pbyte;
-		int pbyte_len = this->pbyte_len;
-		int i;
-
-		for (i = 0; i < count; ++i) 
-		{
-			if (cursor == d.input.in.size())
-				break;
-			if (pbyte_len == 0) 
-			{
-				pbyte_len = 8;
-				pbyte = d.input.sec[0][cursor++];
-				putc(' ', out);
-			}
-			putc((pbyte & 0x80) ? '1' : '0', out);
-			pbyte <<= 1;
-			--pbyte_len;
-		}
-	}
-
 	void bitmap_next()
 	{
 		if (bitmap == 0)
-			parse_error("applying a data present bitmap with no current bitmap");
+			ds.parse_error("applying a data present bitmap with no current bitmap");
 		TRACE("bitmap_next pre %d %d %u\n", bitmap_use_index, bitmap_subset_index, bitmap_len);
 		if (d.out.subsets.size() == 0)
-			parse_error("no subsets created yet, but already applying a data present bitmap");
+			ds.parse_error("no subsets created yet, but already applying a data present bitmap");
 		++bitmap_use_index;
 		++bitmap_subset_index;
 		while (bitmap_use_index < 0 || (
@@ -433,9 +443,9 @@ struct opcode_interpreter
 				++bitmap_subset_index;
 		}
 		if ((unsigned)bitmap_use_index > bitmap_len)
-			parse_error("moved past end of data present bitmap");
+			ds.parse_error("moved past end of data present bitmap");
 		if ((unsigned)bitmap_subset_index == d.out.subsets[0].size())
-			parse_error("end of data reached when applying attributes");
+			ds.parse_error("end of data reached when applying attributes");
 		TRACE("bitmap_next post %d %d\n", bitmap_use_index, bitmap_subset_index);
 	}
 
@@ -511,7 +521,7 @@ struct opcode_interpreter
 					break;
 				}
 				default:
-					parse_error("cannot handle field %01d%02d%03d",
+					ds.parse_error("cannot handle field %01d%02d%03d",
 								WR_VAR_F(ops[i]),
 								WR_VAR_X(ops[i]),
 								WR_VAR_Y(ops[i]));
@@ -536,10 +546,10 @@ struct opcode_interpreter
 		}
 
 		IFTRACE {
-		if (bits_left() > 32)
+		if (ds.bits_left() > 32)
 		{
 			fprintf(stderr, "The data section of %s:%zd still contains %d unparsed bits\n",
-					d.input.fname, d.input.offset, bits_left() - 32);
+					d.input.fname, d.input.offset, ds.bits_left() - 32);
 			/*
 			err = dba_error_parse(msg->file->name, POS + vec->cursor,
 					"the data section still contains %d unparsed bits",
@@ -553,9 +563,9 @@ struct opcode_interpreter
 
 struct opcode_interpreter_compressed : public opcode_interpreter
 {
-	opcode_interpreter_compressed(Decoder& d, int start_ofs)
-		: opcode_interpreter(d, start_ofs) {}
-	virtual void decode_b_num(Varinfo info);
+    opcode_interpreter_compressed(Decoder& d)
+        : opcode_interpreter(d) {}
+    virtual void decode_b_num(Varinfo info);
 };
 
 void Decoder::decode_data()
@@ -574,10 +584,10 @@ void Decoder::decode_data()
 
 	if (out.compression)
 	{
-		opcode_interpreter_compressed interpreter(*this, input.sec[4] + 4 - input.sec[0]);
+		opcode_interpreter_compressed interpreter(*this);
 		interpreter.run();
 	} else {
-		opcode_interpreter interpreter(*this, input.sec[4] + 4 - input.sec[0]);
+		opcode_interpreter interpreter(*this);
 		interpreter.run();
 	}
 
@@ -636,7 +646,7 @@ unsigned opcode_interpreter::decode_b_data(const Opcodes& ops)
 				info->bit_ref,
 				WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var),
 				info->desc, info->unit);
-		dump_next_bits(64, stderr);
+		ds.dump_next_bits(64, stderr);
 		TRACE("\n");
 	}
 
@@ -668,7 +678,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 	while (toread > 0)
 	{
 		int count = toread > 8 ? 8 : toread;
-		uint32_t bitval = get_bits(count);
+		uint32_t bitval = ds.get_bits(count);
 		/* Check that the string is not all 0xff, meaning missing value */
 		if (bitval != 0xff && bitval != 0)
 			missing = 0;
@@ -699,7 +709,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 
 		/* Decode the number of bits (encoded in 6 bits) that these difference
 		 * values occupy */
-		uint32_t diffbits = get_bits(6);
+		uint32_t diffbits = ds.get_bits(6);
 
 		TRACE("Compressed string, diff bits %d\n", diffbits);
 
@@ -726,7 +736,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 				/* Decode the difference value, reusing the str buffer */
 				for (j = 0; j < diffbits; ++j)
 				{
-					uint32_t bitval = get_bits(8);
+					uint32_t bitval = ds.get_bits(8);
 					/* Check that the string is not all 0xff, meaning missing value */
 					if (bitval != 0xff && bitval != 0)
 						missing = 0;
@@ -781,7 +791,7 @@ void opcode_interpreter::decode_b_num(Varinfo info)
 	if (WR_VAR_X(info->var) == 33 && bitmap)
 		bitmap_next();
 
-	uint32_t val = get_bits(info->bit_len);
+	uint32_t val = ds.get_bits(info->bit_len);
 
 	TRACE("Reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
 
@@ -816,7 +826,7 @@ void opcode_interpreter_compressed::decode_b_num(Varinfo info)
 	if (WR_VAR_X(info->var) == 33 && bitmap)
 		bitmap_next();
 
-	uint32_t val = get_bits(info->bit_len);
+	uint32_t val = ds.get_bits(info->bit_len);
 
 	TRACE("Reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
 
@@ -833,7 +843,7 @@ void opcode_interpreter_compressed::decode_b_num(Varinfo info)
 
 	/* Decode the number of bits (encoded in 6 bits) that these difference
 	 * values occupy */
-	uint32_t diffbits = get_bits(6);
+	uint32_t diffbits = ds.get_bits(6);
 	if (missing && diffbits != 0)
 		error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
 
@@ -845,7 +855,7 @@ void opcode_interpreter_compressed::decode_b_num(Varinfo info)
 		Subset& subset = d.out.obtain_subset(i);
 
 		/* Decode the difference value */
-		uint32_t diff = get_bits(diffbits);
+		uint32_t diff = ds.get_bits(diffbits);
 
 		/* Check if it's all 1: in that case it's a missing value */
 		if (missing || diff == all_ones(diffbits))
@@ -888,7 +898,7 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
 
 		// Fetch the repetition count
 		Varinfo rep_info = d.out.btable->query(rep_op);
-		count = get_bits(rep_info->bit_len);
+		count = ds.get_bits(rep_info->bit_len);
 
 		/* Insert the repetition count among the parsed variables */
 		if (d.out.compression)
@@ -899,7 +909,7 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
 
 			/* Decode the number of bits (encoded in 6 bits) that these difference
 			 * values occupy */
-			uint32_t diffbits = get_bits(6);
+			uint32_t diffbits = ds.get_bits(6);
 
 			TRACE("Compressed delayed repetition, base value %d diff bits %d\n", count, diffbits);
 
@@ -907,7 +917,7 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
 			for (unsigned i = 0; i < d.out.subsets.size(); ++i)
 			{
 				/* Decode the difference value */
-				uint32_t diff = get_bits(diffbits);
+				uint32_t diff = ds.get_bits(diffbits);
 
 				/* Compute the value for this subset */
 				uint32_t newval = count + diff;
@@ -916,7 +926,7 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
 				if (i == 0)
 					repval = newval;
 				else if (repval != newval)
-					parse_error("compressed delayed replication factor has different values for subsets (%d and %d)", repval, newval);
+					ds.parse_error("compressed delayed replication factor has different values for subsets (%d and %d)", repval, newval);
 
 				if (store_in_subset)
 				{
@@ -948,13 +958,13 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	// Sanity checks
 
 	if (group != 1)
-		parse_error("bitmap section replicates %d descriptors instead of one", group);
+		ds.parse_error("bitmap section replicates %d descriptors instead of one", group);
 
 	if (used >= ops.size())
-		parse_error("there are no descriptor after bitmap replicator (expected B31031)");
+		ds.parse_error("there are no descriptor after bitmap replicator (expected B31031)");
 
 	if (ops[used] != WR_VAR(0, 31, 31))
-		parse_error("bitmap element descriptor is %02d%02d%03d instead of B31031",
+		ds.parse_error("bitmap element descriptor is %02d%02d%03d instead of B31031",
 				WR_VAR_F(ops[used]), WR_VAR_X(ops[used]), WR_VAR_Y(ops[used]));
 
 	// If compressed, ensure that the difference bits are 0 and they are
@@ -963,9 +973,9 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	{
 		/* Decode the number of bits (encoded in 6 bits) that these difference
 		 * values occupy */
-		uint32_t diffbits = get_bits(6);
+		uint32_t diffbits = ds.get_bits(6);
 		if (diffbits != 0)
-			parse_error("bitmap declares %d difference bits per bitmap value, but we only support 0", diffbits);
+			ds.parse_error("bitmap declares %d difference bits per bitmap value, but we only support 0", diffbits);
 	}
 
 	// Consume the data present indicator from the opcodes to process
@@ -978,7 +988,7 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	bitmap = new char[count + 1];
 	for (int i = 0; i < count; ++i)
 	{
-		uint32_t val = get_bits(1);
+		uint32_t val = ds.get_bits(1);
 		bitmap[i] = (val == 0) ? '+' : '-';
 		if (val == 0) ++bitmap_count;
 	}
@@ -1060,7 +1070,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 			int i;
 			for (i = 0; i < cdatalen; ++i)
 			{
-				uint32_t bitval = get_bits(8);
+				uint32_t bitval = ds.get_bits(8);
 				TRACE("C DATA decoded character %d %c\n", (int)bitval, (char)bitval);
 				buf[i] = bitval;
 			}
@@ -1078,7 +1088,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 				bitmap_use_index = -1;
 				bitmap_subset_index = -1;
 			} else
-				parse_error("C modifier %d%02d%03d not yet supported",
+				ds.parse_error("C modifier %d%02d%03d not yet supported",
 							WR_VAR_F(code),
 							WR_VAR_X(code),
 							WR_VAR_Y(code));
@@ -1088,13 +1098,13 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 			{
 				used += decode_r_data(ops.sub(1));
 			} else
-				parse_error("C modifier %d%02d%03d not yet supported",
+				ds.parse_error("C modifier %d%02d%03d not yet supported",
 							WR_VAR_F(code),
 							WR_VAR_X(code),
 							WR_VAR_Y(code));
 			break;
 		default:
-			parse_error("C modifiers (%d%02d%03d in this case) are not yet supported",
+			ds.parse_error("C modifiers (%d%02d%03d in this case) are not yet supported",
 						WR_VAR_F(code),
 						WR_VAR_X(code),
 						WR_VAR_Y(code));
