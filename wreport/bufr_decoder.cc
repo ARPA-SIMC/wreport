@@ -290,8 +290,134 @@ struct Decoder
        */
     }
 
-	/* Decode message data section after the header has been decoded */
-	void decode_data();
+    /* Decode message data section after the header has been decoded */
+    void decode_data();
+};
+
+struct Bitmap
+{
+    /* Data present bitmap */
+    char* bitmap;
+    /* Length of data present bitmap */
+    size_t len;
+    /* Number of elements set to true in the bitmap */
+    int count;
+    /* Next bitmap element for which we decode values */
+    int use_index;
+    /* Next subset element for which we decode attributes */
+    int subset_index;
+
+    Bitmap()
+        : bitmap(0), count(0)
+    {
+    }
+    ~Bitmap()
+    {
+        if (bitmap) delete[] bitmap;
+    }
+};
+
+/**
+ * Variable consumer
+ *
+ * This provides a generic interface to which variables are sent after
+ * decoding.
+ */
+struct VarAdder
+{
+    virtual ~VarAdder() {}
+
+    /**
+     * Produce a variable for the given subset.
+     *
+     * A subset number of -1 means 'the current subset' and is used when
+     * decoding uncompressed BUFR messages
+     */
+    virtual void add_var(const Var&, int subset=-1) = 0;
+};
+
+/// Add variables to the current subset of an uncompressed BUFR
+struct PlainVarAdder : public VarAdder
+{
+    Subset& current_subset;
+
+    PlainVarAdder(Subset& current_subset) : current_subset(current_subset) {}
+
+    virtual void add_var(const Var& var, int subset=-1)
+    {
+        TRACE("Adding var %01d%02d%03d %s to subset\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value());
+        current_subset.store_variable(var);
+    }
+};
+
+/// Add variables to the current subset of an uncompressed BUFR
+struct CompressedVarAdder : public VarAdder
+{
+    BufrBulletin& out;
+
+    CompressedVarAdder(BufrBulletin& out) : out(out) {}
+
+    virtual void add_var(const Var& var, int subset)
+    {
+        TRACE("Adding var %01d%02d%03d %s to subset\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value());
+        out.subsets[subset].store_variable(var);
+    }
+};
+
+/// Add attributes to the current subset of an uncompressed BUFR
+struct PlainAttrAdder : public VarAdder
+{
+    Subset& current_subset;
+    const Bitmap& bitmap;
+
+    PlainAttrAdder(Subset& current_subset, const Bitmap& bitmap)
+        : current_subset(current_subset), bitmap(bitmap) {}
+
+    virtual void add_var(const Var& var, int subset=-1)
+    {
+        TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(),
+                WR_VAR_F(subset[bitmap.subset_index].code()),
+                WR_VAR_X(subset[bitmap.subset_index].code()),
+                WR_VAR_Y(subset[bitmap.subset_index].code()),
+                bitmap.subset_index, subset.size());
+        current_subset[bitmap.subset_index].seta(var);
+    }
+};
+
+/// Add variables to the current subset of an uncompressed BUFR
+struct CompressedAttrAdder : public VarAdder
+{
+    BufrBulletin& out;
+    const Bitmap& bitmap;
+
+    CompressedAttrAdder(BufrBulletin& out, const Bitmap& bitmap)
+        : out(out), bitmap(bitmap) {}
+
+    virtual void add_var(const Var& var, int subset)
+    {
+        TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(),
+                WR_VAR_F(subset[bitmap.subset_index].code()),
+                WR_VAR_X(subset[bitmap.subset_index].code()),
+                WR_VAR_Y(subset[bitmap.subset_index].code()),
+                bitmap.subset_index, subset.size());
+        out.subsets[subset][bitmap.subset_index].seta(var);
+    }
 };
 
 struct DataSection
@@ -385,17 +511,110 @@ struct DataSection
 
         throw error_parse(msg);
     }
+
+    virtual void decode_b_num(Varinfo info, VarAdder& out)
+    {
+        /* Read a value */
+        Var var(info);
+
+        uint32_t val = get_bits(info->bit_len);
+
+        TRACE("Reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
+
+        /* Check if there are bits which are not 1 (that is, if the value is present) */
+        bool missing = (val == all_ones(info->bit_len));
+
+        /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, val, info.type);*/
+        TRACE("bufr_message_decode_b_data len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
+
+        /* Store the variable that we found */
+        if (missing)
+        {
+            /* Create the new Var */
+            TRACE("Decoded as missing\n");
+        } else {
+            double dval = info->bufr_decode_int(val);
+            TRACE("Decoded as %f %s\n", dval, info->bufr_unit);
+            /* Convert to target unit */
+            dval = convert_units(info->bufr_unit, info->unit, dval);
+            TRACE("Converted to %f %s\n", dval, info->unit);
+            /* Create the new Var */
+            var.setd(dval);
+        }
+        out.add_var(var);
+    }
 };
 
 struct CompressedDataSection : public DataSection
 {
-    CompressedDataSection(Input& input) : DataSection(input) {}
+    unsigned subset_count;
+
+    CompressedDataSection(Input& input, unsigned subset_count)
+        : DataSection(input), subset_count(subset_count) {}
+
+    virtual void decode_b_num(Varinfo info, VarAdder& out)
+    {
+        /* Read a value */
+        Var var(info);
+
+        uint32_t val = get_bits(info->bit_len);
+
+        TRACE("Reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
+
+        /* Check if there are bits which are not 1 (that is, if the value is present) */
+        bool missing = (val == all_ones(info->bit_len));
+
+        /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, val, info.type);*/
+        TRACE("bufr_message_decode_b_data len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
+
+        /* Store the variable that we found */
+
+        /* If compression is in use, then we just decoded the base value.  Now
+         * we need to decode all the offsets */
+
+        /* Decode the number of bits (encoded in 6 bits) that these difference
+         * values occupy */
+        uint32_t diffbits = get_bits(6);
+        if (missing && diffbits != 0)
+            error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
+
+        TRACE("Compressed number, base value %d diff bits %d\n", val, diffbits);
+
+        for (unsigned i = 0; i < subset_count; ++i)
+        {
+            /* Decode the difference value */
+            uint32_t diff = get_bits(diffbits);
+
+            /* Check if it's all 1: in that case it's a missing value */
+            if (missing || diff == all_ones(diffbits))
+            {
+                /* Missing value */
+                TRACE("Decoded[%d] as missing\n", i);
+            } else {
+                /* Compute the value for this subset */
+                uint32_t newval = val + diff;
+                double dval = info->bufr_decode_int(newval);
+                TRACE("Decoded[%d] as %d+%d=%d->%f %s\n", i, val, diff, newval, dval, info->bufr_unit);
+
+                /* Convert to target unit */
+                dval = convert_units(info->bufr_unit, info->unit, dval);
+                TRACE("Converted to %f %s\n", dval, info->unit);
+
+                /* Create the new Var */
+                var.setd(dval);
+            }
+
+            /* Add it to this subset */
+            out.add_var(var, i);
+        }
+    }
 };
 
 struct opcode_interpreter
 {
-	Decoder& d;
+    Decoder& d;
     DataSection& ds;
+    Bitmap bitmap;
 
 	/* Current subset when decoding non-compressed BUFR messages */
 	Subset* current_subset;
@@ -405,60 +624,61 @@ struct opcode_interpreter
 	/* Current value of width change from C modifier */
 	int c_width_change;
 
-	/* Data present bitmap */
-	char* bitmap;
-	/* Length of data present bitmap */
-	size_t bitmap_len;
-	/* Number of elements set to true in the bitmap */
-	int bitmap_count;
-	/* Next bitmap element for which we decode values */
-	int bitmap_use_index;
-	/* Next subset element for which we decode attributes */
-	int bitmap_subset_index;
-
 	opcode_interpreter(Decoder& d, DataSection& ds)
 		: d(d), ds(ds), current_subset(0),
-		  c_scale_change(0), c_width_change(0),
-		  bitmap(0), bitmap_count(0)
+		  c_scale_change(0), c_width_change(0)
 	{
 	}
 
 	~opcode_interpreter()
 	{
-		if (bitmap) delete[] bitmap;
 	}
 
 	void bitmap_next()
 	{
-		if (bitmap == 0)
+		if (bitmap.bitmap == 0)
 			ds.parse_error("applying a data present bitmap with no current bitmap");
 		TRACE("bitmap_next pre %d %d %u\n", bitmap_use_index, bitmap_subset_index, bitmap_len);
 		if (d.out.subsets.size() == 0)
 			ds.parse_error("no subsets created yet, but already applying a data present bitmap");
-		++bitmap_use_index;
-		++bitmap_subset_index;
-		while (bitmap_use_index < 0 || (
-			(unsigned)bitmap_use_index < bitmap_len &&
-			bitmap[bitmap_use_index] == '-'))
+		++bitmap.use_index;
+		++bitmap.subset_index;
+		while (bitmap.use_index < 0 || (
+			(unsigned)bitmap.use_index < bitmap.len &&
+			bitmap.bitmap[bitmap.use_index] == '-'))
 		{
 			TRACE("INCR\n");
-			++bitmap_use_index;
-			++bitmap_subset_index;
-			while ((unsigned)bitmap_subset_index < d.out.subsets[0].size() &&
-				WR_VAR_F(d.out.subsets[0][bitmap_subset_index].code()) != 0)
-				++bitmap_subset_index;
+			++bitmap.use_index;
+			++bitmap.subset_index;
+			while ((unsigned)bitmap.subset_index < d.out.subsets[0].size() &&
+				WR_VAR_F(d.out.subsets[0][bitmap.subset_index].code()) != 0)
+				++bitmap.subset_index;
 		}
-		if ((unsigned)bitmap_use_index > bitmap_len)
+		if ((unsigned)bitmap.use_index > bitmap.len)
 			ds.parse_error("moved past end of data present bitmap");
-		if ((unsigned)bitmap_subset_index == d.out.subsets[0].size())
+		if ((unsigned)bitmap.subset_index == d.out.subsets[0].size())
 			ds.parse_error("end of data reached when applying attributes");
-		TRACE("bitmap_next post %d %d\n", bitmap_use_index, bitmap_subset_index);
+		TRACE("bitmap_next post %d %d\n", bitmap.use_index, bitmap.subset_index);
 	}
 
 	unsigned decode_b_data(const Opcodes& ops);
 	unsigned decode_bitmap(const Opcodes& ops, Varcode code);
 	virtual void decode_b_string(Varinfo info);
-	virtual void decode_b_num(Varinfo info);
+
+    virtual void decode_b_num(Varinfo info)
+    {
+        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
+        {
+            bitmap_next();
+            PlainAttrAdder adder(*current_subset, bitmap);
+            ds.decode_b_num(info, adder);
+        }
+        else
+        {
+            PlainVarAdder adder(*current_subset);
+            ds.decode_b_num(info, adder);
+        }
+    }
 
 	/**
 	 * Decode instant or delayed replication information.
@@ -472,18 +692,18 @@ struct opcode_interpreter
 
 	void add_var(Subset& subset, const Var& var)
 	{
-		if (bitmap && WR_VAR_X(var.code()) == 33)
+		if (bitmap.bitmap && WR_VAR_X(var.code()) == 33)
 		{
 			TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
 					WR_VAR_F(var.code()),
 					WR_VAR_X(var.code()),
 					WR_VAR_Y(var.code()),
 					var.value(),
-					WR_VAR_F(subset[bitmap_subset_index].code()),
-					WR_VAR_X(subset[bitmap_subset_index].code()),
-					WR_VAR_Y(subset[bitmap_subset_index].code()),
-					bitmap_subset_index, subset.size());
-			subset[bitmap_subset_index].seta(var);
+					WR_VAR_F(subset[bitmap.subset_index].code()),
+					WR_VAR_X(subset[bitmap.subset_index].code()),
+					WR_VAR_Y(subset[bitmap.subset_index].code()),
+					bitmap.subset_index, subset.size());
+			subset[bitmap.subset_index].seta(var);
 		}
 		else
 		{
@@ -571,7 +791,21 @@ struct opcode_interpreter_compressed : public opcode_interpreter
 {
     opcode_interpreter_compressed(Decoder& d, CompressedDataSection& ds)
         : opcode_interpreter(d, ds) {}
-    virtual void decode_b_num(Varinfo info);
+
+    void decode_b_num(Varinfo info)
+    {
+        if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
+        {
+            bitmap_next();
+            CompressedAttrAdder adder(d.out, bitmap);
+            ds.decode_b_num(info, adder);
+        }
+        else
+        {
+            CompressedVarAdder adder(d.out);
+            ds.decode_b_num(info, adder);
+        }
+    }
 };
 
 void Decoder::decode_data()
@@ -590,7 +824,7 @@ void Decoder::decode_data()
 
     if (out.compression)
     {
-        CompressedDataSection ds(input);
+        CompressedDataSection ds(input, out.subsets.size());
         opcode_interpreter_compressed interpreter(*this, ds);
         interpreter.run();
     } else {
@@ -706,7 +940,7 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 
 	TRACE("bufr_message_decode_b_data len %zd val %s missing %d info-len %d info-desc %s\n", len, str, missing, info->bit_len, info->desc);
 
-	if (WR_VAR_X(info->var) == 33 && bitmap)
+	if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
 		bitmap_next();
 
 	/* Store the variable that we found */
@@ -791,104 +1025,6 @@ void opcode_interpreter::decode_b_string(Varinfo info)
 	}
 }
 
-void opcode_interpreter::decode_b_num(Varinfo info)
-{
-	/* Read a value */
-	Var var(info);
-
-	if (WR_VAR_X(info->var) == 33 && bitmap)
-		bitmap_next();
-
-	uint32_t val = ds.get_bits(info->bit_len);
-
-	TRACE("Reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
-
-	/* Check if there are bits which are not 1 (that is, if the value is present) */
-	bool missing = (val == all_ones(info->bit_len));
-
-	/*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, val, info.type);*/
-	TRACE("bufr_message_decode_b_data len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
-
-	/* Store the variable that we found */
-	if (missing)
-	{
-		/* Create the new Var */
-		TRACE("Decoded as missing\n");
-	} else {
-		double dval = info->bufr_decode_int(val);
-		TRACE("Decoded as %f %s\n", dval, info->bufr_unit);
-		/* Convert to target unit */
-		dval = convert_units(info->bufr_unit, info->unit, dval);
-		TRACE("Converted to %f %s\n", dval, info->unit);
-		/* Create the new Var */
-		var.setd(dval);
-	}
-	add_var(*current_subset, var);
-}
-
-void opcode_interpreter_compressed::decode_b_num(Varinfo info)
-{
-	/* Read a value */
-	Var var(info);
-
-	if (WR_VAR_X(info->var) == 33 && bitmap)
-		bitmap_next();
-
-	uint32_t val = ds.get_bits(info->bit_len);
-
-	TRACE("Reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
-
-	/* Check if there are bits which are not 1 (that is, if the value is present) */
-	bool missing = (val == all_ones(info->bit_len));
-
-	/*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, val, info.type);*/
-	TRACE("bufr_message_decode_b_data len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
-
-	/* Store the variable that we found */
-
-	/* If compression is in use, then we just decoded the base value.  Now
-	 * we need to decode all the offsets */
-
-	/* Decode the number of bits (encoded in 6 bits) that these difference
-	 * values occupy */
-	uint32_t diffbits = ds.get_bits(6);
-	if (missing && diffbits != 0)
-		error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
-
-	TRACE("Compressed number, base value %d diff bits %d\n", val, diffbits);
-
-	for (unsigned i = 0; i < d.out.subsets.size(); ++i)
-	{
-		/* Access the subset we are working on */
-		Subset& subset = d.out.obtain_subset(i);
-
-		/* Decode the difference value */
-		uint32_t diff = ds.get_bits(diffbits);
-
-		/* Check if it's all 1: in that case it's a missing value */
-		if (missing || diff == all_ones(diffbits))
-		{
-			/* Missing value */
-			TRACE("Decoded[%d] as missing\n", i);
-		} else {
-			/* Compute the value for this subset */
-			uint32_t newval = val + diff;
-			double dval = info->bufr_decode_int(newval);
-			TRACE("Decoded[%d] as %d+%d=%d->%f %s\n", i, val, diff, newval, dval, info->bufr_unit);
-
-			/* Convert to target unit */
-			dval = convert_units(info->bufr_unit, info->unit, dval);
-			TRACE("Converted to %f %s\n", dval, info->unit);
-
-			/* Create the new Var */
-			var.setd(dval);
-		}
-
-		/* Add it to this subset */
-		add_var(subset, var);
-	}
-}
-
 unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& group, int& count, bool store_in_subset)
 {
 	unsigned used = 1;
@@ -956,8 +1092,8 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
 
 unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 {
-	if (bitmap) delete[] bitmap;
-	bitmap = 0;
+	if (bitmap.bitmap) delete[] bitmap.bitmap;
+	bitmap.bitmap = 0;
 
 	int group;
 	int count;
@@ -992,23 +1128,23 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	// Bitmap size is now in count
 
 	// Read the bitmap
-	bitmap_count = 0;
-	bitmap = new char[count + 1];
+	bitmap.count = 0;
+	bitmap.bitmap = new char[count + 1];
 	for (int i = 0; i < count; ++i)
 	{
 		uint32_t val = ds.get_bits(1);
-		bitmap[i] = (val == 0) ? '+' : '-';
-		if (val == 0) ++bitmap_count;
+		bitmap.bitmap[i] = (val == 0) ? '+' : '-';
+		if (val == 0) ++bitmap.count;
 	}
-	bitmap[count] = 0;
-	bitmap_len = count;
+	bitmap.bitmap[count] = 0;
+	bitmap.len = count;
 
 	// Create a single use varinfo to store the bitmap
 	MutableVarinfo info(MutableVarinfo::create_singleuse());
 	info->set_string(code, "DATA PRESENT BITMAP", count);
 
 	// Store the bitmap
-	Var bmp(info, bitmap);
+	Var bmp(info, bitmap.bitmap);
 
 	// Add var to subset(s)
 	if (d.out.compression)
@@ -1026,9 +1162,9 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	// current bitmap. The subset(s) are taking care of memory managing it.
 
 	IFTRACE {
-		TRACE("Decoded bitmap count %d: ", bitmap_count);
-		for (unsigned i = 0; i < bitmap_len; ++i)
-			TRACE("%c", bitmap[i]);
+		TRACE("Decoded bitmap count %d: ", bitmap.count);
+		for (unsigned i = 0; i < bitmap.len; ++i)
+			TRACE("%c", bitmap.bitmap[i]);
 		TRACE("\n");
 	}
 
@@ -1093,8 +1229,8 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 			{
 				used += decode_bitmap(ops.sub(1), code);
 				// Move to first bitmap use index
-				bitmap_use_index = -1;
-				bitmap_subset_index = -1;
+				bitmap.use_index = -1;
+				bitmap.subset_index = -1;
 			} else
 				ds.parse_error("C modifier %d%02d%03d not yet supported",
 							WR_VAR_F(code),
