@@ -341,6 +341,11 @@ struct VarAdder
     virtual void add_var(const Var&, int subset=-1) = 0;
 };
 
+struct VarIgnorer : public VarAdder
+{
+    virtual void add_var(const Var&, int subset=-1) {}
+};
+
 /// Add variables to the current subset of an uncompressed BUFR
 struct PlainVarAdder : public VarAdder
 {
@@ -844,7 +849,7 @@ struct opcode_interpreter
 	 * In case of delayed replication, store a variable in the subset(s)
 	 * with the repetition count.
 	 */
-	unsigned decode_replication_info(const Opcodes& ops, int& group, int& count, bool store_in_subset=true);
+	unsigned decode_replication_info(const Opcodes& ops, int& group, int& count, VarAdder& adder);
 	unsigned decode_r_data(const Opcodes& ops);
 	unsigned decode_c_data(const Opcodes& ops);
 
@@ -1079,7 +1084,7 @@ unsigned opcode_interpreter::decode_b_data(const Opcodes& ops)
 }
 
 
-unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& group, int& count, bool store_in_subset)
+unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& group, int& count, VarAdder& adder)
 {
 	unsigned used = 1;
 	group = WR_VAR_X(ops.head());
@@ -1126,16 +1131,10 @@ unsigned opcode_interpreter::decode_replication_info(const Opcodes& ops, int& gr
 				else if (repval != newval)
 					ds.parse_error("compressed delayed replication factor has different values for subsets (%d and %d)", repval, newval);
 
-				if (store_in_subset)
-				{
-					Subset& subset = d.out.obtain_subset(i);
-					subset.store_variable_i(rep_op, newval);
-				}
-			}
-		} else {
-			if (store_in_subset)
-				current_subset->store_variable_i(rep_op, count);
-		}
+                adder.add_var(Var(rep_info, (int)newval), i);
+            }
+        } else
+            adder.add_var(Var(rep_info, count));
 
 		TRACE("decode_replication_info %d items %d times (delayed)\n", group, count);
 	} else
@@ -1149,9 +1148,10 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 	if (bitmap.bitmap) delete[] bitmap.bitmap;
 	bitmap.bitmap = 0;
 
-	int group;
-	int count;
-	unsigned used = decode_replication_info(ops, group, count, false);
+    int group;
+    int count;
+    VarIgnorer adder;
+    unsigned used = decode_replication_info(ops, group, count, adder);
 
 	// Sanity checks
 
@@ -1229,7 +1229,15 @@ unsigned opcode_interpreter::decode_r_data(const Opcodes& ops)
 {
 	// Read replication information
 	int group, count;
-	unsigned first = decode_replication_info(ops, group, count);
+	unsigned first;
+    if (!d.out.compression)
+    {
+        PlainVarAdder adder(*current_subset);
+        first = decode_replication_info(ops, group, count, adder);
+    } else {
+        CompressedVarAdder adder(d.out);
+        first = decode_replication_info(ops, group, count, adder);
+    }
 
 	TRACE("R DATA %01d%02d%03d %d %d\n", 
 			WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
