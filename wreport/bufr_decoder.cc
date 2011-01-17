@@ -38,7 +38,7 @@
 
 #include <assert.h>
 
-// #define TRACE_DECODER
+//#define TRACE_DECODER
 
 #ifdef TRACE_DECODER
 #define TRACE(...) fprintf(stderr, __VA_ARGS__)
@@ -124,7 +124,7 @@ struct Input
     {
         if (start + datalen > sec[0] + in.size())
             parse_error(start, "end of BUFR message while looking for %s", next);
-        TRACE("%s starts at %d and contains at least %zd bytes\n", next, (int)(start - sec[0]), datalen);
+        TRACE("check:%s starts at %d and contains at least %zd bytes\n", next, (int)(start - sec[0]), datalen);
     }
 
     void read_section_size(int num)
@@ -233,7 +233,6 @@ struct Decoder
         input.sec[1] = input.sec[0] + 8;
         if (memcmp(input.sec[0], "BUFR", 4) != 0)
             input.parse_error(input.sec[0], "data does not start with BUFR header (\"%.4s\" was read instead)", input.sec[0]);
-        TRACE(" -> is BUFR\n");
 
         /* Check the BUFR edition number */
         out.edition = input.sec[0][7];
@@ -253,7 +252,7 @@ struct Decoder
 				error_consistency::throwf("BUFR edition is %d, but I can only decode 2, 3 and 4", out.edition);
 		}
 
-		TRACE(" -> opt %d upd %d origin %d.%d tables %d.%d type %d.%d %04d-%02d-%02d %02d:%02d\n", 
+		TRACE("info:opt %d upd %d origin %d.%d tables %d.%d type %d.%d %04d-%02d-%02d %02d:%02d\n", 
 				out.optional_section_length, out.update_sequence_number,
 				out.centre, out.subcentre,
 				out.master_table, out.local_table,
@@ -279,7 +278,7 @@ struct Decoder
         out.compression = (input.sec[3][6] & 0x40) ? 1 : 0;
         for (i = 0; i < (input.sec[4] - input.sec[3] - 7)/2; i++)
             out.datadesc.push_back((Varcode)readNumber(input.sec[3] + 7 + i * 2, 2));
-        TRACE(" s3length %d subsets %zd observed %d compression %d byte7 %x\n",
+        TRACE("info:s3length %d subsets %zd observed %d compression %d byte7 %x\n",
                 (int)(input.sec[4] - input.sec[3]), expected_subsets, (input.sec[3][6] & 0x80) ? 1 : 0, out.compression, (unsigned int)input.sec[3][6]);
         /*
        IFTRACE{
@@ -355,7 +354,7 @@ struct PlainVarAdder : public VarAdder
 
     virtual void add_var(const Var& var, int subset=-1)
     {
-        TRACE("Adding var %01d%02d%03d %s to subset\n",
+        TRACE("bulletin:adding var %01d%02d%03d %s to current subset\n",
                 WR_VAR_F(var.code()),
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
@@ -373,11 +372,11 @@ struct CompressedVarAdder : public VarAdder
 
     virtual void add_var(const Var& var, int subset)
     {
-        TRACE("Adding var %01d%02d%03d %s to subset\n",
+        TRACE("bulletin:adding var %01d%02d%03d %s to subset %d\n",
                 WR_VAR_F(var.code()),
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
-                var.value());
+                var.value(), subset);
         out.subsets[subset].store_variable(var);
     }
 };
@@ -393,7 +392,7 @@ struct PlainAttrAdder : public VarAdder
 
     virtual void add_var(const Var& var, int subset=-1)
     {
-        TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+        TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
                 WR_VAR_F(var.code()),
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
@@ -417,7 +416,7 @@ struct CompressedAttrAdder : public VarAdder
 
     virtual void add_var(const Var& var, int subset)
     {
-        TRACE("Adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
+        TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
                 WR_VAR_F(var.code()),
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
@@ -603,25 +602,25 @@ struct DataSection
 
         uint32_t val = get_bits(info->bit_len);
 
-        TRACE("Reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
+        TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
 
         /* Check if there are bits which are not 1 (that is, if the value is present) */
         bool missing = (val == all_ones(info->bit_len));
 
         /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, val, info.type);*/
-        TRACE("bufr_message_decode_b_data len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
+        TRACE("datasec:decode_b_num:len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
 
         /* Store the variable that we found */
         if (missing)
         {
             /* Create the new Var */
-            TRACE("Decoded as missing\n");
+            TRACE("datasec:decode_b_num:decoded as missing\n");
         } else {
             double dval = info->bufr_decode_int(val);
-            TRACE("Decoded as %f %s\n", dval, info->bufr_unit);
+            TRACE("datasec:decode_b_num:decoded as %f %s\n", dval, info->bufr_unit);
             /* Convert to target unit */
             dval = convert_units(info->bufr_unit, info->unit, dval);
-            TRACE("Converted to %f %s\n", dval, info->unit);
+            TRACE("datasec:decode_b_num:converted to %f %s\n", dval, info->unit);
             /* Create the new Var */
             var.setd(dval);
         }
@@ -667,7 +666,7 @@ struct DataSection
                 str[len] = 0;
         }
 
-        TRACE("bufr_message_decode_b_data len %zd val %s missing %d info-len %d info-desc %s\n", len, str, (int)missing, info->bit_len, info->desc);
+        TRACE("datasec:read_base_string:bufr_message_decode_b_data len %zd val %s missing %d info-len %d info-desc %s\n", len, str, (int)missing, info->bit_len, info->desc);
 
         return !missing;
     }
@@ -718,13 +717,13 @@ struct CompressedDataSection : public DataSection
 
         uint32_t val = get_bits(info->bit_len);
 
-        TRACE("Reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
+        TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
 
         /* Check if there are bits which are not 1 (that is, if the value is present) */
         bool missing = (val == all_ones(info->bit_len));
 
         /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, val, info.type);*/
-        TRACE("bufr_message_decode_b_data len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
+        TRACE("datasec:decode_b_num:len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
 
         /* Store the variable that we found */
 
@@ -748,16 +747,16 @@ struct CompressedDataSection : public DataSection
             if (missing || diff == all_ones(diffbits))
             {
                 /* Missing value */
-                TRACE("Decoded[%d] as missing\n", i);
+                TRACE("datasec:decode_b_num:decoded[%d] as missing\n", i);
             } else {
                 /* Compute the value for this subset */
                 uint32_t newval = val + diff;
                 double dval = info->bufr_decode_int(newval);
-                TRACE("Decoded[%d] as %d+%d=%d->%f %s\n", i, val, diff, newval, dval, info->bufr_unit);
+                TRACE("datasec:decode_b_num:decoded[%d] as %d+%d=%d->%f %s\n", i, val, diff, newval, dval, info->bufr_unit);
 
                 /* Convert to target unit */
                 dval = convert_units(info->bufr_unit, info->unit, dval);
-                TRACE("Converted to %f %s\n", dval, info->unit);
+                TRACE("datasec:decode_b_num:converted to %f %s\n", dval, info->unit);
 
                 /* Create the new Var */
                 var.setd(dval);
@@ -787,7 +786,7 @@ struct CompressedDataSection : public DataSection
          * values occupy */
         uint32_t diffbits = get_bits(6);
 
-        TRACE("Compressed string, diff bits %d\n", diffbits);
+        TRACE("datadesc:decode_b_string:compressed string, diff bits %d\n", diffbits);
 
         if (diffbits != 0)
         {
@@ -821,7 +820,7 @@ struct CompressedDataSection : public DataSection
                 if (missing)
                 {
                     /* Missing value */
-                    TRACE("Decoded[%d] as missing\n", i);
+                    TRACE("datadesc:decode_b_string:decoded[%d] as missing\n", i);
                 } else {
                     /* Convert space-padding into zero-padding */
                     for (--j; j > 0 && isspace(str[j]);
@@ -829,7 +828,7 @@ struct CompressedDataSection : public DataSection
                         str[j] = 0;
 
                     /* Compute the value for this subset */
-                    TRACE("Decoded[%d] as \"%s\"\n", i, str);
+                    TRACE("datadesc:decode_b_string:decoded[%d] as \"%s\"\n", i, str);
 
                     var.setc(str);
                 }
@@ -868,7 +867,7 @@ struct CompressedDataSection : public DataSection
          * values occupy */
         uint32_t diffbits = get_bits(6);
 
-        TRACE("Compressed delayed repetition, base value %d diff bits %d\n", count, diffbits);
+        TRACE("datadesc:decode_delayed_replication_factor:compressed delayed repetition, base value %d diff bits %d\n", count, diffbits);
 
         uint32_t repval = 0;
         for (unsigned i = 0; i < subset_count; ++i)
@@ -878,7 +877,7 @@ struct CompressedDataSection : public DataSection
 
             /* Compute the value for this subset */
             uint32_t newval = count + diff;
-            TRACE("Decoded[%d] as %d+%d=%d\n", i, count, diff, newval);
+            TRACE("datadesc:decode_delayed_replication_factor:decoded[%d] as %d+%d=%d\n", i, count, diff, newval);
 
             if (i == 0)
                 repval = newval;
@@ -896,7 +895,7 @@ void Bitmap::next(DataSection& ds)
 {
     if (bitmap == 0)
         ds.parse_error("applying a data present bitmap with no current bitmap");
-    TRACE("bitmap_next pre %d %d %zd\n", use_index, subset_index, len);
+    TRACE("bitmap:next:pre %d %d %zd\n", use_index, subset_index, len);
     if (out.subsets.size() == 0)
         ds.parse_error("no subsets created yet, but already applying a data present bitmap");
     ++use_index;
@@ -905,7 +904,7 @@ void Bitmap::next(DataSection& ds)
                 (unsigned)use_index < len &&
                 bitmap[use_index] == '-'))
     {
-        TRACE("INCR\n");
+        TRACE("bitmap:next:INCR\n");
         ++use_index;
         ++subset_index;
         while ((unsigned)subset_index < out.subsets[0].size() &&
@@ -916,7 +915,7 @@ void Bitmap::next(DataSection& ds)
         ds.parse_error("moved past end of data present bitmap");
     if ((unsigned)subset_index == out.subsets[0].size())
         ds.parse_error("end of data reached when applying attributes");
-    TRACE("bitmap_next post %d %d\n", use_index, subset_index);
+    TRACE("bitmap:next:post %d %d\n", use_index, subset_index);
 }
 
 struct opcode_interpreter
@@ -946,7 +945,7 @@ struct opcode_interpreter
     unsigned decode_b_data(const Opcodes& ops)
     {
         IFTRACE {
-            TRACE("bufr_message_decode_b_data: items: ");
+            TRACE("decode_b_data:items: ");
             ops.print(stderr);
             TRACE("\n");
         }
@@ -955,7 +954,7 @@ struct opcode_interpreter
                     WR_ALT(c_width_change, c_scale_change));
 
         IFTRACE {
-            TRACE("Parsing @%zd+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", ds.cursor, 8-ds.pbyte_len,
+            TRACE("decode_b_data:parsing @%zd+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", ds.cursor, 8-ds.pbyte_len,
                     info->bit_len, c_width_change,
                     info->scale, c_scale_change,
                     info->bit_ref,
@@ -966,9 +965,9 @@ struct opcode_interpreter
         }
 
         if (c_scale_change > 0)
-            TRACE("Applied %d scale change\n", c_scale_change);
+            TRACE("decode_b_data:applied %d scale change\n", c_scale_change);
         if (c_width_change > 0)
-            TRACE("Applied %d width change\n", c_width_change);
+            TRACE("decode_b_data:applied %d width change\n", c_width_change);
 
         if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
         {
@@ -1011,9 +1010,9 @@ struct opcode_interpreter
             Varinfo rep_info = d.out.btable->query(rep_op);
             count = ds.decode_delayed_replication_factor(rep_info, adder);
 
-            TRACE("decode_replication_info %d items %d times (delayed)\n", group, count);
+            TRACE("decode_replication_info:%d items %d times (delayed)\n", group, count);
         } else
-            TRACE("decode_replication_info %d items %d times\n", group, count);
+            TRACE("decode_replication_info:%d items %d times\n", group, count);
 
         return used;
     }
@@ -1025,7 +1024,7 @@ struct opcode_interpreter
         unsigned first;
         first = decode_replication_info(ops, group, count, *adder);
 
-        TRACE("R DATA %01d%02d%03d %d %d\n", 
+        TRACE("decode_r_data:%01d%02d%03d %d %d\n", 
                 WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
 
         // Extract the first `group' nodes, to handle here
@@ -1049,12 +1048,12 @@ struct opcode_interpreter
 		bufrex_opcode_print(ops, stderr);
 		fprintf(stderr, "\n");
 		*/
-		TRACE("bufr_message_decode_data_section: START\n");
+		TRACE("decode_data_section:START\n");
 
 		for (unsigned i = 0; i < ops.size(); )
 		{
 			IFTRACE{
-				TRACE("bufr_message_decode_data_section TODO: ");
+				TRACE("decode_data_section:pos %zd/%zd TODO: ", ds.cursor, ds.input.in.size());
 				ops.sub(i).print(stderr);
 				TRACE("\n");
 			}
@@ -1165,7 +1164,7 @@ void Decoder::decode_data()
 
     /* Read BUFR section 4 (Data section) */
     input.read_section_size(4);
-    TRACE("section 4 is %d bytes long (%02x %02x %02x %02x)\n", readNumber(input.sec[4], 3),
+    TRACE("decode_data:section 4 is %d bytes long (%02x %02x %02x %02x)\n", readNumber(input.sec[4], 3),
             (unsigned int)*(input.sec[4]),
             (unsigned int)*(input.sec[4]+1),
             (unsigned int)*(input.sec[4]+2),
@@ -1296,7 +1295,11 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code, Var
 		TRACE("\n");
 	}
 
-	return used;
+    // Move to first bitmap use index
+    bitmap.use_index = -1;
+    bitmap.subset_index = -1;
+
+    return used;
 }
 
 unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
@@ -1305,7 +1308,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 	
 	Varcode code = ops.head();
 
-	TRACE("C DATA %01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+	TRACE("decode_c_data:%01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 
 	switch (WR_VAR_X(code))
 	{
@@ -1336,9 +1339,6 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 			if (WR_VAR_Y(code) == 0)
 			{
 				used += decode_bitmap(ops.sub(1), code, *adder);
-				// Move to first bitmap use index
-				bitmap.use_index = -1;
-				bitmap.subset_index = -1;
 			} else
 				ds.parse_error("C modifier %d%02d%03d not yet supported",
 							WR_VAR_F(code),
