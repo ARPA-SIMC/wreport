@@ -77,62 +77,59 @@ Varinfo Vartable::query(Varcode var) const
 		return Varinfo(&(*this)[begin]);
 }
 
-Varinfo Vartable::query_altered(Varcode var, Alteration change) const
+Varinfo Vartable::query_altered(Varcode var, int scale, unsigned bit_len) const
 {
-	if (change == 0 || change == WR_ALT(0, 0))
-		return query(var);
+    /* Get the normal variable */
+    Varinfo start = query(var);
 
-	/* Get the normal variable */
-	Varinfo start = query(var);
+    /* Look for an existing alteration */
+    const _Varinfo* current = NULL;
+    const _Varinfo* i = start.impl();
+    for ( ; i->alterations != NULL; i = i->alterations)
+    {
+        if (i->scale == scale && i->bit_len == bit_len)
+        {
+            current = i;
+            break;
+        }
+    }
+    if (current) return Varinfo(current);
 
-	/* Look for an existing alteration */
-	const _Varinfo* i = NULL;
-	for (i = start.impl(); i->alteration != change && i->alterations != NULL ; i = i->alterations)
-		;
+    /* Not found: we need to create it */
 
-	if (i->alteration != change)
-	{
-		/* Not found: we need to create it */
-		int alt;
+    /* Duplicate the original varinfo */
+    _Varinfo* newvi = new _Varinfo(*start);
+    i->alterations = newvi;
 
-		/* Duplicate the original varinfo */
-		_Varinfo* newvi = new _Varinfo(*start);
-		i->alterations = newvi;
-		i = i->alterations;
-
-		newvi->_ref = 1;
-		newvi->alteration = change;
-		newvi->alterations = NULL;
-
-#if 0
-		fprintf(stderr, "Before alteration(w:%d,s:%d): bl %d len %d scale %d\n",
-				WR_ALT_WIDTH(change), WR_ALT_SCALE(change),
-				i->bit_len, i->len, i->scale);
-#endif
-
-		/* Apply the alterations */
-		if ((alt = WR_ALT_WIDTH(change)) != 0)
-		{
-			newvi->bit_len += alt;
-			newvi->len = (int)ceil(log10(1 << i->bit_len));
-		}
-		if ((alt = WR_ALT_SCALE(change)) != 0)
-		{
-			newvi->scale += alt;
-			newvi->bufr_scale += alt;
-		}
+    newvi->_ref = 1;
+    newvi->alterations = NULL;
 
 #if 0
-		fprintf(stderr, "After alteration(w:%d,s:%d): bl %d len %d scale %d\n",
-				WR_ALT_WIDTH(change), WR_ALT_SCALE(change),
-				i->bit_len, i->len, i->scale);
+    fprintf(stderr, "Before alteration(w:%d,s:%d): bl %d len %d scale %d\n",
+            WR_ALT_WIDTH(change), WR_ALT_SCALE(change),
+            i->bit_len, i->len, i->scale);
 #endif
 
-		/* Postprocess the data, filling in minval and maxval */
-		newvi->compute_range();
-	}
+    /* Apply the alterations */
+    newvi->bit_len = bit_len;
+    if (newvi->is_string())
+        newvi->len = newvi->bit_len / 8;
+    else
+        newvi->len = (int)ceil(log10(1 << newvi->bit_len));
 
-	return Varinfo(i);
+    newvi->scale = scale;
+    newvi->bufr_scale = scale;
+
+#if 0
+    fprintf(stderr, "After alteration(w:%d,s:%d): bl %d len %d scale %d\n",
+            WR_ALT_WIDTH(change), WR_ALT_SCALE(change),
+            i->bit_len, i->len, i->scale);
+#endif
+
+    /* Postprocess the data, filling in minval and maxval */
+    newvi->compute_range();
+
+    return Varinfo(newvi);
 }
 
 const Vartable* Vartable::get(const char* id)

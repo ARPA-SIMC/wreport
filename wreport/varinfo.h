@@ -129,21 +129,6 @@ Varcode descriptor_code(const char* desc);
 typedef short unsigned int Alteration;
 
 /**
- * Create a variable alteration value
- */
-#define WR_ALT(width, scale) (((width)+128) << 8 | ((scale)+128))
-
-/**
- * Read the width part of a variable alteration value
- */
-#define WR_ALT_WIDTH(code) (((code) >> 8) - 128)
-
-/**
- * Read the scale part of a variable alteration value
- */
-#define WR_ALT_SCALE(code) (((code) & 0xff) - 128)
-
-/**
  * Varinfo flags
  */
 #define VARINFO_FLAG_STRING	0x01
@@ -189,7 +174,7 @@ struct _Varinfo
 	double dmin;
 	/** Maximum scaled value the field can have */
 	double dmax;
-	/** C-table alteration that has been applied to this entry */
+	/** C-table alteration that has been applied to this entry (deprecated) */
 	Alteration alteration;
 	/** Other altered versions of this Varinfo */
 	mutable struct _Varinfo* alterations;

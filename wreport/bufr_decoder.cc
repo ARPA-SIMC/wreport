@@ -38,7 +38,7 @@
 
 #include <assert.h>
 
-//#define TRACE_DECODER
+// #define TRACE_DECODER
 
 #ifdef TRACE_DECODER
 #define TRACE(...) fprintf(stderr, __VA_ARGS__)
@@ -821,10 +821,14 @@ struct opcode_interpreter
 	int c_scale_change;
 	/* Current value of width change from C modifier */
 	int c_width_change;
+    /** Current value of string length override from C08 modifiers (0 for no
+     * override)
+     */
+    int c_string_len_override;
 
 	opcode_interpreter(Decoder& d, DataSection& ds)
 		: d(d), ds(ds), bitmap(d.out), current_adder(0),
-		  c_scale_change(0), c_width_change(0)
+		  c_scale_change(0), c_width_change(0), c_string_len_override(0)
 	{
 	}
 
@@ -836,6 +840,40 @@ struct opcode_interpreter
     virtual void set_attr_mode() = 0;
     virtual void set_subst_mode() = 0;
 
+    /**
+     * Get the Varinfo needed to decode \a code, applying C operator changes if
+     * any are active.
+     */
+    Varinfo get_info(Varcode code)
+    {
+        Varinfo peek = d.out.btable->query(code);
+
+        if (!c_scale_change && !c_width_change && !c_string_len_override)
+            return peek;
+
+        int scale = peek->scale;
+        if (c_scale_change)
+        {
+            TRACE("get_info:applying %d scale change\n", c_scale_change);
+            scale += c_scale_change;
+        }
+        int bit_len = peek->bit_len;
+
+        if (peek->is_string() && c_string_len_override)
+        {
+            TRACE("get_info:overriding string to %d bytes\n", c_string_len_override);
+            bit_len = c_string_len_override * 8;
+        }
+        else if (c_width_change)
+        {
+            TRACE("get_info:applying %d width change\n", c_width_change);
+            bit_len += c_width_change;
+        }
+
+        TRACE("get_info:requesting alteration scale:%d, bit_len:%d\n", scale, bit_len);
+        return d.out.btable->query_altered(code, scale, bit_len);
+    }
+
     unsigned decode_b_data(const Opcodes& ops)
     {
         IFTRACE {
@@ -844,24 +882,17 @@ struct opcode_interpreter
             TRACE("\n");
         }
 
-        Varinfo info = d.out.btable->query_altered(ops.head(),
-                    WR_ALT(c_width_change, c_scale_change));
+        Varinfo info = get_info(ops.head());
 
         IFTRACE {
-            TRACE("decode_b_data:parsing @%zd+%d [bl %d+%d sc %d+%d ref %d]: %d%02d%03d %s[%s]\n", ds.cursor, 8-ds.pbyte_len,
-                    info->bit_len, c_width_change,
-                    info->scale, c_scale_change,
-                    info->bit_ref,
+            TRACE("decode_b_data:parsing @%zd+%d [bl %d sc %d ref %d]: %d%02d%03d %s[%s]\n",
+                    ds.cursor, 8-ds.pbyte_len,
+                    info->bit_len, info->scale, info->bit_ref,
                     WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var),
                     info->desc, info->unit);
             ds.dump_next_bits(64, stderr);
             TRACE("\n");
         }
-
-        if (c_scale_change > 0)
-            TRACE("decode_b_data:applied %d scale change\n", c_scale_change);
-        if (c_width_change > 0)
-            TRACE("decode_b_data:applied %d width change\n", c_width_change);
 
         if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
         {
@@ -1314,26 +1345,37 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 		case 5: {
 			int cdatalen = WR_VAR_Y(code);
 			char buf[cdatalen + 1];
-			TRACE("C DATA character data %d long\n", cdatalen);
+			TRACE("decode_c_data:character data %d long\n", cdatalen);
 			int i;
 			for (i = 0; i < cdatalen; ++i)
 			{
 				uint32_t bitval = ds.get_bits(8);
-				TRACE("C DATA decoded character %d %c\n", (int)bitval, (char)bitval);
+				TRACE("decode_c_data:decoded character %d %c\n", (int)bitval, (char)bitval);
 				buf[i] = bitval;
 			}
 			buf[i] = 0;
 			// TODO: add as C variable to the subset
 			// TODO: if compressed, extract the data from each subset?
-			TRACE("C DATA decoded string %s\n", buf);
+			TRACE("decode_c_data:decoded string %s\n", buf);
 			break;
 		}
+        case 8: {
+            int cdatalen = WR_VAR_Y(code);
+            IFTRACE {
+                if (cdatalen)
+                    TRACE("decode_c_data:character size overridden to %d chars for all fields\n", cdatalen);
+                else
+                    TRACE("decode_c_data:character size overridde end\n");
+            }
+            c_string_len_override = cdatalen;
+            break;
+        }
 		case 22:
 			if (WR_VAR_Y(code) == 0)
 			{
 				used += decode_bitmap(ops.sub(1), code, *current_adder);
 			} else
-				ds.parse_error("C modifier %d%02d%03d not yet supported",
+				ds.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
 							WR_VAR_F(code),
 							WR_VAR_X(code),
 							WR_VAR_Y(code));
@@ -1355,7 +1397,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 // Decode the value
                 ds.decode_b_value(info, *current_adder);
             } else
-                ds.parse_error("C modifier %d%02d%03d not yet supported",
+                ds.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
                         WR_VAR_F(code),
                         WR_VAR_X(code),
                         WR_VAR_Y(code));
@@ -1365,13 +1407,13 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 			{
 				used += decode_r_data(ops.sub(1));
 			} else
-				ds.parse_error("C modifier %d%02d%03d not yet supported",
+				ds.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
 							WR_VAR_F(code),
 							WR_VAR_X(code),
 							WR_VAR_Y(code));
 			break;
 		default:
-			ds.parse_error("C modifiers (%d%02d%03d in this case) are not yet supported",
+			ds.parse_error("decode_c_data:C modifiers (%d%02d%03d in this case) are not yet supported",
 						WR_VAR_F(code),
 						WR_VAR_X(code),
 						WR_VAR_Y(code));

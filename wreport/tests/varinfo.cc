@@ -79,13 +79,7 @@ void to::test<1>()
 template<> template<>
 void to::test<2>()
 {
-	Alteration a = WR_ALT(1, 2);
-	ensure_equals(WR_ALT_WIDTH(a), 1);
-	ensure_equals(WR_ALT_SCALE(a), 2);
-
-	a = WR_ALT(-1, -2);
-	ensure_equals(WR_ALT_WIDTH(a), -1);
-	ensure_equals(WR_ALT_SCALE(a), -2);
+    // Old Alteration support is now obsolete
 }
 
 /* Test instantiation of singleuse Varinfos */

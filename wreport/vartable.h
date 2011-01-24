@@ -121,7 +121,7 @@ public:
 	 *   Varinfo is stored inside the dba_vartable, can be freely copied around
 	 *   and does not need to be deallocated.
 	 */
-	Varinfo query_altered(Varcode var, Alteration change) const;
+	Varinfo query_altered(Varcode var, int scale=0, unsigned bit_len=0) const;
 
 	/**
 	 * Return a Vartable by id, loading it if necessary
