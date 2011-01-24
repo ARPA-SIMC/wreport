@@ -292,6 +292,10 @@ struct Encoder
 	int c_scale_change;
 	/* Current value of width change from C modifier */
 	int c_width_change;
+    /** Current value of string length override from C08 modifiers (0 for no
+     * override)
+     */
+    int c_string_len_override;
 
 	/* Subset we are encoding */
 	const Subset* subset;
@@ -305,7 +309,7 @@ struct Encoder
 	Encoder(const BufrBulletin& in, std::string& out)
 		: in(in), out(out),
 		  sec1_start(0), sec2_start(0), sec3_start(0), sec4_start(0), sec5_start(0),
-		  c_scale_change(0), c_width_change(0),
+		  c_scale_change(0), c_width_change(0), c_string_len_override(0),
 		  bitmap_to_encode(0), bitmap_encode_cur(0), bitmap_use_cur(0), bitmap_subset_cur(0)
 	{
 	}
@@ -588,13 +592,16 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 		error_consistency::throwf("input variable %d%02d%03d differs from expected variable %d%02d%03d",
 				WR_VAR_F(var->code()), WR_VAR_X(var->code()), WR_VAR_Y(var->code()),
 				WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()));
-	
-	unsigned len = info->bit_len;
-	if (c_width_change != 0)
-	{
-		TRACE("Width change: %d (len %d->%d)\n", c_width_change, len, len + c_width_change);
-		len += c_width_change;
-	}
+
+    unsigned len = info->bit_len;
+    if (info->is_string() && c_string_len_override != 0)
+    {
+        TRACE("encode_b_data:string len override to %d bytes\n", c_string_len_override);
+        len = c_string_len_override * 8;
+    } else if (c_width_change != 0) {
+        TRACE("encode_b_data:width change: %d (len %d->%d)\n", c_width_change, len, len + c_width_change);
+        len += c_width_change;
+    }
 
     if (var == NULL || var->value() == NULL)
     {
@@ -767,6 +774,17 @@ unsigned Encoder::encode_c_data(const Opcodes& ops, Varqueue& vars)
 			c_scale_change = WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0;
 			TRACE("Set scale change to %d\n", c_scale_change);
 			return 1;
+        case 8: {
+            int cdatalen = WR_VAR_Y(code);
+            IFTRACE {
+                if (cdatalen)
+                    TRACE("decode_c_data:character size overridden to %d chars for all fields\n", cdatalen);
+                else
+                    TRACE("decode_c_data:character size overridde end\n");
+            }
+            c_string_len_override = cdatalen;
+            return 1;
+        }
 		case 22:
 			if (WR_VAR_Y(code) == 0)
 			{
