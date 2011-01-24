@@ -75,6 +75,39 @@ struct Varqueue
 	const Var& pop() { return subset[cur++]; }
 };
 
+static const double e10[] = {
+    1.0,
+    10.0,
+    100.0,
+    1000.0,
+    10000.0,
+    100000.0,
+    1000000.0,
+    10000000.0,
+    100000000.0,
+    1000000000.0,
+    10000000000.0,
+    100000000000.0,
+    1000000000000.0,
+    10000000000000.0,
+    100000000000000.0,
+    1000000000000000.0,
+    10000000000000000.0,
+};
+
+static unsigned encode_double(double dval, int ref, int scale)
+{
+    int res;
+    if (scale >= 0)
+        res = (int)round(dval * e10[scale]) - ref;
+    else
+        res = (int)round(dval / e10[-scale]) - ref;
+    if (res < 0)
+        error_consistency::throwf("value %f is negative (%d) after conversion to int", dval, res);
+    return res;
+}
+
+
 struct Outbuf
 {
     /* Output decoded variables */
@@ -132,6 +165,59 @@ struct Outbuf
     void append_byte(unsigned char val)
     {
         add_bits(val, 8);
+    }
+
+    void append_missing(unsigned len_bits)
+    {
+        add_bits(0xffffffff, len_bits);
+    }
+
+    void append_string(const Var& var, unsigned len_bits)
+    {
+        const char* val = var.value();
+        unsigned i, bi;
+        unsigned smax = strlen(val);
+        for (i = 0, bi = 0; bi < len_bits; ++i)
+        {
+            TRACE("append_string:len: %d, smax: %d, i: %d, bi: %d\n", len, smax, i, bi);
+            /* Strings are space-padded in BUFR */
+            char todo = (i < smax) ? val[i] : ' ';
+            if (len_bits - bi >= 8)
+            {
+                append_byte(todo);
+                bi += 8;
+            }
+            else
+            {
+                /* Pad with zeros if writing strings with a number of bits
+                 * which is not multiple of 8.  It's not worth to implement
+                 * writing partial bytes at the moment and it's better to fail
+                 * gracefully, as my understanding is that this case should
+                 * never happen anyway. */
+                add_bits(0, len_bits - bi);
+                bi = len_bits;
+            }
+        }
+    }
+
+    void append_double(double val, int bit_ref, int bufr_scale, unsigned bit_len)
+    {
+        unsigned ival = encode_double(val, bit_ref, bufr_scale);
+        TRACE("append_double:converted to int (ref %d, scale %d): %d\n", bit_ref, bufr_scale, ival);
+        TRACE("append_double:writing %u with size %d\n", ival, len);
+        /* In case of overflow, store 'missing value' */
+        if ((unsigned)ival >= (1u<<bit_len))
+        {
+            error_consistency::throwf("value %f does not fit in %d bits", val, bit_len);
+            /*
+            TRACE("append_double:overflow: %x %u %d >= (1<<%u) = %x %u %d\n",
+                    ival, ival, ival, len,
+                    1<<len, 1<<len, 1<<len);
+            ival = 0xffffffff;
+            */
+        }
+        TRACE("append_double:about to encode: %x %u %d\n", ival, ival, ival);
+        add_bits(ival, bit_len);
     }
 
     /* Write all bits left to the buffer, padding with zeros */
@@ -424,34 +510,6 @@ void Encoder::encode_sec4()
     }
 }
 
-static const double e10[] = {
-	1.0,
-	10.0,
-	100.0,
-	1000.0,
-	10000.0,
-	100000.0,
-	1000000.0,
-	10000000.0,
-	100000000.0,
-	1000000000.0,
-	10000000000.0,
-	100000000000.0,
-	1000000000000.0,
-	10000000000000.0,
-	100000000000000.0,
-	1000000000000000.0,
-	10000000000000000.0,
-};
-
-static int encode_double(double dval, int ref, int scale)
-{
-	if (scale >= 0)
-		return (int)round(dval * e10[scale]) - ref;
-	else
-		return (int)round(dval / e10[-scale]) - ref;
-}
-
 void Encoder::bitmap_next()
 {
 	if (bitmap_to_encode == NULL)
@@ -538,57 +596,33 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 		len += c_width_change;
 	}
 
-	if (var == NULL || var->value() == NULL)
-	{
-        out.add_bits(0xffffffff, len);
-	} else if (info->is_string()) {
-		const char* val = var->value();
-		unsigned i, bi;
-		unsigned smax = strlen(val);
-		for (i = 0, bi = 0; bi < len; ++i)
-		{
-			TRACE("len: %d, smax: %d, i: %d, bi: %d\n", len, smax, i, bi);
-			/* Strings are space-padded in BUFR */
-			char todo = (i < smax) ? val[i] : ' ';
-			if (len - bi >= 8)
-			{
-                out.append_byte(todo);
-                bi += 8;
-			}
-			else
-			{
-				/* Pad with zeros if writing strings with a number of bits
-				 * which is not multiple of 8.  It's not worth to implement
-				 * writing partial bytes at the moment and it's better to fail
-				 * gracefully, as my understanding is that this case should
-				 * never happen anyway. */
-                out.add_bits(0, len - bi);
-                bi = len;
-			}
-		}
-	} else {
-		double dval = var->enqd();
-		TRACE("Starting point %s: %f %s\n", info->desc, dval, info->unit);
-		int ival = convert_units(info->unit, info->bufr_unit, dval);
-		TRACE("Unit conversion gives: %f %s\n", dval, info->bufr_unit);
-		/* Convert to int, optionally applying scale change */
-		TRACE("Scale change: %d\n", c_scale_change);
-		ival = encode_double(dval, info->bit_ref, info->bufr_scale + c_scale_change);
-		TRACE("Converted to int (ref %d, scale %d): %d\n", info->bit_ref, info->bufr_scale + c_scale_change, ival);
-		TRACE("Writing %u with size %d\n", ival, len);
-		/* In case of overflow, store 'missing value' */
-		if ((unsigned)ival >= (1u<<len))
-		{
-			error_consistency::throwf("value %f does not fit in variable B%02d%03d", dval, WR_VAR_X(info->var), WR_VAR_Y(info->var));
-			TRACE("Overflow: %x %u %d >= (1<<%u) = %x %u %d\n",
-				ival, ival, ival, len,
-				1<<len, 1<<len, 1<<len);
-			ival = 0xffffffff;
-		}
-        TRACE("About to encode: %x %u %d\n", ival, ival, ival);
-        out.add_bits(ival, len);
-	}
-	
+    if (var == NULL || var->value() == NULL)
+    {
+        out.append_missing(len);
+    } else if (info->is_string()) {
+        out.append_string(*var, len);
+    } else {
+        double dval = var->enqd();
+        TRACE("encode_b_data:starting point %f %s (%s)\n", dval, info->unit, info->desc);
+        dval = convert_units(info->unit, info->bufr_unit, dval);
+        TRACE("encode_b_data:unit conversion gives: %f %s\n", dval, info->bufr_unit);
+
+        /* Apply scale change if required */
+        int scale = info->bufr_scale;
+        if (c_scale_change)
+        {
+            TRACE("encode_b_data:scale change: %d\n", c_scale_change);
+            scale += c_scale_change;
+        }
+
+        try {
+            out.append_double(dval, info->bit_ref, scale, len);
+        } catch (error_consistency& e) {
+            e.msg += varcode_format(info->var);
+            throw e;
+        }
+    }
+
 	IFTRACE {
 		/*
 #ifndef TRACE_ENCODER
