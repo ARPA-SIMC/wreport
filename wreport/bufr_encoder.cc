@@ -288,7 +288,7 @@ void Encoder::encode_sec1ed4()
 	/* Originating/generating sub-centre (defined by Originating/generating centre) */
 	append_short(in.subcentre);
 	/* Update sequence number (zero for original BUFR messages; incremented for updates) */
-	append_byte(0);
+	append_byte(in.update_sequence_number);
 	/* Bit 1= 0 No optional section = 1 Optional section included Bits 2 ­ 8 set to zero (reserved) */
 	append_byte(in.optional_section_length ? 0x80 : 0);
 
