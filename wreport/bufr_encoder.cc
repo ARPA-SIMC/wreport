@@ -75,138 +75,82 @@ struct Varqueue
 	const Var& pop() { return subset[cur++]; }
 };
 
-struct Encoder
+struct Outbuf
 {
-	/* Input message data */
-	const BufrBulletin& in;
-	/* Output decoded variables */
-	std::string& out;
+    /* Output decoded variables */
+    std::string& out;
 
-	/* We have to memorise offsets rather than pointers, because e->out->buf
-	 * can get reallocated during the encoding */
+    /* Support for binary append */
+    unsigned char pbyte;
+    int pbyte_len;
 
-	/* Offset of the start of BUFR section 1 */
-	int sec1_start;
-	/* Offset of the start of BUFR section 2 */
-	int sec2_start;
-	/* Offset of the start of BUFR section 3 */
-	int sec3_start;
-	/* Offset of the start of BUFR section 4 */
-	int sec4_start;
-	/* Offset of the start of BUFR section 4 */
-	int sec5_start;
+    Outbuf(std::string& out)
+        : out(out), pbyte(0), pbyte_len(0)
+    {
+    }
 
-	/* Current value of scale change from C modifier */
-	int c_scale_change;
-	/* Current value of width change from C modifier */
-	int c_width_change;
+    /**
+     * Append n bits from 'val'.  n must be <= 32.
+     */
+    void add_bits(uint32_t val, int n)
+    {
+        /* Mask for reading data out of val */
+        uint32_t mask = 1 << (n - 1);
+        int i;
 
-	/* Support for binary append */
-	unsigned char pbyte;
-	int pbyte_len;
+        for (i = 0; i < n; i++) 
+        {
+            pbyte <<= 1;
+            pbyte |= ((val & mask) != 0) ? 1 : 0;
+            val <<= 1;
+            pbyte_len++;
 
-	/* Subset we are encoding */
-	const Subset* subset;
+            if (pbyte_len == 8) 
+                flush();
+        }
+#if 0
+        IFTRACE {
+            /* Prewrite it when tracing, to allow to dump the buffer as it's
+             * written */
+            while (e->out->len + 1 > e->out->alloclen)
+                DBA_RUN_OR_RETURN(dba_rawmsg_expand_buffer(e->out));
+            e->out->buf[e->out->len] = e->pbyte << (8 - e->pbyte_len);
+        }
+#endif
+    }
 
-	/* Set these to non-null if we are encoding a data present bitmap */
-	const Var* bitmap_to_encode;
-	int bitmap_encode_cur;
-	int bitmap_use_cur;
-	int bitmap_subset_cur;
+    void raw_append(const char* str, int len)
+    {
+        out.append(str, len);
+    }
 
-	Encoder(const BufrBulletin& in, std::string& out)
-		: in(in), out(out),
-		  sec1_start(0), sec2_start(0), sec3_start(0), sec4_start(0), sec5_start(0),
-		  c_scale_change(0), c_width_change(0), pbyte(0), pbyte_len(0),
-		  bitmap_to_encode(0), bitmap_encode_cur(0), bitmap_use_cur(0), bitmap_subset_cur(0)
-	{
-	}
+    void append_short(unsigned short val)
+    {
+        add_bits(val, 16);
+    }
 
-	void flush();
+    void append_byte(unsigned char val)
+    {
+        add_bits(val, 8);
+    }
 
-	void add_bits(uint32_t val, int n);
-	void raw_append(const char* str, int len);
-	void append_short(unsigned short val);
-	void append_byte(unsigned char val);
+    /* Write all bits left to the buffer, padding with zeros */
+    void flush()
+    {
+        if (pbyte_len == 0) return;
 
-	void bitmap_next();
+        while (pbyte_len < 8)
+        {
+            pbyte <<= 1;
+            pbyte_len++;
+        }
 
-	void encode_sec1ed3();
-	void encode_sec1ed4();
-	void encode_sec2();
-	void encode_sec3();
-	void encode_sec4();
-
-	void encode_data_section(const Opcodes& ops, Varqueue& vars);
-	unsigned encode_b_data(const Opcodes& ops, Varqueue& vars);
-	unsigned encode_r_data(const Opcodes& ops, Varqueue& vars, const Var* bitmap = NULL);
-	unsigned encode_c_data(const Opcodes& ops, Varqueue& vars);
-	unsigned encode_bitmap(const Opcodes& ops, Varqueue& vars);
-
-	// Run the encoding, copying data from in to out
-	void run();
+        out.append((const char*)&pbyte, 1);
+        pbyte_len = 0;
+        pbyte = 0;
+    }
 };
 
-/* Write all bits left to the buffer, padding with zeros */
-void Encoder::flush()
-{
-	if (pbyte_len == 0) return;
-
-	while (pbyte_len < 8)
-	{
-		pbyte <<= 1;
-		pbyte_len++;
-	}
-
-	out.append((const char*)&pbyte, 1);
-	pbyte_len = 0;
-	pbyte = 0;
-}
-
-/**
- * Append n bits from 'val'.  n must be <= 32.
- */
-void Encoder::add_bits(uint32_t val, int n)
-{
-	/* Mask for reading data out of val */
-	uint32_t mask = 1 << (n - 1);
-	int i;
-
-	for (i = 0; i < n; i++) 
-	{
-		pbyte <<= 1;
-		pbyte |= ((val & mask) != 0) ? 1 : 0;
-		val <<= 1;
-		pbyte_len++;
-
-		if (pbyte_len == 8) 
-			flush();
-	}
-#if 0
-	IFTRACE {
-		/* Prewrite it when tracing, to allow to dump the buffer as it's
-		 * written */
-		while (e->out->len + 1 > e->out->alloclen)
-			DBA_RUN_OR_RETURN(dba_rawmsg_expand_buffer(e->out));
-		e->out->buf[e->out->len] = e->pbyte << (8 - e->pbyte_len);
-	}
-#endif
-}
-
-void Encoder::raw_append(const char* str, int len)
-{
-	out.append(str, len);
-}
-
-void Encoder::append_short(unsigned short val)
-{
-	add_bits(val, 16);
-}
-
-void Encoder::append_byte(unsigned char val)
-{
-	add_bits(val, 8);
-}
 #if 0
 /* Dump 'count' bits of 'buf', starting at the 'ofs-th' bit */
 static dba_err dump_bits(void* buf, int ofs, int count, FILE* out)
@@ -236,106 +180,168 @@ static dba_err dump_bits(void* buf, int ofs, int count, FILE* out)
 #endif
 
 
+
+struct Encoder
+{
+	/* Input message data */
+	const BufrBulletin& in;
+    /// Output buffer
+    Outbuf out;
+
+	/* We have to memorise offsets rather than pointers, because e->out->buf
+	 * can get reallocated during the encoding */
+
+	/* Offset of the start of BUFR section 1 */
+	int sec1_start;
+	/* Offset of the start of BUFR section 2 */
+	int sec2_start;
+	/* Offset of the start of BUFR section 3 */
+	int sec3_start;
+	/* Offset of the start of BUFR section 4 */
+	int sec4_start;
+	/* Offset of the start of BUFR section 4 */
+	int sec5_start;
+
+	/* Current value of scale change from C modifier */
+	int c_scale_change;
+	/* Current value of width change from C modifier */
+	int c_width_change;
+
+	/* Subset we are encoding */
+	const Subset* subset;
+
+	/* Set these to non-null if we are encoding a data present bitmap */
+	const Var* bitmap_to_encode;
+	int bitmap_encode_cur;
+	int bitmap_use_cur;
+	int bitmap_subset_cur;
+
+	Encoder(const BufrBulletin& in, std::string& out)
+		: in(in), out(out),
+		  sec1_start(0), sec2_start(0), sec3_start(0), sec4_start(0), sec5_start(0),
+		  c_scale_change(0), c_width_change(0),
+		  bitmap_to_encode(0), bitmap_encode_cur(0), bitmap_use_cur(0), bitmap_subset_cur(0)
+	{
+	}
+
+	void bitmap_next();
+
+	void encode_sec1ed3();
+	void encode_sec1ed4();
+	void encode_sec2();
+	void encode_sec3();
+	void encode_sec4();
+
+	void encode_data_section(const Opcodes& ops, Varqueue& vars);
+	unsigned encode_b_data(const Opcodes& ops, Varqueue& vars);
+	unsigned encode_r_data(const Opcodes& ops, Varqueue& vars, const Var* bitmap = NULL);
+	unsigned encode_c_data(const Opcodes& ops, Varqueue& vars);
+	unsigned encode_bitmap(const Opcodes& ops, Varqueue& vars);
+
+	// Run the encoding, copying data from in to out
+	void run();
+};
+
 void Encoder::encode_sec1ed3()
 {
-	/* Encode bufr section 1 (Identification section) */
-	/* Length of section */
-	add_bits(18, 24);
-	/* Master table number */
-	append_byte(0);
-	/* Originating/generating sub-centre (defined by Originating/generating centre) */
-	append_byte(in.subcentre);
-	/* Originating/generating centre (Common Code tableC-1) */
-	/*DBA_RUN_OR_RETURN(bufr_message_append_byte(e, 0xff));*/
-	append_byte(in.centre);
-	/* Update sequence number (zero for original BUFR messages; incremented for updates) */
-	append_byte(in.update_sequence_number);
-	/* Bit 1= 0 No optional section = 1 Optional section included Bits 2 ­ 8 set to zero (reserved) */
-	append_byte(in.optional_section_length ? 0x80 : 0);
+    /* Encode bufr section 1 (Identification section) */
+    /* Length of section */
+    out.add_bits(18, 24);
+    /* Master table number */
+    out.append_byte(0);
+    /* Originating/generating sub-centre (defined by Originating/generating centre) */
+    out.append_byte(in.subcentre);
+    /* Originating/generating centre (Common Code tableC-1) */
+    /*DBA_RUN_OR_RETURN(bufr_message_append_byte(e, 0xff));*/
+    out.append_byte(in.centre);
+    /* Update sequence number (zero for original BUFR messages; incremented for updates) */
+    out.append_byte(in.update_sequence_number);
+    /* Bit 1= 0 No optional section = 1 Optional section included Bits 2 ­ 8 set to zero (reserved) */
+    out.append_byte(in.optional_section_length ? 0x80 : 0);
 
-	/* Data category (BUFR Table A) */
-	/* Data sub-category (defined by local ADP centres) */
-	append_byte(in.type);
-	append_byte(in.localsubtype);
-	/* Version number of master tables used (currently 9 for WMO FM 94 BUFR tables) */
-	append_byte(in.master_table);
-	/* Version number of local tables used to augment the master table in use */
-	append_byte(in.local_table);
+    /* Data category (BUFR Table A) */
+    /* Data sub-category (defined by local ADP centres) */
+    out.append_byte(in.type);
+    out.append_byte(in.localsubtype);
+    /* Version number of master tables used (currently 9 for WMO FM 94 BUFR tables) */
+    out.append_byte(in.master_table);
+    /* Version number of local tables used to augment the master table in use */
+    out.append_byte(in.local_table);
 
-	/* Year of century */
-	append_byte(in.rep_year == 2000 ? 100 : (in.rep_year % 100));
-	/* Month */
-	append_byte(in.rep_month);
-	/* Day */
-	append_byte(in.rep_day);
-	/* Hour */
-	append_byte(in.rep_hour);
-	/* Minute */
-	append_byte(in.rep_minute);
-	/* Century */
-	append_byte(in.rep_year / 100);
+    /* Year of century */
+    out.append_byte(in.rep_year == 2000 ? 100 : (in.rep_year % 100));
+    /* Month */
+    out.append_byte(in.rep_month);
+    /* Day */
+    out.append_byte(in.rep_day);
+    /* Hour */
+    out.append_byte(in.rep_hour);
+    /* Minute */
+    out.append_byte(in.rep_minute);
+    /* Century */
+    out.append_byte(in.rep_year / 100);
 }
 
 void Encoder::encode_sec1ed4()
 {
-	/* Encode bufr section 1 (Identification section) */
-	/* Length of section */
-	add_bits(22, 24);
-	/* Master table number */
-	append_byte(0);
-	/* Originating/generating centre (Common Code tableC-1) */
-	append_short(in.centre);
-	/* Originating/generating sub-centre (defined by Originating/generating centre) */
-	append_short(in.subcentre);
-	/* Update sequence number (zero for original BUFR messages; incremented for updates) */
-	append_byte(in.update_sequence_number);
-	/* Bit 1= 0 No optional section = 1 Optional section included Bits 2 ­ 8 set to zero (reserved) */
-	append_byte(in.optional_section_length ? 0x80 : 0);
+    /* Encode bufr section 1 (Identification section) */
+    /* Length of section */
+    out.add_bits(22, 24);
+    /* Master table number */
+    out.append_byte(0);
+    /* Originating/generating centre (Common Code tableC-1) */
+    out.append_short(in.centre);
+    /* Originating/generating sub-centre (defined by Originating/generating centre) */
+    out.append_short(in.subcentre);
+    /* Update sequence number (zero for original BUFR messages; incremented for updates) */
+    out.append_byte(in.update_sequence_number);
+    /* Bit 1= 0 No optional section = 1 Optional section included Bits 2 ­ 8 set to zero (reserved) */
+    out.append_byte(in.optional_section_length ? 0x80 : 0);
 
-	/* Data category (BUFR Table A) */
-	append_byte(in.type);
-	/* International data sub-category */
-	append_byte(in.subtype);
- 	/* Local subcategory (defined by local ADP centres) */
-	append_byte(in.localsubtype);
-	/* Version number of master tables used (currently 9 for WMO FM 94 BUFR tables) */
-	append_byte(in.master_table);
-	/* Version number of local tables used to augment the master table in use */
-	append_byte(in.local_table);
+    /* Data category (BUFR Table A) */
+    out.append_byte(in.type);
+    /* International data sub-category */
+    out.append_byte(in.subtype);
+    /* Local subcategory (defined by local ADP centres) */
+    out.append_byte(in.localsubtype);
+    /* Version number of master tables used (currently 9 for WMO FM 94 BUFR tables) */
+    out.append_byte(in.master_table);
+    /* Version number of local tables used to augment the master table in use */
+    out.append_byte(in.local_table);
 
-	/* Year of century */
-	append_short(in.rep_year);
-	/* Month */
-	append_byte(in.rep_month);
-	/* Day */
-	append_byte(in.rep_day);
-	/* Hour */
-	append_byte(in.rep_hour);
-	/* Minute */
-	append_byte(in.rep_minute);
-	/* Second */
-	append_byte(in.rep_second);
+    /* Year of century */
+    out.append_short(in.rep_year);
+    /* Month */
+    out.append_byte(in.rep_month);
+    /* Day */
+    out.append_byte(in.rep_day);
+    /* Hour */
+    out.append_byte(in.rep_hour);
+    /* Minute */
+    out.append_byte(in.rep_minute);
+    /* Second */
+    out.append_byte(in.rep_second);
 }
 
 void Encoder::encode_sec2()
 {
-	/* Encode BUFR section 2 (Optional section) */
-	/* Nothing to do */
-	if (in.optional_section_length)
-	{
-		int pad;
-		/* Length of section */
-		if ((pad = (in.optional_section_length % 2 == 1)))
-			add_bits(4 + in.optional_section_length + 1, 24);
-		else
-			add_bits(4 + in.optional_section_length, 24);
-		/* Set to 0 (reserved) */
-		append_byte(0);
+    /* Encode BUFR section 2 (Optional section) */
+    /* Nothing to do */
+    if (in.optional_section_length)
+    {
+        int pad;
+        /* Length of section */
+        if ((pad = (in.optional_section_length % 2 == 1)))
+            out.add_bits(4 + in.optional_section_length + 1, 24);
+        else
+            out.add_bits(4 + in.optional_section_length, 24);
+        /* Set to 0 (reserved) */
+        out.append_byte(0);
 
-		raw_append(in.optional_section, in.optional_section_length);
-		// Padd to even number of bytes
-		if (pad) append_byte(0);
-	}
+        out.raw_append(in.optional_section, in.optional_section_length);
+        // Padd to even number of bytes
+        if (pad) out.append_byte(0);
+    }
 }
 
 void Encoder::encode_sec3()
@@ -361,30 +367,30 @@ void Encoder::encode_sec3()
 		TRACE("Reusing datadesc\n");
 	}
 #endif
-	/* Length of section */
-	add_bits(8 + 2*in.datadesc.size(), 24);
-	/* Set to 0 (reserved) */
-	append_byte(0);
-	/* Number of data subsets */
-	append_short(in.subsets.size());
-	/* Bit 0 = observed data; bit 1 = use compression */
-	append_byte(128);
-	
-	/* Data descriptors */
-	for (unsigned i = 0; i < in.datadesc.size(); ++i)
-		append_short(in.datadesc[i]);
+    /* Length of section */
+    out.add_bits(8 + 2*in.datadesc.size(), 24);
+    /* Set to 0 (reserved) */
+    out.append_byte(0);
+    /* Number of data subsets */
+    out.append_short(in.subsets.size());
+    /* Bit 0 = observed data; bit 1 = use compression */
+    out.append_byte(128);
 
-	/* One padding byte to make the section even */
-	append_byte(0);
+    /* Data descriptors */
+    for (unsigned i = 0; i < in.datadesc.size(); ++i)
+        out.append_short(in.datadesc[i]);
+
+    /* One padding byte to make the section even */
+    out.append_byte(0);
 }
 
 void Encoder::encode_sec4()
 {
-	/* Encode BUFR section 4 (Data section) */
+    /* Encode BUFR section 4 (Data section) */
 
-	/* Length of section (currently set to 0, will be filled in later) */
-	add_bits(0, 24);
-	append_byte(0);
+    /* Length of section (currently set to 0, will be filled in later) */
+    out.add_bits(0, 24);
+    out.append_byte(0);
 
 	/* Encode all the subsets, uncompressed */
 	for (unsigned i = 0; i < in.subsets.size(); ++i)
@@ -395,27 +401,27 @@ void Encoder::encode_sec4()
 		encode_data_section(Opcodes(in.datadesc), varqueue);
 	}
 
-	/* Write all the bits and pad the data section to reach an even length */
-	TRACE("PRE FLUSH %d:%d\n", out.size(), pbyte_len);
-	flush();
-	TRACE("POST FLUSH %d:%d\n", out.size(), pbyte_len);
-	if ((out.size() % 2) == 1)
-	{
-		TRACE("PRE APPENDBYTE %d:%d\n", out.size(), pbyte_len);
-		append_byte(0);
-		TRACE("POST APPENDBYTE %d:%d\n", out.size(), pbyte_len);
-	}
-	TRACE("PRE FLUSH2 %d:%d\n", out.size(), pbyte_len);
-	flush();
-	TRACE("POST FLUSH2 %d:%d\n", out.size(), pbyte_len);
+    /* Write all the bits and pad the data section to reach an even length */
+    TRACE("PRE FLUSH %d:%d\n", out.size(), pbyte_len);
+    out.flush();
+    TRACE("POST FLUSH %d:%d\n", out.size(), pbyte_len);
+    if ((out.out.size() % 2) == 1)
+    {
+        TRACE("PRE APPENDBYTE %d:%d\n", out.size(), pbyte_len);
+        out.append_byte(0);
+        TRACE("POST APPENDBYTE %d:%d\n", out.size(), pbyte_len);
+    }
+    TRACE("PRE FLUSH2 %d:%d\n", out.size(), pbyte_len);
+    out.flush();
+    TRACE("POST FLUSH2 %d:%d\n", out.size(), pbyte_len);
 
-	/* Write the length of the section in its header */
-	{
-		uint32_t val = htonl(out.size() - sec4_start);
-		memcpy((char*)out.data() + sec4_start, ((char*)&val) + 1, 3);
+    /* Write the length of the section in its header */
+    {
+        uint32_t val = htonl(out.out.size() - sec4_start);
+        memcpy((char*)out.out.data() + sec4_start, ((char*)&val) + 1, 3);
 
-		TRACE("sec4 size %d\n", out.size() - sec4_start);
-	}
+        TRACE("sec4 size %d\n", out.out.size() - sec4_start);
+    }
 }
 
 static const double e10[] = {
@@ -534,7 +540,7 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 
 	if (var == NULL || var->value() == NULL)
 	{
-		add_bits(0xffffffff, len);
+        out.add_bits(0xffffffff, len);
 	} else if (info->is_string()) {
 		const char* val = var->value();
 		unsigned i, bi;
@@ -546,8 +552,8 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 			char todo = (i < smax) ? val[i] : ' ';
 			if (len - bi >= 8)
 			{
-				append_byte(todo);
-				bi += 8;
+                out.append_byte(todo);
+                bi += 8;
 			}
 			else
 			{
@@ -556,8 +562,8 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 				 * writing partial bytes at the moment and it's better to fail
 				 * gracefully, as my understanding is that this case should
 				 * never happen anyway. */
-				add_bits(0, len - bi);
-				bi = len;
+                out.add_bits(0, len - bi);
+                bi = len;
 			}
 		}
 	} else {
@@ -579,8 +585,8 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 				1<<len, 1<<len, 1<<len);
 			ival = 0xffffffff;
 		}
-		TRACE("About to encode: %x %u %d\n", ival, ival, ival);
-		add_bits(ival, len);
+        TRACE("About to encode: %x %u %d\n", ival, ival, ival);
+        out.add_bits(ival, len);
 	}
 	
 	IFTRACE {
@@ -641,8 +647,8 @@ unsigned Encoder::encode_r_data(const Opcodes& ops, Varqueue& vars, const Var* b
 		/* Get encoding informations for this repetition count */
 		Varinfo info = in.btable->query(ops[used]);
 
-		/* Encode the repetition count */
-		add_bits(count, info->bit_len);
+        /* Encode the repetition count */
+        out.add_bits(count, info->bit_len);
 
 		/* Move past the node with the repetition count */
 		++used;
@@ -658,10 +664,10 @@ unsigned Encoder::encode_r_data(const Opcodes& ops, Varqueue& vars, const Var* b
 			error_consistency::throwf("bitmap data descriptor is %d%02d%03d instead of B31031",
 					WR_VAR_F(ops[used]), WR_VAR_X(ops[used]), WR_VAR_Y(ops[used]));
 
-		for (unsigned i = 0; i < bitmap->info()->len; ++i)
-			// One bit from the current bitmap
-			add_bits(bitmap->value()[i] == '+' ? 0 : 1, 1);
-		TRACE("Encoded %d bitmap entries\n", bitmap->info()->len);
+        for (unsigned i = 0; i < bitmap->info()->len; ++i)
+            // One bit from the current bitmap
+            out.add_bits(bitmap->value()[i] == '+' ? 0 : 1, 1);
+        TRACE("Encoded %d bitmap entries\n", bitmap->info()->len);
 	} else {
 		// Extract the first `group' nodes, to handle here
 		Opcodes group_ops = ops.sub(used, group);
@@ -797,12 +803,12 @@ void Encoder::encode_data_section(const Opcodes& ops, Varqueue& vars)
 
 void Encoder::run()
 {
-	/* Encode bufr section 0 (Indicator section) */
-	raw_append("BUFR\0\0\0", 7);
-	append_byte(in.edition);
+    /* Encode bufr section 0 (Indicator section) */
+    out.raw_append("BUFR\0\0\0", 7);
+    out.append_byte(in.edition);
 
-	TRACE("sec0 ends at %d\n", out.size());
-	sec1_start = out.size();
+    TRACE("sec0 ends at %d\n", out.out.size());
+    sec1_start = out.out.size();
 
 	switch (in.edition)
 	{
@@ -814,32 +820,32 @@ void Encoder::run()
 	}
 
 
-	TRACE("sec1 ends at %d\n", out.size());
-	sec2_start = out.size();
-	encode_sec2();
+    TRACE("sec1 ends at %d\n", out.out.size());
+    sec2_start = out.out.size();
+    encode_sec2();
 
-	TRACE("sec2 ends at %d\n", out.size());
-	sec3_start = out.size();
-	encode_sec3();
+    TRACE("sec2 ends at %d\n", out.out.size());
+    sec3_start = out.out.size();
+    encode_sec3();
 
-	TRACE("sec3 ends at %d\n", out.size());
-	sec4_start = out.size();
-	encode_sec4();
+    TRACE("sec3 ends at %d\n", out.out.size());
+    sec4_start = out.out.size();
+    encode_sec4();
 
-	TRACE("sec4 ends at %d\n", out.size());
-	sec5_start = out.size();
+    TRACE("sec4 ends at %d\n", out.out.size());
+    sec5_start = out.out.size();
 
-	/* Encode section 5 (End section) */
-	raw_append("7777", 4);
-	TRACE("sec5 ends at %d\n", out.size());
+    /* Encode section 5 (End section) */
+    out.raw_append("7777", 4);
+    TRACE("sec5 ends at %d\n", out.out.size());
 
-	/* Write the length of the BUFR message in its header */
-	{
-		uint32_t val = htonl(out.size());
-		memcpy((char*)out.data() + 4, ((char*)&val) + 1, 3);
+    /* Write the length of the BUFR message in its header */
+    {
+        uint32_t val = htonl(out.out.size());
+        memcpy((char*)out.out.data() + 4, ((char*)&val) + 1, 3);
 
-		TRACE("msg size %u\n", out.size());
-	}
+        TRACE("msg size %u\n", out.out.size());
+    }
 }
 
 } // Unnamed namespace
