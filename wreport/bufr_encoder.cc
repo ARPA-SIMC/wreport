@@ -179,7 +179,7 @@ struct Outbuf
         unsigned smax = strlen(val);
         for (i = 0, bi = 0; bi < len_bits; ++i)
         {
-            TRACE("append_string:len: %d, smax: %d, i: %d, bi: %d\n", len, smax, i, bi);
+            TRACE("append_string:len: %d, smax: %d, i: %d, bi: %d\n", len_bits, smax, i, bi);
             /* Strings are space-padded in BUFR */
             char todo = (i < smax) ? val[i] : ' ';
             if (len_bits - bi >= 8)
@@ -204,7 +204,7 @@ struct Outbuf
     {
         unsigned ival = encode_double(val, bit_ref, bufr_scale);
         TRACE("append_double:converted to int (ref %d, scale %d): %d\n", bit_ref, bufr_scale, ival);
-        TRACE("append_double:writing %u with size %d\n", ival, len);
+        TRACE("append_double:writing %u with size %d\n", ival, bit_len);
         /* In case of overflow, store 'missing value' */
         if ((unsigned)ival >= (1u<<bit_len))
         {
@@ -302,7 +302,6 @@ struct Encoder
 
 	/* Set these to non-null if we are encoding a data present bitmap */
 	const Var* bitmap_to_encode;
-	int bitmap_encode_cur;
 	int bitmap_use_cur;
 	int bitmap_subset_cur;
 
@@ -310,7 +309,7 @@ struct Encoder
 		: in(in), out(out),
 		  sec1_start(0), sec2_start(0), sec3_start(0), sec4_start(0), sec5_start(0),
 		  c_scale_change(0), c_width_change(0), c_string_len_override(0),
-		  bitmap_to_encode(0), bitmap_encode_cur(0), bitmap_use_cur(0), bitmap_subset_cur(0)
+		  bitmap_to_encode(0), bitmap_use_cur(0), bitmap_subset_cur(0)
 	{
 	}
 
@@ -324,6 +323,7 @@ struct Encoder
 
 	void encode_data_section(const Opcodes& ops, Varqueue& vars);
 	unsigned encode_b_data(const Opcodes& ops, Varqueue& vars);
+	void encode_b_data(const Varinfo& info, const Var& var);
 	unsigned encode_r_data(const Opcodes& ops, Varqueue& vars, const Var* bitmap = NULL);
 	unsigned encode_c_data(const Opcodes& ops, Varqueue& vars);
 	unsigned encode_bitmap(const Opcodes& ops, Varqueue& vars);
@@ -492,25 +492,17 @@ void Encoder::encode_sec4()
 	}
 
     /* Write all the bits and pad the data section to reach an even length */
-    TRACE("PRE FLUSH %d:%d\n", out.size(), pbyte_len);
     out.flush();
-    TRACE("POST FLUSH %d:%d\n", out.size(), pbyte_len);
     if ((out.out.size() % 2) == 1)
-    {
-        TRACE("PRE APPENDBYTE %d:%d\n", out.size(), pbyte_len);
         out.append_byte(0);
-        TRACE("POST APPENDBYTE %d:%d\n", out.size(), pbyte_len);
-    }
-    TRACE("PRE FLUSH2 %d:%d\n", out.size(), pbyte_len);
     out.flush();
-    TRACE("POST FLUSH2 %d:%d\n", out.size(), pbyte_len);
 
     /* Write the length of the section in its header */
     {
         uint32_t val = htonl(out.out.size() - sec4_start);
         memcpy((char*)out.out.data() + sec4_start, ((char*)&val) + 1, 3);
 
-        TRACE("sec4 size %d\n", out.out.size() - sec4_start);
+        TRACE("sec4 size %zd\n", out.out.size() - sec4_start);
     }
 }
 
@@ -578,14 +570,13 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 	}
 
 	IFTRACE{
-		TRACE("Encoding @.d+%d [bl %d+%d sc %d+%d ref %d]: ", /*e->in->len - (e->sec4_start + 4),*/ pbyte_len,
+		TRACE("Encoding @.d+%d [bl %d+%d sc %d+%d ref %d]: ", /*e->in->len - (e->sec4_start + 4),*/
+                out.pbyte_len,
 				info->bit_len, c_width_change,
 				info->scale, c_scale_change,
 				info->bit_ref);
 		if (var)
 			var->print(stderr);
-		else // FIXME: if attr to encode is missing, we end up here and do the wrong thing
-			TRACE("dpb %c\n", bitmap_to_encode->value()[bitmap_encode_cur]);
 	}
 
 	if (var && var->code() != ops.head())
@@ -625,7 +616,7 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
         try {
             out.append_double(dval, info->bit_ref, scale, len);
         } catch (error_consistency& e) {
-            e.msg += varcode_format(info->var);
+            e.msg += " encoding " + varcode_format(info->var);
             throw e;
         }
     }
@@ -648,6 +639,37 @@ unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
 	}
 
 	return used;
+}
+
+void Encoder::encode_b_data(const Varinfo& orig_info, const Var& var)
+{
+    Varinfo info = in.btable->query(var.code());
+
+    IFTRACE{
+        TRACE("Encoding @.d+%d [bl %d sc %d ref %d]: ", /*e->in->len - (e->sec4_start + 4),*/
+                out.pbyte_len,
+                info->bit_len, info->bufr_scale, info->bit_ref);
+        var.print(stderr);
+    }
+
+    if (var.value() == NULL)
+    {
+        out.append_missing(info->bit_len);
+    } else if (info->is_string()) {
+        out.append_string(var, info->bit_len);
+    } else {
+        double dval = var.enqd();
+        TRACE("encode_b_data:starting point %f %s (%s)\n", dval, info->unit, info->desc);
+        dval = convert_units(orig_info->unit, info->bufr_unit, dval);
+        TRACE("encode_b_data:unit conversion gives: %f %s\n", dval, info->bufr_unit);
+
+        try {
+            out.append_double(dval, info->bit_ref, info->bufr_scale, info->bit_len);
+        } catch (error_consistency& e) {
+            e.msg += varcode_format(info->var);
+            throw e;
+        }
+    }
 }
 
 /* If using delayed replication and count is not -1, use count for the delayed
@@ -726,15 +748,12 @@ unsigned Encoder::encode_bitmap(const Opcodes& ops, Varqueue& vars)
 	unsigned used = 0;
 
 	Varcode code = vars.peek().code();
-	if (bitmap_to_encode != NULL && (unsigned)bitmap_encode_cur < bitmap_to_encode->info()->len)
-		throw error_consistency("request to encode a bitmap before we finished encoding the previous one");
 	if (WR_VAR_F(code) != 2)
 		error_consistency::throwf("request to encode a bitmap but the input variable is %01d%02d%03d",
 				WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 
 	bitmap_to_encode = &vars.pop();
 	++used;
-	bitmap_encode_cur = 0;
 	bitmap_use_cur = -1;
 	bitmap_subset_cur = -1;
 
@@ -788,14 +807,47 @@ unsigned Encoder::encode_c_data(const Opcodes& ops, Varqueue& vars)
 		case 22:
 			if (WR_VAR_Y(code) == 0)
 			{
-				TRACE("PRE BITMAP\n");
 				return encode_bitmap(ops, vars);
-				TRACE("POST BITMAP\n");
 			} else
 				error_consistency::throwf("C modifier %d%02d%03d not yet supported",
 							WR_VAR_F(code),
 							WR_VAR_X(code),
 							WR_VAR_Y(code));
+        case 23:
+            if (WR_VAR_Y(code) == 0)
+            {
+                return encode_bitmap(ops, vars);
+            } else if (WR_VAR_Y(code) == 255) {
+                if (bitmap_to_encode == NULL)
+                    error_consistency::throwf("found C23255 with no active bitmap");
+                if ((unsigned)bitmap_use_cur >= bitmap_to_encode->info()->len)
+                    error_consistency::throwf("found C23255 while at the end of active bitmap");
+
+                /*
+                // Attribute of the variable pointed by the bitmap
+                TRACE("Encode attribute %01d%02d%03d %d/%d subset %d/%zd\n",
+                        WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()),
+                        bitmap_use_cur, bitmap_to_encode->info()->len,
+                        bitmap_subset_cur, subset->size());
+                */
+                // Get the variable referenced by the current bitmap
+                const Var& rel_var = (*subset)[bitmap_subset_cur];
+                // Get the substitution attribute
+                const Var* attr = rel_var.enqa(rel_var.code());
+                if (!attr)
+                    error_consistency::throwf("no substitute value found for C23255");
+                bitmap_next();
+
+                // Use the details of the corrisponding variable for decoding
+                Varinfo info = in.subsets[0][bitmap_subset_cur].info();
+                // Encode the value
+                encode_b_data(info, *attr);
+                return 1;
+            } else
+                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
+                        WR_VAR_F(code),
+                        WR_VAR_X(code),
+                        WR_VAR_Y(code));
 		case 24:
 			if (WR_VAR_Y(code) == 0)
 			{
@@ -859,7 +911,7 @@ void Encoder::run()
     out.raw_append("BUFR\0\0\0", 7);
     out.append_byte(in.edition);
 
-    TRACE("sec0 ends at %d\n", out.out.size());
+    TRACE("sec0 ends at %zd\n", out.out.size());
     sec1_start = out.out.size();
 
 	switch (in.edition)
@@ -872,31 +924,31 @@ void Encoder::run()
 	}
 
 
-    TRACE("sec1 ends at %d\n", out.out.size());
+    TRACE("sec1 ends at %zd\n", out.out.size());
     sec2_start = out.out.size();
     encode_sec2();
 
-    TRACE("sec2 ends at %d\n", out.out.size());
+    TRACE("sec2 ends at %zd\n", out.out.size());
     sec3_start = out.out.size();
     encode_sec3();
 
-    TRACE("sec3 ends at %d\n", out.out.size());
+    TRACE("sec3 ends at %zd\n", out.out.size());
     sec4_start = out.out.size();
     encode_sec4();
 
-    TRACE("sec4 ends at %d\n", out.out.size());
+    TRACE("sec4 ends at %zd\n", out.out.size());
     sec5_start = out.out.size();
 
     /* Encode section 5 (End section) */
     out.raw_append("7777", 4);
-    TRACE("sec5 ends at %d\n", out.out.size());
+    TRACE("sec5 ends at %zd\n", out.out.size());
 
     /* Write the length of the BUFR message in its header */
     {
         uint32_t val = htonl(out.out.size());
         memcpy((char*)out.out.data() + 4, ((char*)&val) + 1, 3);
 
-        TRACE("msg size %u\n", out.out.size());
+        TRACE("msg size %zd\n", out.out.size());
     }
 }
 
