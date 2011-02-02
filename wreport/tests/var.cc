@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -209,6 +209,53 @@ void to::test<7>()
 	ensure_equals(var.enq<double>(), 1.0);
 	ensure_equals(var.enq<int>(), 100);
 	ensure_equals(string(var.enq<const char*>()), "100");
+}
+
+// Test formatting and reparsing
+template<> template<>
+void to::test<8>()
+{
+    const Vartable* table = Vartable::get("B0000000000000014000");
+
+    // Missing
+    {
+        Varinfo info = table->query(WR_VAR(0, 1, 1));
+        Var var(info);
+        string f = var.format("");
+        Var var1(info);
+        var1.set_from_formatted(f.c_str());
+        ensure(var == var1);
+    }
+
+    // String
+    {
+        Varinfo info = table->query(WR_VAR(0, 1, 15));
+        Var var(info, "antani");
+        string f = var.format("");
+        Var var1(info);
+        var1.set_from_formatted(f.c_str());
+        ensure(var == var1);
+    }
+
+    // Integer
+    {
+        Varinfo info = table->query(WR_VAR(0, 1, 2));
+        Var var(info, 123);
+        string f = var.format("");
+        Var var1(info);
+        var1.set_from_formatted(f.c_str());
+        ensure(var == var1);
+    }
+
+    // Double
+    {
+        Varinfo info = table->query(WR_VAR(0, 5, 1));
+        Var var(info, 12.345);
+        string f = var.format("");
+        Var var1(info);
+        var1.set_from_formatted(f.c_str());
+        ensure(var == var1);
+    }
 }
 
 }

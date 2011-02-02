@@ -1,7 +1,7 @@
 /*
  * wreport/var - Store a value and its informations
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,6 +158,9 @@ public:
 
 	/// Set the value from a string value
 	void setc(const char* val);
+
+    /// Set from a value formatted with the format() method
+    void set_from_formatted(const char* val);
 
 	/**
 	 * Shortcuts (use with care, as the semanthics are slightly different

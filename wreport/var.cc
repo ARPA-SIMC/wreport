@@ -1,7 +1,7 @@
 /*
  * wreport/var - Store a value and its informations
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -309,6 +309,28 @@ void Var::setc(const char* val)
 
 	strncpy(m_value, val, m_info->len + 1);
 	m_value[m_info->len + 1] = 0;
+}
+
+void Var::set_from_formatted(const char* val)
+{
+    // NULL or empty string, unset()
+    if (val == NULL || val[0] == 0)
+    {
+        unset();
+        return;
+    }
+
+    Varinfo i = info();
+
+    // If we're a string, it's easy
+    if (i->is_string())
+    {
+        setc(val);
+        return;
+    }
+
+    // Else use strtod
+    setd(strtod(val, NULL));
 }
 
 void Var::unset()
