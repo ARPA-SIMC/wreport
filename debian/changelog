@@ -3,8 +3,10 @@ wreport (1.4-1) unstable; urgency=low
   * New upstream version
      - Implemented support for decoding BUFR C08xxx operators
      - Added Var::set_from_formatted()
+     - Added D01035 to D0000000000000013000 (it was referenced by other
+       entries, but it was missing)
 
- -- Enrico Zini <enrico@debian.org>  Wed, 02 Feb 2011 18:53:12 +0000
+ -- Enrico Zini <enrico@debian.org>  Fri, 04 Feb 2011 15:42:00 +0000
 
 wreport (1.3-1) unstable; urgency=low
 
