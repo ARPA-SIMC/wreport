@@ -1,7 +1,7 @@
 /*
  * wreport/vartable - Load variable information from on-disk tables
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -103,6 +103,8 @@ Varinfo Vartable::query_altered(Varcode var, int scale, unsigned bit_len) const
 
     newvi->_ref = 1;
     newvi->alterations = NULL;
+    // Mark that it is an alteration
+    newvi->alteration = 1;
 
 #if 0
     fprintf(stderr, "Before alteration(w:%d,s:%d): bl %d len %d scale %d\n",
