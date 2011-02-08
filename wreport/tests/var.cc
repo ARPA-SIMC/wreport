@@ -89,12 +89,35 @@ void to::test<1>()
 		ensure_equals(var.value(), (const char*)0);
 	}
 #endif
-}	
+}
 
 // Get and set values
 template<> template<>
 void to::test<2>()
 {
+    const Vartable* table = Vartable::get("B0000000000000014000");
+
+    // setc
+    {
+        // STATION OR SITE NAME, 20 chars
+        Varinfo info = table->query(WR_VAR(0, 1, 15));
+        Var var(info);
+
+        // Normal setc
+        var.setc("foobar");
+        ensure_var_equals(var, "foobar");
+
+        // Setc with truncation
+        var.setc_truncate("Budapest Pestszentlorinc-kulterulet");
+        ensure_var_equals(var, "Budapest Pestszentlo>");
+
+        // ensure that setc would complain for the length
+        try {
+            var.setc("Budapest Pestszentlorinc-kulterulet");
+        } catch (std::exception& e) {
+            ensure_contains(e.what(), "is too long");
+        }
+    }
 
 }
 
@@ -256,6 +279,25 @@ void to::test<8>()
         var1.set_from_formatted(f.c_str());
         ensure(var == var1);
     }
+}
+
+// Test truncation of altered strings when copied to normal strings
+template<> template<>
+void to::test<9>()
+{
+    const Vartable* table = Vartable::get("B0000000000000014000");
+    // STATION OR SITE NAME, 20 chars
+    Varinfo info = table->query(WR_VAR(0, 1, 15));
+    // Create an amended version for longer site names
+    Varinfo extended = table->query_altered(WR_VAR(0, 1, 15), 0, 40*8);
+
+    // Create a variable with an absurdly long value
+    Var ext(extended, "Budapest Pestszentlorinc-kulterulet");
+
+    // Try to fit it into a normal variable
+    Var norm(info);
+    norm.set(ext);
+    ensure_var_equals(norm, "Budapest Pestszentlo>");
 }
 
 }

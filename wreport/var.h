@@ -159,6 +159,14 @@ public:
 	/// Set the value from a string value
 	void setc(const char* val);
 
+    /**
+     * Set the value from a string value, truncating \a val if it is too long
+     *
+     * If a value is truncated, the last character is set to '>' to mark the
+     * truncation.
+     */
+    void setc_truncate(const char* val);
+
     /// Set from a value formatted with the format() method
     void set_from_formatted(const char* val);
 

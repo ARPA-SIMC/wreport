@@ -311,6 +311,25 @@ void Var::setc(const char* val)
 	m_value[m_info->len + 1] = 0;
 }
 
+void Var::setc_truncate(const char* val)
+{
+    /* Set the value */
+    if (m_value == NULL &&
+            (m_value = new char[m_info->len + 2]) == NULL)
+        throw error_alloc("allocating space for Var value");
+
+    /* Guard against overflows */
+    unsigned len = strlen(val);
+    /* Tweak the length to account for the extra leading '-' allowed for
+     * negative numeric values */
+    if (!m_info->is_string() && val[0] == '-')
+        --len;
+    strncpy(m_value, val, m_info->len + 1);
+    m_value[m_info->len + 1] = 0;
+    if (len > m_info->len)
+        m_value[m_info->len] = '>';
+}
+
 void Var::set_from_formatted(const char* val)
 {
     // NULL or empty string, unset()
@@ -402,21 +421,24 @@ const Var* Var::next_attr() const
 
 void Var::copy_val(const Var& src)
 {
-	if (src.value() == NULL)
-	{
-		unset();
-	} else {
-		if (m_info->is_string())
-		{
-			setc(src.value());
-		} else {
-			/* Convert and set the new value */
-			setd(convert_units(src.info()->unit, m_info->unit, src.enqd()));
-		}
-	}
+    if (src.value() == NULL)
+    {
+        unset();
+    } else {
+        if (m_info->is_string())
+        {
+            if (src.info()->alteration && src.info()->len > m_info->len)
+                setc_truncate(src.value());
+            else
+                setc(src.value());
+        } else {
+            /* Convert and set the new value */
+            setd(convert_units(src.info()->unit, m_info->unit, src.enqd()));
+        }
+    }
 
-	/* Copy the attributes */
-	copy_attrs(src);
+    /* Copy the attributes */
+    copy_attrs(src);
 }
 
 void Var::copy_attrs(const Var& src)
