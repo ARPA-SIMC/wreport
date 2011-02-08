@@ -1,3 +1,11 @@
+wreport (1.5-1) unstable; urgency=low
+
+  * New upstream version
+     - When assigning altered string variables to normal ones, truncate
+       strings values if they are too long, instead of raising an error
+
+ -- Enrico Zini <enrico@debian.org>  Tue, 08 Feb 2011 10:16:53 +0000
+
 wreport (1.4-1) unstable; urgency=low
 
   * New upstream version
