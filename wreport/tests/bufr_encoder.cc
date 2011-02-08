@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,7 +72,8 @@ void to::test<1>()
 		}
 	} test;
 
-	BufrBulletin msg;
+    BufrBulletin msg;
+    msg.clear();
 
 	/* Initialise common message bits */
 	msg.edition = 3;            // BUFR ed.4
@@ -146,7 +147,8 @@ void to::test<2>()
 		}
 	} test;
 
-	BufrBulletin msg;
+    BufrBulletin msg;
+    msg.clear();
 
 	// Initialise common message bits
 	msg.edition = 3;            // BUFR ed.4
