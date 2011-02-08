@@ -335,7 +335,7 @@ void Var::set_from_formatted(const char* val)
 
 void Var::unset()
 {
-	if (m_value != NULL) free(m_value);
+	if (m_value != NULL) delete[] m_value;
 	m_value = NULL;
 }
 
