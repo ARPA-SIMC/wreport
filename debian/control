@@ -12,8 +12,10 @@ Architecture: any
 Depends: libwreport1 (= ${binary:Version}), ${misc:Depends}
 Recommends: pkg-config
 Description: library for working with weather reports
- libwreport is a C++ library to read and write weather reports in BUFR and CREX
- formats.
+ libwreport is a C++ library for working with weather reports.
+ .
+ The main feature of libwreport is a powerful decoder and encoder for the BUFR
+ and CREX formats.
  .
  It also provides a useful abstraction to handle values found in weather
  reports, with awareness of significant digits, measurement units, variable
@@ -21,10 +23,10 @@ Description: library for working with weather reports
  .
  Features provided:
  .
-  * Unit conversion
-  * Handling of physical variables
   * Read and write BUFR version 2, 3, and 4
   * Read and write CREX
+  * Unit conversion
+  * Handling of physical variables
 
 Package: libwreport-doc
 Section: doc
