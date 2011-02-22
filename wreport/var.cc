@@ -324,10 +324,10 @@ void Var::setc_truncate(const char* val)
      * negative numeric values */
     if (!m_info->is_string() && val[0] == '-')
         --len;
-    strncpy(m_value, val, m_info->len + 1);
-    m_value[m_info->len + 1] = 0;
+    strncpy(m_value, val, m_info->len);
+    m_value[m_info->len] = 0;
     if (len > m_info->len)
-        m_value[m_info->len] = '>';
+        m_value[m_info->len - 1] = '>';
 }
 
 void Var::set_from_formatted(const char* val)

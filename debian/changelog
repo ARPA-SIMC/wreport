@@ -1,3 +1,10 @@
+wreport (1.6-1) unstable; urgency=low
+
+  * New upstream version
+     - Fixed off-by-one error in variable truncation
+
+ -- Enrico Zini <enrico@debian.org>  Tue, 22 Feb 2011 21:24:40 +0000
+
 wreport (1.5-1) unstable; urgency=low
 
   * New upstream version

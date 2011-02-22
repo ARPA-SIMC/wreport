@@ -109,7 +109,7 @@ void to::test<2>()
 
         // Setc with truncation
         var.setc_truncate("Budapest Pestszentlorinc-kulterulet");
-        ensure_var_equals(var, "Budapest Pestszentlo>");
+        ensure_var_equals(var, "Budapest Pestszentl>");
 
         // ensure that setc would complain for the length
         try {
@@ -297,7 +297,7 @@ void to::test<9>()
     // Try to fit it into a normal variable
     Var norm(info);
     norm.set(ext);
-    ensure_var_equals(norm, "Budapest Pestszentlo>");
+    ensure_var_equals(norm, "Budapest Pestszentl>");
 }
 
 }

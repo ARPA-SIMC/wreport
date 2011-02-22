@@ -82,7 +82,8 @@ tut_test_SOURCES = \
 	tests/tut-main.cpp
 tut_test_LDADD = \
 	libwreport.la \
-	$(WIBBLE_LIBS)
+	$(WIBBLE_LIBS) \
+	$(LUA_LIBS)
 
 if LUA
 noinst_HEADERS += test-utils-lua.h
