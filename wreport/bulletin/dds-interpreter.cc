@@ -80,7 +80,7 @@ struct Interpreter
     int c_string_len_override;
 
     /* Subset we are encoding */
-    const Subset* subset;
+    //const Subset* subset;
 
     /* Set these to non-null if we are encoding a data present bitmap */
     const Var* bitmap_to_encode;
@@ -153,13 +153,13 @@ void Interpreter::bitmap_next()
         ++bitmap_use_cur;
         ++bitmap_subset_cur;
 
-        while ((unsigned)bitmap_subset_cur < subset->size() &&
-                WR_VAR_F((*subset)[bitmap_subset_cur].code()) != 0)
+        while ((unsigned)bitmap_subset_cur < out.subset_size() &&
+                out.is_special_var(bitmap_subset_cur))
             ++bitmap_subset_cur;
     }
     if ((unsigned)bitmap_use_cur > bitmap_to_encode->info()->len)
         throw error_consistency("moved past end of data present bitmap");
-    if ((unsigned)bitmap_subset_cur == subset->size())
+    if ((unsigned)bitmap_subset_cur == out.subset_size())
         throw error_consistency("end of data reached when applying attributes");
     TRACE("bitmap_next post %d %d\n", bitmap_use_cur, bitmap_subset_cur);
 }
@@ -241,6 +241,7 @@ unsigned Interpreter::do_r_data(const Opcodes& ops, unsigned& var_pos, const Var
                     WR_VAR_F(ops[used]), WR_VAR_X(ops[used]), WR_VAR_Y(ops[used]));
 
         out.encode_bitmap(*bitmap);
+        ++var_pos;
         TRACE("Encoded %d bitmap entries\n", bitmap->info()->len);
     } else {
         // Extract the first `group' nodes, to handle here
@@ -311,6 +312,10 @@ unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
         case 2:
             c_scale_change = WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0;
             TRACE("Set scale change to %d\n", c_scale_change);
+            return 1;
+        case 5:
+            out.encode_char_data(code, var_pos);
+            ++var_pos;
             return 1;
         case 8: {
             int cdatalen = WR_VAR_Y(code);
@@ -390,8 +395,10 @@ void Interpreter::do_data_section(const Opcodes& ops, unsigned& var_pos)
             case 2: i += do_c_data(ops.sub(i), var_pos); break;
             case 3:
             {
+                out.push_dcode(ops[i]);
                 Opcodes exp = in.dtable->query(ops[i]);
                 do_data_section(exp, var_pos);
+                out.pop_dcode();
                 ++i;
                 break;
             }
