@@ -2,8 +2,9 @@ wreport (1.7-1) unstable; urgency=low
 
   * New upstream version
      - Added a generic Bulletin Data Descriptor Section interpreter
+     - Preserve C05YYY decoded character data
 
- -- Enrico Zini <enrico@debian.org>  Fri, 25 Feb 2011 15:53:07 +0000
+ -- Enrico Zini <enrico@debian.org>  Fri, 25 Feb 2011 18:09:41 +0000
 
 wreport (1.6-1) unstable; urgency=low
 
