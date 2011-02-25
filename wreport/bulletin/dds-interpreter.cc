@@ -87,11 +87,15 @@ struct Interpreter
     int bitmap_use_cur;
     int bitmap_subset_cur;
 
+    // True if the bulletin is a CREX bulletin
+    bool is_crex;
+
     Interpreter(const Bulletin& in, bulletin::DDSExecutor& out)
         : in(in), out(out),
           c_scale_change(0), c_width_change(0), c_string_len_override(0),
           bitmap_to_encode(0), bitmap_use_cur(0), bitmap_subset_cur(0)
     {
+        is_crex = dynamic_cast<const CrexBulletin*>(&in) != NULL;
     }
 
     Varinfo get_varinfo(Varcode code);
@@ -181,6 +185,9 @@ unsigned Interpreter::do_b_data(const Opcodes& ops, unsigned& var_pos)
         bitmap_next();
     } else {
         // Proper variable
+        TRACE("Encode variable %01d%02d%03d var pos %d\n",
+                WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var),
+                var_pos);
         out.encode_var(info, var_pos);
         ++var_pos;
     }
@@ -206,10 +213,13 @@ unsigned Interpreter::do_r_data(const Opcodes& ops, unsigned& var_pos, const Var
 
     if (count == 0)
     {
-        /* Delayed replication */
+        // Delayed replication
 
-        /* Get encoding informations for this repetition count */
-        Varinfo info = in.btable->query(ops[used]);
+        // Note: CREX messages do NOT have the repetition count opcode in their
+        // data descriptor section, so we need to act accordingly here
+
+        // Get encoding informations for this repetition count
+        Varinfo info = in.btable->query(is_crex ? WR_VAR(0, 31, 12) : ops[used]);
 
         if (bitmap == NULL)
         {
@@ -227,7 +237,8 @@ unsigned Interpreter::do_r_data(const Opcodes& ops, unsigned& var_pos, const Var
         }
 
         /* Move past the node with the repetition count */
-        ++used;
+        if (!is_crex)
+            ++used;
 
         TRACE("encode_r_data %d items %d times (delayed)\n", group, count);
     } else
@@ -246,6 +257,10 @@ unsigned Interpreter::do_r_data(const Opcodes& ops, unsigned& var_pos, const Var
     } else {
         // Extract the first `group' nodes, to handle here
         Opcodes group_ops = ops.sub(used, group);
+        IFTRACE {
+            TRACE("Repeat opcodes: ");
+            group_ops.print(stderr);
+        }
 
         // encode_data_section on it `count' times
         for (int i = 0; i < count; ++i)

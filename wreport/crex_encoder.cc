@@ -63,12 +63,145 @@ struct Varqueue
 	const Var& pop() { return subset[cur++]; }
 };
 
+struct Outbuf
+{
+    std::string& buf;
+
+    /* True if the CREX message uses the check digit feature */
+    int has_check_digit;
+    /* Value of the next expected check digit */
+    int expected_check_digit;
+
+
+    Outbuf(std::string& buf) : buf(buf), has_check_digit(0), expected_check_digit(0)
+    {
+    }
+
+    void raw_append(const char* str, int len)
+    {
+        buf.append(str, len);
+    }
+
+    void raw_appendf(const char* fmt, ...) __attribute__ ((format(printf, 2, 3)))
+    {
+        char sbuf[256];
+        va_list ap;
+        va_start(ap, fmt);
+        int len = vsnprintf(sbuf, 255, fmt, ap);
+        va_end(ap);
+
+        buf.append(sbuf, len);
+    }
+
+    void encode_check_digit()
+    {
+        if (!has_check_digit) return;
+
+        char c = '0' + expected_check_digit;
+        raw_append(&c, 1);
+        expected_check_digit = (expected_check_digit + 1) % 10;
+    }
+
+    void append_missing(Varinfo info)
+    {
+        TRACE("encode_b missing len: %d\n", info->len);
+        for (unsigned i = 0; i < info->len; i++)
+            raw_append("/", 1);
+    }
+
+    void append_var(Varinfo info, const Var& var)
+    {
+        if (var.value() == NULL)
+            return append_missing(info);
+
+        int len = info->len;
+        raw_append(" ", 1);
+        encode_check_digit();
+
+        if (info->is_string()) {
+            raw_appendf("%-*.*s", len, len, var.value());
+            TRACE("encode_b string len: %d val %-*.*s\n", len, len, len, var.value());
+        } else {
+            int val = var.enqi();
+
+            /* FIXME: here goes handling of active C table modifiers */
+
+            if (val < 0) ++len;
+
+            raw_appendf("%0*d", len, val);
+            TRACE("encode_b num len: %d val %0*d\n", len, len, val);
+        }
+    }
+};
+
+struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
+{
+    Outbuf& ob;
+
+    DDSEncoder(const Bulletin& b, Outbuf& ob) : ConstBaseDDSExecutor(b), ob(ob) {}
+    virtual ~DDSEncoder() {}
+
+    void start_subset(unsigned subset_no)
+    {
+        TRACE("start_subset %u\n", subset_no);
+        bulletin::ConstBaseDDSExecutor::start_subset(subset_no);
+
+        /* Encode the subsection terminator */
+        if (subset_no > 0)
+            ob.raw_append("+\r\r\n", 4);
+    }
+
+    virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+    {
+        throw error_unimplemented("encode_attr");
+    }
+
+    virtual void encode_var(Varinfo info, unsigned var_pos)
+    {
+        const Var& var = get_var(var_pos);
+        IFTRACE {
+            TRACE("encode_var ");
+            var.print(stderr);
+        }
+        ob.append_var(info, var);
+    }
+
+    virtual unsigned encode_repetition_count(Varinfo info, unsigned var_pos)
+    {
+        const Var& var = get_var(var_pos);
+        unsigned count = var.enqi();
+
+        /* Encode the repetition count */
+        ob.raw_append(" ", 1);
+        ob.encode_check_digit();
+        ob.raw_appendf("%04u", count);
+
+        return count;
+    }
+
+    virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
+    {
+        throw error_unimplemented("encode_bitmap_repetition_count");
+    }
+
+    virtual void encode_bitmap(const Var& bitmap)
+    {
+        throw error_unimplemented("encode_bitmap");
+    }
+
+    virtual void encode_char_data(Varcode code, unsigned var_pos)
+    {
+        throw error_unimplemented("encode_char_data");
+    }
+};
+
+
 struct Encoder
 {
-	/* Input message data */
-	const CrexBulletin& in;
-	/* Output decoded variables */
-	std::string& out;
+    /* Input message data */
+    const CrexBulletin& in;
+    /* Output decoded variables */
+    Outbuf out;
 
 	/* Offset of the start of CREX section 1 */
 	int sec1_start;
@@ -79,74 +212,27 @@ struct Encoder
 	/* Offset of the start of CREX section 4 */
 	int sec4_start;
 
-	/* True if the CREX message uses the check digit feature */
-	int has_check_digit;
-	/* Value of the next expected check digit */
-	int expected_check_digit;
-
 	/* Subset we are encoding */
 	const Subset* subset;
 
 	Encoder(const CrexBulletin& in, std::string& out)
 		: in(in), out(out),
 		  sec1_start(0), sec2_start(0), sec3_start(0), sec4_start(0),
-		  has_check_digit(0), expected_check_digit(0), subset(0)
+		  subset(0)
 	{
 	}
 
-	void raw_append(const char* str, int len)
-	{
-		out.append(str, len);
-	}
+    void encode_sec1()
+    {
+        out.raw_appendf("T%02d%02d%02d A%03d%03d",
+                in.master_table,
+                in.edition,
+                in.table,
+                in.type,
+                in.localsubtype);
 
-	void raw_appendf(const char* fmt, ...) __attribute__ ((format(printf, 2, 3)))
-	{
-		char buf[256];
-		va_list ap;
-		va_start(ap, fmt);
-		int len = vsnprintf(buf, 255, fmt, ap);
-		va_end(ap);
+        /* Encode the data descriptor section */
 
-		out.append(buf, len);
-	}
-
-	void encode_check_digit()
-	{
-		if (!has_check_digit) return;
-
-		char c = '0' + expected_check_digit;
-		raw_append(&c, 1);
-		expected_check_digit = (expected_check_digit + 1) % 10;
-	}
-
-	void encode_sec1()
-	{
-		raw_appendf("T%02d%02d%02d A%03d%03d",
-				in.master_table,
-				in.edition,
-				in.table,
-				in.type,
-				in.localsubtype);
-
-		/* Encode the data descriptor section */
-
-#if 0
-		DBA_RUN_OR_GOTO(fail, bufrex_msg_get_datadesc(e->in, &ops));
-		if (ops == NULL)
-		{
-			TRACE("Regenerating datadesc\n");
-
-			/* If the data descriptor list is not already present, try to generate it
-			 * from the varcodes of the variables in the first subgroup to encode */
-			DBA_RUN_OR_GOTO(fail, bufrex_msg_generate_datadesc(e->in));
-
-			/* Reread the descriptors */
-			DBA_RUN_OR_GOTO(fail, bufrex_msg_get_datadesc(e->in, &ops));
-		} else {
-			TRACE("Reusing datadesc\n");
-		}
-#endif
-	
 		for (vector<Varcode>::const_iterator i = in.datadesc.begin();
 				i != in.datadesc.end(); ++i)
 		{
@@ -164,279 +250,47 @@ struct Encoder
 			if (WR_VAR_F(*i) == 0 && WR_VAR_X(*i) == 31 && WR_VAR_Y(*i) < 3)
 				continue;
 
-			raw_appendf(" %c%02d%03d", prefix, WR_VAR_X(*i), WR_VAR_Y(*i));
-		}
+            out.raw_appendf(" %c%02d%03d", prefix, WR_VAR_X(*i), WR_VAR_Y(*i));
+        }
 
-		if (has_check_digit)
-		{
-			raw_append(" E", 2);
-			expected_check_digit = 1;
-		}
+        if (out.has_check_digit)
+        {
+            out.raw_append(" E", 2);
+            out.expected_check_digit = 1;
+        }
 
-		raw_append("++\r\r\n", 5);
-	}
+        out.raw_append("++\r\r\n", 5);
+    }
 
-	void run()
-	{
-		/* Encode section 0 */
-		raw_append("CREX++\r\r\n", 9);
+    void run()
+    {
+        /* Encode section 0 */
+        out.raw_append("CREX++\r\r\n", 9);
 
-		/* Encode section 1 */
-		sec1_start = out.size();
-		encode_sec1();
-		TRACE("SEC1 encoded as [[[%s]]]", out.substr(sec1_start).c_str());
+        /* Encode section 1 */
+        sec1_start = out.buf.size();
+        encode_sec1();
+        TRACE("SEC1 encoded as [[[%s]]]", out.buf.substr(sec1_start).c_str());
 
-		/* Encode section 2 */
-		sec2_start = out.size();
-		for (unsigned i = 0; i < in.subsets.size(); ++i)
-		{
-			TRACE("Start encoding subsection %d\n", i);
+        /* Encode section 2 */
+        sec2_start = out.buf.size();
 
-			/* Encode the data of this subset */
-			subset = &in.subset(i);
-			Varqueue varqueue(*subset);
-			encode_data_section(Opcodes(in.datadesc), varqueue);
+        DDSEncoder e(in, out);
+        in.run_dds(e);
+        out.raw_append("++\r\r\n", 5);
 
-			if (!varqueue.empty())
-				error_consistency::throwf("subset %d, %u variables left after processing all descriptors", i, varqueue.size());
+        TRACE("SEC2 encoded as [[[%s]]]", out.buf.substr(sec2_start).c_str());
 
-			/* Encode the subsection terminator */
-			if (i < in.subsets.size() - 1)
-				raw_append("+\r\r\n", 4);
-			else
-				raw_append("++\r\r\n", 5);
-		}
-		TRACE("SEC2 encoded as [[[%s]]]", out.substr(sec2_start).c_str());
+        /* Encode section 3 */
+        sec3_start = out.buf.size();
+        /* Nothing to do, as we have no custom section */
 
-		/* Encode section 3 */
-		sec3_start = out.size();
-		/* Nothing to do, as we have no custom section */
-
-		/* Encode section 4 */
-		sec4_start = out.size();
-		raw_append("7777\r\r\n", 7);
-	}
-
-	unsigned encode_b_data(const Opcodes& ops, Varqueue& vars);
-	unsigned encode_r_data(const Opcodes& ops, Varqueue& vars);
-	void encode_data_section(const Opcodes& ops, Varqueue& vars);
+        /* Encode section 4 */
+        sec4_start = out.buf.size();
+        out.raw_append("7777\r\r\n", 7);
+    }
 };
 
-#if 0
-dba_err encoder_has_check_digit(crex_message msg, int* has_check_digit)
-{
-	*has_check_digit = msg->has_check_digit;
-	return dba_error_ok();
-}
-
-dba_err encoder_set_check_digit(crex_message msg, int has_check_digit)
-{
-	msg->has_check_digit = has_check_digit;
-	return dba_error_ok();
-}
-#endif
-
-
-unsigned Encoder::encode_b_data(const Opcodes& ops, Varqueue& vars)
-{
-	IFTRACE{
-		TRACE("crex encode_b_data: items: ");
-		ops.print(stderr);
-		TRACE("\n");
-
-		/*
-		TRACE("Next 5 variables:\n");
-		int i = 0;
-		for (; i < 5 && i < e->vars_left; i++)
-			dba_var_print(e->nextvar[i], stderr);
-		*/
-	}
-
-	if (vars.empty())
-		throw error_consistency("no more variables to encode");
-
-	/* Get informations about the variable */
-	Varinfo info = in.btable->query(ops.head());
-	const Var* var = &vars.pop();
-
-	int len = info->len;
-	raw_append(" ", 1);
-	encode_check_digit();
-	if (var->value() == NULL)
-	{
-		for (int i = 0; i < len; i++)
-			raw_append("/", 1);
-		TRACE("encode_b missing len: %d\n", len);
-	} else if (info->is_string()) {
-		raw_appendf("%-*.*s", len, len, var->value());
-		TRACE("encode_b string len: %d val %-*.*s\n", len, len, var->value());
-	} else {
-		int val = var->enqi();
-
-		/* FIXME: here goes handling of active C table modifiers */
-		
-		if (val < 0) ++len;
-		
-		raw_appendf("%0*d", len, val);
-		TRACE("encode_b num len: %d val %0*d\n", len, len, val);
-	}
-	
-	return 1;
-}
-
-#if 0
-static dba_err crex_read_c_data(bufrex_decoder decoder, bufrex_opcode* ops)
-{
-	bufrex_opcode op;
-	dba_err err;
-	/* Node affected by the operator */
-	bufrex_opcode affected_op;
-
-	/* Pop the C modifier node */
-	DBA_RUN_OR_RETURN(bufrex_opcode_pop(ops, &op));
-
-	TRACE("read_c_data\n");
-
-	/* Pop the first node, since we handle it here */
-	if ((err = bufrex_opcode_pop(ops, &affected_op)) != DBA_OK)
-		goto fail1;
-
-	/* Activate this C modifier */
-	switch (WR_VAR_X(op->val))
-	{
-		case 1:
-			decoder->c_width = WR_VAR_Y(op->val);
-			break;
-		case 2:
-			decoder->c_scale = WR_VAR_Y(op->val);
-			break;
-		case 5:
-		case 7:
-		case 60:
-			err = dba_error_parse(decoder->fname, decoder->line_no,
-					"C modifier %d is not supported", WR_VAR_X(op->val));
-			goto fail;
-		default:
-			err = dba_error_parse(decoder->fname, decoder->line_no,
-					"Unknown C modifier %d", WR_VAR_X(op->val));
-			goto fail;
-	}
-
-	/* Decode the affected data */
-	if ((err = crex_read_data(decoder, &affected_op)) != DBA_OK)
-		goto fail;
-
-	/* Deactivate the C modifier */
-	decoder->c_width = 0;
-	decoder->c_scale = 0;
-
-	/* FIXME: affected_op should always be NULL */
-	assert(affected_op == NULL);
-	bufrex_opcode_delete(&affected_op);
-	return dba_error_ok();
-
-fail:
-	bufrex_opcode_delete(&affected_op);
-fail1:
-	bufrex_opcode_delete(&op);
-	return err;
-}
-#endif
-
-unsigned Encoder::encode_r_data(const Opcodes& ops, Varqueue& vars)
-{
-	unsigned used = 1;
-	int group = WR_VAR_X(ops.head());
-	int count = WR_VAR_Y(ops.head());
-
-	IFTRACE{
-		TRACE("crex encode_r_data %01d%02d%03d %d %d: items: ",
-			WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
-		ops.print(stderr);
-		TRACE("\n");
-
-		/*
-		TRACE("Next 5 variables:\n");
-		int i = 0;
-		for (; i < 5 && e->nextvar[i] != NULL; i++)
-			dba_var_print(e->nextvar[i], stderr);
-		*/
-	}
-
-	if (count == 0)
-	{
-		/* Delayed replication */
-
-		/* Look for a delayed replication factor in the input vars */
-		if (vars.empty())
-			throw error_consistency("checking for availability of data to encode");
-
-		/* Get the repetition count */
-		count = vars.pop().enqi();
-
-		TRACE("delayed replicator count read as %d\n", count);
-
-		/* Encode the repetition count */
-		raw_append(" ", 1);
-		encode_check_digit();
-		raw_appendf("%04d", count);
-
-		/* No need to move past the node with the repetition count, as
-		 * in crex there is no opcode for it */
-		// ++used;
-
-		TRACE("encode_r_data %d items %d times (delayed)\n", group, count);
-	} else
-		TRACE("encode_r_data %d items %d times\n", group, count);
-
-	// Extract the first `group' nodes, to handle here
-	Opcodes group_ops = ops.sub(used, group);
-
-	// encode_data_section on it `count' times
-	for (int i = 0; i < count; ++i)
-		encode_data_section(group_ops, vars);
-
-	return used + group;
-}
-
-void Encoder::encode_data_section(const Opcodes& ops, Varqueue& vars)
-{
-	TRACE("crex_message_encode_data_section: START\n");
-
-	for (unsigned i = 0; i < ops.size(); )
-	{
-		IFTRACE{
-			TRACE("crex encode_data_section TODO: ");
-			ops.sub(i).print(stderr);
-			TRACE("\n");
-			TRACE("crex encode_data_section NEXTVAR: ");
-			if (vars.empty())
-				TRACE("(none)\n");
-			else
-				vars.peek().print(stderr);
-		}
-
-		switch (WR_VAR_F(ops[i]))
-		{
-			case 0: i += encode_b_data(ops.sub(i), vars); break;
-			case 1: i += encode_r_data(ops.sub(i), vars); break;
-			case 2: throw error_unimplemented("encoding C modifiers is not supported yet");
-			case 3:
-			{
-				Opcodes exp = in.dtable->query(ops[i]);
-				encode_data_section(exp, vars);
-				++i;
-				break;
-			}
-			default:
-				error_consistency::throwf(
-						"variable %01d%02d%03d cannot be handled",
-							WR_VAR_F(ops[i]),
-							WR_VAR_X(ops[i]),
-							WR_VAR_Y(ops[i]));
-		}
-	}
-}
 
 } // Unnamed namespace
 
