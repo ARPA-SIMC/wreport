@@ -763,6 +763,15 @@ BaseDDSExecutor::BaseDDSExecutor(Bulletin& bulletin)
 {
 }
 
+const Var& BaseDDSExecutor::get_var(unsigned var_pos) const
+{
+    unsigned max_var = current_subset->size();
+    if (var_pos >= max_var)
+        error_consistency::throwf("requested variable #%u out of a maximum of %u in subset %u",
+                var_pos, max_var, current_subset_no);
+    return (*current_subset)[var_pos];
+}
+
 void BaseDDSExecutor::start_subset(unsigned subset_no)
 {
     if (subset_no >= bulletin.subsets.size())
@@ -785,9 +794,28 @@ bool BaseDDSExecutor::is_special_var(unsigned var_pos)
     return WR_VAR_F((*current_subset)[var_pos].code()) != 0;
 }
 
+const Var* BaseDDSExecutor::get_bitmap(unsigned var_pos)
+{
+    const Var& var = get_var(var_pos);
+    if (WR_VAR_F(var.code()) != 2)
+        error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
+                var_pos, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
+    return &var;
+}
+
+
 ConstBaseDDSExecutor::ConstBaseDDSExecutor(const Bulletin& bulletin)
     : bulletin(bulletin), current_subset(0), current_subset_no(0)
 {
+}
+
+const Var& ConstBaseDDSExecutor::get_var(unsigned var_pos) const
+{
+    unsigned max_var = current_subset->size();
+    if (var_pos >= max_var)
+        error_consistency::throwf("requested variable #%u out of a maximum of %u in subset %u",
+                var_pos, max_var, current_subset_no);
+    return (*current_subset)[var_pos];
 }
 
 void ConstBaseDDSExecutor::start_subset(unsigned subset_no)
@@ -810,6 +838,15 @@ bool ConstBaseDDSExecutor::is_special_var(unsigned var_pos)
     if (!current_subset) return true;
     if (var_pos >= current_subset->size()) return true;
     return WR_VAR_F((*current_subset)[var_pos].code()) != 0;
+}
+
+const Var* ConstBaseDDSExecutor::get_bitmap(unsigned var_pos)
+{
+    const Var& var = get_var(var_pos);
+    if (WR_VAR_F(var.code()) != 2)
+        error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
+                var_pos, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
+    return &var;
 }
 
 }

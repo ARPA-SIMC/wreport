@@ -50,7 +50,6 @@ struct DDSPrinter : public ConstBaseDDSExecutor
     virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap);
     virtual void encode_bitmap(const Var& bitmap);
     virtual void encode_char_data(Varcode code, unsigned var_pos);
-    virtual const Var* get_bitmap(unsigned var_pos);
 };
 
 }

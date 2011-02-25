@@ -369,9 +369,12 @@ struct BaseDDSExecutor : public DDSExecutor
 
     BaseDDSExecutor(Bulletin& bulletin);
 
+    const Var& get_var(unsigned var_pos) const;
+
     virtual void start_subset(unsigned subset_no);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
+    virtual const Var* get_bitmap(unsigned var_pos);
 };
 
 struct ConstBaseDDSExecutor : public DDSExecutor
@@ -382,9 +385,12 @@ struct ConstBaseDDSExecutor : public DDSExecutor
 
     ConstBaseDDSExecutor(const Bulletin& bulletin);
 
+    const Var& get_var(unsigned var_pos) const;
+
     virtual void start_subset(unsigned subset_no);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
+    virtual const Var* get_bitmap(unsigned var_pos);
 };
 
 }

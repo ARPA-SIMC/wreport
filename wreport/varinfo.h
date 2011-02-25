@@ -223,7 +223,7 @@ struct _Varinfo
      * @returns
      *   The double value encoded as an integer
      */
-    unsigned encode_bit_int(double fval) const throw ();
+    unsigned encode_bit_int(double fval) const;
 
 	/**
 	 * Decode a double value from integer value using Varinfo encoding

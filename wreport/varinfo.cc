@@ -226,7 +226,7 @@ int _Varinfo::encode_int(double fval) const throw ()
         return (int)rint(fval - ref);
 }
 
-unsigned _Varinfo::encode_bit_int(double fval) const throw ()
+unsigned _Varinfo::encode_bit_int(double fval) const
 {
     double res;
     if (bufr_scale > 0)

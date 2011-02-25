@@ -105,15 +105,6 @@ void DDSValidator::encode_char_data(Varcode code, unsigned var_pos)
                 WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
-const Var* DDSValidator::get_bitmap(unsigned var_pos)
-{
-    const Var& var = get_var(var_pos);
-    if (WR_VAR_F(var.code()) != 2)
-        error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
-                var_pos, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-    return &var;
-}
-
 }
 }
 
