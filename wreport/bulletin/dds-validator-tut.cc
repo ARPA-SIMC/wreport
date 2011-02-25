@@ -45,6 +45,11 @@ static void _validate(Bulletin& b, const wibble::tests::Location& loc)
         bulletin::DDSValidator validator(b);
         b.run_dds(validator);
     } catch (std::exception& e) {
+        try {
+            b.print_structured(stderr);
+        } catch (std::exception& e) {
+            cerr << "dump interrupted: " << e.what() << endl;
+        }
         throw tut::failure(loc.msg(e.what()));
     }
 }
@@ -58,7 +63,11 @@ void to::test<1>()
 {
     std::set<std::string> blacklist;
     blacklist.insert("bufr/gen-generic.bufr");
+    blacklist.insert("bufr/obs255-255.0.bufr");
+    blacklist.insert("bufr/tempforecast.bufr");
+    blacklist.insert("bufr/bad-edition.bufr");
     blacklist.insert("bufr/corrupted.bufr");
+    blacklist.insert("bufr/test-soil1.bufr");
 
     std::vector<std::string> files = tests::all_test_files("bufr");
     for (std::vector<std::string>::const_iterator i = files.begin();
@@ -86,10 +95,15 @@ void to::test<1>()
 template<> template<>
 void to::test<2>()
 {
+    std::set<std::string> blacklist;
+    blacklist.insert("crex/test-temp0.crex");
+
     std::vector<std::string> files = tests::all_test_files("crex");
     for (std::vector<std::string>::const_iterator i = files.begin();
             i != files.end(); ++i)
     {
+        if (blacklist.find(*i) != blacklist.end()) continue;
+
         // Read the whole contents of the test file
         std::string raw1 = tests::slurpfile(*i);
 

@@ -24,7 +24,8 @@ wreportinclude_HEADERS = \
 	tests.h
 
 wreportbulletininclude_HEADERS = \
-	bulletin/dds-validator.h
+	bulletin/dds-validator.h \
+	bulletin/dds-printer.h
 
 lib_LTLIBRARIES = libwreport.la
 libwreport_la_SOURCES = \
@@ -40,6 +41,7 @@ libwreport_la_SOURCES = \
 	bulletin.cc \
 	bulletin/dds-interpreter.cc \
 	bulletin/dds-validator.cc \
+	bulletin/dds-printer.cc \
 	bufr_decoder.cc \
 	bufr_encoder.cc \
 	crex_decoder.cc \
