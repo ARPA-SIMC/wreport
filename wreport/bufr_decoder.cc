@@ -1354,11 +1354,25 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 				buf[i] = bitval;
 			}
 			buf[i] = 0;
-			// TODO: add as C variable to the subset
-			// TODO: if compressed, extract the data from each subset?
-			TRACE("decode_c_data:decoded string %s\n", buf);
-			break;
-		}
+
+            // Add as C variable to the subset
+
+            // Create a single use varinfo to store the bitmap
+            MutableVarinfo info(MutableVarinfo::create_singleuse());
+            info->set_string(code, "CHARACTER DATA", cdatalen);
+
+            // Store the bitmap
+            Var cdata(info, buf);
+
+            // TODO: if compressed, extract the data from each subset? Store it in each dataset?
+            if (d.out.compression)
+                error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", cdatalen);
+            else
+                current_adder->add_var(cdata);
+
+            TRACE("decode_c_data:decoded string %s\n", buf);
+            break;
+        }
         case 8: {
             int cdatalen = WR_VAR_Y(code);
             IFTRACE {
