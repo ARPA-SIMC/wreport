@@ -19,6 +19,7 @@
 
 #include <test-utils-wreport.h>
 #include <wreport/bulletin/dds-validator.h>
+#include <set>
 
 using namespace wreport;
 using namespace std;
@@ -55,17 +56,26 @@ static void _validate(Bulletin& b, const wibble::tests::Location& loc)
 template<> template<>
 void to::test<1>()
 {
+    std::set<std::string> blacklist;
+    blacklist.insert("bufr/gen-generic.bufr");
+    blacklist.insert("bufr/corrupted.bufr");
+
     std::vector<std::string> files = tests::all_test_files("bufr");
-    cerr << "BUFR " << files.size() << endl;
     for (std::vector<std::string>::const_iterator i = files.begin();
             i != files.end(); ++i)
     {
+        if (blacklist.find(*i) != blacklist.end()) continue;
+
         // Read the whole contents of the test file
         std::string raw1 = tests::slurpfile(*i);
 
         // Decode the original contents
         BufrBulletin msg1;
-        msg1.decode(raw1, i->c_str());
+        try {
+            msg1.decode(raw1, i->c_str());
+        } catch (std::exception& e) {
+            throw tut::failure(*i + ": " + e.what());
+        }
 
         // Validate them
         validate(msg1, *i);
@@ -77,7 +87,6 @@ template<> template<>
 void to::test<2>()
 {
     std::vector<std::string> files = tests::all_test_files("crex");
-    cerr << "CREX " << files.size() << endl;
     for (std::vector<std::string>::const_iterator i = files.begin();
             i != files.end(); ++i)
     {
