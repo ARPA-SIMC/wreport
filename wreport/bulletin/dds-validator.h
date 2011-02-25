@@ -39,6 +39,7 @@ struct DDSValidator : public DDSExecutor
 {
     const Bulletin& b;
     unsigned current_subset;
+    bool is_crex;
 
     DDSValidator(const Bulletin& b);
 

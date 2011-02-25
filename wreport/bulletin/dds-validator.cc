@@ -27,7 +27,10 @@ using namespace std;
 namespace wreport {
 namespace bulletin {
 
-DDSValidator::DDSValidator(const Bulletin& b) : b(b), current_subset(0) {}
+DDSValidator::DDSValidator(const Bulletin& b) : b(b), current_subset(0)
+{
+    is_crex = dynamic_cast<const CrexBulletin*>(&b) != NULL;
+}
 
 const Var& DDSValidator::get_var(unsigned var_pos) const
 {
@@ -50,9 +53,16 @@ void DDSValidator::check_fits(Varinfo info, const Var& var)
     else if (info->is_string())
         ;
     else {
-        unsigned encoded = info->encode_int(var.enqd());
-        if (encoded >= (1u<<info->bit_len))
-            error_consistency::throwf("value %f does not fit in %d bits", var.enqd(), info->bit_len);
+        unsigned encoded;
+        if (is_crex)
+            encoded = info->encode_int(var.enqd());
+        else
+            encoded = info->encode_bit_int(var.enqd());
+        if (!is_crex)
+        {
+            if (encoded >= (1u<<info->bit_len))
+                error_consistency::throwf("value %f (%u) does not fit in %d bits", var.enqd(), encoded, info->bit_len);
+        }
     }
 }
 
