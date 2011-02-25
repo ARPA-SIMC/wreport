@@ -1,3 +1,10 @@
+wreport (1.7-1) unstable; urgency=low
+
+  * New upstream version
+     - Added a generic Bulletin Data Descriptor Section interpreter
+
+ -- Enrico Zini <enrico@debian.org>  Fri, 25 Feb 2011 15:53:07 +0000
+
 wreport (1.6-1) unstable; urgency=low
 
   * New upstream version
