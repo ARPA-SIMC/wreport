@@ -29,6 +29,7 @@
 #include <cstdio>
 
 #include "varinfo.h"
+#include "error.h"
 
 namespace wreport {
 
@@ -217,12 +218,27 @@ double _Varinfo::bufr_decode_int(uint32_t ival) const throw ()
  * informations */
 int _Varinfo::encode_int(double fval) const throw ()
 {
-	if (scale > 0)
-		return (int)rint((fval + ref) * scales[scale]);
-	else if (scale < 0)
-		return (int)rint((fval + ref) / scales[-scale]);
-	else
-		return (int)rint(fval + ref);
+    if (scale > 0)
+        return (int)rint((fval * scales[scale]) - ref);
+    else if (scale < 0)
+        return (int)rint((fval / scales[-scale]) - ref);
+    else
+        return (int)rint(fval - ref);
+}
+
+unsigned _Varinfo::encode_bit_int(double fval) const throw ()
+{
+    double res;
+    if (bufr_scale > 0)
+        res = rint((fval * scales[bufr_scale]) - bit_ref);
+    else if (bufr_scale < 0)
+        res = rint((fval / scales[-bufr_scale] - bit_ref));
+    else
+        res = rint(fval - bit_ref);
+    if (res < 0)
+        error_consistency::throwf("Cannot encode %01d%02d%03d %f to %d bits using scale %d and ref %d: encoding gives negative value %f",
+                WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var), fval, bit_len, bufr_scale, bit_ref, res);
+    return (unsigned)res;
 }
 
 }

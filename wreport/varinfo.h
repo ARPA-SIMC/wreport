@@ -202,17 +202,28 @@ struct _Varinfo
 	{
 		return (flags & VARINFO_FLAG_STRING) != 0;
 	}
- 
-	/**
-	 * Encode a double value into an integer value using Varinfo encoding
-	 * informations
-	 *
-	 * @param fval
-	 *   Value to encode
-	 * @returns
-	 *   The double value encoded as an integer
-	 */
-	int encode_int(double fval) const throw ();
+
+    /**
+     * Encode a double value into an integer value using Varinfo decimal
+     * encoding informations (ref and scale)
+     *
+     * @param fval
+     *   Value to encode
+     * @returns
+     *   The double value encoded as an integer
+     */
+    int encode_int(double fval) const throw ();
+
+    /**
+     * Encode a double value into an integer value using Varinfo binary encoding
+     * informations (bit_ref and bufr_scale)
+     *
+     * @param fval
+     *   Value to encode
+     * @returns
+     *   The double value encoded as an integer
+     */
+    unsigned encode_bit_int(double fval) const throw ();
 
 	/**
 	 * Decode a double value from integer value using Varinfo encoding
