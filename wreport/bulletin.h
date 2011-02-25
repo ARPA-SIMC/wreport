@@ -1,7 +1,7 @@
 /*
  * wreport/bulletin - Archive for punctual meteorological data
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,10 @@
 #include <memory>
 
 namespace wreport {
+
+namespace bulletin {
+struct DDSExecutor;
+}
 
 struct DTable;
 
@@ -136,6 +140,12 @@ struct Bulletin
 	 * Encode the message
 	 */
 	virtual void encode(std::string& buf) const = 0;
+
+    /**
+     * Run the Data Descriptor Section interpreter, sending commands to \a
+     * executor
+     */
+    void run_dds(bulletin::DDSExecutor& out) const;
 
 	/**
 	 * Dump the contents of this bulletin
@@ -272,6 +282,63 @@ struct CrexBulletin : public Bulletin
 	 */
 	static void write(const std::string& buf, FILE* out, const char* fname = 0);
 };
+
+
+namespace bulletin {
+
+/**
+ * Abstract interface for classes that can be used as targets for the Bulletin
+ * Data Descriptor Section interpreters.
+ */
+struct DDSExecutor
+{
+    virtual ~DDSExecutor() {}
+
+    /// Notify the start of a subset
+    virtual void start_subset(unsigned subset_no) = 0;
+
+    /**
+     * Request encoding, according to \a info, of attribute \a attr_code of
+     * variable in position \a var_pos in the current dataset.
+     */
+    virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
+
+    /**
+     * Request encoding, according to \a info, of variable in position \a
+     * var_pos in the current dataset.
+     */
+    virtual void encode_var(Varinfo info, unsigned var_pos) = 0;
+
+    /**
+     * Request encoding, according to \a info, of repetition count in position
+     * \a var_pos in the current dataset.
+     *
+     * @return the value of the repetition count.
+     */
+    virtual unsigned encode_repetition_count(Varinfo info, unsigned var_pos) = 0;
+
+    /**
+     * Request encoding, according to \a info, of repetition count
+     * corresponding to the length of \a bitmap.
+     *
+     * @return the value of the repetition count.
+     */
+    virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap) = 0;
+
+    /**
+     * Request encoding of \a bitmap
+     */
+    virtual void encode_bitmap(const Var& bitmap) = 0;
+
+    /**
+     * Get the bitmap at position \a var_pos
+     */
+    virtual const Var* get_bitmap(unsigned var_pos) = 0;
+};
+
+}
+
+
 
 }
 

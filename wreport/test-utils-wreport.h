@@ -44,6 +44,10 @@ std::string datafile(const std::string& fname);
  */
 std::string slurpfile(const std::string& name);
 
+/**
+ * Get a list of all test files for the given encoding
+ */
+std::vector<std::string> all_test_files(const std::string& encoding);
 
 template<typename BULLETIN>
 struct MsgTester

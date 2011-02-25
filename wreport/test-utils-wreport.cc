@@ -21,21 +21,25 @@
 
 #include "test-utils-wreport.h"
 
+#include <wibble/sys/fs.h>
+#include <wibble/string.h>
+
 #include <cstdlib>
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
 
 using namespace std;
+using namespace wibble;
 
 namespace wreport {
 namespace tests {
 
 std::string datafile(const std::string& fname)
 {
-	const char* testdatadirenv = getenv("WREPORT_TESTDATA");
-	std::string testdatadir = testdatadirenv ? testdatadirenv : ".";
-	return testdatadir + "/" + fname;
+    const char* testdatadirenv = getenv("WREPORT_TESTDATA");
+    std::string testdatadir = testdatadirenv ? testdatadirenv : ".";
+    return str::joinpath(testdatadir, fname);
 }
 
 std::string slurpfile(const std::string& name)
@@ -58,6 +62,20 @@ std::string slurpfile(const std::string& name)
 	fclose(fd);
 
 	return res;
+}
+
+std::vector<std::string> all_test_files(const std::string& encoding)
+{
+    const char* testdatadirenv = getenv("WREPORT_TESTDATA");
+    std::string testdatadir = testdatadirenv ? testdatadirenv : ".";
+    testdatadir = str::joinpath(testdatadir, encoding);
+
+    vector<string> res;
+    sys::fs::Directory dir(testdatadir);
+    for (sys::fs::Directory::const_iterator i = dir.begin(); i != dir.end(); ++i)
+        if (str::endsWith(*i, "."+encoding))
+            res.push_back(str::joinpath(encoding, *i));
+    return res;
 }
 
 } // namespace tests
