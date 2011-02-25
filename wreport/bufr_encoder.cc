@@ -62,51 +62,6 @@ using namespace std;
 namespace wreport {
 
 namespace {
-/// Iterate variables in a subset, one at a time
-struct Varqueue
-{
-	const Subset& subset;
-	unsigned cur;
-
-	Varqueue(const Subset& subset) : subset(subset), cur(0) {}
-
-	const bool empty() const { return cur >= subset.size(); }
-	const Var& peek() const { return subset[cur]; }
-	const Var& pop() { return subset[cur++]; }
-};
-
-static const double e10[] = {
-    1.0,
-    10.0,
-    100.0,
-    1000.0,
-    10000.0,
-    100000.0,
-    1000000.0,
-    10000000.0,
-    100000000.0,
-    1000000000.0,
-    10000000000.0,
-    100000000000.0,
-    1000000000000.0,
-    10000000000000.0,
-    100000000000000.0,
-    1000000000000000.0,
-    10000000000000000.0,
-};
-
-static unsigned encode_double(double dval, int ref, int scale)
-{
-    int res;
-    if (scale >= 0)
-        res = (int)round(dval * e10[scale]) - ref;
-    else
-        res = (int)round(dval / e10[-scale]) - ref;
-    if (res < 0)
-        error_consistency::throwf("value %f is negative (%d) after conversion to int", dval, res);
-    return res;
-}
-
 
 struct Outbuf
 {
@@ -204,26 +159,6 @@ struct Outbuf
                 bi = len_bits;
             }
         }
-    }
-
-    void append_double(double val, int bit_ref, int bufr_scale, unsigned bit_len)
-    {
-        unsigned ival = encode_double(val, bit_ref, bufr_scale);
-        TRACE("append_double:converted to int (ref %d, scale %d): %d\n", bit_ref, bufr_scale, ival);
-        TRACE("append_double:writing %u with size %d\n", ival, bit_len);
-        /* In case of overflow, store 'missing value' */
-        if ((unsigned)ival >= (1u<<bit_len))
-        {
-            error_consistency::throwf("value %f does not fit in %d bits", val, bit_len);
-            /*
-            TRACE("append_double:overflow: %x %u %d >= (1<<%u) = %x %u %d\n",
-                    ival, ival, ival, len,
-                    1<<len, 1<<len, 1<<len);
-            ival = 0xffffffff;
-            */
-        }
-        TRACE("append_double:about to encode: %x %u %d\n", ival, ival, ival);
-        add_bits(ival, bit_len);
     }
 
     void append_var(Varinfo info, const Var& var)
