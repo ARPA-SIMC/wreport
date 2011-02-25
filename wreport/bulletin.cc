@@ -24,6 +24,7 @@
 #include "error.h"
 #include "opcode.h"
 #include "bulletin.h"
+#include "bulletin/dds-printer.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -218,6 +219,25 @@ void Bulletin::print(FILE* out) const
 			s[j].print(out);
 		}
 	}
+}
+
+void Bulletin::print_structured(FILE* out) const
+{
+    fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
+            encoding_name(), edition,
+            type, subtype, localsubtype,
+            rep_year, rep_month, rep_day, rep_hour, rep_minute, rep_second,
+            subsets.size());
+    fprintf(out, " Tables: %s %s\n",
+            btable ? btable->id().c_str() : "(not loaded)",
+            dtable ? dtable->id().c_str() : "(not loaded)");
+    fprintf(out, " Data descriptors:\n");
+    for (vector<Varcode>::const_iterator i = datadesc.begin(); i != datadesc.end(); ++i)
+        fprintf(out, "  %d%02d%03d\n", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
+    print_details(out);
+    fprintf(out, " Variables:\n");
+    bulletin::DDSPrinter printer(*this, out);
+    run_dds(printer);
 }
 
 void Bulletin::print_details(FILE* out) const {}
@@ -731,6 +751,68 @@ void test_bufrex_msg()
 
 #endif
 #endif
+
+namespace bulletin {
+
+DDSExecutor::~DDSExecutor() {}
+void DDSExecutor::push_dcode(Varcode code) {}
+void DDSExecutor::pop_dcode() {}
+
+BaseDDSExecutor::BaseDDSExecutor(Bulletin& bulletin)
+    : bulletin(bulletin), current_subset(0), current_subset_no(0)
+{
+}
+
+void BaseDDSExecutor::start_subset(unsigned subset_no)
+{
+    if (subset_no >= bulletin.subsets.size())
+        error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
+    current_subset = &(bulletin.subsets[subset_no]);
+    current_subset_no = subset_no;
+}
+
+unsigned BaseDDSExecutor::subset_size()
+{
+    if (!current_subset)
+        return 0;
+    return current_subset->size();
+}
+
+bool BaseDDSExecutor::is_special_var(unsigned var_pos)
+{
+    if (!current_subset) return true;
+    if (var_pos >= current_subset->size()) return true;
+    return WR_VAR_F((*current_subset)[var_pos].code()) != 0;
+}
+
+ConstBaseDDSExecutor::ConstBaseDDSExecutor(const Bulletin& bulletin)
+    : bulletin(bulletin), current_subset(0), current_subset_no(0)
+{
+}
+
+void ConstBaseDDSExecutor::start_subset(unsigned subset_no)
+{
+    if (subset_no >= bulletin.subsets.size())
+        error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
+    current_subset = &(bulletin.subsets[subset_no]);
+    current_subset_no = subset_no;
+}
+
+unsigned ConstBaseDDSExecutor::subset_size()
+{
+    if (!current_subset)
+        return 0;
+    return current_subset->size();
+}
+
+bool ConstBaseDDSExecutor::is_special_var(unsigned var_pos)
+{
+    if (!current_subset) return true;
+    if (var_pos >= current_subset->size()) return true;
+    return WR_VAR_F((*current_subset)[var_pos].code()) != 0;
+}
+
+}
 
 }
 

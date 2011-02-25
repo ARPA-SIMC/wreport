@@ -152,6 +152,11 @@ struct Bulletin
 	 */
 	void print(FILE* out) const;
 
+    /**
+     * Dump the contents of this bulletin, in a more structured way
+     */
+    void print_structured(FILE* out) const;
+
 	/// Print format-specific details
 	virtual void print_details(FILE* out) const;
 
@@ -292,10 +297,25 @@ namespace bulletin {
  */
 struct DDSExecutor
 {
-    virtual ~DDSExecutor() {}
+    virtual ~DDSExecutor();
 
     /// Notify the start of a subset
     virtual void start_subset(unsigned subset_no) = 0;
+
+    /// Notify that we start decoding a D group
+    virtual void push_dcode(Varcode code);
+
+    /// Notify that we ended decoding a D group
+    virtual void pop_dcode();
+
+    /// Return the size of the current subset
+    virtual unsigned subset_size() = 0;
+
+    /**
+     * Return true if the variable at \a var_pos is special
+     * (WR_VAR_F(varcode) != 0)
+     */
+    virtual bool is_special_var(unsigned var_pos) = 0;
 
     /**
      * Request encoding, according to \a info, of attribute \a attr_code of
@@ -331,9 +351,40 @@ struct DDSExecutor
     virtual void encode_bitmap(const Var& bitmap) = 0;
 
     /**
+     * Request encoding of C05yyy character data
+     */
+    virtual void encode_char_data(Varcode code, unsigned var_pos) = 0;
+
+    /**
      * Get the bitmap at position \a var_pos
      */
     virtual const Var* get_bitmap(unsigned var_pos) = 0;
+};
+
+struct BaseDDSExecutor : public DDSExecutor
+{
+    Bulletin& bulletin;
+    Subset* current_subset;
+    unsigned current_subset_no;
+
+    BaseDDSExecutor(Bulletin& bulletin);
+
+    virtual void start_subset(unsigned subset_no);
+    virtual unsigned subset_size();
+    virtual bool is_special_var(unsigned var_pos);
+};
+
+struct ConstBaseDDSExecutor : public DDSExecutor
+{
+    const Bulletin& bulletin;
+    const Subset* current_subset;
+    unsigned current_subset_no;
+
+    ConstBaseDDSExecutor(const Bulletin& bulletin);
+
+    virtual void start_subset(unsigned subset_no);
+    virtual unsigned subset_size();
+    virtual bool is_special_var(unsigned var_pos);
 };
 
 }
