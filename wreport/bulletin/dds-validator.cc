@@ -27,18 +27,19 @@ using namespace std;
 namespace wreport {
 namespace bulletin {
 
-DDSValidator::DDSValidator(const Bulletin& b) : b(b), current_subset(0)
+DDSValidator::DDSValidator(const Bulletin& b)
+    : ConstBaseDDSExecutor(b)
 {
     is_crex = dynamic_cast<const CrexBulletin*>(&b) != NULL;
 }
 
 const Var& DDSValidator::get_var(unsigned var_pos) const
 {
-    unsigned max_var = b.subset(current_subset).size();
+    unsigned max_var = current_subset->size();
     if (var_pos >= max_var)
         error_consistency::throwf("requested variable #%u out of a maximum of %u in subset %u",
-                var_pos, max_var, current_subset);
-    return b.subset(current_subset)[var_pos];
+                var_pos, max_var, current_subset_no);
+    return (*current_subset)[var_pos];
 }
 
 void DDSValidator::check_fits(Varinfo info, const Var& var)
@@ -64,13 +65,6 @@ void DDSValidator::check_fits(Varinfo info, const Var& var)
                 error_consistency::throwf("value %f (%u) does not fit in %d bits", var.enqd(), encoded, info->bit_len);
         }
     }
-}
-
-void DDSValidator::start_subset(unsigned subset_no)
-{
-    if (subset_no >= b.subsets.size())
-        error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, b.subsets.size());
-    current_subset = subset_no;
 }
 
 void DDSValidator::encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
@@ -100,6 +94,15 @@ unsigned DDSValidator::encode_bitmap_repetition_count(Varinfo info, const Var& b
 
 void DDSValidator::encode_bitmap(const Var& bitmap)
 {
+}
+
+void DDSValidator::encode_char_data(Varcode code, unsigned var_pos)
+{
+    const Var& var = get_var(var_pos);
+    if (var.code() != code)
+        error_consistency::throwf("input variable %d%02d%03d differs from expected variable %d%02d%03d",
+                WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()),
+                WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
 const Var* DDSValidator::get_bitmap(unsigned var_pos)

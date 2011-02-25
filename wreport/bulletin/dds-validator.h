@@ -23,22 +23,14 @@
 #ifndef WREPORT_BULLETIN_DDS_VALIDATOR_H
 #define WREPORT_BULLETIN_DDS_VALIDATOR_H
 
-/** @file
- * @ingroup wreport
- * Implementation of opcode chains, that are used to drive the encoding and
- * decoding process.
- */
-
 #include <wreport/bulletin.h>
 #include <vector>
 
 namespace wreport {
 namespace bulletin {
 
-struct DDSValidator : public DDSExecutor
+struct DDSValidator : public ConstBaseDDSExecutor
 {
-    const Bulletin& b;
-    unsigned current_subset;
     bool is_crex;
 
     DDSValidator(const Bulletin& b);
@@ -46,12 +38,12 @@ struct DDSValidator : public DDSExecutor
     const Var& get_var(unsigned var_pos) const;
     void check_fits(Varinfo info, const Var& var);
 
-    virtual void start_subset(unsigned subset_no);
     virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
     virtual void encode_var(Varinfo info, unsigned var_pos);
     virtual unsigned encode_repetition_count(Varinfo info, unsigned var_pos);
     virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap);
     virtual void encode_bitmap(const Var& bitmap);
+    virtual void encode_char_data(Varcode code, unsigned var_pos);
     virtual const Var* get_bitmap(unsigned var_pos);
 };
 
