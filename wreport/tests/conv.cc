@@ -19,6 +19,7 @@
 
 #include <test-utils-wreport.h>
 #include <wreport/conv.h>
+#include <wreport/codetables.h>
 
 using namespace wreport;
 
@@ -45,7 +46,21 @@ void to::test<1>()
 	ensure(not convert_units_allowed("C", "M"));
 	ensure_equals(convert_units_get_mul("C", "K"), 1.0);
 }
-	
+
+// Vertical sounding significance conversion functions
+template<> template<>
+void to::test<2>()
+{
+    ensure_equals(convert_BUFR08001_to_BUFR08042(BUFR08001::ALL_MISSING), BUFR08042::ALL_MISSING);
+    ensure_equals(convert_BUFR08001_to_BUFR08042(BUFR08001::TROPO), BUFR08042::TROPO);
+    ensure_equals(convert_BUFR08001_to_BUFR08042(BUFR08001::SIGTH), BUFR08042::SIGTEMP | BUFR08042::SIGHUM);
+
+    ensure_equals(convert_BUFR08042_to_BUFR08001(BUFR08042::ALL_MISSING), BUFR08001::ALL_MISSING);
+    ensure_equals(convert_BUFR08042_to_BUFR08001(BUFR08042::TROPO), BUFR08001::TROPO);
+    ensure_equals(convert_BUFR08042_to_BUFR08001(BUFR08042::SIGTEMP), BUFR08001::SIGTH);
+    ensure_equals(convert_BUFR08042_to_BUFR08001(BUFR08042::SIGHUM), BUFR08001::SIGTH);
+}
+
 }
 
 /* vim:set ts=4 sw=4: */

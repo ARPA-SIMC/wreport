@@ -194,7 +194,7 @@ int convert_BUFR08001_to_BUFR08042(int from)
     return res;
 }
 
-int convert_BUFR08042_to_BUFRO8001(int from)
+int convert_BUFR08042_to_BUFR08001(int from)
 {
     if (from & BUFR08042::MISSING)
         return BUFR08001::ALL_MISSING;
