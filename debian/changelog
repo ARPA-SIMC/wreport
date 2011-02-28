@@ -3,8 +3,11 @@ wreport (1.7-1) unstable; urgency=low
   * New upstream version
      - Added a generic Bulletin Data Descriptor Section interpreter
      - Preserve C05YYY decoded character data
+     - Added codetables.h to contain namespaced constants for BUFR code tables
+     - conv.h: added vertical sounding significance code table conversion
+       functions
 
- -- Enrico Zini <enrico@debian.org>  Fri, 25 Feb 2011 18:09:41 +0000
+ -- Enrico Zini <enrico@debian.org>  Mon, 28 Feb 2011 21:40:22 +0000
 
 wreport (1.6-1) unstable; urgency=low
 
