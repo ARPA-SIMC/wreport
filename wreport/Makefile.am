@@ -11,6 +11,7 @@ wreportbulletinincludedir = $(includedir)/wreport/bulletin
 
 # Include the .cc files that contain template definitions
 wreportinclude_HEADERS = \
+	codetables.h \
 	conv.h \
 	dtable.h \
 	error.h \

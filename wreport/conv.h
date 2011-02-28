@@ -89,6 +89,10 @@ int convert_BUFR20012_to_WMO0513(int from);
 int convert_BUFR20003_to_WMO4677(int from);
 /** Past weather */
 int convert_BUFR20004_to_WMO4561(int from);
+/** Vertical sounding significance */
+int convert_BUFR08002_to_BUFR8042(int from);
+/** Vertical sounding significance */
+int convert_BUFR08042_to_BUFR8002(int from);
 /* @} */
 
 /**
