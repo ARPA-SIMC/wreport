@@ -178,35 +178,35 @@ int convert_BUFR20004_to_WMO4561(int from)
 		error_domain::throwf("cannot handle BUFR 20004 present weather (%d) values above 9", from);
 }
 
-int convert_BUFR08002_to_BUFR8042(int from)
+int convert_BUFR08001_to_BUFR08042(int from)
 {
     // Handle missing value
-    if (from & BUFR08002::MISSING)
+    if (from & BUFR08001::MISSING)
         return BUFR08042::ALL_MISSING;
 
     int res = 0;
-    if (from & BUFR08002::SIGWIND) res |= BUFR08042::SIGWIND;
-    if (from & BUFR08002::SIGTH)   res |= BUFR08042::SIGTEMP | BUFR08042::SIGHUM;
-    if (from & BUFR08002::MAXWIND) res |= BUFR08042::MAXWIND;
-    if (from & BUFR08002::TROPO)   res |= BUFR08042::TROPO;
-    if (from & BUFR08002::STD)     res |= BUFR08042::STD;
-    if (from & BUFR08002::SURFACE) res |= BUFR08042::SURFACE;
+    if (from & BUFR08001::SIGWIND) res |= BUFR08042::SIGWIND;
+    if (from & BUFR08001::SIGTH)   res |= BUFR08042::SIGTEMP | BUFR08042::SIGHUM;
+    if (from & BUFR08001::MAXWIND) res |= BUFR08042::MAXWIND;
+    if (from & BUFR08001::TROPO)   res |= BUFR08042::TROPO;
+    if (from & BUFR08001::STD)     res |= BUFR08042::STD;
+    if (from & BUFR08001::SURFACE) res |= BUFR08042::SURFACE;
     return res;
 }
 
-int convert_BUFR08042_to_WMO8002(int from)
+int convert_BUFR08042_to_BUFRO8001(int from)
 {
     if (from & BUFR08042::MISSING)
-        return BUFR08002::ALL_MISSING;
+        return BUFR08001::ALL_MISSING;
 
     int res = 0;
-    if (from & BUFR08042::SIGWIND) res |= BUFR08002::SIGWIND;
-    if (from & BUFR08042::SIGHUM)  res |= BUFR08002::SIGTH;
-    if (from & BUFR08042::SIGTEMP) res |= BUFR08002::SIGTH;
-    if (from & BUFR08042::MAXWIND) res |= BUFR08002::MAXWIND;
-    if (from & BUFR08042::TROPO)   res |= BUFR08002::TROPO;
-    if (from & BUFR08042::STD)     res |= BUFR08002::STD;
-    if (from & BUFR08042::SURFACE) res |= BUFR08002::SURFACE;
+    if (from & BUFR08042::SIGWIND) res |= BUFR08001::SIGWIND;
+    if (from & BUFR08042::SIGHUM)  res |= BUFR08001::SIGTH;
+    if (from & BUFR08042::SIGTEMP) res |= BUFR08001::SIGTH;
+    if (from & BUFR08042::MAXWIND) res |= BUFR08001::MAXWIND;
+    if (from & BUFR08042::TROPO)   res |= BUFR08001::TROPO;
+    if (from & BUFR08042::STD)     res |= BUFR08001::STD;
+    if (from & BUFR08042::SURFACE) res |= BUFR08001::SURFACE;
     return res;
 }
 

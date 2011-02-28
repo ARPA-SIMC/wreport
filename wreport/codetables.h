@@ -30,7 +30,7 @@
 namespace wreport {
 
 // 7 bit, leftmost is bit 1
-namespace BUFR08002 {
+namespace BUFR08001 {
 const unsigned int MISSING = 0x01; /* 7 */
 const unsigned int SIGWIND = 0x02; /* 6 */
 const unsigned int SIGTH   = 0x04; /* 5 */
