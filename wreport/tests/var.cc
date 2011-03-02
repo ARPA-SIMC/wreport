@@ -300,6 +300,33 @@ void to::test<9>()
     ensure_var_equals(norm, "Budapest Pestszentl>");
 }
 
+#if 0
+// FIXME: this rounding bias doesn't seem to be fixable at this stage
+// Test geopotential conversions
+template<> template<>
+void to::test<10>()
+{
+    const Vartable* table = Vartable::get("B0000000000000014000");
+    // Start with B10003 (old ECMWF TEMP templates)
+    Var var0(table->query(WR_VAR(0, 10, 3)), 152430.0);
+    var0.print(stderr);
+    // Convert to B10008 (used for geopotential by DB-All.e)
+    Var var1(table->query(WR_VAR(0, 10, 8)), var0);
+    var1.print(stderr);
+    // Convert to B10009 (new GTS TEMP templates)
+    Var var2(table->query(WR_VAR(0, 10, 9)), var1);
+    var2.print(stderr);
+    // Convert to B10008 (used for geopotential by DB-All.e)
+    Var var3(table->query(WR_VAR(0, 10, 8)), var2);
+    var3.print(stderr);
+    // Convert back to B10003
+    Var var4(table->query(WR_VAR(0, 10, 3)), var3);
+    var4.print(stderr);
+
+    ensure_var_equals(var4, 152430.0);
+}
+#endif
+
 }
 
 /* vim:set ts=4 sw=4: */
