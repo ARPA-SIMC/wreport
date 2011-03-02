@@ -231,25 +231,25 @@ double convert_press_to_icao(double from)
 	throw error_unimplemented("converting pressure to ICAO height is not implemented");
 }
 
-int convert_AOFVSS_to_BUFR08001(int from)
+int convert_AOFVSS_to_BUFR08042(int from)
 {
 	int res = 0;
-	if (from & (1 << 0))	/* Maximum wind level	*/
-		res |= 8;
-	if (from & (1 << 1))	/* Tropopause		*/
-		res |= 16;
-	/* Skipped */		/* Part D, non-standard level data, p < 100hPa */
-	if (from & (1 << 3))	/* Part C, standard level data, p < 100hPa */
-		res |= 32;
-	/* Skipped */		/* Part B, non-standard level data, p > 100hPa */
-	if (from & (1 << 5))	/* Part A, standard level data, p > 100hPa */
-		res |= 32;
-	if (from & (1 << 6))	/* Surface */
-		res |= 64;
-	if (from & (1 << 7))	/* Significant wind level */
-		res |= 2;
-	if (from & (1 << 8))	/* Significant temperature level */
-		res |= 4;
+	if (from & (1 << 0))	// Maximum wind level
+		res |= BUFR08042::MAXWIND;
+	if (from & (1 << 1))	// Tropopause
+		res |= BUFR08042::TROPO;
+	/* Skipped */		// Part D, non-standard level data, p < 100hPa
+	if (from & (1 << 3))	// Part C, standard level data, p < 100hPa
+		res |= BUFR08042::STD;
+	/* Skipped */		// Part B, non-standard level data, p > 100hPa
+	if (from & (1 << 5))	// Part A, standard level data, p > 100hPa
+		res |= BUFR08042::STD;
+	if (from & (1 << 6))	// Surface
+		res |= BUFR08042::SURFACE;
+	if (from & (1 << 7))	// Significant wind level
+		res |= BUFR08042::SIGWIND;
+	if (from & (1 << 8))	// Significant temperature level
+		res |= BUFR08042::SIGTEMP;
 	return res;
 }
 

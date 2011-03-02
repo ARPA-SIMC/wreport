@@ -59,7 +59,7 @@ double convert_press_to_icao(double from);
  * Convert vertical sounding significance from the AOF encoding to BUFR code
  * table 08001.
  */
-int convert_AOFVSS_to_BUFR08001(int from);
+int convert_AOFVSS_to_BUFR08042(int from);
 
 /**
  * Conversion functions between various code tables
