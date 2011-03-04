@@ -631,6 +631,7 @@
  020051 AMOUNT OF LOW CLOUDS                                             %                          0            0   7 %                         0          3
  020052 AMOUNT OF MIDDLE CLOUDS                                          %                          0            0   7 %                         0          3
  020053 AMOUNT OF HIGH CLOUDS                                            %                          0            0   7 %                         0          3
+ 020054 TRUE DIRECTION FROM WHICH CLOUDS ARE MOVING                      DEGREE TRUE                0            0   9 DEGREE TRUE               0          3
  020061 RUNWAY VISUAL RANGE (RVR)                                        M                          0            0  12 M                         0          4
  020062 STATE OF THE GROUND (WITH OR WITHOUT SNOW)                       CODE TABLE 20062           0            0   5 CODE TABLE 20062          0          2
  020063 SPECIAL PHENOMENA                                                CODE TABLE 20063           0            0  10 CODE TABLE 20063          0          4
