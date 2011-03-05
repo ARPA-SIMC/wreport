@@ -88,6 +88,9 @@ public:
 	/// Copy constructor
 	Var(const Var& var);
 
+    /// Copy constructor
+    Var(const Var& var, bool with_attrs);
+
 	/**
 	 * Create a new Var with the value from another one
 	 *
@@ -239,6 +242,14 @@ public:
 	 */
 	void copy_val(const Var& src);
 
+    /**
+     * Set the value from another variable, performing conversions if
+     * needed.
+     *
+     * The attributes of \a src will NOT be copied
+     */
+    void copy_val_only(const Var& src);
+
 	/**
 	 * Copy all the attributes from another variable
 	 *
@@ -246,6 +257,15 @@ public:
 	 *   The variable with the attributes to copy.
 	 */
 	void copy_attrs(const Var& src);
+
+    /**
+     * Copy all the attributes from another variable, unless they are set to an
+     * undefined value
+     *
+     * @param src
+     *   The variable with the attributes to copy.
+     */
+    void copy_attrs_if_defined(const Var& src);
 
 	/**
 	 * Create a formatted string representation of the variable value

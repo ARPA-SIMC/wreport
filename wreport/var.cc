@@ -37,31 +37,6 @@ using namespace std;
 
 namespace wreport {
 
-#if 0
-Var::Var(Varcode code)
-	: m_info(Vartable::query_local(code)), m_value(NULL), m_attrs(NULL)
-{
-}
-
-Var::Var(Varcode code, int val)
-	: m_info(Vartable::query_local(code)), m_value(NULL), m_attrs(NULL)
-{
-	seti(val);
-}
-
-Var::Var(Varcode code, double val)
-	: m_info(Vartable::query_local(code)), m_value(NULL), m_attrs(NULL)
-{
-	setd(val);
-}
-
-Var::Var(Varcode code, const char* val)
-	: m_info(Vartable::query_local(code)), m_value(NULL), m_attrs(NULL)
-{
-	setc(val);
-}
-#endif
-
 Var::Var(Varinfo info)
 	: m_info(info), m_value(NULL), m_attrs(NULL)
 {
@@ -97,12 +72,23 @@ Var::Var(const Var& var)
 		m_attrs = new Var(*var.m_attrs);
 }
 
+Var::Var(const Var& var, bool with_attrs)
+    : m_info(var.m_info), m_value(NULL), m_attrs(NULL)
+{
+    /* Copy the value */
+    if (var.m_value != NULL)
+        setc(var.m_value);
+
+    /* Copy the attributes */
+    if (with_attrs && var.m_attrs)
+        m_attrs = new Var(*var.m_attrs);
+}
+
 Var::Var(Varinfo info, const Var& var)
 	: m_info(info), m_value(NULL), m_attrs(NULL)
 {
 	copy_val(var);
 }
-
 
 Var& Var::operator=(const Var& var)
 {
@@ -421,6 +407,12 @@ const Var* Var::next_attr() const
 
 void Var::copy_val(const Var& src)
 {
+    copy_val_only(src);
+    copy_attrs(src);
+}
+
+void Var::copy_val_only(const Var& src)
+{
     if (src.value() == NULL)
     {
         unset();
@@ -436,9 +428,6 @@ void Var::copy_val(const Var& src)
             setd(convert_units(src.info()->unit, m_info->unit, src.enqd()));
         }
     }
-
-    /* Copy the attributes */
-    copy_attrs(src);
 }
 
 void Var::copy_attrs(const Var& src)
@@ -446,6 +435,18 @@ void Var::copy_attrs(const Var& src)
 	clear_attrs();
 	if (src.m_attrs)
 		m_attrs = new Var(*src.m_attrs);
+}
+
+void Var::copy_attrs_if_defined(const Var& src)
+{
+    clear_attrs();
+    Var* last = this;
+    for (const Var* a = src.next_attr(); a; a = a->next_attr())
+    {
+        if (!a->isset()) continue;
+        last->m_attrs = new Var(*a, false);
+        last = last->m_attrs;
+    }
 }
 
 std::string Var::format(const char* ifundef) const
