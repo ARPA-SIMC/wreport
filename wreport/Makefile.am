@@ -15,6 +15,7 @@ wreportinclude_HEADERS = \
 	conv.h \
 	dtable.h \
 	error.h \
+	notes.h \
 	fast.h \
 	bulletin.h \
 	opcode.h \
@@ -31,6 +32,7 @@ wreportbulletininclude_HEADERS = \
 lib_LTLIBRARIES = libwreport.la
 libwreport_la_SOURCES = \
 	error.cc \
+	notes.cc \
 	uniconv.cc \
 	conv.cc \
 	varinfo.cc \

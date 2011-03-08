@@ -1,7 +1,7 @@
 /*
  * wreport/test-utils-wreport - Unit test utilities
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <wreport/varinfo.h>
 #include <wreport/bulletin.h>
 #include <wreport/tests.h>
+#include <wreport/notes.h>
 #include <string>
 #include <vector>
 #include <memory>
@@ -84,9 +85,10 @@ struct MsgTester
 		// Test the decoded version
 		(*this)("reencoded", msg2);
 
-		// Ensure the two are the same
-		ensure_equals(msg1.diff(msg2, stderr), 0);
-	}
+        // Ensure the two are the same
+        notes::Collect c(std::cerr);
+        ensure_equals(msg1.diff(msg2), 0);
+    }
 
 	void run(const char* tag, const BULLETIN& msg)
 	{

@@ -30,7 +30,7 @@
 
 #include <wreport/error.h>
 #include <wreport/varinfo.h>
-#include <stdio.h>
+#include <cstdio>
 #include <memory>
 
 struct lua_State;
@@ -283,6 +283,14 @@ public:
 	 */
 	void print(FILE* out) const;
 
+    /**
+     * Print the variable to an output stream
+     *
+     * @param out
+     *   The output stream to use for printing
+     */
+    void print(std::ostream& out) const;
+
 	/**
 	 * Print the variable to an output stream, without its attributes
 	 *
@@ -291,18 +299,26 @@ public:
 	 */
 	void print_without_attrs(FILE* out) const;
 
-	/**
-	 * Print the difference between two variables to an output stream.
-	 * If there is no difference, it does not print anything.
-	 *
-	 * @param var
-	 *   The variable to compare with this one
-	 * @param out
-	 *   The output stream to use for printing
-	 * @returns
-	 *   The number of differences found and reported
-	 */
-	unsigned diff(const Var& var, FILE* out) const;
+    /**
+     * Print the variable to an output stream, without its attributes
+     *
+     * @param out
+     *   The output stream to use for printing
+     */
+    void print_without_attrs(std::ostream& out) const;
+
+    /**
+     * Compare two Var and return the number of differences.
+     *
+     * Details of the differences found will be formatted using the notes
+     * system (@see notes.h).
+     *
+     * @param var
+     *   The variable to compare with this one
+     * @returns
+     *   The number of differences found and reported
+     */
+    unsigned diff(const Var& var) const;
 
 
 	/**

@@ -8,8 +8,10 @@ wreport (1.7-1) unstable; urgency=low
        functions
      - convert_AOFVSS_to_BUFR08001 becomes convert_AOFVSS_to_BUFR08042
      - Added some more missing variables to CREX B tables
+     - Added a notes sytem to collect remarks about unusual conditions noticed
+       by wreport subsystems
 
- -- Enrico Zini <enrico@debian.org>  Fri, 04 Mar 2011 10:41:19 +0000
+ -- Enrico Zini <enrico@debian.org>  Tue, 08 Mar 2011 09:37:24 +0000
 
 wreport (1.6-1) unstable; urgency=low
 

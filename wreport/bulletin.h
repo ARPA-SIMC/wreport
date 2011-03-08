@@ -160,13 +160,21 @@ struct Bulletin
 	/// Print format-specific details
 	virtual void print_details(FILE* out) const;
 
-	/**
-	 * Compute the differences between two bulletins
-	 */
-	virtual unsigned diff(const Bulletin& msg, FILE* out) const;
+    /**
+     * Compute the differences between two bulletins
+     *
+     * Details of the differences found will be formatted using the notes
+     * system (@see notes.h).
+     *
+     * @param msg
+     *   The bulletin to compare with this one
+     * @returns
+     *   The number of differences found
+     */
+    virtual unsigned diff(const Bulletin& msg) const;
 
-	/// Diff format-specific details
-	virtual unsigned diff_details(const Bulletin& msg, FILE* out) const;
+    /// Diff format-specific details
+    virtual unsigned diff_details(const Bulletin& msg) const;
 };
 
 /**
@@ -205,7 +213,7 @@ struct BufrBulletin : public Bulletin
 	virtual void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
 	virtual void encode(std::string& buf) const;
 	virtual void print_details(FILE* out) const;
-	virtual unsigned diff_details(const Bulletin& msg, FILE* out) const;
+    virtual unsigned diff_details(const Bulletin& msg) const;
 
 	/**
 	 * Read an encoded BUFR message from a stream
@@ -257,7 +265,7 @@ struct CrexBulletin : public Bulletin
 	virtual void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
 	virtual void encode(std::string& buf) const;
 	virtual void print_details(FILE* out) const;
-	virtual unsigned diff_details(const Bulletin& msg, FILE* out) const;
+    virtual unsigned diff_details(const Bulletin& msg) const;
 
 	/**
 	 * Read an encoded BUFR message from a stream

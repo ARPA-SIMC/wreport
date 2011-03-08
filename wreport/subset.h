@@ -1,7 +1,7 @@
 /*
  * wreport/subset - Data subset for BUFR and CREX messages
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,8 +130,18 @@ struct Subset : public std::vector<Var>
 	/// Dump the contents of this subset
 	void print(FILE* out) const;
 
-	/// Compute the differences between two wreport subsets
-	unsigned diff(const Subset& s2, FILE* out) const;
+    /**
+     * Compute the differences between two wreport subsets
+     *
+     * Details of the differences found will be formatted using the notes
+     * system (@see notes.h).
+     *
+     * @param s2
+     *   The subset to compare with this one
+     * @returns
+     *   The number of differences found
+     */
+    unsigned diff(const Subset& s2) const;
 
 protected:
 	/// Append a C operator with a \a count long bitmap

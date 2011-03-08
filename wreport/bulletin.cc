@@ -1,7 +1,7 @@
 /*
  * wreport/bulletin - Archive for punctual meteorological data
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "opcode.h"
 #include "bulletin.h"
 #include "bulletin/dds-printer.h"
+#include "notes.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -254,221 +255,221 @@ void CrexBulletin::print_details(FILE* out) const
 	fprintf(out, " CREX details: T00%02d%02d cd%d\n", master_table, table, has_check_digit);
 }
 
-unsigned Bulletin::diff(const Bulletin& msg, FILE* out) const
+unsigned Bulletin::diff(const Bulletin& msg) const
 {
-	unsigned diffs = 0;
-	if (string(encoding_name()) != string(msg.encoding_name()))
-	{
-		fprintf(out, "Encodings differ (first is %s, second is %s)\n",
-				encoding_name(), msg.encoding_name());
-		++diffs;
-	} else
-		diffs += diff_details(msg, out);
-	if (type != msg.type)
-	{
-		fprintf(out, "Template types differ (first is %d, second is %d)\n",
-				type, msg.type);
-		++diffs;
-	}
-	if (subtype != msg.subtype)
-	{
-		fprintf(out, "Template subtypes differ (first is %d, second is %d)\n",
-				subtype, msg.subtype);
-		++diffs;
-	}
-	if (localsubtype != msg.localsubtype)
-	{
-		fprintf(out, "Template local subtypes differ (first is %d, second is %d)\n",
-				localsubtype, msg.localsubtype);
-		++diffs;
-	}
-	if (edition != msg.edition)
-	{
-		fprintf(out, "Edition numbers differ (first is %d, second is %d)\n",
-				edition, msg.edition);
-		++diffs;
-	}
-	if (rep_year != msg.rep_year)
-	{
-		fprintf(out, "Reference years differ (first is %d, second is %d)\n",
-				rep_year, msg.rep_year);
-		++diffs;
-	}
-	if (rep_month != msg.rep_month)
-	{
-		fprintf(out, "Reference months differ (first is %d, second is %d)\n",
-				rep_month, msg.rep_month);
-		++diffs;
-	}
-	if (rep_day != msg.rep_day)
-	{
-		fprintf(out, "Reference days differ (first is %d, second is %d)\n",
-				rep_day, msg.rep_day);
-		++diffs;
-	}
-	if (rep_hour != msg.rep_hour)
-	{
-		fprintf(out, "Reference hours differ (first is %d, second is %d)\n",
-				rep_hour, msg.rep_hour);
-		++diffs;
-	}
-	if (rep_minute != msg.rep_minute)
-	{
-		fprintf(out, "Reference minutes differ (first is %d, second is %d)\n",
-				rep_minute, msg.rep_minute);
-		++diffs;
-	}
-	if (rep_second != msg.rep_second)
-	{
-		fprintf(out, "Reference seconds differ (first is %d, second is %d)\n",
-				rep_second, msg.rep_second);
-		++diffs;
-	}
-	if (btable == NULL && msg.btable != NULL)
-	{
-		fprintf(out, "First message did not load B btables, second message has %s\n",
-				msg.btable->id().c_str());
-		++diffs;
-	} else if (btable != NULL && msg.btable == NULL) {
-		fprintf(out, "Second message did not load B btables, first message has %s\n",
-				btable->id().c_str());
-		++diffs;
-	} else if (btable != NULL && msg.btable != NULL && btable->id() != msg.btable->id()) {
-		fprintf(out, "B tables differ (first has %s, second has %s)\n",
-				btable->id().c_str(), msg.btable->id().c_str());
-		++diffs;
-	}
-	if (dtable == NULL && msg.dtable != NULL)
-	{
-		fprintf(out, "First message did not load B dtable, second message has %s\n",
-				msg.dtable->id().c_str());
-		++diffs;
-	} else if (dtable != NULL && msg.dtable == NULL) {
-		fprintf(out, "Second message did not load B dtable, first message has %s\n",
-				dtable->id().c_str());
-		++diffs;
-	} else if (dtable != NULL && msg.dtable != NULL && dtable->id() != msg.dtable->id()) {
-		fprintf(out, "D tables differ (first has %s, second has %s)\n",
-				dtable->id().c_str(), msg.dtable->id().c_str());
-		++diffs;
-	}
+    unsigned diffs = 0;
+    if (string(encoding_name()) != string(msg.encoding_name()))
+    {
+        notes::logf("Encodings differ (first is %s, second is %s)\n",
+                encoding_name(), msg.encoding_name());
+        ++diffs;
+    } else
+        diffs += diff_details(msg);
+    if (type != msg.type)
+    {
+        notes::logf("Template types differ (first is %d, second is %d)\n",
+                type, msg.type);
+        ++diffs;
+    }
+    if (subtype != msg.subtype)
+    {
+        notes::logf("Template subtypes differ (first is %d, second is %d)\n",
+                subtype, msg.subtype);
+        ++diffs;
+    }
+    if (localsubtype != msg.localsubtype)
+    {
+        notes::logf("Template local subtypes differ (first is %d, second is %d)\n",
+                localsubtype, msg.localsubtype);
+        ++diffs;
+    }
+    if (edition != msg.edition)
+    {
+        notes::logf("Edition numbers differ (first is %d, second is %d)\n",
+                edition, msg.edition);
+        ++diffs;
+    }
+    if (rep_year != msg.rep_year)
+    {
+        notes::logf("Reference years differ (first is %d, second is %d)\n",
+                rep_year, msg.rep_year);
+        ++diffs;
+    }
+    if (rep_month != msg.rep_month)
+    {
+        notes::logf("Reference months differ (first is %d, second is %d)\n",
+                rep_month, msg.rep_month);
+        ++diffs;
+    }
+    if (rep_day != msg.rep_day)
+    {
+        notes::logf("Reference days differ (first is %d, second is %d)\n",
+                rep_day, msg.rep_day);
+        ++diffs;
+    }
+    if (rep_hour != msg.rep_hour)
+    {
+        notes::logf("Reference hours differ (first is %d, second is %d)\n",
+                rep_hour, msg.rep_hour);
+        ++diffs;
+    }
+    if (rep_minute != msg.rep_minute)
+    {
+        notes::logf("Reference minutes differ (first is %d, second is %d)\n",
+                rep_minute, msg.rep_minute);
+        ++diffs;
+    }
+    if (rep_second != msg.rep_second)
+    {
+        notes::logf("Reference seconds differ (first is %d, second is %d)\n",
+                rep_second, msg.rep_second);
+        ++diffs;
+    }
+    if (btable == NULL && msg.btable != NULL)
+    {
+        notes::logf("First message did not load B btables, second message has %s\n",
+                msg.btable->id().c_str());
+        ++diffs;
+    } else if (btable != NULL && msg.btable == NULL) {
+        notes::logf("Second message did not load B btables, first message has %s\n",
+                btable->id().c_str());
+        ++diffs;
+    } else if (btable != NULL && msg.btable != NULL && btable->id() != msg.btable->id()) {
+        notes::logf("B tables differ (first has %s, second has %s)\n",
+                btable->id().c_str(), msg.btable->id().c_str());
+        ++diffs;
+    }
+    if (dtable == NULL && msg.dtable != NULL)
+    {
+        notes::logf("First message did not load B dtable, second message has %s\n",
+                msg.dtable->id().c_str());
+        ++diffs;
+    } else if (dtable != NULL && msg.dtable == NULL) {
+        notes::logf("Second message did not load B dtable, first message has %s\n",
+                dtable->id().c_str());
+        ++diffs;
+    } else if (dtable != NULL && msg.dtable != NULL && dtable->id() != msg.dtable->id()) {
+        notes::logf("D tables differ (first has %s, second has %s)\n",
+                dtable->id().c_str(), msg.dtable->id().c_str());
+        ++diffs;
+    }
 
-	if (datadesc.size() != msg.datadesc.size())
-	{
-		fprintf(out, "Data descriptor sections differ (first has %zd elements, second has %zd)\n",
-				datadesc.size(), msg.datadesc.size());
-		++diffs;
-	} else {
-		for (unsigned i = 0; i < datadesc.size(); ++i)
-			if (datadesc[i] != msg.datadesc[i])
-			{
-				fprintf(out, "Data descriptors differ at element %u (first has %01d%02d%03d, second has %01d%02d%03d)\n",
-						i, WR_VAR_F(datadesc[i]), WR_VAR_X(datadesc[i]), WR_VAR_Y(datadesc[i]),
-						WR_VAR_F(msg.datadesc[i]), WR_VAR_X(msg.datadesc[i]), WR_VAR_Y(msg.datadesc[i]));
-				++diffs;
-			}
-	}
+    if (datadesc.size() != msg.datadesc.size())
+    {
+        notes::logf("Data descriptor sections differ (first has %zd elements, second has %zd)\n",
+                datadesc.size(), msg.datadesc.size());
+        ++diffs;
+    } else {
+        for (unsigned i = 0; i < datadesc.size(); ++i)
+            if (datadesc[i] != msg.datadesc[i])
+            {
+                notes::logf("Data descriptors differ at element %u (first has %01d%02d%03d, second has %01d%02d%03d)\n",
+                        i, WR_VAR_F(datadesc[i]), WR_VAR_X(datadesc[i]), WR_VAR_Y(datadesc[i]),
+                        WR_VAR_F(msg.datadesc[i]), WR_VAR_X(msg.datadesc[i]), WR_VAR_Y(msg.datadesc[i]));
+                ++diffs;
+            }
+    }
 
-	if (subsets.size() != msg.subsets.size())
-	{
-		fprintf(out, "Number of subsets differ (first is %zd, second is %zd)\n",
-				subsets.size(), msg.subsets.size());
-		++diffs;
-	} else
-		for (unsigned i = 0; i < subsets.size(); ++i)
-			diffs += subsets[i].diff(msg.subsets[i], out);
-	return diffs;
+    if (subsets.size() != msg.subsets.size())
+    {
+        notes::logf("Number of subsets differ (first is %zd, second is %zd)\n",
+                subsets.size(), msg.subsets.size());
+        ++diffs;
+    } else
+        for (unsigned i = 0; i < subsets.size(); ++i)
+            diffs += subsets[i].diff(msg.subsets[i]);
+    return diffs;
 }
 
-unsigned Bulletin::diff_details(const Bulletin& msg, FILE* out) const { return 0; }
+unsigned Bulletin::diff_details(const Bulletin& msg) const { return 0; }
 
-unsigned BufrBulletin::diff_details(const Bulletin& msg, FILE* out) const
+unsigned BufrBulletin::diff_details(const Bulletin& msg) const
 {
-	unsigned diffs = Bulletin::diff_details(msg, out);
-	const BufrBulletin* m = dynamic_cast<const BufrBulletin*>(&msg);
-	if (!m) throw error_consistency("BufrBulletin::diff_details called with a non-BufrBulletin argument");
+    unsigned diffs = Bulletin::diff_details(msg);
+    const BufrBulletin* m = dynamic_cast<const BufrBulletin*>(&msg);
+    if (!m) throw error_consistency("BufrBulletin::diff_details called with a non-BufrBulletin argument");
 
-	if (centre != m->centre)
-	{
-		fprintf(out, "BUFR centres differ (first is %d, second is %d)\n",
-				centre, m->centre);
-		++diffs;
-	}
-	if (subcentre != m->subcentre)
-	{
-		fprintf(out, "BUFR subcentres differ (first is %d, second is %d)\n",
-				subcentre, m->subcentre);
-		++diffs;
-	}
-	if (master_table != m->master_table)
-	{
-		fprintf(out, "BUFR master tables differ (first is %d, second is %d)\n",
-				master_table, m->master_table);
-		++diffs;
-	}
-	if (local_table != m->local_table)
-	{
-		fprintf(out, "BUFR local tables differ (first is %d, second is %d)\n",
-				local_table, m->local_table);
-		++diffs;
-	}
-	/*
-// TODO: uncomment when we implement encoding BUFR with compression
-	if (compression != m->compression)
-	{
-		fprintf(out, "BUFR compression differs (first is %d, second is %d)\n",
-				compression, m->compression);
-		++diffs;
-	}
-	*/
-	if (update_sequence_number != m->update_sequence_number)
-	{
-		fprintf(out, "BUFR update sequence numbers differ (first is %d, second is %d)\n",
-				update_sequence_number, m->update_sequence_number);
-		++diffs;
-	}
-	if (optional_section_length != m->optional_section_length)
-	{
-		fprintf(out, "BUFR optional section lenght (first is %d, second is %d)\n",
-				optional_section_length, m->optional_section_length);
-		++diffs;
-	}
-	if (optional_section_length != 0)
-	{
-		if (memcmp(optional_section, m->optional_section, optional_section_length) != 0)
-		{
-			fprintf(out, "BUFR optional section contents differ\n");
-			++diffs;
-		}
-	}
-	return diffs;
+    if (centre != m->centre)
+    {
+        notes::logf("BUFR centres differ (first is %d, second is %d)\n",
+                centre, m->centre);
+        ++diffs;
+    }
+    if (subcentre != m->subcentre)
+    {
+        notes::logf("BUFR subcentres differ (first is %d, second is %d)\n",
+                subcentre, m->subcentre);
+        ++diffs;
+    }
+    if (master_table != m->master_table)
+    {
+        notes::logf("BUFR master tables differ (first is %d, second is %d)\n",
+                master_table, m->master_table);
+        ++diffs;
+    }
+    if (local_table != m->local_table)
+    {
+        notes::logf("BUFR local tables differ (first is %d, second is %d)\n",
+                local_table, m->local_table);
+        ++diffs;
+    }
+    /*
+    // TODO: uncomment when we implement encoding BUFR with compression
+    if (compression != m->compression)
+    {
+    notes::logf("BUFR compression differs (first is %d, second is %d)\n",
+    compression, m->compression);
+    ++diffs;
+    }
+    */
+    if (update_sequence_number != m->update_sequence_number)
+    {
+        notes::logf("BUFR update sequence numbers differ (first is %d, second is %d)\n",
+                update_sequence_number, m->update_sequence_number);
+        ++diffs;
+    }
+    if (optional_section_length != m->optional_section_length)
+    {
+        notes::logf("BUFR optional section lenght (first is %d, second is %d)\n",
+                optional_section_length, m->optional_section_length);
+        ++diffs;
+    }
+    if (optional_section_length != 0)
+    {
+        if (memcmp(optional_section, m->optional_section, optional_section_length) != 0)
+        {
+            notes::logf("BUFR optional section contents differ\n");
+            ++diffs;
+        }
+    }
+    return diffs;
 }
 
-unsigned CrexBulletin::diff_details(const Bulletin& msg, FILE* out) const
+unsigned CrexBulletin::diff_details(const Bulletin& msg) const
 {
-	unsigned diffs = Bulletin::diff_details(msg, out);
-	const CrexBulletin* m = dynamic_cast<const CrexBulletin*>(&msg);
-	if (!m) throw error_consistency("CrexBulletin::diff_details called with a non-CrexBulletin argument");
+    unsigned diffs = Bulletin::diff_details(msg);
+    const CrexBulletin* m = dynamic_cast<const CrexBulletin*>(&msg);
+    if (!m) throw error_consistency("CrexBulletin::diff_details called with a non-CrexBulletin argument");
 
-	if (master_table != m->master_table)
-	{
-		fprintf(out, "CREX master tables differ (first is %d, second is %d)\n",
-				master_table, m->master_table);
-		++diffs;
-	}
-	if (table != m->table)
-	{
-		fprintf(out, "CREX local tables differ (first is %d, second is %d)\n",
-				table, m->table);
-		++diffs;
-	}
-	if (has_check_digit != m->has_check_digit)
-	{
-		fprintf(out, "CREX has_check_digit differ (first is %d, second is %d)\n",
-				has_check_digit, m->has_check_digit);
-		++diffs;
-	}
-	return diffs;
+    if (master_table != m->master_table)
+    {
+        notes::logf("CREX master tables differ (first is %d, second is %d)\n",
+                master_table, m->master_table);
+        ++diffs;
+    }
+    if (table != m->table)
+    {
+        notes::logf("CREX local tables differ (first is %d, second is %d)\n",
+                table, m->table);
+        ++diffs;
+    }
+    if (has_check_digit != m->has_check_digit)
+    {
+        notes::logf("CREX has_check_digit differ (first is %d, second is %d)\n",
+                has_check_digit, m->has_check_digit);
+        ++diffs;
+    }
+    return diffs;
 }
 
 static bool seek_past_signature(FILE* fd, const char* sig, unsigned sig_len, const char* fname)

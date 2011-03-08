@@ -20,6 +20,9 @@
  */
 
 #include "config.h"
+#include "notes.h"
+
+#include <iostream>
 
 #include <stdio.h>
 #include <stdlib.h>		/* strtod, getenv */
@@ -481,6 +484,15 @@ void Var::print_without_attrs(FILE* out) const
 		fprintf(out, "%.*f\n", m_info->scale > 0 ? m_info->scale : 0, enqd());
 }
 
+void Var::print_without_attrs(std::ostream& out) const
+{
+    // Print info
+    out << varcode_format(m_info->var) << " " << m_info->desc << "(" << m_info->unit << "): ";
+
+    // Print value
+    out << format("(undef)") << endl;
+}
+
 void Var::print(FILE* out) const
 {
 	print_without_attrs(out);
@@ -493,112 +505,124 @@ void Var::print(FILE* out) const
 	}
 }
 
-unsigned Var::diff(const Var& var, FILE* out) const
+void Var::print(std::ostream& out) const
 {
-	if (code() != var.code())
-	{
-		fprintf(out, "varcodes differ: first is %d%02d%03d'%s', second is %d%02d%03d'%s'\n",
-			WR_VAR_F(m_info->var), WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc,
-			WR_VAR_F(var.info()->var), WR_VAR_X(var.info()->var), WR_VAR_Y(var.info()->var), var.info()->desc);
-		return 1;
-	}
-	if (m_value == NULL && var.value() == NULL)
-		return 0;
-	if (m_value == NULL)
-	{
-		fprintf(out, "[%d%02d%03d %s] first value is NULL, second value is %s\n",
-			WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-			var.m_value);
-		return 1;
-	}
-	if (var.m_value == NULL)
-	{
-		fprintf(out, "[%d%02d%03d %s] first value is %s, second value is NULL\n",
-			WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-			m_value);
-		return 1;
-	}
-	if (m_info->is_string() || m_info->scale == 0)
-	{
-		if (strcmp(m_value, var.m_value) != 0)
-		{
-			fprintf(out, "[%d%02d%03d %s] values differ: first is \"%s\", second is \"%s\"\n",
-				WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-				m_value, var.m_value);
-			return 1;
-		}
-	}
-	else
-	{
-		double val1 = enqd(), val2 = var.enqd();
-		if (val1 != val2)
-		{
-			fprintf(out, "[%d%02d%03d %s] values differ: first is %f, second is %f\n",
-				WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-				val1, val2);
-			return 1;
-		}
-	}
+    print_without_attrs(out);
 
-	if ((m_attrs != 0) != (var.m_attrs != 0))
-	{
-		if (m_attrs)
-		{
-			fprintf(out, "[%d%02d%03d %s] attributes differ: first has attributes, second does not\n",
-				WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()),
-				m_info->desc);
-			return 1;
-		}
-		else
-		{
-			fprintf(out, "[%d%02d%03d %s] attributes differ: first does not have attributes, second does\n",
-				WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()),
-				m_info->desc);
-			return 1;
-		}
-	} else {
-		int count1 = 0, count2 = 0;
+    // Print attrs
+    for (const Var* a = next_attr(); a; a = a->next_attr())
+    {
+        out << "           " << endl;
+        a->print_without_attrs(out);
+    }
+}
 
-		for (const Var* a = next_attr(); a; a = a->next_attr()) ++count1;
-		for (const Var* a = var.next_attr(); a; a = a->next_attr()) ++count2;
+unsigned Var::diff(const Var& var) const
+{
+    if (code() != var.code())
+    {
+        notes::logf("varcodes differ: first is %d%02d%03d'%s', second is %d%02d%03d'%s'\n",
+                WR_VAR_F(m_info->var), WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc,
+                WR_VAR_F(var.info()->var), WR_VAR_X(var.info()->var), WR_VAR_Y(var.info()->var), var.info()->desc);
+        return 1;
+    }
+    if (m_value == NULL && var.value() == NULL)
+        return 0;
+    if (m_value == NULL)
+    {
+        notes::logf("[%d%02d%03d %s] first value is NULL, second value is %s\n",
+                WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                var.m_value);
+        return 1;
+    }
+    if (var.m_value == NULL)
+    {
+        notes::logf("[%d%02d%03d %s] first value is %s, second value is NULL\n",
+                WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                m_value);
+        return 1;
+    }
+    if (m_info->is_string() || m_info->scale == 0)
+    {
+        if (strcmp(m_value, var.m_value) != 0)
+        {
+            notes::logf("[%d%02d%03d %s] values differ: first is \"%s\", second is \"%s\"\n",
+                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                    m_value, var.m_value);
+            return 1;
+        }
+    }
+    else
+    {
+        double val1 = enqd(), val2 = var.enqd();
+        if (val1 != val2)
+        {
+            notes::logf("[%d%02d%03d %s] values differ: first is %f, second is %f\n",
+                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                    val1, val2);
+            return 1;
+        }
+    }
 
-		if (count1 != count2)
-		{
-			fprintf(out, "[%d%02d%03d %s] attributes differ: first has %d, second has %d\n",
-				WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()),
-				m_info->desc, count1, count2);
-			return abs(count1 - count2);
-		} else {
-			/* Check attributes */
-			const Var* a1 = next_attr();
-			const Var* a2 = var.next_attr();
-			for ( ; a1 && a2; a1 = a1->next_attr(), a2 = a2->next_attr())
-			{
-				Varcode extracode = 0;
-				if (a1->code() < a2->code())
-					extracode = a1->code();
-				else if (a2->code() < a1->code())
-					extracode = a2->code();
-				if (extracode)
-				{
-					fprintf(out, "[%d%02d%03d %s] attributes differ: attribute %d%02d%03d exists only on first\n",
-						WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()),
-						m_info->desc, 
-						WR_VAR_F(extracode), WR_VAR_X(extracode), WR_VAR_Y(extracode));
-					return 1;
-				}
+    if ((m_attrs != 0) != (var.m_attrs != 0))
+    {
+        if (m_attrs)
+        {
+            notes::logf("[%d%02d%03d %s] attributes differ: first has attributes, second does not\n",
+                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()),
+                    m_info->desc);
+            return 1;
+        }
+        else
+        {
+            notes::logf("[%d%02d%03d %s] attributes differ: first does not have attributes, second does\n",
+                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()),
+                    m_info->desc);
+            return 1;
+        }
+    } else {
+        int count1 = 0, count2 = 0;
 
-				unsigned diff = a1->diff(*a2, out);
-				if (diff)
-				{
-					fprintf(out, "  comparing attr of variable ");
-					print(out);
-					return diff;
-				}
-			}
-		}
-	}
-	return 0;
+        for (const Var* a = next_attr(); a; a = a->next_attr()) ++count1;
+        for (const Var* a = var.next_attr(); a; a = a->next_attr()) ++count2;
+
+        if (count1 != count2)
+        {
+            notes::logf("[%d%02d%03d %s] attributes differ: first has %d, second has %d\n",
+                WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()),
+                m_info->desc, count1, count2);
+            return abs(count1 - count2);
+        } else {
+            /* Check attributes */
+            const Var* a1 = next_attr();
+            const Var* a2 = var.next_attr();
+            for ( ; a1 && a2; a1 = a1->next_attr(), a2 = a2->next_attr())
+            {
+                Varcode extracode = 0;
+                if (a1->code() < a2->code())
+                    extracode = a1->code();
+                else if (a2->code() < a1->code())
+                    extracode = a2->code();
+                if (extracode)
+                {
+                    notes::logf("[%d%02d%03d %s] attributes differ: attribute %d%02d%03d exists only on first\n",
+                        WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()),
+                        m_info->desc, 
+                        WR_VAR_F(extracode), WR_VAR_X(extracode), WR_VAR_Y(extracode));
+                    return 1;
+                }
+
+                unsigned diff = a1->diff(*a2);
+                if (diff)
+                {
+                    notes::logf("  comparing attr of variable ");
+                    print(notes::log());
+                    return diff;
+                }
+            }
+        }
+    }
+    return 0;
 }
 
 }

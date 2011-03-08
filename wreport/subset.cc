@@ -1,7 +1,7 @@
 /*
  * wreport/subset - Data subset for BUFR and CREX messages
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include <config.h>
 
 #include "subset.h"
+#include "notes.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -181,29 +182,29 @@ void Subset::print(FILE* out) const
 	}
 }
 
-unsigned Subset::diff(const Subset& s2, FILE* out) const
+unsigned Subset::diff(const Subset& s2) const
 {
-	// Compare btables
-	if (btable->id() != s2.btable->id())
-	{
-		fprintf(out, "B tables differ (first is %s, second is %s)\n",
-				btable->id().c_str(), s2.btable->id().c_str());
-		return 1;
-	}
+    // Compare btables
+    if (btable->id() != s2.btable->id())
+    {
+        notes::logf("B tables differ (first is %s, second is %s)\n",
+                btable->id().c_str(), s2.btable->id().c_str());
+        return 1;
+    }
 
-	// Compare vars
-	if (size() != s2.size())
-	{
-		fprintf(out, "Number of variables differ (first is %zd, second is %zd)\n",
-				size(), s2.size());
-		return 1;
-	}
-	for (size_t i = 0; i < size(); ++i)
-	{
-		unsigned diff = (*this)[i].diff(s2[i], out);
-		if (diff > 0) return diff;
-	}
-	return 0;
+    // Compare vars
+    if (size() != s2.size())
+    {
+        notes::logf("Number of variables differ (first is %zd, second is %zd)\n",
+                size(), s2.size());
+        return 1;
+    }
+    for (size_t i = 0; i < size(); ++i)
+    {
+        unsigned diff = (*this)[i].diff(s2[i]);
+        if (diff > 0) return diff;
+    }
+    return 0;
 }
 
 }
