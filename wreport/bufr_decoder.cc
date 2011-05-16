@@ -922,6 +922,7 @@ struct opcode_interpreter
                 uint32_t val = ds.get_bits(c04_bits);
                 TRACE("decode_b_data:read C04 information %x\n", val);
                 // TODO: use the result
+                val = val;
             }
             ds.decode_b_value(info, *current_adder);
         }
