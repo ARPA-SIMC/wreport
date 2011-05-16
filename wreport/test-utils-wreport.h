@@ -71,8 +71,17 @@ struct MsgTester
 
 		// Decode the original contents
 		BULLETIN msg1;
-		msg1.decode(raw1, name);
-		(*this)("orig", msg1);
+        try {
+            msg1.decode(raw1, name);
+        } catch (wreport::error_parse& e) {
+            try {
+                msg1.print_structured(stderr);
+            } catch (wreport::error& e) {
+                std::cerr << "Dump interrupted: " << e.what();
+            }
+            throw;
+        }
+        (*this)("orig", msg1);
 
 		// Encode it again
 		std::string raw;

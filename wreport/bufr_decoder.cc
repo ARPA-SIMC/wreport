@@ -138,7 +138,7 @@ struct Input
     }
 };
 
-struct Decoder 
+struct Decoder
 {
     /// Input data
     Input input;
@@ -252,8 +252,8 @@ struct Decoder
 				error_consistency::throwf("BUFR edition is %d, but I can only decode 2, 3 and 4", out.edition);
 		}
 
-		TRACE("info:opt %d upd %d origin %d.%d tables %d.%d type %d.%d %04d-%02d-%02d %02d:%02d\n", 
-				out.optional_section_length, out.update_sequence_number,
+		TRACE("info:ed %d opt %d upd %d origin %d.%d tables %d.%d type %d.%d %04d-%02d-%02d %02d:%02d\n", 
+				out.edition, out.optional_section_length, out.update_sequence_number,
 				out.centre, out.subcentre,
 				out.master_table, out.local_table,
 				out.type, out.subtype,
@@ -559,10 +559,16 @@ struct DataSection
     virtual int decode_delayed_replication_factor(Varinfo info, VarAdder& adder)
     {
         // Fetch the repetition count
-        int count = get_bits(info->bit_len);
+        uint32_t count = get_bits(info->bit_len);
+        if (count == all_ones(info->bit_len))
+        {
+            throw error_parse("Found MISSING in delayed replication factor");
+            //TRACE("datasec:decode_delayed_replication_factor: found MISSING delayed replication factor (%d)\n", (int)count);
+            //count = 0;
+        }
 
         /* Insert the repetition count among the parsed variables */
-        adder.add_var(Var(info, count));
+        adder.add_var(Var(info, (int)count));
 
         return count;
     }
@@ -817,24 +823,29 @@ struct opcode_interpreter
     VarAdder* current_adder;
     //VarAdder* attr_adder;
 
-	/* Current value of scale change from C modifier */
-	int c_scale_change;
-	/* Current value of width change from C modifier */
-	int c_width_change;
+    /* Current value of scale change from C modifier */
+    int c_scale_change;
+    /* Current value of width change from C modifier */
+    int c_width_change;
     /** Current value of string length override from C08 modifiers (0 for no
      * override)
      */
     int c_string_len_override;
+    /**
+     * Number of extra bits inserted by the current C04yyy modifier (0 for no
+     * C04yyy operator in use)
+     */
+    int c04_bits;
 
-	opcode_interpreter(Decoder& d, DataSection& ds)
-		: d(d), ds(ds), bitmap(d.out), current_adder(0),
-		  c_scale_change(0), c_width_change(0), c_string_len_override(0)
-	{
-	}
+    opcode_interpreter(Decoder& d, DataSection& ds)
+        : d(d), ds(ds), bitmap(d.out), current_adder(0),
+        c_scale_change(0), c_width_change(0), c_string_len_override(0), c04_bits(0)
+    {
+    }
 
-	~opcode_interpreter()
-	{
-	}
+    ~opcode_interpreter()
+    {
+    }
 
     virtual void set_normal_mode() = 0;
     virtual void set_attr_mode() = 0;
@@ -896,6 +907,8 @@ struct opcode_interpreter
 
         if (WR_VAR_X(info->var) == 33 && bitmap.bitmap)
         {
+            if (c04_bits)
+                throw error_unimplemented("C04 modifiers in B33yyy attributes are not supported");
             bitmap.next(ds);
 
             /* Get the real datum */
@@ -903,6 +916,13 @@ struct opcode_interpreter
             ds.decode_b_value(info, *current_adder);
         } else {
             /* Get the real datum */
+            if (c04_bits)
+            {
+                TRACE("decode_b_data:reading %d bits of C04 information\n", c04_bits);
+                uint32_t val = ds.get_bits(c04_bits);
+                TRACE("decode_b_data:read C04 information %x\n", val);
+                // TODO: use the result
+            }
             ds.decode_b_value(info, *current_adder);
         }
 
@@ -1342,6 +1362,19 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 		case 2:
 			c_scale_change = WR_VAR_Y(code) == 0 ? 0 : WR_VAR_Y(code) - 128;
 			break;
+        case 4:
+            // FIXME: nested C04 modifiers are not currently implemented
+            if (WR_VAR_Y(code) && c04_bits)
+                throw error_unimplemented("nested C04 modifiers are not yet implemented");
+            if (WR_VAR_Y(code) > 32)
+                error_unimplemented::throwf("C04 modifier wants %d bits but only at most 32 are supported", WR_VAR_Y(code));
+            if (WR_VAR_Y(code))
+            {
+                // TODO: Read B31021
+                used += decode_b_data(ops.sub(1));
+            }
+            c04_bits = WR_VAR_Y(code);
+            break;
 		case 5: {
 			int cdatalen = WR_VAR_Y(code);
 			char buf[cdatalen + 1];

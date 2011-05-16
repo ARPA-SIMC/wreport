@@ -328,6 +328,10 @@ unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
             c_scale_change = WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0;
             TRACE("Set scale change to %d\n", c_scale_change);
             return 1;
+        case 4:
+            TRACE("Set C04 bits to %d\n", WR_VAR_Y(code));
+            // TODO: actually do something instead of just ignoring
+            return 1;
         case 5:
             out.encode_char_data(code, var_pos);
             ++var_pos;
