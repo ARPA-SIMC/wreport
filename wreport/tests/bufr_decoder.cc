@@ -1365,6 +1365,54 @@ void to::test<36>()
     test.run("bufr/synop-longname.bufr");
 }
 
+// C04yyy modifier
+template<> template<>
+void to::test<37>()
+{
+    struct Tester : public MsgTester {
+        void test(const BufrBulletin& msg)
+        {
+            /*
+               ensure_equals(msg.edition, 4);
+               ensure_equals(msg.type, 0);
+               ensure_equals(msg.subtype, 1);
+               ensure_equals(msg.localsubtype, 0);
+               ensure_equals(msg.subsets.size(), 7u);
+
+               ensure_equals(msg.rep_year, 2009);
+               ensure_equals(msg.rep_month, 12);
+               ensure_equals(msg.rep_day, 3);
+               ensure_equals(msg.rep_hour, 3);
+               ensure_equals(msg.rep_minute, 0);
+               ensure_equals(msg.rep_second, 0);
+
+               ensure_equals(msg.subset(0).size(), 120u);
+               ensure_equals(msg.subset(1).size(), 120u);
+               ensure_equals(msg.subset(2).size(), 120u);
+               ensure_equals(msg.subset(3).size(), 120u);
+               ensure_equals(msg.subset(4).size(), 120u);
+               ensure_equals(msg.subset(5).size(), 120u);
+               ensure_equals(msg.subset(6).size(), 120u);
+               ensure_equals(msg.subset(7).size(), 120u);
+
+               const Subset& s = msg.subset(0);
+               */
+
+            /*
+            // FIXME Does it have this?
+            ensure(s[0].enqa(WR_VAR(0, 33, 7)) != NULL);
+            ensure_equals(s[0].enqa(WR_VAR(0, 33, 7))->enqi(), 70);
+
+            ensure(s[5].enqa(WR_VAR(0, 33, 7)) != NULL);
+            ensure_equals(s[5].enqa(WR_VAR(0, 33, 7))->enqi(), 70);
+            */
+        }
+    } test;
+
+    test.run("bufr/C04004.bufr");
+}
+
+
 
 }
 
