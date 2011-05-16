@@ -27,9 +27,6 @@ AC_ARG_ENABLE([doxy-undoc-warnings],
     [],
     [enable_doxy_undoc_warnings="no"])
 
-AC_CHECK_PROG(have_rst2html, rst2html, yes, no)
-AC_CHECK_PROG(have_swig, swig, yes, no)
-
 dnl To use subdirs
 AC_PROG_MAKE_SET
 
