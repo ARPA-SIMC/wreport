@@ -33,15 +33,6 @@ DDSPrinter::DDSPrinter(const Bulletin& b, FILE* out)
 
 DDSPrinter::~DDSPrinter() {}
 
-const Var& DDSPrinter::get_var(unsigned var_pos) const
-{
-    unsigned max_var = current_subset->size();
-    if (var_pos >= max_var)
-        error_consistency::throwf("requested variable #%u out of a maximum of %u in subset %u",
-                var_pos, max_var, current_subset_no);
-    return (*current_subset)[var_pos];
-}
-
 void DDSPrinter::print_context(Varinfo info, unsigned var_pos)
 {
     print_context(info->var, var_pos);

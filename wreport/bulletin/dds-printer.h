@@ -37,7 +37,6 @@ struct DDSPrinter : public ConstBaseDDSExecutor
     DDSPrinter(const Bulletin& b, FILE* out);
     virtual ~DDSPrinter();
 
-    const Var& get_var(unsigned var_pos) const;
     void print_context(Varinfo info, unsigned var_pos);
     void print_context(Varcode code, unsigned var_pos);
 

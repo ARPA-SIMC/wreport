@@ -333,19 +333,19 @@ struct DDSExecutor
 
     /**
      * Request encoding, according to \a info, of attribute \a attr_code of
-     * variable in position \a var_pos in the current dataset.
+     * variable in position \a var_pos in the current subset.
      */
     virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
 
     /**
      * Request encoding, according to \a info, of variable in position \a
-     * var_pos in the current dataset.
+     * var_pos in the current subset.
      */
     virtual void encode_var(Varinfo info, unsigned var_pos) = 0;
 
     /**
      * Request encoding, according to \a info, of repetition count in position
-     * \a var_pos in the current dataset.
+     * \a var_pos in the current subset.
      *
      * @return the value of the repetition count.
      */
