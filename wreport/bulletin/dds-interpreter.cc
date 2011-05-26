@@ -263,8 +263,10 @@ unsigned Interpreter::do_r_data(const Opcodes& ops, unsigned& var_pos, const Var
         }
 
         // encode_data_section on it `count' times
+        out.push_repetition(group, count);
         for (int i = 0; i < count; ++i)
             do_data_section(group_ops, var_pos);
+        out.pop_repetition();
     }
 
     return used + group;

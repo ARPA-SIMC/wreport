@@ -310,6 +310,12 @@ struct DDSExecutor
     /// Notify the start of a subset
     virtual void start_subset(unsigned subset_no) = 0;
 
+    /// Notify that we start decoding a R group
+    virtual void push_repetition(unsigned length, unsigned count);
+
+    /// Notify that we ended decoding a R group
+    virtual void pop_repetition();
+
     /// Notify that we start decoding a D group
     virtual void push_dcode(Varcode code);
 
