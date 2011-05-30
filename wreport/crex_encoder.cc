@@ -225,7 +225,7 @@ struct Encoder
     void encode_sec1()
     {
         out.raw_appendf("T%02d%02d%02d A%03d%03d",
-                in.master_table,
+                in.master_table_number,
                 in.edition,
                 in.table,
                 in.type,

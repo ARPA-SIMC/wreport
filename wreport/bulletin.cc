@@ -44,7 +44,7 @@ void Bulletin::clear()
 {
 	datadesc.clear();
 	subsets.clear();
-	type = subtype = localsubtype = edition = 0;
+	type = subtype = localsubtype = edition = master_table_number = 0;
 	rep_year = rep_month = rep_day = rep_hour = rep_minute = rep_second = 0;
 	btable = 0;
 	dtable = 0;
@@ -183,7 +183,7 @@ void BufrBulletin::encode(std::string& buf) const
 void CrexBulletin::clear()
 {
 	Bulletin::clear();
-	master_table = table = has_check_digit = 0;
+	table = has_check_digit = 0;
 }
 
 void CrexBulletin::load_tables()
@@ -191,7 +191,7 @@ void CrexBulletin::load_tables()
 	char id[30];
 /* fprintf(stderr, "ce %d sc %d mt %d lt %d\n", ce, sc, mt, lt); */
 
-	sprintf(id, "B%02d%02d%02d", master_table, edition, table);
+	sprintf(id, "B%02d%02d%02d", master_table_number, edition, table);
 
 	btable = Vartable::get(id);
 	/* TRACE(" -> loaded B table %s\n", id); */
@@ -273,7 +273,7 @@ void BufrBulletin::print_details(FILE* out) const
 
 void CrexBulletin::print_details(FILE* out) const
 {
-	fprintf(out, " CREX details: T00%02d%02d cd%d\n", master_table, table, has_check_digit);
+	fprintf(out, " CREX details: T%02d%02d%02d cd%d\n", master_table_number, edition, table, has_check_digit);
 }
 
 unsigned Bulletin::diff(const Bulletin& msg) const
@@ -286,6 +286,12 @@ unsigned Bulletin::diff(const Bulletin& msg) const
         ++diffs;
     } else
         diffs += diff_details(msg);
+    if (master_table_number != msg.master_table_number)
+    {
+        notes::logf("Master tables numbers differ (first is %d, second is %d)\n",
+                master_table_number, msg.master_table_number);
+        ++diffs;
+    }
     if (type != msg.type)
     {
         notes::logf("Template types differ (first is %d, second is %d)\n",
@@ -472,12 +478,6 @@ unsigned CrexBulletin::diff_details(const Bulletin& msg) const
     const CrexBulletin* m = dynamic_cast<const CrexBulletin*>(&msg);
     if (!m) throw error_consistency("CrexBulletin::diff_details called with a non-CrexBulletin argument");
 
-    if (master_table != m->master_table)
-    {
-        notes::logf("CREX master tables differ (first is %d, second is %d)\n",
-                master_table, m->master_table);
-        ++diffs;
-    }
     if (table != m->table)
     {
         notes::logf("CREX local tables differ (first is %d, second is %d)\n",

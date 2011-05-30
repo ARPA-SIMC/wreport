@@ -56,6 +56,9 @@ struct Bulletin
 	/** Edition number */
 	int edition;
 
+    /** Master table number */
+    int master_table_number;
+
 	/** Representative datetime for this data
 	 * @{ */
 	int rep_year;	/**< Year */
@@ -281,8 +284,6 @@ struct CrexBulletin : public Bulletin
 {
 	/** CREX-specific encoding options */
 
-	/** Master table (00 for standard WMO FM95 CREX tables) */
-	int master_table;
 	/** Table version number */
 	int table;
 	/** True if the CREX message uses the check digit feature */

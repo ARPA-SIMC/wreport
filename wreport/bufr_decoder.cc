@@ -153,7 +153,8 @@ struct Decoder
     void decode_sec1ed3()
     {
         const unsigned char* sec1 = input.details.sec[1];
-		// TODO: misses master table number in sec1[3]
+        // master table number in sec1[3]
+        out.master_table_number = sec1[3];
 		// Set length to 1 for now, will set the proper length later when we
 		// parse the section itself
 		out.optional_section_length = (sec1[7] & 0x80) ? 1 : 0;

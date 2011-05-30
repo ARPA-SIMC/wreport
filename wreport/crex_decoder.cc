@@ -156,7 +156,7 @@ struct Decoder
 			edition[i] = 0;
 
 			if (sscanf(edition, "T%02d%02d%02d",
-						&(out.master_table),
+						&(out.master_table_number),
 						&(out.edition),
 						&(out.table)) != 3)
 				error_consistency::throwf("Edition (%s) is not in format Ttteevv", edition);

@@ -314,7 +314,7 @@ void Encoder::encode_sec1ed3()
     /* Length of section */
     out.add_bits(18, 24);
     /* Master table number */
-    out.append_byte(0);
+    out.append_byte(in.master_table_number);
     /* Originating/generating sub-centre (defined by Originating/generating centre) */
     out.append_byte(in.subcentre);
     /* Originating/generating centre (Common Code tableC-1) */
