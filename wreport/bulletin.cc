@@ -757,6 +757,7 @@ namespace bulletin {
 
 DDSExecutor::~DDSExecutor() {}
 void DDSExecutor::push_repetition(unsigned length, unsigned count) {}
+void DDSExecutor::start_repetition() {}
 void DDSExecutor::pop_repetition() {}
 void DDSExecutor::push_dcode(Varcode code) {}
 void DDSExecutor::pop_dcode() {}

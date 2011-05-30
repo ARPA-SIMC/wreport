@@ -313,6 +313,9 @@ struct DDSExecutor
     /// Notify that we start decoding a R group
     virtual void push_repetition(unsigned length, unsigned count);
 
+    /// Notify the beginning of one instance of an R group
+    virtual void start_repetition();
+
     /// Notify that we ended decoding a R group
     virtual void pop_repetition();
 
