@@ -65,15 +65,27 @@ const Subset& Bulletin::subset(unsigned subsection) const
 	return subsets[subsection];
 }
 
+BufrRawDetails::BufrRawDetails()
+{
+    reset();
+}
+
+void BufrRawDetails::reset()
+{
+    for (unsigned i = 0; i < sizeof(sec)/sizeof(sec[0]); ++i)
+        sec[i] = 0;
+}
+
 
 BufrBulletin::BufrBulletin()
-	: optional_section_length(0), optional_section(0)
+	: optional_section_length(0), optional_section(0), raw_details(0)
 {
 }
 
 BufrBulletin::~BufrBulletin()
 {
 	if (optional_section) delete[] optional_section;
+    if (raw_details) delete raw_details;
 }
 
 void BufrBulletin::clear()
@@ -141,6 +153,15 @@ void BufrBulletin::load_tables()
 		(*i)[0] = 'D';
 	dtable = DTable::get(Vartable::find_table(ids));
 	/* TRACE(" -> loaded D table %s\n", id); */
+}
+
+BufrRawDetails& BufrBulletin::reset_raw_details()
+{
+    if (raw_details == 0)
+        raw_details = new BufrRawDetails();
+    else
+        raw_details->reset();
+    return *raw_details;
 }
 
 /*

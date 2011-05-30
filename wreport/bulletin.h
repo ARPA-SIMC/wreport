@@ -177,6 +177,20 @@ struct Bulletin
     virtual unsigned diff_details(const Bulletin& msg) const;
 };
 
+
+/**
+ * Raw details about an encoded BUFR message
+ */
+struct BufrRawDetails {
+    /* Offsets of the start of BUFR sections */
+    const unsigned char* sec[6];
+
+    BufrRawDetails();
+
+    void reset();
+};
+
+
 /**
  * BUFR bulletin implementation
  */
@@ -203,6 +217,15 @@ struct BufrBulletin : public Bulletin
 	/** Raw contents of the optional section */
 	char* optional_section;
 
+    /**
+     * Raw details about the message that has been decoded.
+     *
+     * It is only filled in by a decoding operation: in all other cases it is
+     * NULL.
+     */
+    BufrRawDetails* raw_details;
+
+
 	BufrBulletin();
 	virtual ~BufrBulletin();
 
@@ -214,6 +237,13 @@ struct BufrBulletin : public Bulletin
 	virtual void encode(std::string& buf) const;
 	virtual void print_details(FILE* out) const;
     virtual unsigned diff_details(const Bulletin& msg) const;
+
+    /**
+     * Create or reset the raw_details structure for this bulletin.
+     *
+     * This is only invoked during decoding.
+     */
+    BufrRawDetails& reset_raw_details();
 
 	/**
 	 * Read an encoded BUFR message from a stream
