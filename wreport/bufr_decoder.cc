@@ -560,12 +560,12 @@ struct DataSection
     {
         // Fetch the repetition count
         uint32_t count = get_bits(info->bit_len);
-        if (count == all_ones(info->bit_len))
-        {
-            throw error_parse("Found MISSING in delayed replication factor");
-            //TRACE("datasec:decode_delayed_replication_factor: found MISSING delayed replication factor (%d)\n", (int)count);
-            //count = 0;
-        }
+        //if (count == all_ones(info->bit_len))
+        //{
+        //    throw error_parse("Found MISSING in delayed replication factor");
+        //    //TRACE("datasec:decode_delayed_replication_factor: found MISSING delayed replication factor (%d)\n", (int)count);
+        //    //count = 0;
+        //}
 
         /* Insert the repetition count among the parsed variables */
         adder.add_var(Var(info, (int)count));
