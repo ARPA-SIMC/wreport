@@ -359,6 +359,41 @@ struct VarAdderProxy : public VarAdder
     }
 };
 
+/**
+ * Snoop variables which are significant for message decoding semantics
+ */
+struct SemanticVarSnooper : public VarAdder
+{
+    VarAdder& next;
+    Var* copy;
+
+    SemanticVarSnooper(VarAdder& next) : next(next), copy(0) {}
+    ~SemanticVarSnooper()
+    {
+        if (copy) delete copy;
+    }
+
+    virtual void add_var(const Var& var, int subset=-1)
+    {
+        if (!copy)
+            copy = new Var(var);
+        else
+        {
+            // If we are decoding a compressed BUFR, ensure that the variable
+            // is the same in all subsets
+            if (var != *copy)
+            {
+                string name = varcode_format(copy->code());
+                string val1 = copy->format();
+                string val2 = var.format();
+                error_consistency::throwf("%s has different values across compressed subsets (first is %s, second is %s)", name.c_str(), val1.c_str(), val2.c_str());
+            }
+
+        }
+        next.add_var(var, subset);
+    }
+};
+
 struct DataSection
 {
     Input& input;
@@ -812,6 +847,20 @@ struct opcode_interpreter
         ~SubstMode()
         {
             i.set_normal_mode();
+        }
+    };
+    struct OverrideAdder
+    {
+        opcode_interpreter& i;
+        VarAdder* old;
+        OverrideAdder(opcode_interpreter& i, VarAdder& a)
+            : i(i), old(i.current_adder)
+        {
+            i.current_adder = &a;
+        }
+        ~OverrideAdder()
+        {
+            i.current_adder = old;
         }
     };
 
@@ -1370,8 +1419,14 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 error_unimplemented::throwf("C04 modifier wants %d bits but only at most 32 are supported", WR_VAR_Y(code));
             if (WR_VAR_Y(code))
             {
-                // TODO: Read B31021
+                // Override the current adder to take note of the B31021
+                // variable
+                SemanticVarSnooper snooper(*current_adder);
+                OverrideAdder oa(*this, snooper);
                 used += decode_b_data(ops.sub(1));
+                if (snooper.copy->code() != WR_VAR(0, 31, 21))
+                    ds.parse_error("C04yyy is followed by %s instead of B31021", varcode_format(snooper.copy->code()).c_str());
+                // TODO: Read B31021
             }
             c04_bits = WR_VAR_Y(code);
             break;
