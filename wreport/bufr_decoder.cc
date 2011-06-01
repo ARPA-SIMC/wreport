@@ -333,27 +333,30 @@ struct VarAdder
     /**
      * Produce a variable for the given subset.
      *
+     * The variable can be modified during processing, to enhance it before it
+     * reaches the final adder
+     *
      * A subset number of -1 means 'the current subset' and is used when
      * decoding uncompressed BUFR messages
      */
-    virtual void add_var(const Var&, int subset=-1) = 0;
+    virtual void add_var(Var&, int subset=-1) = 0;
 };
 
 struct VarIgnorer : public VarAdder
 {
-    virtual void add_var(const Var&, int subset=-1) {}
+    virtual void add_var(Var&, int subset=-1) {}
 };
 
 template<typename CLS>
 struct VarAdderProxy : public VarAdder
 {
-    typedef void (CLS::*adder_meth)(const Var&, int);
+    typedef void (CLS::*adder_meth)(Var&, int);
     CLS& obj;
     adder_meth adder;
 
     VarAdderProxy(CLS& obj, adder_meth adder) : obj(obj), adder(adder) {}
 
-    virtual void add_var(const Var& var, int subset=-1)
+    virtual void add_var(Var& var, int subset=-1)
     {
         (obj.*adder)(var, subset);
     }
@@ -373,7 +376,7 @@ struct SemanticVarSnooper : public VarAdder
         if (copy) delete copy;
     }
 
-    virtual void add_var(const Var& var, int subset=-1)
+    virtual void add_var(Var& var, int subset=-1)
     {
         if (!copy)
             copy = new Var(var);
@@ -390,6 +393,21 @@ struct SemanticVarSnooper : public VarAdder
             }
 
         }
+        next.add_var(var, subset);
+    }
+};
+
+struct AnnotationVarAdder : public VarAdder
+{
+    VarAdder& next;
+    const Var& attr;
+
+    AnnotationVarAdder(VarAdder& next, const Var& attr)
+        : next(next), attr(attr) {}
+
+    virtual void add_var(Var& var, int subset=-1)
+    {
+        var.seta(attr);
         next.add_var(var, subset);
     }
 };
@@ -602,7 +620,8 @@ struct DataSection
         //}
 
         /* Insert the repetition count among the parsed variables */
-        adder.add_var(Var(info, (int)count));
+        Var var(info, (int)count);
+        adder.add_var(var);
 
         return count;
     }
@@ -789,7 +808,8 @@ struct CompressedDataSection : public DataSection
             else if (repval != newval)
                 parse_error("compressed delayed replication factor has different values for subsets (%d and %d)", repval, newval);
 
-            adder.add_var(Var(info, (int)newval), i);
+            Var var(info, (int)newval);
+            adder.add_var(var, i);
         }
 
         return count;
@@ -884,10 +904,13 @@ struct opcode_interpreter
      * C04yyy operator in use)
      */
     int c04_bits;
+    /// Meaning of C04yyy field according to code table B31021
+    int c04_meaning;
 
     opcode_interpreter(Decoder& d, DataSection& ds)
         : d(d), ds(ds), bitmap(d.out), current_adder(0),
-        c_scale_change(0), c_width_change(0), c_string_len_override(0), c04_bits(0)
+        c_scale_change(0), c_width_change(0), c_string_len_override(0),
+        c04_bits(0), c04_meaning(63)
     {
     }
 
@@ -969,10 +992,27 @@ struct opcode_interpreter
                 TRACE("decode_b_data:reading %d bits of C04 information\n", c04_bits);
                 uint32_t val = ds.get_bits(c04_bits);
                 TRACE("decode_b_data:read C04 information %x\n", val);
-                // TODO: use the result
-                val = val;
-            }
-            ds.decode_b_value(info, *current_adder);
+                switch (c04_meaning)
+                {
+                    case 6:
+                    {
+                        // Att attribute B33050=val
+                        if (val != 15)
+                        {
+                            Var attr(d.out.btable->query(WR_VAR(0, 33, 50)));
+                                attr.seti(val);
+                            AnnotationVarAdder ava(*current_adder, attr);
+                            OverrideAdder oa(*this, ava);
+                            ds.decode_b_value(info, *current_adder);
+                        } else
+                            ds.decode_b_value(info, *current_adder);
+                        break;
+                    }
+                    default:
+                        error_unimplemented::throwf("C04 modifiers with B32021=%d are not supported", c04_meaning);
+                }
+            } else
+                ds.decode_b_value(info, *current_adder);
         }
 
         return 1;
@@ -1103,7 +1143,7 @@ struct opcode_interpreter_plain : public opcode_interpreter
         adder.adder = &opcode_interpreter_plain::add_subst;
     }
 
-    void add_var(const Var& var, int subset=-1)
+    void add_var(Var& var, int subset=-1)
     {
         TRACE("bulletin:adding var %01d%02d%03d %s to current subset\n",
                 WR_VAR_F(var.code()),
@@ -1113,7 +1153,7 @@ struct opcode_interpreter_plain : public opcode_interpreter
         current_subset->store_variable(var);
     }
 
-    void add_attr(const Var& var, int subset=-1)
+    void add_attr(Var& var, int subset=-1)
     {
         TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
                 WR_VAR_F(var.code()),
@@ -1127,7 +1167,7 @@ struct opcode_interpreter_plain : public opcode_interpreter
         (*current_subset)[bitmap.subset_index].seta(var);
     }
 
-    void add_subst(const Var& var, int subset=-1)
+    void add_subst(Var& var, int subset=-1)
     {
         TRACE("bulletin:adding substitute value %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
                 WR_VAR_F(var.code()),
@@ -1190,7 +1230,7 @@ struct opcode_interpreter_compressed : public opcode_interpreter
         adder.adder = &opcode_interpreter_compressed::add_subst;
     }
 
-    void add_var(const Var& var, int subset)
+    void add_var(Var& var, int subset)
     {
         TRACE("bulletin:adding var %01d%02d%03d %s to subset %d\n",
                 WR_VAR_F(var.code()),
@@ -1200,7 +1240,7 @@ struct opcode_interpreter_compressed : public opcode_interpreter
         d.out.subsets[subset].store_variable(var);
     }
 
-    void add_attr(const Var& var, int subset)
+    void add_attr(Var& var, int subset)
     {
         TRACE("bulletin:adding var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
                 WR_VAR_F(var.code()),
@@ -1214,7 +1254,7 @@ struct opcode_interpreter_compressed : public opcode_interpreter
         d.out.subsets[subset][bitmap.subset_index].seta(var);
     }
 
-    void add_subst(const Var& var, int subset=-1)
+    void add_subst(Var& var, int subset=-1)
     {
         TRACE("bulletin:adding substitute var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
                 WR_VAR_F(var.code()),
@@ -1426,7 +1466,8 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 used += decode_b_data(ops.sub(1));
                 if (snooper.copy->code() != WR_VAR(0, 31, 21))
                     ds.parse_error("C04yyy is followed by %s instead of B31021", varcode_format(snooper.copy->code()).c_str());
-                // TODO: Read B31021
+                // Read B31021
+                c04_meaning = snooper.copy->enqi();
             }
             c04_bits = WR_VAR_Y(code);
             break;
