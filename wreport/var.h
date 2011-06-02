@@ -337,8 +337,10 @@ public:
 };
 
 template<> inline int Var::enq() const { return enqi(); }
+template<> inline float Var::enq() const { return (float)enqd(); }
 template<> inline double Var::enq() const { return enqd(); }
 template<> inline const char* Var::enq() const { return enqc(); }
+template<> inline std::string Var::enq() const { return enqc(); }
 
 
 }
