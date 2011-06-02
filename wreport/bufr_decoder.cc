@@ -28,11 +28,11 @@
 #include <stdio.h>
 #include <netinet/in.h>
 
-#include <stdlib.h>	/* malloc */
-#include <ctype.h>	/* isspace */
-#include <string.h>	/* memcpy */
-#include <stdarg.h>	/* va_start, va_end */
-#include <math.h>	/* NAN */
+#include <cstdlib>
+#include <cctype>
+#include <cstring>
+#include <cstdarg>
+#include <cmath>
 #include <time.h>
 #include <errno.h>
 
@@ -144,10 +144,17 @@ struct Decoder
     BufrBulletin& out;
     /// Number of expected subsets (read in decode_header, used in decode_data)
     size_t expected_subsets;
+    /// True if undefined attributes are added to the output, else false
+    bool conf_add_undef_attrs;
 
     Decoder(const std::string& in, const char* fname, size_t offset, BufrBulletin& out)
-        : input(in, fname, offset, out.reset_raw_details()), out(out)
+        : input(in, fname, offset, out.reset_raw_details()), out(out),
+          conf_add_undef_attrs(false)
     {
+        if (out.codec_options)
+        {
+            conf_add_undef_attrs = out.codec_options->decode_adds_undef_attrs;
+        }
     }
 
     void decode_sec1ed3()
@@ -997,10 +1004,10 @@ struct opcode_interpreter
                     case 6:
                     {
                         // Att attribute B33050=val
-                        if (val != 15)
+                        if (d.conf_add_undef_attrs || val != 15)
                         {
                             Var attr(d.out.btable->query(WR_VAR(0, 33, 50)));
-                                attr.seti(val);
+                            if (val != 15) attr.seti(val);
                             AnnotationVarAdder ava(*current_adder, attr);
                             OverrideAdder oa(*this, ava);
                             ds.decode_b_value(info, *current_adder);

@@ -78,7 +78,7 @@ void BufrRawDetails::reset()
 
 
 BufrBulletin::BufrBulletin()
-	: optional_section_length(0), optional_section(0), raw_details(0)
+	: optional_section_length(0), optional_section(0), raw_details(0), codec_options(0)
 {
 }
 

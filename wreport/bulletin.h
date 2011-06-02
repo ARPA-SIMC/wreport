@@ -193,6 +193,18 @@ struct BufrRawDetails {
     void reset();
 };
 
+/**
+ * Options used to configure BUFR decoding
+ */
+struct BufrCodecOptions
+{
+    bool decode_adds_undef_attrs;
+
+    BufrCodecOptions()
+        : decode_adds_undef_attrs(false)
+    {
+    }
+};
 
 /**
  * BUFR bulletin implementation
@@ -227,6 +239,17 @@ struct BufrBulletin : public Bulletin
      * NULL.
      */
     BufrRawDetails* raw_details;
+
+    /**
+     * Options used to customise encoding or decoding.
+     *
+     * It is NULL by default, in which case default options are used.
+     *
+     * To configure it, set it to point to a BufrCodecOptions structure with
+     * the parameters you need. The caller is responsible for the memory
+     * management of the BufrCodecOptions structure.
+     */
+    const BufrCodecOptions* codec_options;
 
 
 	BufrBulletin();
