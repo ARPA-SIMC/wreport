@@ -31,6 +31,7 @@
 #include <wreport/error.h>
 #include <wreport/varinfo.h>
 #include <cstdio>
+#include <string>
 #include <memory>
 
 struct lua_State;
@@ -181,6 +182,7 @@ public:
 	void set(int val) { seti(val); }
 	void set(double val) { setd(val); }
 	void set(const char* val) { setc(val); }
+	void set(const std::string& val) { setc(val.c_str()); }
 	void set(const Var& var) { copy_val(var); }
 	/// @}
 
