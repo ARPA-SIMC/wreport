@@ -1016,7 +1016,7 @@ struct opcode_interpreter
                         break;
                     }
                     default:
-                        error_unimplemented::throwf("C04 modifiers with B32021=%d are not supported", c04_meaning);
+                        error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", c04_meaning);
                 }
             } else
                 ds.decode_b_value(info, *current_adder);
