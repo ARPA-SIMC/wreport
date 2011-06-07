@@ -24,6 +24,7 @@
 #include "opcode.h"
 #include "bulletin.h"
 #include "conv.h"
+#include "notes.h"
 
 #include <stdio.h>
 #include <netinet/in.h>
@@ -1001,9 +1002,31 @@ struct opcode_interpreter
                 TRACE("decode_b_data:read C04 information %x\n", val);
                 switch (c04_meaning)
                 {
-                    case 6:
+                    case 1:
                     {
-                        // Att attribute B33050=val
+                        // Add attribute B33002=val
+                        Var attr(d.out.btable->query(WR_VAR(0, 33, 2)), (int)val);
+                        AnnotationVarAdder ava(*current_adder, attr);
+                        OverrideAdder oa(*this, ava);
+                        ds.decode_b_value(info, *current_adder);
+                        break;
+                    }
+                    case 2:
+                    {
+                        // Add attribute B33002=val
+                        Var attr(d.out.btable->query(WR_VAR(0, 33, 3)), (int)val);
+                        AnnotationVarAdder ava(*current_adder, attr);
+                        OverrideAdder oa(*this, ava);
+                        ds.decode_b_value(info, *current_adder);
+                        break;
+                    }
+                    case 3 ... 5:
+                        // Reserved: ignored
+                        notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                                c04_meaning);
+                        break;
+                    case 6:
+                        // Add attribute B33050=val
                         if (d.conf_add_undef_attrs || val != 15)
                         {
                             Var attr(d.out.btable->query(WR_VAR(0, 33, 50)));
@@ -1014,7 +1037,15 @@ struct opcode_interpreter
                         } else
                             ds.decode_b_value(info, *current_adder);
                         break;
-                    }
+                    case 9 ... 20:
+                        // Reserved: ignored
+                        notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                                c04_meaning);
+                        break;
+                    case 22 ... 62:
+                        notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+                                c04_meaning);
+                        break;
                     default:
                         error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", c04_meaning);
                 }
