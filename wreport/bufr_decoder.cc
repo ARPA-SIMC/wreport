@@ -123,7 +123,7 @@ struct Input
     {
         if (start + datalen > details.sec[0] + in.size())
             parse_error(start, "end of BUFR message while looking for %s", next);
-        TRACE("check:%s starts at %d and contains at least %zd bytes\n", next, (int)(start - sec[0]), datalen);
+        TRACE("check:%s starts at %d and contains at least %zd bytes\n", next, (int)(start - details.sec[0]), datalen);
     }
 
     void read_section_size(int num)
@@ -1046,6 +1046,22 @@ struct opcode_interpreter
                         notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
                                 c04_meaning);
                         break;
+                    case 63:
+                        /*
+                         * Ignore quality information if B31021 is missing.
+                         * The Guide to FM94-BUFR says:
+                         *   If the quality information has no meaning for some
+                         *   of those following elements, but the field is
+                         *   still there, there is at present no explicit way
+                         *   to indicate "no meaning" within the currently
+                         *   defined meanings. One must either redefine the
+                         *   meaning of the associated field in its entirety
+                         *   (by including 0 31 021 in the message with a data
+                         *   value of 63 - "missing value") or remove the
+                         *   associated field bits by the "cancel" operator: 2
+                         *   04 000.
+                         */
+                        break;
                     default:
                         error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", c04_meaning);
                 }
@@ -1505,7 +1521,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 if (snooper.copy->code() != WR_VAR(0, 31, 21))
                     ds.parse_error("C04yyy is followed by %s instead of B31021", varcode_format(snooper.copy->code()).c_str());
                 // Read B31021
-                c04_meaning = snooper.copy->enqi();
+                c04_meaning = snooper.copy->enq(63);
             }
             c04_bits = WR_VAR_Y(code);
             break;
