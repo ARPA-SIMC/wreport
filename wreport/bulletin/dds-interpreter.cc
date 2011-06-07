@@ -341,6 +341,33 @@ unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
             out.encode_char_data(code, var_pos);
             ++var_pos;
             return 1;
+        case 6: {
+            if (WR_VAR_Y(code) > 32)
+                error_unimplemented::throwf("C06 modifier found for %d bits but only at most 32 are supported", WR_VAR_Y(code));
+            unsigned used = 1;
+            if (WR_VAR_Y(code))
+            {
+                bool skip = true;
+                if (in.btable->contains(ops[1]))
+                {
+                    Varinfo info = get_varinfo(ops[1]);
+                    if (info->bit_len == WR_VAR_Y(code))
+                    {
+                        // If we can resolve the descriptor and the size is the
+                        // same, attempt decoding
+                        used += do_b_data(ops.sub(1), var_pos);
+                        skip = false;
+                    }
+                }
+                if (skip)
+                {
+                    // Encode all bits all missing
+                    out.encode_padding(WR_VAR_Y(code), true);
+                    used += 1;
+                }
+            }
+            return used;
+        }
         case 8: {
             int cdatalen = WR_VAR_Y(code);
             IFTRACE {

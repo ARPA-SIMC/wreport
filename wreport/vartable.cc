@@ -77,6 +77,23 @@ Varinfo Vartable::query(Varcode var) const
 		return Varinfo(&(*this)[begin]);
 }
 
+bool Vartable::contains(Varcode code) const
+{
+    int begin, end;
+
+    // Binary search
+    begin = -1, end = size();
+    while (end - begin > 1)
+    {
+        int cur = (end + begin) / 2;
+        if ((*this)[cur].var > code)
+            end = cur;
+        else
+            begin = cur;
+    }
+    return begin != -1 && (*this)[begin].var == code;
+}
+
 Varinfo Vartable::query_altered(Varcode var, int scale, unsigned bit_len) const
 {
     /* Get the normal variable */

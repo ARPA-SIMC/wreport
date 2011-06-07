@@ -110,6 +110,9 @@ public:
 	 */
 	Varinfo query(Varcode code) const;
 
+    /// Check if the code can be resolved to a varinfo
+    bool contains(Varcode code) const;
+
 	/**
 	 * Query an altered version of the vartable
 	 *

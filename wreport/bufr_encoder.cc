@@ -231,6 +231,11 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
     DDSEncoder(const Bulletin& b, Outbuf& ob) : ConstBaseDDSExecutor(b), ob(ob) {}
     virtual ~DDSEncoder() {}
 
+    virtual void encode_padding(unsigned bit_count, bool value)
+    {
+        ob.add_bits(value ? 0xffffffff : 0, bit_count);
+    }
+
     virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
     {
         const Var& var = get_var(var_pos);

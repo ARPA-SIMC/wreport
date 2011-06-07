@@ -1556,6 +1556,30 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
             TRACE("decode_c_data:decoded string %s\n", buf);
             break;
         }
+        case 6:
+            if (WR_VAR_Y(code) > 32)
+                error_unimplemented::throwf("C06 modifier found for %d bits but only at most 32 are supported", WR_VAR_Y(code));
+            if (WR_VAR_Y(code))
+            {
+                bool skip = true;
+                if (d.out.btable->contains(ops[1]))
+                {
+                    Varinfo info = get_info(ops[1]);
+                    if (info->bit_len == WR_VAR_Y(code))
+                    {
+                        // If we can resolve the descriptor and the size is the
+                        // same, attempt decoding
+                        used += decode_b_data(ops.sub(1));
+                        skip = false;
+                    }
+                }
+                if (skip)
+                {
+                    ds.get_bits(WR_VAR_Y(code));
+                    used += 1;
+                }
+            }
+            break;
         case 8: {
             int cdatalen = WR_VAR_Y(code);
             IFTRACE {

@@ -828,6 +828,9 @@ const Var* BaseDDSExecutor::get_bitmap(unsigned var_pos)
     return &var;
 }
 
+void BaseDDSExecutor::encode_padding(unsigned bit_count, bool value)
+{
+}
 
 ConstBaseDDSExecutor::ConstBaseDDSExecutor(const Bulletin& bulletin)
     : bulletin(bulletin), current_subset(0), current_subset_no(0)
@@ -872,6 +875,10 @@ const Var* ConstBaseDDSExecutor::get_bitmap(unsigned var_pos)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
                 var_pos, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
     return &var;
+}
+
+void ConstBaseDDSExecutor::encode_padding(unsigned bit_count, bool value)
+{
 }
 
 }

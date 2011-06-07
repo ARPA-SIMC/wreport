@@ -388,6 +388,9 @@ struct DDSExecutor
      */
     virtual bool is_special_var(unsigned var_pos) = 0;
 
+    /// Encode \a bit_count bits all set to value
+    virtual void encode_padding(unsigned bit_count, bool value) = 0;
+
     /**
      * Request encoding, according to \a info, of attribute \a attr_code of
      * variable in position \a var_pos in the current subset.
@@ -446,6 +449,8 @@ struct BaseDDSExecutor : public DDSExecutor
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap(unsigned var_pos);
+
+    virtual void encode_padding(unsigned bit_count, bool value);
 };
 
 struct ConstBaseDDSExecutor : public DDSExecutor
@@ -462,6 +467,8 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap(unsigned var_pos);
+
+    virtual void encode_padding(unsigned bit_count, bool value);
 };
 
 }
