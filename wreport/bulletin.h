@@ -160,8 +160,16 @@ struct Bulletin
      */
     void print_structured(FILE* out) const;
 
-	/// Print format-specific details
-	virtual void print_details(FILE* out) const;
+    /// Print format-specific details
+    virtual void print_details(FILE* out) const;
+
+    /**
+     * Pretty-print the data descriptor section
+     *
+     * @param indent
+     *   Indent all output by this amount of spaces
+     */
+    void print_datadesc(FILE* out, unsigned indent=0) const;
 
     /**
      * Compute the differences between two bulletins
