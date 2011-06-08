@@ -145,6 +145,12 @@ struct Bulletin
 	virtual void encode(std::string& buf) const = 0;
 
     /**
+     * Walk the structure of the data descriptor section sending events to an
+     * opcode::Explorer
+     */
+    void explore_datadesc(opcode::Explorer& e) const;
+
+    /**
      * Run the Data Descriptor Section interpreter, sending commands to \a
      * executor
      */

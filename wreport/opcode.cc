@@ -47,7 +47,13 @@ void Opcodes::explore(opcode::Explorer& e, const DTable& dtable) const
         {
             case 0: e.b_variable(cur); break;
             case 1:
-                e.r_replication_begin(cur);
+                if (WR_VAR_Y(cur) == 0)
+                {
+                    // Delayed replication
+                    e.r_replication_begin(cur, (*this)[i+1]);
+                    ++i;
+                } else
+                    e.r_replication_begin(cur, 0);
                 sub(i + 1, WR_VAR_X(cur)).explore(e, dtable);
                 e.r_replication_end(cur);
                 i += WR_VAR_X(cur);
@@ -70,7 +76,7 @@ namespace opcode {
 Explorer::~Explorer() {}
 void Explorer::b_variable(Varcode code) {}
 void Explorer::c_modifier(Varcode code) {}
-void Explorer::r_replication_begin(Varcode code) {}
+void Explorer::r_replication_begin(Varcode code, Varcode delayed_code) {}
 void Explorer::r_replication_end(Varcode code) {}
 void Explorer::d_group_begin(Varcode code) {}
 void Explorer::d_group_end(Varcode code) {}
@@ -107,7 +113,7 @@ void Printer::c_modifier(Varcode code)
     fputs(" (C modifier)\n", out);
 }
 
-void Printer::r_replication_begin(Varcode code)
+void Printer::r_replication_begin(Varcode code, Varcode delayed_code)
 {
     print_lead(code);
     unsigned group = WR_VAR_X(code);

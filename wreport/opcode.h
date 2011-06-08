@@ -133,7 +133,7 @@ struct Opcodes
 	}
 
     /**
-     * Walk the structure of the opcodes sending events to an OpcodeExplorer
+     * Walk the structure of the opcodes sending events to an opcode::Explorer
      */
     void explore(opcode::Explorer& e, const DTable& dtable) const;
 
@@ -161,7 +161,7 @@ struct Explorer
 
     virtual void b_variable(Varcode code);
     virtual void c_modifier(Varcode code);
-    virtual void r_replication_begin(Varcode code);
+    virtual void r_replication_begin(Varcode code, Varcode delayed_code);
     virtual void r_replication_end(Varcode code);
     virtual void d_group_begin(Varcode code);
     virtual void d_group_end(Varcode code);
@@ -202,7 +202,7 @@ public:
     Printer();
     virtual void b_variable(Varcode code);
     virtual void c_modifier(Varcode code);
-    virtual void r_replication_begin(Varcode code);
+    virtual void r_replication_begin(Varcode code, Varcode delayed_code);
     virtual void r_replication_end(Varcode code);
     virtual void d_group_begin(Varcode code);
     virtual void d_group_end(Varcode code);

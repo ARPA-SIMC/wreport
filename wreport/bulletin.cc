@@ -217,6 +217,11 @@ void CrexBulletin::encode(std::string& buf) const
 }
 */
 
+void Bulletin::explore_datadesc(opcode::Explorer& e) const
+{
+    Opcodes(datadesc).explore(e, *dtable);
+}
+
 void Bulletin::print(FILE* out) const
 {
 	fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
@@ -669,7 +674,6 @@ void CrexBulletin::write(const std::string& buf, FILE* out, const char* fname)
 			throw error_system("writing CREX data");
 	}
 }
-
 
 #if 0
 std::auto_ptr<Bulletin> Bulletin::create(dballe::Encoding encoding)

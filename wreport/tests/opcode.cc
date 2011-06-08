@@ -62,16 +62,23 @@ namespace {
 struct ExploreCounter : public opcode::Explorer
 {
     unsigned count_b;
-    unsigned count_r;
+    unsigned count_r_plain;
+    unsigned count_r_delayed;
     unsigned count_c;
     unsigned count_d;
 
     ExploreCounter()
-        : count_b(0), count_r(0), count_c(0), count_d(0) {}
+        : count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
 
     void b_variable(Varcode code) { ++count_b; }
     void c_modifier(Varcode code) { ++count_c; }
-    void r_replication_begin(Varcode code) { ++count_r; }
+    void r_replication_begin(Varcode code, Varcode delayed_code)
+    {
+        if (delayed_code)
+            ++count_r_delayed;
+        else
+            ++count_r_plain;
+    }
     void d_group_begin(Varcode code) { ++count_d; }
 };
 
@@ -88,9 +95,10 @@ void to::test<2>()
     ExploreCounter c;
     ops.explore(c, *table);
 
-    ensure_equals(c.count_b, 5u);
+    ensure_equals(c.count_b, 4u);
     ensure_equals(c.count_c, 0u);
-    ensure_equals(c.count_r, 1u);
+    ensure_equals(c.count_r_plain, 0u);
+    ensure_equals(c.count_r_delayed, 1u);
     ensure_equals(c.count_d, 1u);
 }
 
