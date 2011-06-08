@@ -188,14 +188,14 @@ struct _Varinfo
 
 	_Varinfo();
 
-        /// Increment the reference count to this Data object
-        void do_ref() const { ++_ref; }
+    /// Increment the reference count to this Data object
+    void do_ref() const { ++_ref; }
 
-        /**
-         * Decrement the reference count to this Data object, and return true
-         * if the reference count went down to 0
-         */
-        bool do_unref() const { return (--_ref) == 0; }
+    /**
+     * Decrement the reference count to this Data object, and return true
+     * if the reference count went down to 0
+     */
+    bool do_unref() const { return (--_ref) == 0; }
 
 	/// Check if we are a string value
 	bool is_string() const

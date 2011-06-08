@@ -28,8 +28,16 @@
 
 #include <wreport/varinfo.h>
 #include <vector>
+#include <cstdio>
 
 namespace wreport {
+
+namespace opcode {
+struct Explorer;
+}
+
+struct Vartable;
+struct DTable;
 
 /**
  * Sequence of opcodes, as a slice of a Varcode vector.
@@ -124,17 +132,83 @@ struct Opcodes
 			return Opcodes(vals, begin + skip, begin + skip + len);
 	}
 
-	/**
-	 * Print the contents of this opcode list
-	 *
-	 * This function is used mainly for debugging purposes.
-	 *
-	 * @param outstream
-	 *   The output stream (a FILE* variable) to print to.  void* is used to avoid
-	 *   including stdio.h just for this debugging function.
-	 */
-	void print(void* outstream) const;
+    /**
+     * Walk the structure of the opcodes sending events to an OpcodeExplorer
+     */
+    void explore(opcode::Explorer& e, const DTable& dtable) const;
+
+    /// Print the contents of this opcode list
+    void print(FILE* out) const;
 };
+
+namespace opcode
+{
+
+/**
+ * Visitor-style interface for scanning the contents of a data descriptor
+ * section.
+ *
+ * This supports scanning the DDS without looking at the data, so it cannot be
+ * used for encoding/decoding, as it cannot access the data that controls
+ * decoding such as delayed replicator factors or data descriptor bitmaps.
+ *
+ * All interface methods have a default implementations that do nothing, so you
+ * can override only what you need.
+ */
+struct Explorer
+{
+    virtual ~Explorer();
+
+    virtual void b_variable(Varcode code);
+    virtual void c_modifier(Varcode code);
+    virtual void r_replication_begin(Varcode code);
+    virtual void r_replication_end(Varcode code);
+    virtual void d_group_begin(Varcode code);
+    virtual void d_group_end(Varcode code);
+};
+
+class Printer : public Explorer
+{
+protected:
+    void print_lead(Varcode code);
+
+public:
+    /**
+     * Output stream.
+     *
+     * It defaults to stdout, but it can be set to any FILE* stream
+     */
+    FILE* out;
+
+    /**
+     * Table used to get variable descriptions (optional).
+     *
+     * It defaults to NULL, but if it is set, the output will contain
+     * descriptions of B variable entries
+     */
+    const Vartable* btable;
+
+    /**
+     * Current indent level
+     *
+     * It defaults to 0 in a newly created Printer. You can set it to some
+     * other value to indent all the output by the given amount of spaces
+     */
+    unsigned indent;
+
+    /// How many spaces in an indentation level
+    unsigned indent_step;
+
+    Printer();
+    virtual void b_variable(Varcode code);
+    virtual void c_modifier(Varcode code);
+    virtual void r_replication_begin(Varcode code);
+    virtual void r_replication_end(Varcode code);
+    virtual void d_group_begin(Varcode code);
+    virtual void d_group_end(Varcode code);
+};
+
+}
 
 }
 
