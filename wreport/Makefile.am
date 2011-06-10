@@ -7,10 +7,9 @@ INCLUDES = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir) $(LUA_CFLAGS)
 #
 
 wreportincludedir = $(includedir)/wreport
-wreportbulletinincludedir = $(includedir)/wreport/bulletin
 
 # Include the .cc files that contain template definitions
-wreportinclude_HEADERS = \
+nobase_wreportinclude_HEADERS = \
 	codetables.h \
 	conv.h \
 	dtable.h \
@@ -18,16 +17,15 @@ wreportinclude_HEADERS = \
 	notes.h \
 	fast.h \
 	bulletin.h \
+	bulletin/buffers.h \
+	bulletin/dds-validator.h \
+	bulletin/dds-printer.h
 	opcode.h \
 	subset.h \
 	var.h \
 	varinfo.h \
 	vartable.h \
 	tests.h
-
-wreportbulletininclude_HEADERS = \
-	bulletin/dds-validator.h \
-	bulletin/dds-printer.h
 
 lib_LTLIBRARIES = libwreport.la
 libwreport_la_SOURCES = \
@@ -42,6 +40,7 @@ libwreport_la_SOURCES = \
 	dtable.cc \
 	subset.cc \
 	bulletin.cc \
+	bulletin/buffers.cc \
 	bulletin/dds-interpreter.cc \
 	bulletin/dds-validator.cc \
 	bulletin/dds-printer.cc \
@@ -90,6 +89,7 @@ tut_test_SOURCES = \
 	tests/bufr_decoder.cc \
 	tests/bufr_encoder.cc \
 	tests/crex_decoder.cc \
+	bulletin/buffers-tut.cc \
 	bulletin/dds-validator-tut.cc \
 	tests/tut-main.cpp
 tut_test_LDADD = \

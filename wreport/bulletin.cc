@@ -1,5 +1,5 @@
 /*
- * wreport/bulletin - Archive for punctual meteorological data
+ * wreport/bulletin - Decoded weather bulletin
  *
  * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
