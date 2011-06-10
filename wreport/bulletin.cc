@@ -846,6 +846,11 @@ void BaseDDSExecutor::encode_padding(unsigned bit_count, bool value)
 {
 }
 
+void BaseDDSExecutor::encode_associated_field(unsigned bit_count, uint32_t value)
+{
+}
+
+
 ConstBaseDDSExecutor::ConstBaseDDSExecutor(const Bulletin& bulletin)
     : bulletin(bulletin), current_subset(0), current_subset_no(0)
 {
@@ -892,6 +897,10 @@ const Var* ConstBaseDDSExecutor::get_bitmap(unsigned var_pos)
 }
 
 void ConstBaseDDSExecutor::encode_padding(unsigned bit_count, bool value)
+{
+}
+
+void ConstBaseDDSExecutor::encode_associated_field(unsigned bit_count, uint32_t value)
 {
 }
 

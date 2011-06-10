@@ -236,6 +236,11 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         ob.add_bits(value ? 0xffffffff : 0, bit_count);
     }
 
+    virtual void encode_associated_field(unsigned bit_count, uint32_t value)
+    {
+        ob.add_bits(value, bit_count);
+    }
+
     virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
     {
         const Var& var = get_var(var_pos);

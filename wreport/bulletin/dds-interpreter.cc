@@ -197,6 +197,82 @@ unsigned Interpreter::do_b_data(const Opcodes& ops, unsigned& var_pos)
         TRACE("Encode variable %01d%02d%03d var pos %d\n",
                 WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var),
                 var_pos);
+        if (c04_bits > 0)
+        {
+            // TODO: only padding for now, implement retrieving the value
+            out.encode_associated_field(c04_bits, 1);
+#if 0
+                TRACE("decode_b_data:reading %d bits of C04 information\n", c04_bits);
+                uint32_t val = ds.get_bits(c04_bits);
+                TRACE("decode_b_data:read C04 information %x\n", val);
+                switch (c04_meaning)
+                {
+                    case 1:
+                    {
+                        // Add attribute B33002=val
+                        Var attr(d.out.btable->query(WR_VAR(0, 33, 2)), (int)val);
+                        AnnotationVarAdder ava(*current_adder, attr);
+                        OverrideAdder oa(*this, ava);
+                        ds.decode_b_value(info, *current_adder);
+                        break;
+                    }
+                    case 2:
+                    {
+                        // Add attribute B33002=val
+                        Var attr(d.out.btable->query(WR_VAR(0, 33, 3)), (int)val);
+                        AnnotationVarAdder ava(*current_adder, attr);
+                        OverrideAdder oa(*this, ava);
+                        ds.decode_b_value(info, *current_adder);
+                        break;
+                    }
+                    case 3 ... 5:
+                        // Reserved: ignored
+                        notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                                c04_meaning);
+                        break;
+                    case 6:
+                        // Add attribute B33050=val
+                        if (d.conf_add_undef_attrs || val != 15)
+                        {
+                            Var attr(d.out.btable->query(WR_VAR(0, 33, 50)));
+                            if (val != 15) attr.seti(val);
+                            AnnotationVarAdder ava(*current_adder, attr);
+                            OverrideAdder oa(*this, ava);
+                            ds.decode_b_value(info, *current_adder);
+                        } else
+                            ds.decode_b_value(info, *current_adder);
+                        break;
+                    case 9 ... 20:
+                        // Reserved: ignored
+                        notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                                c04_meaning);
+                        break;
+                    case 22 ... 62:
+                        notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+                                c04_meaning);
+                        break;
+                    case 63:
+                        /*
+                         * Ignore quality information if B31021 is missing.
+                         * The Guide to FM94-BUFR says:
+                         *   If the quality information has no meaning for some
+                         *   of those following elements, but the field is
+                         *   still there, there is at present no explicit way
+                         *   to indicate "no meaning" within the currently
+                         *   defined meanings. One must either redefine the
+                         *   meaning of the associated field in its entirety
+                         *   (by including 0 31 021 in the message with a data
+                         *   value of 63 - "missing value") or remove the
+                         *   associated field bits by the "cancel" operator: 2
+                         *   04 000.
+                         */
+                        break;
+                    default:
+                        error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", c04_meaning);
+                }
+#endif
+        }
+
         out.encode_var(info, var_pos);
         ++var_pos;
     }

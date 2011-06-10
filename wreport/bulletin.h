@@ -405,6 +405,9 @@ struct DDSExecutor
     /// Encode \a bit_count bits all set to value
     virtual void encode_padding(unsigned bit_count, bool value) = 0;
 
+    /// Encode associate fielf \a value in \a bit_count bits
+    virtual void encode_associated_field(unsigned bit_count, uint32_t value) = 0;
+
     /**
      * Request encoding, according to \a info, of attribute \a attr_code of
      * variable in position \a var_pos in the current subset.
@@ -473,6 +476,7 @@ struct BaseDDSExecutor : public DDSExecutor
     virtual const Var* get_bitmap(unsigned var_pos);
 
     virtual void encode_padding(unsigned bit_count, bool value);
+    virtual void encode_associated_field(unsigned bit_count, uint32_t value);
 };
 
 struct ConstBaseDDSExecutor : public DDSExecutor
@@ -491,6 +495,7 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     virtual const Var* get_bitmap(unsigned var_pos);
 
     virtual void encode_padding(unsigned bit_count, bool value);
+    virtual void encode_associated_field(unsigned bit_count, uint32_t value);
 };
 
 }
