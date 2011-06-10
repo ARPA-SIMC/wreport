@@ -80,6 +80,13 @@ void DDSValidator::encode_var(Varinfo info, unsigned var_pos)
     check_fits(info, var);
 }
 
+unsigned DDSValidator::encode_associated_field_significance(Varinfo info, unsigned var_pos)
+{
+    const Var& var = get_var(var_pos);
+    check_fits(info, var);
+    return var.enqi();
+}
+
 unsigned DDSValidator::encode_repetition_count(Varinfo info, unsigned var_pos)
 {
     const Var& var = get_var(var_pos);

@@ -87,13 +87,22 @@ struct Interpreter
     int bitmap_use_cur;
     int bitmap_subset_cur;
 
+    /**
+     * Number of extra bits inserted by the current C04yyy modifier (0 for no
+     * C04yyy operator in use)
+     */
+    int c04_bits;
+    /// Meaning of C04yyy field according to code table B31021
+    int c04_meaning;
+
     // True if the bulletin is a CREX bulletin
     bool is_crex;
 
     Interpreter(const Bulletin& in, bulletin::DDSExecutor& out)
         : in(in), out(out),
           c_scale_change(0), c_width_change(0), c_string_len_override(0),
-          bitmap_to_encode(0), bitmap_use_cur(0), bitmap_subset_cur(0)
+          bitmap_to_encode(0), bitmap_use_cur(0), bitmap_subset_cur(0),
+          c04_bits(0), c04_meaning(63)
     {
         is_crex = dynamic_cast<const CrexBulletin*>(&in) != NULL;
     }
@@ -320,31 +329,52 @@ unsigned Interpreter::do_bitmap(const Opcodes& ops, unsigned& var_pos)
 unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
 {
     Varcode code = ops.head();
+    unsigned used = 1;
 
     TRACE("C DATA %01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 
     switch (WR_VAR_X(code))
     {
         case 1:
+            // Change data width
             c_width_change = WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0;
             TRACE("Set width change to %d\n", c_width_change);
-            return 1;
+            break;
         case 2:
+            // Change data scale
             c_scale_change = WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0;
             TRACE("Set scale change to %d\n", c_scale_change);
-            return 1;
+            break;
         case 4:
+            // Add associated field
             TRACE("Set C04 bits to %d\n", WR_VAR_Y(code));
-            // TODO: actually do something instead of just ignoring
-            return 1;
+            // FIXME: nested C04 modifiers are not currently implemented
+            if (WR_VAR_Y(code) && c04_bits)
+                throw error_unimplemented("nested C04 modifiers are not yet implemented");
+            if (WR_VAR_Y(code) > 32)
+                error_unimplemented::throwf("C04 modifier wants %d bits but only at most 32 are supported", WR_VAR_Y(code));
+            if (WR_VAR_Y(code))
+            {
+                // Get encoding informations for this associated_field_significance
+                Varinfo info = in.btable->query(WR_VAR(0, 31, 21));
+
+                // Encode B31021
+                c04_meaning = out.encode_repetition_count(info, var_pos);
+
+                ++var_pos;
+                ++used;
+            }
+            c04_bits = WR_VAR_Y(code);
+            break;
         case 5:
+            // Encode character data
             out.encode_char_data(code, var_pos);
             ++var_pos;
-            return 1;
-        case 6: {
+            break;
+        case 6:
+            // Length of next local descriptor
             if (WR_VAR_Y(code) > 32)
                 error_unimplemented::throwf("C06 modifier found for %d bits but only at most 32 are supported", WR_VAR_Y(code));
-            unsigned used = 1;
             if (WR_VAR_Y(code))
             {
                 bool skip = true;
@@ -366,9 +396,9 @@ unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
                     used += 1;
                 }
             }
-            return used;
-        }
+            break;
         case 8: {
+            // Override length of character data
             int cdatalen = WR_VAR_Y(code);
             IFTRACE {
                 if (cdatalen)
@@ -377,21 +407,24 @@ unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
                     TRACE("decode_c_data:character size overridde end\n");
             }
             c_string_len_override = cdatalen;
-            return 1;
+            break;
         }
         case 22:
+            // Quality information
             if (WR_VAR_Y(code) == 0)
             {
-                return do_bitmap(ops, var_pos);
+                used = do_bitmap(ops, var_pos);
             } else
                 error_consistency::throwf("C modifier %d%02d%03d not yet supported",
                             WR_VAR_F(code),
                             WR_VAR_X(code),
                             WR_VAR_Y(code));
+            break;
         case 23:
+            // Substituted values
             if (WR_VAR_Y(code) == 0)
             {
-                return do_bitmap(ops, var_pos);
+                used = do_bitmap(ops, var_pos);
             } else if (WR_VAR_Y(code) == 255) {
                 if (bitmap_to_encode == NULL)
                     error_consistency::throwf("found C23255 with no active bitmap");
@@ -403,27 +436,30 @@ unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
                 // Encode the value
                 out.encode_attr(info, bitmap_subset_cur, info->var);
                 bitmap_next();
-                return 1;
             } else
                 error_consistency::throwf("C modifier %d%02d%03d not yet supported",
                         WR_VAR_F(code),
                         WR_VAR_X(code),
                         WR_VAR_Y(code));
+            break;
         case 24:
+            // First order statistical values
             if (WR_VAR_Y(code) == 0)
             {
-                return 1 + do_r_data(ops.sub(1), var_pos);
+                used += do_r_data(ops.sub(1), var_pos);
             } else
                 error_consistency::throwf("C modifier %d%02d%03d not yet supported",
                             WR_VAR_F(code),
                             WR_VAR_X(code),
                             WR_VAR_Y(code));
+            break;
         default:
             error_unimplemented::throwf("C modifier %d%02d%03d is not yet supported",
                         WR_VAR_F(code),
                         WR_VAR_X(code),
                         WR_VAR_Y(code));
     }
+    return used;
 }
 
 

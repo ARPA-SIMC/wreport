@@ -179,6 +179,11 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         return count;
     }
 
+    virtual unsigned encode_associated_field_significance(Varinfo info, unsigned var_pos)
+    {
+        throw error_unimplemented("encode_associated_field_significance");
+    }
+
     virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
     {
         throw error_unimplemented("encode_bitmap_repetition_count");

@@ -426,6 +426,14 @@ struct DDSExecutor
     virtual unsigned encode_repetition_count(Varinfo info, unsigned var_pos) = 0;
 
     /**
+     * Request encoding, according to \a info, of associated field significance
+     * in position \a var_pos in the current subset.
+     *
+     * @return the value of the significance variable
+     */
+    virtual unsigned encode_associated_field_significance(Varinfo info, unsigned var_pos) = 0;
+
+    /**
      * Request encoding, according to \a info, of repetition count
      * corresponding to the length of \a bitmap.
      *

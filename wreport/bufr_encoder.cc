@@ -255,6 +255,12 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         ob.append_var(info, var);
         return var.enqi();
     }
+    virtual unsigned encode_associated_field_significance(Varinfo info, unsigned var_pos)
+    {
+        const Var& var = get_var(var_pos);
+        ob.append_var(info, var);
+        return var.enqi();
+    }
     virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
     {
         ob.add_bits(bitmap.info()->len, info->bit_len);

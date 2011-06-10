@@ -40,6 +40,7 @@ struct DDSValidator : public ConstBaseDDSExecutor
 
     virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
     virtual void encode_var(Varinfo info, unsigned var_pos);
+    virtual unsigned encode_associated_field_significance(Varinfo info, unsigned var_pos);
     virtual unsigned encode_repetition_count(Varinfo info, unsigned var_pos);
     virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap);
     virtual void encode_bitmap(const Var& bitmap);

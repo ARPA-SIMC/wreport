@@ -92,6 +92,15 @@ unsigned DDSPrinter::encode_repetition_count(Varinfo info, unsigned var_pos)
     return var.enqi();
 }
 
+unsigned DDSPrinter::encode_associated_field_significance(Varinfo info, unsigned var_pos)
+{
+    print_context(info, var_pos);
+
+    const Var& var = get_var(var_pos);
+    var.print(out);
+    return var.enqi();
+}
+
 unsigned DDSPrinter::encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
 {
     print_context(info, 0);
