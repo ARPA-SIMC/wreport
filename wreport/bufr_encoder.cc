@@ -157,29 +157,22 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
 
 struct Encoder
 {
-	/* Input message data */
-	const BufrBulletin& in;
+    /* Input message data */
+    const BufrBulletin& in;
     /// Output buffer
     bulletin::BufrOutput out;
 
-	/* We have to memorise offsets rather than pointers, because e->out->buf
-	 * can get reallocated during the encoding */
+    /* We have to memorise offsets rather than pointers, because e->out->buf
+     * can get reallocated during the encoding */
 
-	/* Offset of the start of BUFR section 1 */
-	int sec1_start;
-	/* Offset of the start of BUFR section 2 */
-	int sec2_start;
-	/* Offset of the start of BUFR section 3 */
-	int sec3_start;
-	/* Offset of the start of BUFR section 4 */
-	int sec4_start;
-	/* Offset of the start of BUFR section 4 */
-	int sec5_start;
+    /// Offset of the start of BUFR sections
+    int sec[6];
 
     Encoder(const BufrBulletin& in, std::string& out)
-        : in(in), out(out),
-          sec1_start(0), sec2_start(0), sec3_start(0), sec4_start(0), sec5_start(0)
+        : in(in), out(out)
     {
+        for (int i = 0; i < 6; ++i)
+            sec[i] = 0;
     }
 
     void encode_sec1ed3();
@@ -353,10 +346,10 @@ void Encoder::encode_sec4()
 
     /* Write the length of the section in its header */
     {
-        uint32_t val = htonl(out.out.size() - sec4_start);
-        memcpy((char*)out.out.data() + sec4_start, ((char*)&val) + 1, 3);
+        uint32_t val = htonl(out.out.size() - sec[4]);
+        memcpy((char*)out.out.data() + sec[4], ((char*)&val) + 1, 3);
 
-        TRACE("sec4 size %zd\n", out.out.size() - sec4_start);
+        TRACE("sec4 size %zd\n", out.out.size() - sec[4]);
     }
 }
 
@@ -367,7 +360,7 @@ void Encoder::run()
     out.append_byte(in.edition);
 
     TRACE("sec0 ends at %zd\n", out.out.size());
-    sec1_start = out.out.size();
+    sec[1] = out.out.size();
 
 	switch (in.edition)
 	{
@@ -380,19 +373,19 @@ void Encoder::run()
 
 
     TRACE("sec1 ends at %zd\n", out.out.size());
-    sec2_start = out.out.size();
+    sec[2] = out.out.size();
     encode_sec2();
 
     TRACE("sec2 ends at %zd\n", out.out.size());
-    sec3_start = out.out.size();
+    sec[3] = out.out.size();
     encode_sec3();
 
     TRACE("sec3 ends at %zd\n", out.out.size());
-    sec4_start = out.out.size();
+    sec[4] = out.out.size();
     encode_sec4();
 
     TRACE("sec4 ends at %zd\n", out.out.size());
-    sec5_start = out.out.size();
+    sec[5] = out.out.size();
 
     /* Encode section 5 (End section) */
     out.raw_append("7777", 4);
@@ -411,9 +404,8 @@ void Encoder::run()
 
 void BufrBulletin::encode(std::string& out) const
 {
-	Encoder e(*this, out);
-	e.run();
-	//out.encoding = BUFR;
+    Encoder e(*this, out);
+    e.run();
 }
 
 
