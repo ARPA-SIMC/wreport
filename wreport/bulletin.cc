@@ -25,6 +25,7 @@
 #include "opcode.h"
 #include "bulletin.h"
 #include "bulletin/dds-printer.h"
+#include "bulletin/buffers.h"
 #include "notes.h"
 
 #include <stddef.h>
@@ -63,17 +64,6 @@ const Subset& Bulletin::subset(unsigned subsection) const
 		error_notfound::throwf("Requested subset %u but there are only %zd available",
 				subsection, subsets.size());
 	return subsets[subsection];
-}
-
-BufrRawDetails::BufrRawDetails()
-{
-    reset();
-}
-
-void BufrRawDetails::reset()
-{
-    for (unsigned i = 0; i < sizeof(sec)/sizeof(sec[0]); ++i)
-        sec[i] = 0;
 }
 
 
@@ -155,12 +145,12 @@ void BufrBulletin::load_tables()
 	/* TRACE(" -> loaded D table %s\n", id); */
 }
 
-BufrRawDetails& BufrBulletin::reset_raw_details()
+bulletin::BufrInput& BufrBulletin::reset_raw_details(const std::string& buf)
 {
     if (raw_details == 0)
-        raw_details = new BufrRawDetails();
+        raw_details = new bulletin::BufrInput(buf);
     else
-        raw_details->reset();
+        raw_details->reset(buf);
     return *raw_details;
 }
 

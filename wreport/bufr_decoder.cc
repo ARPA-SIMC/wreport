@@ -25,6 +25,7 @@
 #include "bulletin.h"
 #include "conv.h"
 #include "notes.h"
+#include "bulletin/buffers.h"
 
 #include <stdio.h>
 #include <netinet/in.h>
@@ -54,19 +55,6 @@ using namespace std;
 namespace wreport {
 namespace {
 
-// Unmarshal a big endian integer value n bytes long
-static inline int readNumber(const unsigned char* buf, int bytes)
-{
-	int res = 0;
-	int i;
-	for (i = 0; i < bytes; ++i)
-	{
-		res <<= 8;
-		res |= buf[i];
-	}
-	return res;
-}
-
 // Return a value with bitlen bits set to 1
 static inline uint32_t all_ones(int bitlen)
 {
@@ -85,62 +73,10 @@ static const char* sec_names[] = {
 };
 */
 
-struct Input
-{
-    /* Input message data */
-    const std::string& in;
-    /* File name to use for error messages */
-    const char* fname;
-    /* File offset to use for error messages */
-    size_t offset;
-    /* Raw decoding details */
-    BufrRawDetails& details;
-
-    Input(const std::string& in, const char* fname, size_t offset, BufrRawDetails& details)
-        : in(in), fname(fname), offset(offset), details(details)
-    {
-        details.sec[0] = (const unsigned char*)in.data();
-    }
-    void parse_error(const unsigned char* pos, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4)
-    {
-        char* context;
-        char* message;
-
-        va_list ap;
-        va_start(ap, fmt);
-        vasprintf(&message, fmt, ap);
-        va_end(ap);
-
-        asprintf(&context, "%s:%zd+%d: %s", fname, offset, (int)(pos - details.sec[0]), message);
-        free(message);
-
-        string msg(context);
-        free(context);
-        throw error_parse(msg);
-    }
-
-    void check_available_data(unsigned const char* start, size_t datalen, const char* next)
-    {
-        if (start + datalen > details.sec[0] + in.size())
-            parse_error(start, "end of BUFR message while looking for %s", next);
-        TRACE("check:%s starts at %d and contains at least %zd bytes\n", next, (int)(start - details.sec[0]), datalen);
-    }
-
-    void read_section_size(int num)
-    {
-        if (details.sec[num] + 3 > details.sec[0] + in.size())
-            parse_error(details.sec[num], "end of BUFR message while looking for section %d (%s)", num, details.sec[num]);
-        details.sec[num+1] = details.sec[num] + readNumber(details.sec[num], 3);
-        if (details.sec[num+1] > details.sec[0] + in.size())
-            parse_error(details.sec[num], "section %d (%s) claims to end past the end of the BUFR message",
-                    num, details.sec[num]);
-    }
-};
-
 struct Decoder
 {
     /// Input data
-    Input input;
+    bulletin::BufrInput& in;
     /* Output decoded variables */
     BufrBulletin& out;
     /// Number of expected subsets (read in decode_header, used in decode_data)
@@ -148,107 +84,113 @@ struct Decoder
     /// True if undefined attributes are added to the output, else false
     bool conf_add_undef_attrs;
 
-    Decoder(const std::string& in, const char* fname, size_t offset, BufrBulletin& out)
-        : input(in, fname, offset, out.reset_raw_details()), out(out),
+    Decoder(const std::string& buf, const char* fname, size_t offset, BufrBulletin& out)
+        : in(out.reset_raw_details(buf)), out(out),
           conf_add_undef_attrs(false)
     {
         if (out.codec_options)
         {
             conf_add_undef_attrs = out.codec_options->decode_adds_undef_attrs;
         }
+        in.fname = fname;
+        in.start_offset = offset;
     }
 
     void decode_sec1ed3()
     {
-        const unsigned char* sec1 = input.details.sec[1];
         // master table number in sec1[3]
-        out.master_table_number = sec1[3];
-		// Set length to 1 for now, will set the proper length later when we
-		// parse the section itself
-		out.optional_section_length = (sec1[7] & 0x80) ? 1 : 0;
-		// subcentre in sec1[4]
-		out.subcentre = (int)sec1[4];
-		// centre in sec1[5]
-		out.centre = (int)sec1[5];
-		// Update sequence number sec1[6]
-		out.update_sequence_number = sec1[6];
-		out.master_table = sec1[10];
-		out.local_table = sec1[11];
-		out.type = (int)sec1[8];
-		out.subtype = 255;
-		out.localsubtype = (int)sec1[9];
+        out.master_table_number = in.read_byte(1, 3);
+        // has_optional in sec1[7]
+        // Once we know if the optional section is available, we can scan
+        // section lengths for the rest of the message
+        in.scan_other_sections(in.read_byte(1, 7) & 0x80);
+        out.optional_section_length = in.sec[3] - in.sec[2];
+        if (out.optional_section_length)
+            out.optional_section_length -= 4;
+        // subcentre in sec1[4]
+        out.subcentre = in.read_byte(1, 4);
+        // centre in sec1[5]
+        out.centre = in.read_byte(1, 5);
+        // Update sequence number sec1[6]
+        out.update_sequence_number = in.read_byte(1, 6);
+        out.master_table = in.read_byte(1, 10);
+        out.local_table = in.read_byte(1, 11);
+        out.type = in.read_byte(1, 8);
+        out.subtype = 255;
+        out.localsubtype = in.read_byte(1, 9);
 
-		out.rep_year = (int)sec1[12];
-		// Fix the century with a bit of euristics
-		if (out.rep_year > 50)
-			out.rep_year += 1900;
-		else
-			out.rep_year += 2000;
-		out.rep_month = (int)sec1[13];
-		out.rep_day = (int)sec1[14];
-		out.rep_hour = (int)sec1[15];
-		out.rep_minute = (int)sec1[16];
-		if ((int)sec1[17] != 0)
-			out.rep_year = (int)sec1[17] * 100 + (out.rep_year % 100);
-	}
+        out.rep_year = in.read_byte(1, 12);
+        // Fix the century with a bit of euristics
+        if (out.rep_year > 50)
+            out.rep_year += 1900;
+        else
+            out.rep_year += 2000;
+        out.rep_month = in.read_byte(1, 13);
+        out.rep_day = in.read_byte(1, 14);
+        out.rep_hour = in.read_byte(1, 15);
+        out.rep_minute = in.read_byte(1, 16);
+        if (in.read_byte(1, 17) != 0)
+            out.rep_year = in.read_byte(1, 17) * 100 + (out.rep_year % 100);
+    }
 
     void decode_sec1ed4()
     {
-        const unsigned char* sec1 = input.details.sec[1];
-		// TODO: misses master table number in sec1[3]
-		// centre in sec1[4-5]
-		out.centre = readNumber(sec1+4, 2);
-		// subcentre in sec1[6-7]
-		out.subcentre = readNumber(sec1+6, 2);
+        // master table number in sec1[3]
+        out.master_table_number = in.read_byte(1, 3);
+        // centre in sec1[4-5]
+        out.centre = in.read_number(1, 4, 2);
+        // subcentre in sec1[6-7]
+        out.subcentre = in.read_number(1, 6, 2);
         // update sequence number sec1[8]
-        out.update_sequence_number = sec1[8];
-		// has_optional in sec1[9]
-		// Set length to 1 for now, will set the proper length later when we
-		// parse the section itself
-		out.optional_section_length = (sec1[9] & 0x80) ? 1 : 0;
-		// category in sec1[10]
-		out.type = (int)sec1[10];
-		// international data sub-category in sec1[11]
-		out.subtype = (int)sec1[11];
-		// local data sub-category in sec1[12]
-		out.localsubtype = (int)sec1[12];
-		// version number of master table in sec1[13]
-		out.master_table = sec1[13];
-		// version number of local table in sec1[14]
-		out.local_table = sec1[14];
-		// year in sec1[15-16]
-		out.rep_year = readNumber(sec1 + 15, 2);
-		// month in sec1[17]
-		out.rep_month = (int)sec1[17];
-		// day in sec1[18]
-		out.rep_day = (int)sec1[18];
-		// hour in sec1[19]
-		out.rep_hour = (int)sec1[19];
-		// minute in sec1[20]
-		out.rep_minute = (int)sec1[20];
-		// sec in sec1[21]
-		out.rep_second = (int)sec1[21];
-	}
+        out.update_sequence_number = in.read_byte(1, 8);
+        // has_optional in sec1[9]
+        // Once we know if the optional section is available, we can scan
+        // section lengths for the rest of the message
+        in.scan_other_sections(in.read_byte(1, 9) & 0x80);
+        out.optional_section_length = in.sec[3] - in.sec[2];
+        if (out.optional_section_length)
+            out.optional_section_length -= 4;
+        // category in sec1[10]
+        out.type = in.read_byte(1, 10);
+        // international data sub-category in sec1[11]
+        out.subtype = in.read_byte(1, 11);
+        // local data sub-category in sec1[12]
+        out.localsubtype = in.read_byte(1, 12);
+        // version number of master table in sec1[13]
+        out.master_table = in.read_byte(1, 13);
+        // version number of local table in sec1[14]
+        out.local_table = in.read_byte(1, 14);
+        // year in sec1[15-16]
+        out.rep_year = in.read_number(1, 15, 2);
+        // month in sec1[17]
+        out.rep_month = in.read_byte(1, 17);
+        // day in sec1[18]
+        out.rep_day = in.read_byte(1, 18);
+        // hour in sec1[19]
+        out.rep_hour = in.read_byte(1, 19);
+        // minute in sec1[20]
+        out.rep_minute = in.read_byte(1, 20);
+        // sec in sec1[21]
+        out.rep_second = in.read_byte(1, 21);
+    }
 
     /* Decode the message header only */
     void decode_header()
     {
-        int i;
+        // Read BUFR section 0 (Indicator section)
+        if (memcmp(in.data + in.sec[0], "BUFR", 4) != 0)
+            in.parse_error(0, 0, "data does not start with BUFR header (\"%.4s\" was read instead)", in.data + in.sec[0]);
 
-        /* Read BUFR section 0 (Indicator section) */
-        input.check_available_data(input.details.sec[0], 8, "section 0 of BUFR message (indicator section)");
-        input.details.sec[1] = input.details.sec[0] + 8;
-        if (memcmp(input.details.sec[0], "BUFR", 4) != 0)
-            input.parse_error(input.details.sec[0], "data does not start with BUFR header (\"%.4s\" was read instead)", input.details.sec[0]);
-
-        /* Check the BUFR edition number */
-        out.edition = input.details.sec[0][7];
+        // Check the BUFR edition number
+        out.edition = in.read_byte(0, 7);
         if (out.edition != 2 && out.edition != 3 && out.edition != 4)
-            input.parse_error(input.details.sec[0] + 7, "Only BUFR edition 3 and 4 are supported (this message is edition %d)", out.edition);
+            in.parse_error(0, 7, "Only BUFR edition 3 and 4 are supported (this message is edition %d)", out.edition);
 
-        /* Read bufr section 1 (Identification section) */
-        input.check_available_data(input.details.sec[1], out.edition == 4 ? 22 : 18, "section 1 of BUFR message (identification section)");
-        input.read_section_size(1);
+        // Looks like a BUFR, scan section starts
+        in.scan_lead_sections();
+
+        // Read bufr section 1 (Identification section)
+        in.check_available_data(1, 0, out.edition == 4 ? 22 : 18, "section 1 of BUFR message (identification section)");
 
 		switch (out.edition)
 		{
@@ -267,26 +209,24 @@ struct Decoder
 				out.rep_year, out.rep_month, out.rep_day, out.rep_hour, out.rep_minute);
 
         /* Read BUFR section 2 (Optional section) */
-        if (out.optional_section_length)
+        if (out.optional_section_length > 0)
         {
-            input.read_section_size(2);
-            out.optional_section_length = readNumber(input.details.sec[2], 3) - 4;
+            out.optional_section_length = in.read_number(2, 0, 3) - 4;
             out.optional_section = new char[out.optional_section_length];
             if (out.optional_section == NULL)
                 throw error_alloc("allocating space for the optional section");
-            memcpy(out.optional_section, input.details.sec[2] + 4, out.optional_section_length);
-        } else
-            input.details.sec[3] = input.details.sec[2];
+            memcpy(out.optional_section, in.data + in.sec[2] + 4, out.optional_section_length);
+        }
 
         /* Read BUFR section 3 (Data description section) */
-        input.check_available_data(input.details.sec[3], 8, "section 3 of BUFR message (data description section)");
-        input.read_section_size(3);
-        expected_subsets = readNumber(input.details.sec[3] + 4, 2);
-        out.compression = (input.details.sec[3][6] & 0x40) ? 1 : 0;
-        for (i = 0; i < (input.details.sec[4] - input.details.sec[3] - 7)/2; i++)
-            out.datadesc.push_back((Varcode)readNumber(input.details.sec[3] + 7 + i * 2, 2));
+        in.check_available_data(3, 0, 8, "section 3 of BUFR message (data description section)");
+        expected_subsets = in.read_number(3, 4, 2);
+        out.compression = (in.read_byte(3, 6) & 0x40) ? 1 : 0;
+        for (unsigned i = 0; i < (in.sec[4] - in.sec[3] - 7)/2; i++)
+            out.datadesc.push_back((Varcode)in.read_number(3, 7 + i * 2, 2));
         TRACE("info:s3length %d subsets %zd observed %d compression %d byte7 %x\n",
-                (int)(input.details.sec[4] - input.details.sec[3]), expected_subsets, (input.details.sec[3][6] & 0x80) ? 1 : 0, out.compression, (unsigned int)input.details.sec[3][6]);
+                in.sec[4] - in.sec[3], expected_subsets, (in.read_byte(3, 6) & 0x80) ? 1 : 0,
+                out.compression, in.read_byte(3, 6));
         /*
        IFTRACE{
        TRACE(" -> data descriptor section: ");
@@ -422,95 +362,10 @@ struct AnnotationVarAdder : public VarAdder
 
 struct DataSection
 {
-    Input& input;
+    bulletin::BufrInput& in;
 
-    /* Bit decoding data */
-    size_t cursor;
-    unsigned char pbyte;
-    int pbyte_len;
-
-    DataSection(Input& input)
-        : input(input), cursor(input.details.sec[4] + 4 - input.details.sec[0]), pbyte(0), pbyte_len(0)
-    {
-    }
+    DataSection(bulletin::BufrInput& in) : in(in) {}
     virtual ~DataSection() {}
-
-    /* Return the current decoding byte offset */
-    int offset() const { return cursor; }
-
-    /* Return the number of bits left in the message to be decoded */
-    int bits_left() const { return (input.in.size() - cursor) * 8 + pbyte_len; }
-
-    /**
-     * Get the integer value of the next 'n' bits from the decode input
-     * n must be <= 32.
-     */
-    uint32_t get_bits(int n)
-    {
-        uint32_t result = 0;
-
-        if (cursor == input.in.size())
-            parse_error("end of buffer while looking for %d bits of bit-packed data", n);
-
-        for (int i = 0; i < n; i++) 
-        {
-            if (pbyte_len == 0) 
-            {
-                pbyte_len = 8;
-                pbyte = input.details.sec[0][cursor++];
-            }
-            result <<= 1;
-            if (pbyte & 0x80)
-                result |= 1;
-            pbyte <<= 1;
-            pbyte_len--;
-        }
-
-        return result;
-    }
-
-    /* Dump 'count' bits of 'buf', starting at the 'ofs-th' bit */
-    void dump_next_bits(int count, FILE* out)
-    {
-        size_t cursor = this->cursor;
-        int pbyte = this->pbyte;
-        int pbyte_len = this->pbyte_len;
-        int i;
-
-        for (i = 0; i < count; ++i) 
-        {
-            if (cursor == input.in.size())
-                break;
-            if (pbyte_len == 0) 
-            {
-                pbyte_len = 8;
-                pbyte = input.details.sec[0][cursor++];
-                putc(' ', out);
-            }
-            putc((pbyte & 0x80) ? '1' : '0', out);
-            pbyte <<= 1;
-            --pbyte_len;
-        }
-    }
-
-    void parse_error(const char* fmt, ...) WREPORT_THROWF_ATTRS(2, 3)
-    {
-        char* context;
-        char* message;
-
-        va_list ap;
-        va_start(ap, fmt);
-        vasprintf(&message, fmt, ap);
-        va_end(ap);
-
-        asprintf(&context, "%s:%zd+%zd: %s", input.fname, input.offset, cursor, message);
-        free(message);
-
-        string msg(context);
-        free(context);
-
-        throw error_parse(msg);
-    }
 
     void decode_b_value(Varinfo info, VarAdder& adder)
     {
@@ -525,7 +380,7 @@ struct DataSection
         /* Read a value */
         Var var(info);
 
-        uint32_t val = get_bits(info->bit_len);
+        uint32_t val = in.get_bits(info->bit_len);
 
         TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
 
@@ -573,7 +428,7 @@ struct DataSection
         while (toread > 0)
         {
             int count = toread > 8 ? 8 : toread;
-            uint32_t bitval = get_bits(count);
+            uint32_t bitval = in.get_bits(count);
             /* Check that the string is not all 0xff, meaning missing value */
             if (bitval != 0xff && bitval != 0)
                 missing = false;
@@ -619,7 +474,7 @@ struct DataSection
     virtual int decode_delayed_replication_factor(Varinfo info, VarAdder& adder)
     {
         // Fetch the repetition count
-        uint32_t count = get_bits(info->bit_len);
+        uint32_t count = in.get_bits(info->bit_len);
         //if (count == all_ones(info->bit_len))
         //{
         //    throw error_parse("Found MISSING in delayed replication factor");
@@ -639,7 +494,7 @@ struct CompressedDataSection : public DataSection
 {
     unsigned subset_count;
 
-    CompressedDataSection(Input& input, unsigned subset_count)
+    CompressedDataSection(bulletin::BufrInput& input, unsigned subset_count)
         : DataSection(input), subset_count(subset_count) {}
 
     virtual void decode_b_num(Varinfo info, VarAdder& out)
@@ -647,7 +502,7 @@ struct CompressedDataSection : public DataSection
         /* Read a value */
         Var var(info);
 
-        uint32_t val = get_bits(info->bit_len);
+        uint32_t val = in.get_bits(info->bit_len);
 
         TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
 
@@ -664,7 +519,7 @@ struct CompressedDataSection : public DataSection
 
         /* Decode the number of bits (encoded in 6 bits) that these difference
          * values occupy */
-        uint32_t diffbits = get_bits(6);
+        uint32_t diffbits = in.get_bits(6);
         if (missing && diffbits != 0)
             error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
 
@@ -673,7 +528,7 @@ struct CompressedDataSection : public DataSection
         for (unsigned i = 0; i < subset_count; ++i)
         {
             /* Decode the difference value */
-            uint32_t diff = get_bits(diffbits);
+            uint32_t diff = in.get_bits(diffbits);
 
             /* Check if it's all 1: in that case it's a missing value */
             if (missing || diff == all_ones(diffbits))
@@ -716,7 +571,7 @@ struct CompressedDataSection : public DataSection
 
         /* Decode the number of bits (encoded in 6 bits) that these difference
          * values occupy */
-        uint32_t diffbits = get_bits(6);
+        uint32_t diffbits = in.get_bits(6);
 
         TRACE("datadesc:decode_b_string:compressed string, diff bits %d\n", diffbits);
 
@@ -740,7 +595,7 @@ struct CompressedDataSection : public DataSection
                 /* Decode the difference value, reusing the str buffer */
                 for (j = 0; j < diffbits; ++j)
                 {
-                    uint32_t bitval = get_bits(8);
+                    uint32_t bitval = in.get_bits(8);
                     /* Check that the string is not all 0xff, meaning missing value */
                     if (bitval != 0xff && bitval != 0)
                         missing = 0;
@@ -787,7 +642,7 @@ struct CompressedDataSection : public DataSection
     int decode_delayed_replication_factor(Varinfo info, VarAdder& adder)
     {
         // Fetch the repetition count
-        int count = get_bits(info->bit_len);
+        int count = in.get_bits(info->bit_len);
 
         /* Insert the repetition count among the parsed variables */
 
@@ -797,7 +652,7 @@ struct CompressedDataSection : public DataSection
 
         /* Decode the number of bits (encoded in 6 bits) that these difference
          * values occupy */
-        uint32_t diffbits = get_bits(6);
+        uint32_t diffbits = in.get_bits(6);
 
         TRACE("datadesc:decode_delayed_replication_factor:compressed delayed repetition, base value %d diff bits %d\n", count, diffbits);
 
@@ -805,7 +660,7 @@ struct CompressedDataSection : public DataSection
         for (unsigned i = 0; i < subset_count; ++i)
         {
             /* Decode the difference value */
-            uint32_t diff = get_bits(diffbits);
+            uint32_t diff = in.get_bits(diffbits);
 
             /* Compute the value for this subset */
             uint32_t newval = count + diff;
@@ -814,7 +669,7 @@ struct CompressedDataSection : public DataSection
             if (i == 0)
                 repval = newval;
             else if (repval != newval)
-                parse_error("compressed delayed replication factor has different values for subsets (%d and %d)", repval, newval);
+                in.parse_error("compressed delayed replication factor has different values for subsets (%d and %d)", repval, newval);
 
             Var var(info, (int)newval);
             adder.add_var(var, i);
@@ -827,10 +682,10 @@ struct CompressedDataSection : public DataSection
 void Bitmap::next(DataSection& ds)
 {
     if (bitmap == 0)
-        ds.parse_error("applying a data present bitmap with no current bitmap");
+        ds.in.parse_error("applying a data present bitmap with no current bitmap");
     TRACE("bitmap:next:pre %d %d %zd\n", use_index, subset_index, len);
     if (out.subsets.size() == 0)
-        ds.parse_error("no subsets created yet, but already applying a data present bitmap");
+        ds.in.parse_error("no subsets created yet, but already applying a data present bitmap");
     ++use_index;
     ++subset_index;
     while (use_index < 0 || (
@@ -845,9 +700,9 @@ void Bitmap::next(DataSection& ds)
             ++subset_index;
     }
     if ((unsigned)use_index > len)
-        ds.parse_error("moved past end of data present bitmap");
+        ds.in.parse_error("moved past end of data present bitmap");
     if ((unsigned)subset_index == out.subsets[0].size())
-        ds.parse_error("end of data reached when applying attributes");
+        ds.in.parse_error("end of data reached when applying attributes");
     TRACE("bitmap:next:post %d %d\n", use_index, subset_index);
 }
 
@@ -975,12 +830,12 @@ struct opcode_interpreter
         Varinfo info = get_info(ops.head());
 
         IFTRACE {
-            TRACE("decode_b_data:parsing @%zd+%d [bl %d sc %d ref %d]: %d%02d%03d %s[%s]\n",
-                    ds.cursor, 8-ds.pbyte_len,
+            TRACE("decode_b_data:parsing @%u+%d [bl %d sc %d ref %d]: %d%02d%03d %s[%s]\n",
+                    ds.in.s4_cursor, 8 - ds.in.pbyte_len,
                     info->bit_len, info->scale, info->bit_ref,
                     WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var),
                     info->desc, info->unit);
-            ds.dump_next_bits(64, stderr);
+            ds.in.debug_dump_next_bits(64);
             TRACE("\n");
         }
 
@@ -998,7 +853,7 @@ struct opcode_interpreter
             if (c04_bits)
             {
                 TRACE("decode_b_data:reading %d bits of C04 information\n", c04_bits);
-                uint32_t val = ds.get_bits(c04_bits);
+                uint32_t val = ds.in.get_bits(c04_bits);
                 TRACE("decode_b_data:read C04 information %x\n", val);
                 switch (c04_meaning)
                 {
@@ -1142,7 +997,7 @@ struct opcode_interpreter
 		for (unsigned i = 0; i < ops.size(); )
 		{
 			IFTRACE{
-				TRACE("decode_data_section:pos %zd/%zd TODO: ", ds.cursor, ds.input.in.size());
+				TRACE("decode_data_section:pos %u/%zd TODO: ", ds.in.s4_cursor, ds.in.data_len);
 				ops.sub(i).print(stderr);
 				TRACE("\n");
 			}
@@ -1160,7 +1015,7 @@ struct opcode_interpreter
 					break;
 				}
 				default:
-					ds.parse_error("cannot handle field %01d%02d%03d",
+					ds.in.parse_error("cannot handle field %01d%02d%03d",
 								WR_VAR_F(ops[i]),
 								WR_VAR_X(ops[i]),
 								WR_VAR_Y(ops[i]));
@@ -1245,10 +1100,10 @@ struct opcode_interpreter_plain : public opcode_interpreter
         }
 
         IFTRACE {
-            if (ds.bits_left() > 32)
+            if (ds.in.bits_left() > 32)
             {
                 fprintf(stderr, "The data section of %s:%zd still contains %d unparsed bits\n",
-                        d.input.fname, d.input.offset, ds.bits_left() - 32);
+                        ds.in.fname, ds.in.start_offset, ds.in.bits_left() - 32);
                 /*
                    err = dba_error_parse(msg->file->name, POS + vec->cursor,
                    "the data section still contains %d unparsed bits",
@@ -1328,10 +1183,10 @@ struct opcode_interpreter_compressed : public opcode_interpreter
         decode_data_section(Opcodes(d.out.datadesc));
 
         IFTRACE {
-            if (ds.bits_left() > 32)
+            if (ds.in.bits_left() > 32)
             {
                 fprintf(stderr, "The data section of %s:%zd still contains %d unparsed bits\n",
-                        d.input.fname, d.input.offset, ds.bits_left() - 32);
+                        ds.in.fname, ds.in.start_offset, ds.in.bits_left() - 32);
                 /*
                    err = dba_error_parse(msg->file->name, POS + vec->cursor,
                    "the data section still contains %d unparsed bits",
@@ -1350,39 +1205,30 @@ void Decoder::decode_data()
     out.obtain_subset(expected_subsets - 1);
 
     /* Read BUFR section 4 (Data section) */
-    input.read_section_size(4);
-    TRACE("decode_data:section 4 is %d bytes long (%02x %02x %02x %02x)\n", readNumber(input.details.sec[4], 3),
-            (unsigned int)*(input.details.sec[4]),
-            (unsigned int)*(input.details.sec[4]+1),
-            (unsigned int)*(input.details.sec[4]+2),
-            (unsigned int)*(input.details.sec[4]+3));
+    TRACE("decode_data:section 4 is %d bytes long (%02x %02x %02x %02x)\n",
+            in.read_number(4, 0, 3),
+            in.read_byte(4, 0),
+            in.read_byte(4, 1),
+            in.read_byte(4, 2),
+            in.read_byte(4, 3));
 
     if (out.compression)
     {
-        CompressedDataSection ds(input, out.subsets.size());
+        CompressedDataSection ds(in, out.subsets.size());
         opcode_interpreter_compressed interpreter(*this, ds);
         interpreter.run();
     } else {
-        DataSection ds(input);
+        DataSection ds(in);
         opcode_interpreter_plain interpreter(*this, ds);
         interpreter.run();
     }
 
-	/* Read BUFR section 5 (Data section) */
-	input.check_available_data(input.details.sec[5], 4, "section 5 of BUFR message (end section)");
+    /* Read BUFR section 5 (Data section) */
+    in.check_available_data(5, 0, 4, "section 5 of BUFR message (end section)");
 
-	if (memcmp(input.details.sec[5], "7777", 4) != 0)
-		input.parse_error(input.details.sec[5], "section 5 does not contain '7777'");
+    if (memcmp(in.data + in.sec[5], "7777", 4) != 0)
+        in.parse_error(5, 0, "section 5 does not contain '7777'");
 
-#if 0
-	for (i = 0; i < out.subsets; ++i)
-	{
-		bufrex_subset subset;
-		DBA_RUN_OR_RETURN(bufrex_msg_get_subset(out, i, &subset));
-		/* Copy the decoded attributes into the decoded variables */
-		DBA_RUN_OR_RETURN(bufrex_subset_apply_attributes(subset));
-	}
-#endif
     //if (subsets_no != out.subsets.size())
     //    parse_error(sec5, "header advertised %u subsets but only %zd found", subsets_no, out.subsets.size());
 }
@@ -1416,28 +1262,28 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code, Var
     VarIgnorer ignorer;
     unsigned used = decode_replication_info(ops, group, count, ignorer);
 
-	// Sanity checks
+    // Sanity checks
 
-	if (group != 1)
-		ds.parse_error("bitmap section replicates %d descriptors instead of one", group);
+    if (group != 1)
+        ds.in.parse_error("bitmap section replicates %d descriptors instead of one", group);
 
-	if (used >= ops.size())
-		ds.parse_error("there are no descriptor after bitmap replicator (expected B31031)");
+    if (used >= ops.size())
+        ds.in.parse_error("there are no descriptor after bitmap replicator (expected B31031)");
 
-	if (ops[used] != WR_VAR(0, 31, 31))
-		ds.parse_error("bitmap element descriptor is %02d%02d%03d instead of B31031",
-				WR_VAR_F(ops[used]), WR_VAR_X(ops[used]), WR_VAR_Y(ops[used]));
+    if (ops[used] != WR_VAR(0, 31, 31))
+        ds.in.parse_error("bitmap element descriptor is %02d%02d%03d instead of B31031",
+                WR_VAR_F(ops[used]), WR_VAR_X(ops[used]), WR_VAR_Y(ops[used]));
 
-	// If compressed, ensure that the difference bits are 0 and they are
-	// not trying to transmit odd things like delta bitmaps 
-	if (d.out.compression)
-	{
-		/* Decode the number of bits (encoded in 6 bits) that these difference
-		 * values occupy */
-		uint32_t diffbits = ds.get_bits(6);
-		if (diffbits != 0)
-			ds.parse_error("bitmap declares %d difference bits per bitmap value, but we only support 0", diffbits);
-	}
+    // If compressed, ensure that the difference bits are 0 and they are
+    // not trying to transmit odd things like delta bitmaps 
+    if (d.out.compression)
+    {
+        /* Decode the number of bits (encoded in 6 bits) that these difference
+         * values occupy */
+        uint32_t diffbits = ds.in.get_bits(6);
+        if (diffbits != 0)
+            ds.in.parse_error("bitmap declares %d difference bits per bitmap value, but we only support 0", diffbits);
+    }
 
 	// Consume the data present indicator from the opcodes to process
 	++used;
@@ -1449,7 +1295,7 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code, Var
 	bitmap.bitmap = new char[count + 1];
 	for (int i = 0; i < count; ++i)
 	{
-		uint32_t val = ds.get_bits(1);
+		uint32_t val = ds.in.get_bits(1);
 		bitmap.bitmap[i] = (val == 0) ? '+' : '-';
 		if (val == 0) ++bitmap.count;
 	}
@@ -1519,7 +1365,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 OverrideAdder oa(*this, snooper);
                 used += decode_b_data(ops.sub(1));
                 if (snooper.copy->code() != WR_VAR(0, 31, 21))
-                    ds.parse_error("C04yyy is followed by %s instead of B31021", varcode_format(snooper.copy->code()).c_str());
+                    ds.in.parse_error("C04yyy is followed by %s instead of B31021", varcode_format(snooper.copy->code()).c_str());
                 // Read B31021
                 c04_meaning = snooper.copy->enq(63);
             }
@@ -1532,7 +1378,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
 			int i;
 			for (i = 0; i < cdatalen; ++i)
 			{
-				uint32_t bitval = ds.get_bits(8);
+				uint32_t bitval = ds.in.get_bits(8);
 				TRACE("decode_c_data:decoded character %d %c\n", (int)bitval, (char)bitval);
 				buf[i] = bitval;
 			}
@@ -1575,7 +1421,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 }
                 if (skip)
                 {
-                    ds.get_bits(WR_VAR_Y(code));
+                    ds.in.get_bits(WR_VAR_Y(code));
                     used += 1;
                 }
             }
@@ -1591,23 +1437,23 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
             c_string_len_override = cdatalen;
             break;
         }
-		case 22:
-			if (WR_VAR_Y(code) == 0)
-			{
-				used += decode_bitmap(ops.sub(1), code, *current_adder);
-			} else
-				ds.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
-							WR_VAR_F(code),
-							WR_VAR_X(code),
-							WR_VAR_Y(code));
-			break;
+        case 22:
+            if (WR_VAR_Y(code) == 0)
+            {
+                used += decode_bitmap(ops.sub(1), code, *current_adder);
+            } else
+                ds.in.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
+                            WR_VAR_F(code),
+                            WR_VAR_X(code),
+                            WR_VAR_Y(code));
+            break;
         case 23:
             if (WR_VAR_Y(code) == 0)
             {
                 used += decode_bitmap(ops.sub(1), code, *current_adder);
             } else if (WR_VAR_Y(code) == 255) {
                 if (!bitmap.bitmap)
-                    ds.parse_error("C23255 found but there is no active bitmap");
+                    ds.in.parse_error("C23255 found but there is no active bitmap");
                 bitmap.next(ds);
                 // Read substituted value
 
@@ -1618,29 +1464,29 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 // Decode the value
                 ds.decode_b_value(info, *current_adder);
             } else
-                ds.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
+                ds.in.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
                         WR_VAR_F(code),
                         WR_VAR_X(code),
                         WR_VAR_Y(code));
             break;
-		case 24:
-			if (WR_VAR_Y(code) == 0)
-			{
-				used += decode_r_data(ops.sub(1));
-			} else
-				ds.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
-							WR_VAR_F(code),
-							WR_VAR_X(code),
-							WR_VAR_Y(code));
-			break;
-		default:
-			ds.parse_error("decode_c_data:C modifiers (%d%02d%03d in this case) are not yet supported",
-						WR_VAR_F(code),
-						WR_VAR_X(code),
-						WR_VAR_Y(code));
-	}
+        case 24:
+            if (WR_VAR_Y(code) == 0)
+            {
+                used += decode_r_data(ops.sub(1));
+            } else
+                ds.in.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
+                            WR_VAR_F(code),
+                            WR_VAR_X(code),
+                            WR_VAR_Y(code));
+            break;
+        default:
+            ds.in.parse_error("decode_c_data:C modifiers (%d%02d%03d in this case) are not yet supported",
+                        WR_VAR_F(code),
+                        WR_VAR_X(code),
+                        WR_VAR_Y(code));
+    }
 
-	return used;
+    return used;
 }
 
 }

@@ -37,6 +37,7 @@ namespace wreport {
 
 namespace bulletin {
 struct DDSExecutor;
+struct BufrInput;
 }
 
 struct DTable;
@@ -196,18 +197,6 @@ struct Bulletin
 
 
 /**
- * Raw details about an encoded BUFR message
- */
-struct BufrRawDetails {
-    /* Offsets of the start of BUFR sections */
-    const unsigned char* sec[6];
-
-    BufrRawDetails();
-
-    void reset();
-};
-
-/**
  * Options used to configure BUFR decoding
  */
 struct BufrCodecOptions
@@ -252,7 +241,7 @@ struct BufrBulletin : public Bulletin
      * It is only filled in by a decoding operation: in all other cases it is
      * NULL.
      */
-    BufrRawDetails* raw_details;
+    bulletin::BufrInput* raw_details;
 
     /**
      * Options used to customise encoding or decoding.
@@ -283,7 +272,7 @@ struct BufrBulletin : public Bulletin
      *
      * This is only invoked during decoding.
      */
-    BufrRawDetails& reset_raw_details();
+    bulletin::BufrInput& reset_raw_details(const std::string& buf);
 
 	/**
 	 * Read an encoded BUFR message from a stream
