@@ -410,6 +410,18 @@ struct DDSExecutor
     virtual void encode_var(Varinfo info, unsigned var_pos) = 0;
 
     /**
+     * Request encoding, according to \a info, of a variabile that is
+     * significant for controlling the encoding process.
+     *
+     * This means that the variable has always the same value on all datasets
+     * (in case of compressed datasets), and that the interpreter needs to know
+     * its value.
+     *
+     * @returns a copy of the variable
+     */
+    //virtual Var encode_semantic_var(Varinfo info, unsigned var_pos) = 0;
+
+    /**
      * Request encoding, according to \a info, of repetition count in position
      * \a var_pos in the current subset.
      *

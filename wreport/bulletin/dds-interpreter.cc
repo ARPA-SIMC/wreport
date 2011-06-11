@@ -116,9 +116,6 @@ struct Interpreter
     unsigned do_c_data(const Opcodes& ops, unsigned& var_pos);
     unsigned do_bitmap(const Opcodes& ops, unsigned& var_pos);
     void do_data_section(const Opcodes& ops, unsigned& var_pos);
-
-    // Run the interpreter, sending commands to the executor
-    void run();
 };
 
 Varinfo Interpreter::get_varinfo(Varcode code)
@@ -360,19 +357,6 @@ unsigned Interpreter::do_r_data(const Opcodes& ops, unsigned& var_pos, const Var
     return used + group;
 }
 
-void Interpreter::run()
-{
-    /* Encode all the subsets, uncompressed */
-    for (unsigned i = 0; i < in.subsets.size(); ++i)
-    {
-        /* Encode the data of this subset */
-        out.start_subset(i);
-        unsigned var_pos = 0;
-        do_data_section(Opcodes(in.datadesc), var_pos);
-    }
-}
-
-
 unsigned Interpreter::do_bitmap(const Opcodes& ops, unsigned& var_pos)
 {
     unsigned used = 0;
@@ -580,7 +564,15 @@ void Interpreter::do_data_section(const Opcodes& ops, unsigned& var_pos)
 void Bulletin::run_dds(bulletin::DDSExecutor& out) const
 {
     Interpreter e(*this, out);
-    e.run();
+
+    /* Encode all the subsets, uncompressed */
+    for (unsigned i = 0; i < subsets.size(); ++i)
+    {
+        /* Encode the data of this subset */
+        out.start_subset(i);
+        unsigned var_pos = 0;
+        e.do_data_section(Opcodes(datadesc), var_pos);
+    }
 }
 
 } // wreport namespace
