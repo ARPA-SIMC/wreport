@@ -28,6 +28,8 @@
 #include <stdint.h>
 
 namespace wreport {
+struct Var;
+
 namespace bulletin {
 
 class BufrInput
@@ -181,8 +183,10 @@ public:
     /**
      * Read a string from the data section
      *
-     * @param info
-     *   Description of how the string is encoded
+     * @param bit_len
+     *   Number of bits (not bytes) to read. It is normally a multiple of 8,
+     *   and when it is not, the last character will contain the partial byte
+     *   read.
      * @param str
      *   Buffer where the string is written. Must be big enough to contain the
      *   longest string described by info, plus 2 bytes
@@ -190,7 +194,33 @@ public:
      *   true if we decoded a real string, false if we decoded a missing string
      *   value
      */
-    bool decode_string(Varinfo info, char* str, size_t& len);
+    bool decode_string(unsigned bit_len, char* str, size_t& len);
+
+    /**
+     * Decode a number as described by dest.info(), ad set it as value for \a
+     * dest.
+     */
+    void decode_number(Var& dest);
+
+    /**
+     * Decode a compressed number as described by dest.info(), ad set it as
+     * value for \a dest.
+     *
+     * @param base
+     *   The base value for the compressed number
+     * @param diffbits
+     *   The number of bits used to encode the difference from \a base
+     */
+    void decode_number(Var& dest, uint32_t base, unsigned diffbits);
+
+    /**
+     * Decode a string as described by dest.info(), ad set it as value for \a
+     * dest.
+     *
+     * It is assumed that \a dest is not set, therefore in case we decode a
+     * missing value, \a dest will not be touched.
+     */
+    void decode_string(Var& dest);
 };
 
 struct BufrOutput

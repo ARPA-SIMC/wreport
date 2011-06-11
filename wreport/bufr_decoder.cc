@@ -367,31 +367,7 @@ struct DataSection
     {
         /* Read a value */
         Var var(info);
-
-        uint32_t val = in.get_bits(info->bit_len);
-
-        TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
-
-        /* Check if there are bits which are not 1 (that is, if the value is present) */
-        bool missing = (val == all_ones(info->bit_len));
-
-        /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, val, info.type);*/
-        TRACE("datasec:decode_b_num:len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
-
-        /* Store the variable that we found */
-        if (missing)
-        {
-            /* Create the new Var */
-            TRACE("datasec:decode_b_num:decoded as missing\n");
-        } else {
-            double dval = info->bufr_decode_int(val);
-            TRACE("datasec:decode_b_num:decoded as %f %s\n", dval, info->bufr_unit);
-            /* Convert to target unit */
-            dval = convert_units(info->bufr_unit, info->unit, dval);
-            TRACE("datasec:decode_b_num:converted to %f %s\n", dval, info->unit);
-            /* Create the new Var */
-            var.setd(dval);
-        }
+        in.decode_number(var);
         out.add_var(var);
     }
 
@@ -399,15 +375,7 @@ struct DataSection
     {
         /* Read a string */
         Var var(info);
-
-        char str[info->bit_len / 8 + 2];
-        size_t len;
-        bool missing = !in.decode_string(info, str, len);
-
-        /* Store the variable that we found */
-        // Set the variable value
-        if (!missing)
-            var.setc(str);
+        in.decode_string(var);
         adder.add_var(var);
     }
 
@@ -419,12 +387,6 @@ struct DataSection
     {
         // Fetch the repetition count
         uint32_t count = in.get_bits(info->bit_len);
-        //if (count == all_ones(info->bit_len))
-        //{
-        //    throw error_parse("Found MISSING in delayed replication factor");
-        //    //TRACE("datasec:decode_delayed_replication_factor: found MISSING delayed replication factor (%d)\n", (int)count);
-        //    //count = 0;
-        //}
 
         /* Insert the repetition count among the parsed variables */
         Var var(info, (int)count);
@@ -446,15 +408,15 @@ struct CompressedDataSection : public DataSection
         /* Read a value */
         Var var(info);
 
-        uint32_t val = in.get_bits(info->bit_len);
+        uint32_t base = in.get_bits(info->bit_len);
 
-        TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
+        TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, base);
 
         /* Check if there are bits which are not 1 (that is, if the value is present) */
-        bool missing = (val == all_ones(info->bit_len));
+        bool missing = (base == all_ones(info->bit_len));
 
-        /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, val, info.type);*/
-        TRACE("datasec:decode_b_num:len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
+        /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, base, info.type);*/
+        TRACE("datasec:decode_b_num:len %d base %d info-len %d info-desc %s\n", info->bit_len, base, info->bit_len, info->desc);
 
         /* Store the variable that we found */
 
@@ -467,31 +429,11 @@ struct CompressedDataSection : public DataSection
         if (missing && diffbits != 0)
             error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
 
-        TRACE("Compressed number, base value %d diff bits %d\n", val, diffbits);
+        TRACE("Compressed number, base value %d diff bits %d\n", base, diffbits);
 
         for (unsigned i = 0; i < subset_count; ++i)
         {
-            /* Decode the difference value */
-            uint32_t diff = in.get_bits(diffbits);
-
-            /* Check if it's all 1: in that case it's a missing value */
-            if (missing || diff == all_ones(diffbits))
-            {
-                /* Missing value */
-                TRACE("datasec:decode_b_num:decoded[%d] as missing\n", i);
-            } else {
-                /* Compute the value for this subset */
-                uint32_t newval = val + diff;
-                double dval = info->bufr_decode_int(newval);
-                TRACE("datasec:decode_b_num:decoded[%d] as %d+%d=%d->%f %s\n", i, val, diff, newval, dval, info->bufr_unit);
-
-                /* Convert to target unit */
-                dval = convert_units(info->bufr_unit, info->unit, dval);
-                TRACE("datasec:decode_b_num:converted to %f %s\n", dval, info->unit);
-
-                /* Create the new Var */
-                var.setd(dval);
-            }
+            in.decode_number(var, base, diffbits);
 
             /* Add it to this subset */
             out.add_var(var, i);
@@ -506,7 +448,7 @@ struct CompressedDataSection : public DataSection
 
         char str[info->bit_len / 8 + 2];
         size_t len;
-        bool missing = !in.decode_string(info, str, len);
+        bool missing = !in.decode_string(info->bit_len, str, len);
 
         /* Store the variable that we found */
 
@@ -517,7 +459,7 @@ struct CompressedDataSection : public DataSection
          * values occupy */
         uint32_t diffbits = in.get_bits(6);
 
-        TRACE("datadesc:decode_b_string:compressed string, diff bits %d\n", diffbits);
+        TRACE("datadesc:decode_b_string:compressed string, base:%.*s, diff bits %d\n", (int)len, str, diffbits);
 
         if (diffbits != 0)
         {
@@ -534,33 +476,17 @@ struct CompressedDataSection : public DataSection
 
             for (unsigned i = 0; i < subset_count; ++i)
             {
-                unsigned j, missing = 1;
-
-                /* Decode the difference value, reusing the str buffer */
-                for (j = 0; j < diffbits; ++j)
-                {
-                    uint32_t bitval = in.get_bits(8);
-                    /* Check that the string is not all 0xff, meaning missing value */
-                    if (bitval != 0xff && bitval != 0)
-                        missing = 0;
-                    str[j] = bitval;
-                }
-                str[j] = 0;
+                bool missing = in.decode_string(diffbits * 8, str, len);
 
                 // Set the variable value
                 if (missing)
                 {
                     /* Missing value */
                     TRACE("datadesc:decode_b_string:decoded[%d] as missing\n", i);
+                    var.unset();
                 } else {
-                    /* Convert space-padding into zero-padding */
-                    for (--j; j > 0 && isspace(str[j]);
-                            j--)
-                        str[j] = 0;
-
                     /* Compute the value for this subset */
                     TRACE("datadesc:decode_b_string:decoded[%d] as \"%s\"\n", i, str);
-
                     var.setc(str);
                 }
 

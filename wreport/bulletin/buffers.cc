@@ -22,6 +22,8 @@
 #include <config.h>
 
 #include "buffers.h"
+#include "conv.h"
+#include "var.h"
 //#include "opcode.h"
 //#include "bulletin.h"
 //#include "bulletin/dds-printer.h"
@@ -54,6 +56,11 @@ const char* bufr_sec_names[] = {
     "End section"
 };
 
+// Return a value with bitlen bits set to 1
+static inline uint32_t all_ones(int bitlen)
+{
+    return ((1 << (bitlen - 1))-1) | (1 << (bitlen - 1));
+}
 
 }
 
@@ -242,9 +249,9 @@ void BufrInput::check_available_data(unsigned section, unsigned pos, size_t data
         parse_error(section, pos, "end of BUFR message while looking for %s", expected);
 }
 
-bool BufrInput::decode_string(Varinfo info, char* str, size_t& len)
+bool BufrInput::decode_string(unsigned bit_len, char* str, size_t& len)
 {
-    int toread = info->bit_len;
+    int toread = bit_len;
     bool missing = true;
     len = 0;
 
@@ -270,6 +277,78 @@ bool BufrInput::decode_string(Varinfo info, char* str, size_t& len)
     }
 
     return !missing;
+}
+
+void BufrInput::decode_string(Var& dest)
+{
+    Varinfo info = dest.info();
+
+    char str[info->bit_len / 8 + 2];
+    size_t len;
+    bool missing = !decode_string(info->bit_len, str, len);
+
+    /* Store the variable that we found */
+    // Set the variable value
+    if (!missing)
+        dest.setc(str);
+}
+
+void BufrInput::decode_number(Var& dest)
+{
+    Varinfo info = dest.info();
+
+    uint32_t val = get_bits(info->bit_len);
+
+    // TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
+
+    /* Check if there are bits which are not 1 (that is, if the value is present) */
+    bool missing = (val == all_ones(info->bit_len));
+
+    // TRACE("datasec:decode_b_num:len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
+
+    /* Store the variable that we found */
+    if (missing)
+    {
+        /* Create the new Var */
+        // TRACE("datasec:decode_b_num:decoded as missing\n");
+        dest.unset();
+    } else {
+        double dval = info->bufr_decode_int(val);
+        // TRACE("datasec:decode_b_num:decoded as %f %s\n", dval, info->bufr_unit);
+        /* Convert to target unit */
+        dval = convert_units(info->bufr_unit, info->unit, dval);
+        // TRACE("datasec:decode_b_num:converted to %f %s\n", dval, info->unit);
+        /* Create the new Var */
+        dest.setd(dval);
+    }
+}
+
+void BufrInput::decode_number(Var& dest, uint32_t base, unsigned diffbits)
+{
+    Varinfo info = dest.info();
+
+    // Decode the difference value
+    uint32_t diff = get_bits(diffbits);
+
+    // Check if it's all 1s: in that case it's a missing value
+    if (base == all_ones(info->bit_len) || diff == all_ones(diffbits))
+    {
+        /* Missing value */
+        //TRACE("datasec:decode_b_num:decoded[%d] as missing\n", i);
+        dest.unset();
+    } else {
+        /* Compute the value for this subset */
+        uint32_t newval = base + diff;
+        double dval = info->bufr_decode_int(newval);
+        //TRACE("datasec:decode_b_num:decoded[%d] as %d+%d=%d->%f %s\n", i, val, diff, newval, dval, info->bufr_unit);
+
+        /* Convert to target unit */
+        dval = convert_units(info->bufr_unit, info->unit, dval);
+        //TRACE("datasec:decode_b_num:converted to %f %s\n", dval, info->unit);
+
+        /* Create the new Var */
+        dest.setd(dval);
+    }
 }
 
 
