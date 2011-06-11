@@ -21,8 +21,9 @@
 
 #include "config.h"
 
-#include "opcode.h"
 #include "bulletin.h"
+#include "bulletin/buffers.h"
+#include "opcode.h"
 #include "conv.h"
 
 #include <stdio.h>
@@ -63,139 +64,6 @@ namespace wreport {
 
 namespace {
 
-struct Outbuf
-{
-    /* Output decoded variables */
-    std::string& out;
-
-    /* Support for binary append */
-    unsigned char pbyte;
-    int pbyte_len;
-
-    Outbuf(std::string& out)
-        : out(out), pbyte(0), pbyte_len(0)
-    {
-    }
-
-    /**
-     * Append n bits from 'val'.  n must be <= 32.
-     */
-    void add_bits(uint32_t val, int n)
-    {
-        /* Mask for reading data out of val */
-        uint32_t mask = 1 << (n - 1);
-        int i;
-
-        for (i = 0; i < n; i++) 
-        {
-            pbyte <<= 1;
-            pbyte |= ((val & mask) != 0) ? 1 : 0;
-            val <<= 1;
-            pbyte_len++;
-
-            if (pbyte_len == 8) 
-                flush();
-        }
-#if 0
-        IFTRACE {
-            /* Prewrite it when tracing, to allow to dump the buffer as it's
-             * written */
-            while (e->out->len + 1 > e->out->alloclen)
-                DBA_RUN_OR_RETURN(dba_rawmsg_expand_buffer(e->out));
-            e->out->buf[e->out->len] = e->pbyte << (8 - e->pbyte_len);
-        }
-#endif
-    }
-
-    void raw_append(const char* str, int len)
-    {
-        out.append(str, len);
-    }
-
-    void append_short(unsigned short val)
-    {
-        add_bits(val, 16);
-    }
-
-    void append_byte(unsigned char val)
-    {
-        add_bits(val, 8);
-    }
-
-    void append_missing(unsigned len_bits)
-    {
-        add_bits(0xffffffff, len_bits);
-    }
-
-    void append_string(const Var& var, unsigned len_bits)
-    {
-        append_string(var.value(), len_bits);
-    }
-
-    void append_string(const char* val, unsigned len_bits)
-    {
-        unsigned i, bi;
-        bool eol = false;
-        for (i = 0, bi = 0; bi < len_bits; ++i)
-        {
-            TRACE("append_string:len: %d, i: %d, bi: %d, eol: %d\n", len_bits, i, bi, (int)eol);
-            if (!eol && !val[i])
-                eol = true;
-
-            /* Strings are space-padded in BUFR */
-            if (len_bits - bi >= 8)
-            {
-                append_byte(eol ? ' ' : val[i]);
-                bi += 8;
-            }
-            else
-            {
-                /* Pad with zeros if writing strings with a number of bits
-                 * which is not multiple of 8.  It's not worth to implement
-                 * writing partial bytes at the moment and it's better to fail
-                 * gracefully, as my understanding is that this case should
-                 * never happen anyway. */
-                add_bits(0, len_bits - bi);
-                bi = len_bits;
-            }
-        }
-    }
-
-    void append_var(Varinfo info, const Var& var)
-    {
-        if (var.value() == NULL)
-        {
-            append_missing(info->bit_len);
-        } else if (info->is_string()) {
-            append_string(var.value(), info->bit_len);
-        } else {
-            unsigned ival = info->encode_bit_int(var.enqd());
-            add_bits(ival, info->bit_len);
-        }
-    }
-
-    void append_missing(Varinfo info)
-    {
-        append_missing(info->bit_len);
-    }
-
-    /* Write all bits left to the buffer, padding with zeros */
-    void flush()
-    {
-        if (pbyte_len == 0) return;
-
-        while (pbyte_len < 8)
-        {
-            pbyte <<= 1;
-            pbyte_len++;
-        }
-
-        out.append((const char*)&pbyte, 1);
-        pbyte_len = 0;
-        pbyte = 0;
-    }
-};
-
 #if 0
 /* Dump 'count' bits of 'buf', starting at the 'ofs-th' bit */
 static dba_err dump_bits(void* buf, int ofs, int count, FILE* out)
@@ -226,9 +94,9 @@ static dba_err dump_bits(void* buf, int ofs, int count, FILE* out)
 
 struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
 {
-    Outbuf& ob;
+    bulletin::BufrOutput& ob;
 
-    DDSEncoder(const Bulletin& b, Outbuf& ob) : ConstBaseDDSExecutor(b), ob(ob) {}
+    DDSEncoder(const Bulletin& b, bulletin::BufrOutput& ob) : ConstBaseDDSExecutor(b), ob(ob) {}
     virtual ~DDSEncoder() {}
 
     virtual void encode_padding(unsigned bit_count, bool value)
@@ -292,7 +160,7 @@ struct Encoder
 	/* Input message data */
 	const BufrBulletin& in;
     /// Output buffer
-    Outbuf out;
+    bulletin::BufrOutput out;
 
 	/* We have to memorise offsets rather than pointers, because e->out->buf
 	 * can get reallocated during the encoding */
