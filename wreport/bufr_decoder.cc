@@ -61,18 +61,6 @@ static inline uint32_t all_ones(int bitlen)
 	return ((1 << (bitlen - 1))-1) | (1 << (bitlen - 1));
 }
 
-/*
-// Section names to used to format nice error messages
-static const char* sec_names[] = {
-    "indicator section", // Section 0
-    "identification section", // Section 1
-    "optional section", // Section 2
-    "data descriptor section", // Section 3
-    "data section", // Section 4
-    "end section", // Section 5
-};
-*/
-
 struct Decoder
 {
     /// Input data
@@ -407,50 +395,6 @@ struct DataSection
         out.add_var(var);
     }
 
-    /**
-     * Read a string from the data section
-     *
-     * @param info
-     *   Description of how the string is encoded
-     * @param str
-     *   Buffer where the string is written. Must be big enough to contain the
-     *   longest string described by info, plus 2 bytes
-     * @return
-     *   true if we decoded a real string, false if we decoded a missing string
-     *   value
-     */
-    bool read_base_string(Varinfo info, char* str, size_t& len)
-    {
-        int toread = info->bit_len;
-        bool missing = true;
-        len = 0;
-
-        while (toread > 0)
-        {
-            int count = toread > 8 ? 8 : toread;
-            uint32_t bitval = in.get_bits(count);
-            /* Check that the string is not all 0xff, meaning missing value */
-            if (bitval != 0xff && bitval != 0)
-                missing = false;
-            str[len++] = bitval;
-            toread -= count;
-        }
-
-        if (!missing)
-        {
-            str[len] = 0;
-
-            /* Convert space-padding into zero-padding */
-            for (--len; len > 0 && isspace(str[len]);
-                    len--)
-                str[len] = 0;
-        }
-
-        TRACE("datasec:read_base_string:bufr_message_decode_b_data len %zd val %s missing %d info-len %d info-desc %s\n", len, str, (int)missing, info->bit_len, info->desc);
-
-        return !missing;
-    }
-
     virtual void decode_b_string(Varinfo info, VarAdder& adder)
     {
         /* Read a string */
@@ -458,7 +402,7 @@ struct DataSection
 
         char str[info->bit_len / 8 + 2];
         size_t len;
-        bool missing = !read_base_string(info, str, len);
+        bool missing = !in.decode_string(info, str, len);
 
         /* Store the variable that we found */
         // Set the variable value
@@ -562,7 +506,7 @@ struct CompressedDataSection : public DataSection
 
         char str[info->bit_len / 8 + 2];
         size_t len;
-        bool missing = !read_base_string(info, str, len);
+        bool missing = !in.decode_string(info, str, len);
 
         /* Store the variable that we found */
 

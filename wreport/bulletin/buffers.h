@@ -23,6 +23,7 @@
 #define WREPORT_BULLETIN_BUFFERS_H
 
 #include <wreport/error.h>
+#include <wreport/varinfo.h>
 #include <string>
 #include <stdint.h>
 
@@ -178,9 +179,18 @@ public:
     void check_available_data(unsigned section, unsigned pos, size_t datalen, const char* expected);
 
     /**
-     * Read the size of the given section based 
+     * Read a string from the data section
+     *
+     * @param info
+     *   Description of how the string is encoded
+     * @param str
+     *   Buffer where the string is written. Must be big enough to contain the
+     *   longest string described by info, plus 2 bytes
+     * @return
+     *   true if we decoded a real string, false if we decoded a missing string
+     *   value
      */
-    //void read_section_size(int num);
+    bool decode_string(Varinfo info, char* str, size_t& len);
 };
 
 struct BufrOutput

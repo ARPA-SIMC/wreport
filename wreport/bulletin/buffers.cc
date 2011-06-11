@@ -242,6 +242,36 @@ void BufrInput::check_available_data(unsigned section, unsigned pos, size_t data
         parse_error(section, pos, "end of BUFR message while looking for %s", expected);
 }
 
+bool BufrInput::decode_string(Varinfo info, char* str, size_t& len)
+{
+    int toread = info->bit_len;
+    bool missing = true;
+    len = 0;
+
+    while (toread > 0)
+    {
+        int count = toread > 8 ? 8 : toread;
+        uint32_t bitval = get_bits(count);
+        /* Check that the string is not all 0xff, meaning missing value */
+        if (bitval != 0xff && bitval != 0)
+            missing = false;
+        str[len++] = bitval;
+        toread -= count;
+    }
+
+    if (!missing)
+    {
+        str[len] = 0;
+
+        /* Convert space-padding into zero-padding */
+        for (--len; len > 0 && isspace(str[len]);
+                len--)
+            str[len] = 0;
+    }
+
+    return !missing;
+}
+
 
 CrexInput::CrexInput(const std::string& in)
     : data(in.c_str()), data_len(in.size()), fname(NULL), offset(0), cur(data)
