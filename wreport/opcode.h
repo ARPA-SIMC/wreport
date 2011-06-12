@@ -133,9 +133,18 @@ struct Opcodes
 	}
 
     /**
-     * Walk the structure of the opcodes sending events to an opcode::Explorer
+     * Walk the structure of the opcodes sending events to an opcode::Explorer.
+     *
+     * Initialise e.dtable with \a dtable.
      */
     void explore(opcode::Explorer& e, const DTable& dtable) const;
+
+    /**
+     * Walk the structure of the opcodes sending events to an opcode::Explorer
+     *
+     * Assume that e.dtable is already initialised.
+     */
+    void explore(opcode::Explorer& e) const;
 
     /// Print the contents of this opcode list
     void print(FILE* out) const;
@@ -157,12 +166,23 @@ namespace opcode
  */
 struct Explorer
 {
+    const DTable* dtable;
+
+    Explorer();
     virtual ~Explorer();
 
     virtual void b_variable(Varcode code);
     virtual void c_modifier(Varcode code);
-    virtual void r_replication_begin(Varcode code, Varcode delayed_code);
-    virtual void r_replication_end(Varcode code);
+    virtual void c_change_data_width(Varcode code, int change);
+    virtual void c_change_data_scale(Varcode code, int change);
+    virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
+    virtual void c_char_data(Varcode code);
+    virtual void c_char_data_override(Varcode code, unsigned new_length);
+    virtual void c_quality_information_bitmap(Varcode code);
+    virtual void c_substituted_value_bitmap(Varcode code);
+    virtual void c_substituted_value(Varcode code);
+    virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
+    virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
     virtual void d_group_begin(Varcode code);
     virtual void d_group_end(Varcode code);
 };
@@ -202,8 +222,7 @@ public:
     Printer();
     virtual void b_variable(Varcode code);
     virtual void c_modifier(Varcode code);
-    virtual void r_replication_begin(Varcode code, Varcode delayed_code);
-    virtual void r_replication_end(Varcode code);
+    virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
     virtual void d_group_begin(Varcode code);
     virtual void d_group_end(Varcode code);
 };

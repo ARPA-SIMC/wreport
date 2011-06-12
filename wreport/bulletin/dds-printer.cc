@@ -75,28 +75,28 @@ void DDSPrinter::encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
         fprintf(out, "(undef)");
 }
 
-void DDSPrinter::encode_var(Varinfo info, unsigned var_pos)
+void DDSPrinter::encode_var(Varinfo info)
 {
-    print_context(info, var_pos);
+    print_context(info, current_var);
 
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     var.print(out);
 }
 
-unsigned DDSPrinter::encode_repetition_count(Varinfo info, unsigned var_pos)
+unsigned DDSPrinter::encode_repetition_count(Varinfo info)
 {
-    print_context(info, var_pos);
+    print_context(info, current_var);
 
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     var.print(out);
     return var.enqi();
 }
 
-unsigned DDSPrinter::encode_associated_field_significance(Varinfo info, unsigned var_pos)
+unsigned DDSPrinter::encode_associated_field_significance(Varinfo info)
 {
-    print_context(info, var_pos);
+    print_context(info, current_var);
 
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     var.print(out);
     return var.enqi();
 }
@@ -116,11 +116,11 @@ void DDSPrinter::encode_bitmap(const Var& bitmap)
     bitmap.print(out);
 }
 
-void DDSPrinter::encode_char_data(Varcode code, unsigned var_pos)
+void DDSPrinter::encode_char_data(Varcode code)
 {
     print_context(code, 0);
 
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     var.print(out);
 }
 

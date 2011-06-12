@@ -680,104 +680,6 @@ std::auto_ptr<Bulletin> Bulletin::create(dballe::Encoding encoding)
 }
 #endif
 
-#if 0
-dba_err bufrex_msg_decode_header(bufrex_msg msg, dba_rawmsg raw)
-{
-	switch (msg->encoding_type)
-	{
-		case BUFREX_BUFR: return bufr_decoder_decode_header(raw, msg);
-		case BUFREX_CREX: return crex_decoder_decode_header(raw, msg);
-	}
-	return dba_error_consistency("Got invalid encoding type %d", msg->encoding_type);
-}
-
-dba_err bufrex_msg_decode(bufrex_msg msg, dba_rawmsg raw)
-{
-	switch (msg->encoding_type)
-	{
-		case BUFREX_BUFR: return bufr_decoder_decode(raw, msg);
-		case BUFREX_CREX: return crex_decoder_decode(raw, msg);
-	}
-	return dba_error_consistency("Got invalid encoding type %d", msg->encoding_type);
-}
-
-dba_err bufrex_msg_encode(bufrex_msg msg, dba_rawmsg* raw)
-{
-	dba_err err;
-
-	DBA_RUN_OR_RETURN(dba_rawmsg_create(raw));
-	
-	switch (msg->encoding_type)
-	{
-		case BUFREX_BUFR: DBA_RUN_OR_GOTO(fail, bufr_encoder_encode(msg, *raw)); break;
-		case BUFREX_CREX: DBA_RUN_OR_GOTO(fail, crex_encoder_encode(msg, *raw)); break;
-		default:
-			err = dba_error_consistency("Got invalid encoding type %d", msg->encoding_type);
-			goto fail;
-	}
-
-	return dba_error_ok();
-
-fail:
-	if (*raw != NULL)
-		dba_rawmsg_delete(*raw);
-	return err;
-}
-#endif
-
-#if 0
-#include <dballe/dba_check.h>
-
-#ifdef HAVE_CHECK
-
-#include <string.h> /* strcmp */
-
-void test_bufrex_msg()
-{
-	/* dba_err err; */
-	int val, val1;
-	dba_var* vars;
-	bufrex_msg msg;
-
-	CHECKED(bufrex_msg_create(&msg));
-
-	/* Resetting things should not fail */
-	bufrex_msg_reset(msg);
-
-	/* The message should be properly empty */
-	CHECKED(bufrex_msg_get_category(msg, &val, &val1));
-	fail_unless(val == 0);
-	fail_unless(val1 == 0);
-	CHECKED(bufrex_msg_get_vars(msg, &vars, &val));
-	fail_unless(vars == 0);
-	fail_unless(val == 0);
-
-	CHECKED(bufrex_msg_set_category(msg, 42, 24));
-	CHECKED(bufrex_msg_get_category(msg, &val, &val1));
-	fail_unless(val == 42);
-	fail_unless(val1 == 24);
-
-	{
-		dba_varinfo info;
-		dba_var v;
-		CHECKED(dba_varinfo_query_local(WR_VAR(0, 1, 2), &info));
-		CHECKED(dba_var_createi(info, &v, 7));
-		CHECKED(bufrex_msg_store_variable(msg, v));
-	}
-
-	CHECKED(bufrex_msg_get_vars(msg, &vars, &val));
-	fail_unless(vars != 0);
-	fail_unless(vars[0] != 0);
-	fail_unless(val == 1);
-	fail_unless(dba_var_code(vars[0]) == WR_VAR(0, 1, 2));
-	fail_unless(strcmp(dba_var_value(vars[0]), "7") == 0);
-
-	bufrex_msg_delete(msg);
-}
-
-#endif
-#endif
-
 namespace bulletin {
 
 DDSExecutor::~DDSExecutor() {}
@@ -790,6 +692,13 @@ void DDSExecutor::pop_dcode() {}
 BaseDDSExecutor::BaseDDSExecutor(Bulletin& bulletin)
     : bulletin(bulletin), current_subset(0), current_subset_no(0)
 {
+}
+
+const Var& BaseDDSExecutor::get_var()
+{
+    const Var& res = get_var(current_var);
+    ++current_var;
+    return res;
 }
 
 const Var& BaseDDSExecutor::get_var(unsigned var_pos) const
@@ -807,6 +716,7 @@ void BaseDDSExecutor::start_subset(unsigned subset_no)
         error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
     current_subset = &(bulletin.subsets[subset_no]);
     current_subset_no = subset_no;
+    current_var = 0;
 }
 
 unsigned BaseDDSExecutor::subset_size()
@@ -823,12 +733,12 @@ bool BaseDDSExecutor::is_special_var(unsigned var_pos)
     return WR_VAR_F((*current_subset)[var_pos].code()) != 0;
 }
 
-const Var* BaseDDSExecutor::get_bitmap(unsigned var_pos)
+const Var* BaseDDSExecutor::get_bitmap()
 {
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
-                var_pos, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
+                current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
     return &var;
 }
 
@@ -846,6 +756,13 @@ ConstBaseDDSExecutor::ConstBaseDDSExecutor(const Bulletin& bulletin)
 {
 }
 
+const Var& ConstBaseDDSExecutor::get_var()
+{
+    const Var& res = get_var(current_var);
+    ++current_var;
+    return res;
+}
+
 const Var& ConstBaseDDSExecutor::get_var(unsigned var_pos) const
 {
     unsigned max_var = current_subset->size();
@@ -861,6 +778,7 @@ void ConstBaseDDSExecutor::start_subset(unsigned subset_no)
         error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
     current_subset = &(bulletin.subsets[subset_no]);
     current_subset_no = subset_no;
+    current_var = 0;
 }
 
 unsigned ConstBaseDDSExecutor::subset_size()
@@ -877,12 +795,12 @@ bool ConstBaseDDSExecutor::is_special_var(unsigned var_pos)
     return WR_VAR_F((*current_subset)[var_pos].code()) != 0;
 }
 
-const Var* ConstBaseDDSExecutor::get_bitmap(unsigned var_pos)
+const Var* ConstBaseDDSExecutor::get_bitmap()
 {
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
-                var_pos, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
+                current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
     return &var;
 }
 

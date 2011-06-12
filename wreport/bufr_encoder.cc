@@ -117,20 +117,20 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         else
             ob.append_missing(info);
     }
-    virtual void encode_var(Varinfo info, unsigned var_pos)
+    virtual void encode_var(Varinfo info)
     {
-        const Var& var = get_var(var_pos);
+        const Var& var = get_var();
         ob.append_var(info, var);
     }
-    virtual unsigned encode_repetition_count(Varinfo info, unsigned var_pos)
+    virtual unsigned encode_repetition_count(Varinfo info)
     {
-        const Var& var = get_var(var_pos);
+        const Var& var = get_var();
         ob.append_var(info, var);
         return var.enqi();
     }
-    virtual unsigned encode_associated_field_significance(Varinfo info, unsigned var_pos)
+    virtual unsigned encode_associated_field_significance(Varinfo info)
     {
-        const Var& var = get_var(var_pos);
+        const Var& var = get_var();
         ob.append_var(info, var);
         return var.enqi();
     }
@@ -144,9 +144,9 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         for (unsigned i = 0; i < bitmap.info()->len; ++i)
             ob.add_bits(bitmap.value()[i] == '+' ? 0 : 1, 1);
     }
-    virtual void encode_char_data(Varcode code, unsigned var_pos)
+    virtual void encode_char_data(Varcode code)
     {
-        const Var& var = get_var(var_pos);
+        const Var& var = get_var();
         const char* val = var.value();
         if (val == NULL)
             val = "";

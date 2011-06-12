@@ -72,12 +72,13 @@ struct ExploreCounter : public opcode::Explorer
 
     void b_variable(Varcode code) { ++count_b; }
     void c_modifier(Varcode code) { ++count_c; }
-    void r_replication_begin(Varcode code, Varcode delayed_code)
+    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
     {
         if (delayed_code)
             ++count_r_delayed;
         else
             ++count_r_plain;
+        ops.explore(*this);
     }
     void d_group_begin(Varcode code) { ++count_d; }
 };

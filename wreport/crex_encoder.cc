@@ -156,9 +156,9 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         throw error_unimplemented("encode_attr");
     }
 
-    virtual void encode_var(Varinfo info, unsigned var_pos)
+    virtual void encode_var(Varinfo info)
     {
-        const Var& var = get_var(var_pos);
+        const Var& var = get_var();
         IFTRACE {
             TRACE("encode_var ");
             var.print(stderr);
@@ -166,9 +166,9 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         ob.append_var(info, var);
     }
 
-    virtual unsigned encode_repetition_count(Varinfo info, unsigned var_pos)
+    virtual unsigned encode_repetition_count(Varinfo info)
     {
-        const Var& var = get_var(var_pos);
+        const Var& var = get_var();
         unsigned count = var.enqi();
 
         /* Encode the repetition count */
@@ -179,7 +179,7 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         return count;
     }
 
-    virtual unsigned encode_associated_field_significance(Varinfo info, unsigned var_pos)
+    virtual unsigned encode_associated_field_significance(Varinfo info)
     {
         throw error_unimplemented("encode_associated_field_significance");
     }
@@ -194,7 +194,7 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         throw error_unimplemented("encode_bitmap");
     }
 
-    virtual void encode_char_data(Varcode code, unsigned var_pos)
+    virtual void encode_char_data(Varcode code)
     {
         throw error_unimplemented("encode_char_data");
     }

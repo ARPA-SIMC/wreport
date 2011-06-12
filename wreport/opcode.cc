@@ -40,28 +40,100 @@ void Opcodes::print(FILE* out) const
 
 void Opcodes::explore(opcode::Explorer& e, const DTable& dtable) const
 {
+    e.dtable = &dtable;
+    explore(e);
+}
+
+void Opcodes::explore(opcode::Explorer& e) const
+{
     for (unsigned i = 0; i < size(); ++i)
     {
         Varcode cur = (*this)[i];
         switch (WR_VAR_F(cur))
         {
             case 0: e.b_variable(cur); break;
-            case 1:
+            case 1: {
+                Varcode rep_code = 0;
                 if (WR_VAR_Y(cur) == 0)
                 {
                     // Delayed replication
-                    e.r_replication_begin(cur, (*this)[i+1]);
+                    rep_code = (*this)[i+1];
                     ++i;
-                } else
-                    e.r_replication_begin(cur, 0);
-                sub(i + 1, WR_VAR_X(cur)).explore(e, dtable);
-                e.r_replication_end(cur);
+                }
+                Opcodes ops = sub(i + 1, WR_VAR_X(cur));
+                e.r_replication(cur, rep_code, ops);
                 i += WR_VAR_X(cur);
                 break;
-            case 2: e.c_modifier(cur); break;
+            }
+            case 2:
+                // Generic notification
+                e.c_modifier(cur);
+                // Specific notification
+                switch (WR_VAR_X(cur))
+                {
+                    case 1:
+                        e.c_change_data_width(cur, WR_VAR_Y(cur) ? WR_VAR_Y(cur) - 128 : 0);
+                        break;
+                    case 2:
+                        e.c_change_data_scale(cur, WR_VAR_Y(cur) ? WR_VAR_Y(cur) - 128 : 0);
+                        break;
+                    case 4:
+                        e.c_associated_field(cur, (*this)[i + 1], WR_VAR_Y(cur));
+                        ++i;
+                        break;
+                    case 5:
+                        e.c_char_data(cur);
+                        break;
+                    case 6:
+                        e.c_local_descriptor(cur, (*this)[i + 1], WR_VAR_Y(cur));
+                        ++i;
+                        break;
+                    case 8:
+                        e.c_char_data_override(cur, WR_VAR_Y(cur));
+                        break;
+                    case 22:
+                        e.c_quality_information_bitmap(cur);
+                        break;
+                    case 23:
+                        // Substituted values
+                        switch (WR_VAR_Y(cur))
+                        {
+                            case 0:
+                                e.c_substituted_value_bitmap(cur);
+                                break;
+                            case 255:
+                                e.c_substituted_value(cur);
+                                break;
+                            default:
+                                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
+                                        WR_VAR_F(cur),
+                                        WR_VAR_X(cur),
+                                        WR_VAR_Y(cur));
+                        }
+                        break;
+                        /*
+                    case 24:
+                        // First order statistical values
+                        if (WR_VAR_Y(code) == 0)
+                        {
+                            used += do_r_data(ops.sub(1), var_pos);
+                        } else
+                            error_consistency::throwf("C modifier %d%02d%03d not yet supported",
+                                        WR_VAR_F(code),
+                                        WR_VAR_X(code),
+                                        WR_VAR_Y(code));
+                        break;
+                    default:
+                        error_unimplemented::throwf("C modifier %d%02d%03d is not yet supported",
+                                    WR_VAR_F(cur),
+                                    WR_VAR_X(cur),
+                                    WR_VAR_Y(cur));
+                        */
+                }
+                break;
             case 3:
                 e.d_group_begin(cur);
-                dtable.query(cur).explore(e, dtable);
+                e.dtable->query(cur).explore(e);
                 e.d_group_end(cur);
                 break;
             default:
@@ -73,11 +145,20 @@ void Opcodes::explore(opcode::Explorer& e, const DTable& dtable) const
 
 namespace opcode {
 
+Explorer::Explorer() : dtable(0) {}
 Explorer::~Explorer() {}
 void Explorer::b_variable(Varcode code) {}
 void Explorer::c_modifier(Varcode code) {}
-void Explorer::r_replication_begin(Varcode code, Varcode delayed_code) {}
-void Explorer::r_replication_end(Varcode code) {}
+void Explorer::c_change_data_width(Varcode code, int change) {}
+void Explorer::c_change_data_scale(Varcode code, int change) {}
+void Explorer::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
+void Explorer::c_char_data(Varcode code) {}
+void Explorer::c_char_data_override(Varcode code, unsigned new_length) {}
+void Explorer::c_quality_information_bitmap(Varcode code) {}
+void Explorer::c_substituted_value_bitmap(Varcode code) {}
+void Explorer::c_substituted_value(Varcode code) {}
+void Explorer::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
+void Explorer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) {}
 void Explorer::d_group_begin(Varcode code) {}
 void Explorer::d_group_end(Varcode code) {}
 
@@ -113,7 +194,7 @@ void Printer::c_modifier(Varcode code)
     fputs(" (C modifier)\n", out);
 }
 
-void Printer::r_replication_begin(Varcode code, Varcode delayed_code)
+void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     print_lead(code);
     unsigned group = WR_VAR_X(code);
@@ -124,10 +205,7 @@ void Printer::r_replication_begin(Varcode code, Varcode delayed_code)
     else
         fputs(" (delayed) times\n", out);
     indent += indent_step;
-}
-
-void Printer::r_replication_end(Varcode code)
-{
+    ops.explore(*this);
     indent -= indent_step;
 }
 

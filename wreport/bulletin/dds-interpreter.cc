@@ -63,10 +63,11 @@ namespace wreport {
 
 namespace {
 
-struct Interpreter
+struct Interpreter //: public opcoode::Explorer
 {
-    /// Input message data
     const Bulletin& in;
+    /// Input message data
+    const Vartable* btable;
     /// Executor of the interpreter commands
     bulletin::DDSExecutor& out;
 
@@ -116,11 +117,24 @@ struct Interpreter
     unsigned do_c_data(const Opcodes& ops, unsigned& var_pos);
     unsigned do_bitmap(const Opcodes& ops, unsigned& var_pos);
     void do_data_section(const Opcodes& ops, unsigned& var_pos);
+
+    // void b_variable(Varcode code);
+    // void c_modifier(Varcode code);
+    // void c_change_data_width(Varcode code, int change);
+    // void c_change_data_scale(Varcode code, int change);
+    // void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
+    // void c_char_data(Varcode code);
+    // void c_char_data_override(Varcode code, unsigned new_length);
+    // void c_quality_information_bitmap(Varcode code);
+    // void c_substituted_value_bitmap(Varcode code);
+    // void c_substituted_value(Varcode code);
+    // void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
+    // void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
 };
 
 Varinfo Interpreter::get_varinfo(Varcode code)
 {
-    Varinfo peek = in.btable->query(code);
+    Varinfo peek = btable->query(code);
 
     if (!c_scale_change && !c_width_change && !c_string_len_override)
         return peek;
@@ -145,7 +159,7 @@ Varinfo Interpreter::get_varinfo(Varcode code)
     }
 
     TRACE("get_info:requesting alteration scale:%d, bit_len:%d\n", scale, bit_len);
-    return in.btable->query_altered(code, scale, bit_len);
+    return btable->query_altered(code, scale, bit_len);
 }
 
 void Interpreter::bitmap_next()
@@ -270,7 +284,7 @@ unsigned Interpreter::do_b_data(const Opcodes& ops, unsigned& var_pos)
 #endif
         }
 
-        out.encode_var(info, var_pos);
+        out.encode_var(info);
         ++var_pos;
     }
 
@@ -301,14 +315,14 @@ unsigned Interpreter::do_r_data(const Opcodes& ops, unsigned& var_pos, const Var
         // data descriptor section, so we need to act accordingly here
 
         // Get encoding informations for this repetition count
-        Varinfo info = in.btable->query(is_crex ? WR_VAR(0, 31, 12) : ops[used]);
+        Varinfo info = btable->query(is_crex ? WR_VAR(0, 31, 12) : ops[used]);
 
         if (bitmap == NULL)
         {
             /* Look for a delayed replication factor in the input vars */
 
             /* Get the repetition count */
-            count = out.encode_repetition_count(info, var_pos);
+            count = out.encode_repetition_count(info);
             ++var_pos;
 
             TRACE("delayed replicator count read as %d\n", count);
@@ -361,7 +375,7 @@ unsigned Interpreter::do_bitmap(const Opcodes& ops, unsigned& var_pos)
 {
     unsigned used = 0;
 
-    bitmap_to_encode = out.get_bitmap(var_pos);
+    bitmap_to_encode = out.get_bitmap();
     ++used;
     bitmap_use_cur = -1;
     bitmap_subset_cur = -1;
@@ -416,10 +430,10 @@ unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
             if (WR_VAR_Y(code))
             {
                 // Get encoding informations for this associated_field_significance
-                Varinfo info = in.btable->query(WR_VAR(0, 31, 21));
+                Varinfo info = btable->query(WR_VAR(0, 31, 21));
 
                 // Encode B31021
-                c04_meaning = out.encode_repetition_count(info, var_pos);
+                c04_meaning = out.encode_repetition_count(info);
 
                 ++var_pos;
                 ++used;
@@ -428,7 +442,7 @@ unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
             break;
         case 5:
             // Encode character data
-            out.encode_char_data(code, var_pos);
+            out.encode_char_data(code);
             ++var_pos;
             break;
         case 6:
@@ -438,7 +452,7 @@ unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
             if (WR_VAR_Y(code))
             {
                 bool skip = true;
-                if (in.btable->contains(ops[1]))
+                if (btable->contains(ops[1]))
                 {
                     Varinfo info = get_varinfo(ops[1]);
                     if (info->bit_len == WR_VAR_Y(code))
@@ -564,6 +578,7 @@ void Interpreter::do_data_section(const Opcodes& ops, unsigned& var_pos)
 void Bulletin::run_dds(bulletin::DDSExecutor& out) const
 {
     Interpreter e(*this, out);
+    e.btable = btable;
 
     /* Encode all the subsets, uncompressed */
     for (unsigned i = 0; i < subsets.size(); ++i)

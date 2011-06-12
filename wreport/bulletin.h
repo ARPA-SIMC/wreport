@@ -404,10 +404,10 @@ struct DDSExecutor
     virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
 
     /**
-     * Request encoding, according to \a info, of variable in position \a
-     * var_pos in the current subset.
+     * Request encoding, according to \a info, of the next variable in the
+     * current subset
      */
-    virtual void encode_var(Varinfo info, unsigned var_pos) = 0;
+    virtual void encode_var(Varinfo info) = 0;
 
     /**
      * Request encoding, according to \a info, of a variabile that is
@@ -422,20 +422,20 @@ struct DDSExecutor
     //virtual Var encode_semantic_var(Varinfo info, unsigned var_pos) = 0;
 
     /**
-     * Request encoding, according to \a info, of repetition count in position
-     * \a var_pos in the current subset.
+     * Request encoding, according to \a info, of repetition count as stored in
+     * the next variable in the current subset
      *
      * @return the value of the repetition count.
      */
-    virtual unsigned encode_repetition_count(Varinfo info, unsigned var_pos) = 0;
+    virtual unsigned encode_repetition_count(Varinfo info) = 0;
 
     /**
      * Request encoding, according to \a info, of associated field significance
-     * in position \a var_pos in the current subset.
+     * from the attributes of the next variable in the current subset
      *
      * @return the value of the significance variable
      */
-    virtual unsigned encode_associated_field_significance(Varinfo info, unsigned var_pos) = 0;
+    virtual unsigned encode_associated_field_significance(Varinfo info) = 0;
 
     /**
      * Request encoding, according to \a info, of repetition count
@@ -451,14 +451,15 @@ struct DDSExecutor
     virtual void encode_bitmap(const Var& bitmap) = 0;
 
     /**
-     * Request encoding of C05yyy character data
+     * Request encoding of C05yyy character data, as stored in the next
+     * variable in the current dataset
      */
-    virtual void encode_char_data(Varcode code, unsigned var_pos) = 0;
+    virtual void encode_char_data(Varcode code) = 0;
 
     /**
-     * Get the bitmap at position \a var_pos
+     * Get the bitmap as stored in the next variable in the current dataset
      */
-    virtual const Var* get_bitmap(unsigned var_pos) = 0;
+    virtual const Var* get_bitmap() = 0;
 };
 
 struct BaseDDSExecutor : public DDSExecutor
@@ -466,15 +467,17 @@ struct BaseDDSExecutor : public DDSExecutor
     Bulletin& bulletin;
     Subset* current_subset;
     unsigned current_subset_no;
+    unsigned current_var;
 
     BaseDDSExecutor(Bulletin& bulletin);
 
+    const Var& get_var();
     const Var& get_var(unsigned var_pos) const;
 
     virtual void start_subset(unsigned subset_no);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
-    virtual const Var* get_bitmap(unsigned var_pos);
+    virtual const Var* get_bitmap();
 
     virtual void encode_padding(unsigned bit_count, bool value);
     virtual void encode_associated_field(unsigned bit_count, uint32_t value);
@@ -485,15 +488,17 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     const Bulletin& bulletin;
     const Subset* current_subset;
     unsigned current_subset_no;
+    unsigned current_var;
 
     ConstBaseDDSExecutor(const Bulletin& bulletin);
 
+    const Var& get_var();
     const Var& get_var(unsigned var_pos) const;
 
     virtual void start_subset(unsigned subset_no);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
-    virtual const Var* get_bitmap(unsigned var_pos);
+    virtual const Var* get_bitmap();
 
     virtual void encode_padding(unsigned bit_count, bool value);
     virtual void encode_associated_field(unsigned bit_count, uint32_t value);

@@ -33,15 +33,6 @@ DDSValidator::DDSValidator(const Bulletin& b)
     is_crex = dynamic_cast<const CrexBulletin*>(&b) != NULL;
 }
 
-const Var& DDSValidator::get_var(unsigned var_pos) const
-{
-    unsigned max_var = current_subset->size();
-    if (var_pos >= max_var)
-        error_consistency::throwf("requested variable #%u out of a maximum of %u in subset %u",
-                var_pos, max_var, current_subset_no);
-    return (*current_subset)[var_pos];
-}
-
 void DDSValidator::check_fits(Varinfo info, const Var& var)
 {
     if (var.code() != info->var)
@@ -74,22 +65,22 @@ void DDSValidator::encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code
         check_fits(info, *a);
 }
 
-void DDSValidator::encode_var(Varinfo info, unsigned var_pos)
+void DDSValidator::encode_var(Varinfo info)
 {
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     check_fits(info, var);
 }
 
-unsigned DDSValidator::encode_associated_field_significance(Varinfo info, unsigned var_pos)
+unsigned DDSValidator::encode_associated_field_significance(Varinfo info)
 {
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     check_fits(info, var);
     return var.enqi();
 }
 
-unsigned DDSValidator::encode_repetition_count(Varinfo info, unsigned var_pos)
+unsigned DDSValidator::encode_repetition_count(Varinfo info)
 {
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     check_fits(info, var);
     return var.enqi();
 }
@@ -103,9 +94,9 @@ void DDSValidator::encode_bitmap(const Var& bitmap)
 {
 }
 
-void DDSValidator::encode_char_data(Varcode code, unsigned var_pos)
+void DDSValidator::encode_char_data(Varcode code)
 {
-    const Var& var = get_var(var_pos);
+    const Var& var = get_var();
     if (var.code() != code)
         error_consistency::throwf("input variable %d%02d%03d differs from expected variable %d%02d%03d",
                 WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()),
