@@ -45,8 +45,7 @@ struct DDSPrinter : public ConstBaseDDSExecutor
     virtual void pop_dcode();
     virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
     virtual void encode_var(Varinfo info);
-    virtual unsigned encode_associated_field_significance(Varinfo info);
-    virtual unsigned encode_repetition_count(Varinfo info);
+    virtual Var encode_semantic_var(Varinfo info);
     virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap);
     virtual void encode_bitmap(const Var& bitmap);
     virtual void encode_char_data(Varcode code);

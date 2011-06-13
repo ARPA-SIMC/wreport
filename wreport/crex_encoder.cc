@@ -166,26 +166,15 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         ob.append_var(info, var);
     }
 
-    virtual unsigned encode_repetition_count(Varinfo info)
+    virtual Var encode_semantic_var(Varinfo info)
     {
         const Var& var = get_var();
         IFTRACE {
-            TRACE("encode_repetition_count ");
+            TRACE("encode_semantic_var ");
             var.print(stderr);
         }
-        unsigned count = var.enqi();
-
-        /* Encode the repetition count */
-        ob.raw_append(" ", 1);
-        ob.encode_check_digit();
-        ob.raw_appendf("%04u", count);
-
-        return count;
-    }
-
-    virtual unsigned encode_associated_field_significance(Varinfo info)
-    {
-        throw error_unimplemented("encode_associated_field_significance");
+        ob.append_var(info, var);
+        return var;
     }
 
     virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)

@@ -424,23 +424,7 @@ struct DDSExecutor
      *
      * @returns a copy of the variable
      */
-    //virtual Var encode_semantic_var(Varinfo info, unsigned var_pos) = 0;
-
-    /**
-     * Request encoding, according to \a info, of repetition count as stored in
-     * the next variable in the current subset
-     *
-     * @return the value of the repetition count.
-     */
-    virtual unsigned encode_repetition_count(Varinfo info) = 0;
-
-    /**
-     * Request encoding, according to \a info, of associated field significance
-     * from the attributes of the next variable in the current subset
-     *
-     * @return the value of the significance variable
-     */
-    virtual unsigned encode_associated_field_significance(Varinfo info) = 0;
+    virtual Var encode_semantic_var(Varinfo info) = 0;
 
     /**
      * Request encoding, according to \a info, of repetition count

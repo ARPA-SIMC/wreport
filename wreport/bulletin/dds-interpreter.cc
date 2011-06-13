@@ -255,7 +255,8 @@ struct Interpreter : public opcode::Explorer
             Varinfo info = btable->query(WR_VAR(0, 31, 21));
 
             // Encode B31021
-            c04_meaning = out.encode_associated_field_significance(info);
+            Var var = out.encode_semantic_var(info);
+            c04_meaning = var.enqi();
         }
         c04_bits = WR_VAR_Y(code);
     }
@@ -376,7 +377,8 @@ struct Interpreter : public opcode::Explorer
             if (count == 0)
             {
                 Varinfo info = btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
-                count = out.encode_repetition_count(info);
+                Var var = out.encode_semantic_var(info);
+                count = var.enqi();
             }
             TRACE("encode_r_data %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
             IFTRACE {

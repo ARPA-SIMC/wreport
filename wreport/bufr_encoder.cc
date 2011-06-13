@@ -122,17 +122,11 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         const Var& var = get_var();
         ob.append_var(info, var);
     }
-    virtual unsigned encode_repetition_count(Varinfo info)
+    virtual Var encode_semantic_var(Varinfo info)
     {
         const Var& var = get_var();
         ob.append_var(info, var);
-        return var.enqi();
-    }
-    virtual unsigned encode_associated_field_significance(Varinfo info)
-    {
-        const Var& var = get_var();
-        ob.append_var(info, var);
-        return var.enqi();
+        return var;
     }
     virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
     {

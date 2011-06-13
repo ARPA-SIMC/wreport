@@ -83,22 +83,13 @@ void DDSPrinter::encode_var(Varinfo info)
     var.print(out);
 }
 
-unsigned DDSPrinter::encode_repetition_count(Varinfo info)
+Var DDSPrinter::encode_semantic_var(Varinfo info)
 {
     print_context(info, current_var);
 
     const Var& var = get_var();
     var.print(out);
-    return var.enqi();
-}
-
-unsigned DDSPrinter::encode_associated_field_significance(Varinfo info)
-{
-    print_context(info, current_var);
-
-    const Var& var = get_var();
-    var.print(out);
-    return var.enqi();
+    return var;
 }
 
 unsigned DDSPrinter::encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)

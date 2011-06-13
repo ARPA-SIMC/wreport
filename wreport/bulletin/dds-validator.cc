@@ -71,18 +71,11 @@ void DDSValidator::encode_var(Varinfo info)
     check_fits(info, var);
 }
 
-unsigned DDSValidator::encode_associated_field_significance(Varinfo info)
+Var DDSValidator::encode_semantic_var(Varinfo info)
 {
     const Var& var = get_var();
     check_fits(info, var);
-    return var.enqi();
-}
-
-unsigned DDSValidator::encode_repetition_count(Varinfo info)
-{
-    const Var& var = get_var();
-    check_fits(info, var);
-    return var.enqi();
+    return var;
 }
 
 unsigned DDSValidator::encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
