@@ -356,13 +356,13 @@ struct Interpreter : public opcode::Explorer
                 bitmap_to_encode->print(stderr);
             }
 
-            if (delayed_code)
+            if (count == 0)
             {
-                Varinfo info = btable->query(is_crex ? WR_VAR(0, 31, 12) : delayed_code);
+                Varinfo info = btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
                 count = out.encode_bitmap_repetition_count(info, *bitmap_to_encode);
             }
             TRACE("encode_r_data bitmap %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
-  
+
             // Encode the bitmap here directly
             if (ops[0] != WR_VAR(0, 31, 31))
                 error_consistency::throwf("bitmap data descriptor is %d%02d%03d instead of B31031",
@@ -373,9 +373,9 @@ struct Interpreter : public opcode::Explorer
             out.encode_bitmap(*bitmap_to_encode);
             want_bitmap = false;
         } else {
-            if (delayed_code)
+            if (count == 0)
             {
-                Varinfo info = btable->query(is_crex ? WR_VAR(0, 31, 12) : delayed_code);
+                Varinfo info = btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
                 count = out.encode_repetition_count(info);
             }
             TRACE("encode_r_data %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");

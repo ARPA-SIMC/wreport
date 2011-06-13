@@ -169,6 +169,10 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
     virtual unsigned encode_repetition_count(Varinfo info)
     {
         const Var& var = get_var();
+        IFTRACE {
+            TRACE("encode_repetition_count ");
+            var.print(stderr);
+        }
         unsigned count = var.enqi();
 
         /* Encode the repetition count */

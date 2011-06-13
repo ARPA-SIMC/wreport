@@ -54,11 +54,16 @@ void Opcodes::explore(opcode::Explorer& e) const
             case 0: e.b_variable(cur); break;
             case 1: {
                 Varcode rep_code = 0;
+                Varcode next_code = (*this)[i+1];
                 if (WR_VAR_Y(cur) == 0)
                 {
-                    // Delayed replication
-                    rep_code = (*this)[i+1];
-                    ++i;
+                    // Delayed replication, if replicator is there. In case of
+                    // CREX, delayed replicator codes are implicit
+                    if (WR_VAR_F(next_code) == 0 && WR_VAR_X(next_code) == 31)
+                    {
+                        rep_code = (*this)[i+1];
+                        ++i;
+                    }
                 }
                 Opcodes ops = sub(i + 1, WR_VAR_X(cur));
                 e.r_replication(cur, rep_code, ops);

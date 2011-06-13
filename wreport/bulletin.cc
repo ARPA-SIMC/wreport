@@ -276,9 +276,10 @@ void Bulletin::print_datadesc(FILE* out, unsigned indent) const
     opcode::Printer printer;
     printer.out = out;
     printer.btable = btable;
+    printer.dtable = dtable;
     printer.indent = indent;
 
-    Opcodes(datadesc).explore(printer, *dtable);
+    Opcodes(datadesc).explore(printer);
 }
 
 unsigned Bulletin::diff(const Bulletin& msg) const
