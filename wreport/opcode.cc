@@ -267,7 +267,7 @@ void Printer::c_substituted_value(Varcode code)
 void Printer::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
 {
     print_lead(code);
-    fprintf(out, " local descriptor %d%02d%03d %d bits long",
+    fprintf(out, " local descriptor %d%02d%03d %d bits long\n",
             WR_VAR_F(desc_code), WR_VAR_X(desc_code), WR_VAR_Y(desc_code), nbits);
 }
 
