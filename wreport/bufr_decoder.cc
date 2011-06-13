@@ -1269,7 +1269,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 {
                     MutableVarinfo info(MutableVarinfo::create_singleuse());
                     info->set(code, "UNKNOWN LOCAL DESCRIPTOR", "UNKNOWN", 0, 0,
-                            ceil(log10(exp2(WR_VAR_Y(code)))), 0, WR_VAR_Y(code));
+                            ceil(log10(exp2(WR_VAR_Y(code)))), 0, WR_VAR_Y(code), VARINFO_FLAG_STRING);
                     ds.decode_b_value(info, *current_adder);
                     used += 1;
                 }

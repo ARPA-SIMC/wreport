@@ -173,7 +173,25 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
             TRACE("encode_semantic_var ");
             var.print(stderr);
         }
-        ob.append_var(info, var);
+        switch (info->var)
+        {
+            case WR_VAR(0, 31, 1):
+            case WR_VAR(0, 31, 2):
+            case WR_VAR(0, 31, 11):
+            case WR_VAR(0, 31, 12):
+            {
+                unsigned count = var.enqi();
+
+                /* Encode the repetition count */
+                ob.raw_append(" ", 1);
+                ob.encode_check_digit();
+                ob.raw_appendf("%04u", count);
+                break;
+            }
+            default:
+                ob.append_var(info, var);
+                break;
+        }
         return var;
     }
 

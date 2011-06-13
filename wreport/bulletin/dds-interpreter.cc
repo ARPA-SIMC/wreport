@@ -96,9 +96,6 @@ struct Interpreter : public opcode::Explorer
     /// Meaning of C04yyy field according to code table B31021
     int c04_meaning;
 
-    // True if the bulletin is a CREX bulletin
-    bool is_crex;
-
     // True if a Data Present Bitmap is expected
     bool want_bitmap;
 
@@ -108,7 +105,6 @@ struct Interpreter : public opcode::Explorer
           bitmap_to_encode(0), bitmap_use_cur(0), bitmap_subset_cur(0),
           c04_bits(0), c04_meaning(63), want_bitmap(false)
     {
-        is_crex = dynamic_cast<const CrexBulletin*>(&in) != NULL;
     }
 
     void start()
@@ -285,9 +281,10 @@ struct Interpreter : public opcode::Explorer
             }
             if (skip)
             {
-                // Encode all bits all missing
-                out.encode_padding(WR_VAR_Y(code), true);
-                out.skip_var(desc_code);
+                MutableVarinfo info(MutableVarinfo::create_singleuse());
+                info->set(code, "UNKNOWN LOCAL DESCRIPTOR", "UNKNOWN", 0, 0,
+                        ceil(log10(exp2(WR_VAR_Y(code)))), 0, WR_VAR_Y(code), VARINFO_FLAG_STRING);
+                out.encode_var(info);
             }
         }
     }

@@ -435,7 +435,7 @@ unsigned Decoder::parse_r_data(const Opcodes& ops)
 		count = strtol((const char*)d_start, NULL, 10);
 
 		/* Insert the repetition count among the parsed variables */
-		current_subset->store_variable_i(WR_VAR(0, 31, 1), count);
+		current_subset->store_variable_i(WR_VAR(0, 31, 12), count);
 
 		TRACE("read_c_data %d items %d times (delayed)\n", group, count);
 	} else
