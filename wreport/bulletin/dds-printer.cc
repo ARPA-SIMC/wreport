@@ -96,7 +96,7 @@ unsigned DDSPrinter::encode_associated_field_significance(Varinfo info)
 {
     print_context(info, current_var);
 
-    const Var& var = get_var();
+    const Var& var = get_var(current_var);
     var.print(out);
     return var.enqi();
 }

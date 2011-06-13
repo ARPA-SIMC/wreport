@@ -63,7 +63,7 @@ namespace wreport {
 
 namespace {
 
-struct Interpreter //: public opcoode::Explorer
+struct Interpreter : public opcode::Explorer
 {
     const Bulletin& in;
     /// Input message data
@@ -99,37 +99,301 @@ struct Interpreter //: public opcoode::Explorer
     // True if the bulletin is a CREX bulletin
     bool is_crex;
 
+    // True if a Data Present Bitmap is expected
+    bool want_bitmap;
+
     Interpreter(const Bulletin& in, bulletin::DDSExecutor& out)
         : in(in), out(out),
           c_scale_change(0), c_width_change(0), c_string_len_override(0),
           bitmap_to_encode(0), bitmap_use_cur(0), bitmap_subset_cur(0),
-          c04_bits(0), c04_meaning(63)
+          c04_bits(0), c04_meaning(63), want_bitmap(false)
     {
         is_crex = dynamic_cast<const CrexBulletin*>(&in) != NULL;
+    }
+
+    void start()
+    {
+        c_scale_change = 0;
+        c_width_change = 0;
+        c_string_len_override = 0;
+        bitmap_to_encode = 0;
+        bitmap_use_cur = 0;
+        bitmap_subset_cur = 0;
+        c04_bits = 0;
+        c04_meaning = 63;
+        want_bitmap = false;
     }
 
     Varinfo get_varinfo(Varcode code);
 
     void bitmap_next();
 
-    unsigned do_b_data(const Opcodes& ops, unsigned& var_pos);
-    unsigned do_r_data(const Opcodes& ops, unsigned& var_pos, const Var* bitmap=NULL);
-    unsigned do_c_data(const Opcodes& ops, unsigned& var_pos);
-    unsigned do_bitmap(const Opcodes& ops, unsigned& var_pos);
-    void do_data_section(const Opcodes& ops, unsigned& var_pos);
+    void b_variable(Varcode code)
+    {
+        Varinfo info = get_varinfo(code);
+        // Choose which value we should encode
+        if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33
+                && bitmap_to_encode != NULL && (unsigned)bitmap_use_cur < bitmap_to_encode->info()->len)
+        {
+            // Attribute of the variable pointed by the bitmap
+            TRACE("Encode attribute %01d%02d%03d %d/%d subset pos %d\n",
+                    WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code),
+                    bitmap_use_cur, bitmap_to_encode->info()->len,
+                    bitmap_subset_cur);
+            out.encode_attr(info, bitmap_subset_cur, code);
+            bitmap_next();
+        } else {
+            // Proper variable
+            TRACE("Encode variable %01d%02d%03d\n",
+                    WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
+            if (c04_bits > 0)
+            {
+                // TODO: only padding for now, implement retrieving the value
+                out.encode_associated_field(c04_bits, 1);
+#if 0
+                    TRACE("decode_b_data:reading %d bits of C04 information\n", c04_bits);
+                    uint32_t val = ds.get_bits(c04_bits);
+                    TRACE("decode_b_data:read C04 information %x\n", val);
+                    switch (c04_meaning)
+                    {
+                        case 1:
+                        {
+                            // Add attribute B33002=val
+                            Var attr(d.out.btable->query(WR_VAR(0, 33, 2)), (int)val);
+                            AnnotationVarAdder ava(*current_adder, attr);
+                            OverrideAdder oa(*this, ava);
+                            ds.decode_b_value(info, *current_adder);
+                            break;
+                        }
+                        case 2:
+                        {
+                            // Add attribute B33002=val
+                            Var attr(d.out.btable->query(WR_VAR(0, 33, 3)), (int)val);
+                            AnnotationVarAdder ava(*current_adder, attr);
+                            OverrideAdder oa(*this, ava);
+                            ds.decode_b_value(info, *current_adder);
+                            break;
+                        }
+                        case 3 ... 5:
+                            // Reserved: ignored
+                            notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                                    c04_meaning);
+                            break;
+                        case 6:
+                            // Add attribute B33050=val
+                            if (d.conf_add_undef_attrs || val != 15)
+                            {
+                                Var attr(d.out.btable->query(WR_VAR(0, 33, 50)));
+                                if (val != 15) attr.seti(val);
+                                AnnotationVarAdder ava(*current_adder, attr);
+                                OverrideAdder oa(*this, ava);
+                                ds.decode_b_value(info, *current_adder);
+                            } else
+                                ds.decode_b_value(info, *current_adder);
+                            break;
+                        case 9 ... 20:
+                            // Reserved: ignored
+                            notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                                    c04_meaning);
+                            break;
+                        case 22 ... 62:
+                            notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+                                    c04_meaning);
+                            break;
+                        case 63:
+                            /*
+                             * Ignore quality information if B31021 is missing.
+                             * The Guide to FM94-BUFR says:
+                             *   If the quality information has no meaning for some
+                             *   of those following elements, but the field is
+                             *   still there, there is at present no explicit way
+                             *   to indicate "no meaning" within the currently
+                             *   defined meanings. One must either redefine the
+                             *   meaning of the associated field in its entirety
+                             *   (by including 0 31 021 in the message with a data
+                             *   value of 63 - "missing value") or remove the
+                             *   associated field bits by the "cancel" operator: 2
+                             *   04 000.
+                             */
+                            break;
+                        default:
+                            error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", c04_meaning);
+                    }
+#endif
+            }
 
-    // void b_variable(Varcode code);
-    // void c_modifier(Varcode code);
-    // void c_change_data_width(Varcode code, int change);
-    // void c_change_data_scale(Varcode code, int change);
-    // void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
-    // void c_char_data(Varcode code);
-    // void c_char_data_override(Varcode code, unsigned new_length);
-    // void c_quality_information_bitmap(Varcode code);
-    // void c_substituted_value_bitmap(Varcode code);
-    // void c_substituted_value(Varcode code);
-    // void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
-    // void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
+            out.encode_var(info);
+        }
+    }
+
+    void c_modifier(Varcode code)
+    {
+        TRACE("C DATA %01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+    }
+    void c_change_data_width(Varcode code, int change)
+    {
+        c_width_change = change;
+        TRACE("Set width change to %d\n", c_width_change);
+    }
+    void c_change_data_scale(Varcode code, int change)
+    {
+        c_scale_change = change;
+        TRACE("Set scale change to %d\n", c_scale_change);
+    }
+    void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
+    {
+        // Add associated field
+        TRACE("Set C04 bits to %d\n", WR_VAR_Y(code));
+        // FIXME: nested C04 modifiers are not currently implemented
+        if (WR_VAR_Y(code) && c04_bits)
+            throw error_unimplemented("nested C04 modifiers are not yet implemented");
+        if (WR_VAR_Y(code) > 32)
+            error_unimplemented::throwf("C04 modifier wants %d bits but only at most 32 are supported", WR_VAR_Y(code));
+        if (WR_VAR_Y(code))
+        {
+            // Get encoding informations for this associated_field_significance
+            Varinfo info = btable->query(WR_VAR(0, 31, 21));
+
+            // Encode B31021
+            c04_meaning = out.encode_associated_field_significance(info);
+        }
+        c04_bits = WR_VAR_Y(code);
+    }
+    void c_char_data(Varcode code)
+    {
+        out.encode_char_data(code);
+    }
+    void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
+    {
+        // Length of next local descriptor
+        if (WR_VAR_Y(code) > 32)
+            error_unimplemented::throwf("C06 modifier found for %d bits but only at most 32 are supported", WR_VAR_Y(code));
+        if (WR_VAR_Y(code))
+        {
+            bool skip = true;
+            if (btable->contains(desc_code))
+            {
+                Varinfo info = get_varinfo(desc_code);
+                if (info->bit_len == WR_VAR_Y(code))
+                {
+                    // If we can resolve the descriptor and the size is the
+                    // same, attempt decoding
+                    out.encode_var(info);
+                    skip = false;
+                }
+            }
+            if (skip)
+            {
+                // Encode all bits all missing
+                out.encode_padding(WR_VAR_Y(code), true);
+                out.skip_var(desc_code);
+            }
+        }
+    }
+    void c_char_data_override(Varcode code, unsigned new_length)
+    {
+        IFTRACE {
+            if (new_length)
+                TRACE("decode_c_data:character size overridden to %d chars for all fields\n", new_length);
+            else
+                TRACE("decode_c_data:character size overridde end\n");
+        }
+        c_string_len_override = new_length;
+    }
+    void c_quality_information_bitmap(Varcode code)
+    {
+        // Quality information
+        if (WR_VAR_Y(code) != 0)
+            error_consistency::throwf("C modifier %d%02d%03d not yet supported",
+                        WR_VAR_F(code),
+                        WR_VAR_X(code),
+                        WR_VAR_Y(code));
+        want_bitmap = true;
+    }
+    void c_substituted_value_bitmap(Varcode code)
+    {
+        want_bitmap = true;
+    }
+    void c_substituted_value(Varcode code)
+    {
+        if (bitmap_to_encode == NULL)
+            error_consistency::throwf("found C23255 with no active bitmap");
+        if ((unsigned)bitmap_use_cur >= bitmap_to_encode->info()->len)
+            error_consistency::throwf("found C23255 while at the end of active bitmap");
+
+        // Use the details of the corrisponding variable for decoding
+        Varinfo info = in.subsets[0][bitmap_subset_cur].info();
+        // Encode the value
+        out.encode_attr(info, bitmap_subset_cur, info->var);
+        bitmap_next();
+    }
+
+    /* If using delayed replication and count is not -1, use count for the delayed
+     * replication factor; else, look for a delayed replication factor among the
+     * input variables */
+    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+    {
+        unsigned used = 1;
+        int group = WR_VAR_X(code);
+        int count = WR_VAR_Y(code);
+
+        IFTRACE{
+            TRACE("bufr_message_encode_r_data %01d%02d%03d %d %d: items: ",
+                    WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
+            ops.print(stderr);
+            TRACE("\n");
+        }
+
+        if (want_bitmap)
+        {
+            bitmap_to_encode = out.get_bitmap();
+            bitmap_use_cur = -1;
+            bitmap_subset_cur = -1;
+            bitmap_next();
+
+            IFTRACE{
+                TRACE("Encoding data present bitmap:");
+                bitmap_to_encode->print(stderr);
+            }
+
+            if (delayed_code)
+            {
+                Varinfo info = btable->query(is_crex ? WR_VAR(0, 31, 12) : delayed_code);
+                count = out.encode_bitmap_repetition_count(info, *bitmap_to_encode);
+            }
+            TRACE("encode_r_data bitmap %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
+  
+            // Encode the bitmap here directly
+            if (ops[0] != WR_VAR(0, 31, 31))
+                error_consistency::throwf("bitmap data descriptor is %d%02d%03d instead of B31031",
+                        WR_VAR_F(ops[used]), WR_VAR_X(ops[used]), WR_VAR_Y(ops[used]));
+            if (ops.size() != 1)
+                error_consistency::throwf("repeated sequence for bitmap encoding contains more than just B31031");
+
+            out.encode_bitmap(*bitmap_to_encode);
+            want_bitmap = false;
+        } else {
+            if (delayed_code)
+            {
+                Varinfo info = btable->query(is_crex ? WR_VAR(0, 31, 12) : delayed_code);
+                count = out.encode_repetition_count(info);
+            }
+            TRACE("encode_r_data %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
+            IFTRACE {
+                TRACE("Repeat opcodes: ");
+                ops.print(stderr);
+            }
+
+            // encode_data_section on it `count' times
+            out.push_repetition(group, count);
+            for (int i = 0; i < count; ++i)
+            {
+                out.start_repetition();
+                ops.explore(*this);
+            }
+            out.pop_repetition();
+        }
+    }
 };
 
 Varinfo Interpreter::get_varinfo(Varcode code)
@@ -188,405 +452,23 @@ void Interpreter::bitmap_next()
     TRACE("bitmap_next post %d %d\n", bitmap_use_cur, bitmap_subset_cur);
 }
 
-unsigned Interpreter::do_b_data(const Opcodes& ops, unsigned& var_pos)
-{
-    Varinfo info = get_varinfo(ops.head());
-
-    // Choose which value we should encode
-    if (WR_VAR_F(ops.head()) == 0 && WR_VAR_X(ops.head()) == 33
-            && bitmap_to_encode != NULL && (unsigned)bitmap_use_cur < bitmap_to_encode->info()->len)
-    {
-        // Attribute of the variable pointed by the bitmap
-        TRACE("Encode attribute %01d%02d%03d %d/%d subset pos %d\n",
-                WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()),
-                bitmap_use_cur, bitmap_to_encode->info()->len,
-                bitmap_subset_cur);
-        out.encode_attr(info, bitmap_subset_cur, ops.head());
-        bitmap_next();
-    } else {
-        // Proper variable
-        TRACE("Encode variable %01d%02d%03d var pos %d\n",
-                WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var),
-                var_pos);
-        if (c04_bits > 0)
-        {
-            // TODO: only padding for now, implement retrieving the value
-            out.encode_associated_field(c04_bits, 1);
-#if 0
-                TRACE("decode_b_data:reading %d bits of C04 information\n", c04_bits);
-                uint32_t val = ds.get_bits(c04_bits);
-                TRACE("decode_b_data:read C04 information %x\n", val);
-                switch (c04_meaning)
-                {
-                    case 1:
-                    {
-                        // Add attribute B33002=val
-                        Var attr(d.out.btable->query(WR_VAR(0, 33, 2)), (int)val);
-                        AnnotationVarAdder ava(*current_adder, attr);
-                        OverrideAdder oa(*this, ava);
-                        ds.decode_b_value(info, *current_adder);
-                        break;
-                    }
-                    case 2:
-                    {
-                        // Add attribute B33002=val
-                        Var attr(d.out.btable->query(WR_VAR(0, 33, 3)), (int)val);
-                        AnnotationVarAdder ava(*current_adder, attr);
-                        OverrideAdder oa(*this, ava);
-                        ds.decode_b_value(info, *current_adder);
-                        break;
-                    }
-                    case 3 ... 5:
-                        // Reserved: ignored
-                        notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
-                                c04_meaning);
-                        break;
-                    case 6:
-                        // Add attribute B33050=val
-                        if (d.conf_add_undef_attrs || val != 15)
-                        {
-                            Var attr(d.out.btable->query(WR_VAR(0, 33, 50)));
-                            if (val != 15) attr.seti(val);
-                            AnnotationVarAdder ava(*current_adder, attr);
-                            OverrideAdder oa(*this, ava);
-                            ds.decode_b_value(info, *current_adder);
-                        } else
-                            ds.decode_b_value(info, *current_adder);
-                        break;
-                    case 9 ... 20:
-                        // Reserved: ignored
-                        notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
-                                c04_meaning);
-                        break;
-                    case 22 ... 62:
-                        notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
-                                c04_meaning);
-                        break;
-                    case 63:
-                        /*
-                         * Ignore quality information if B31021 is missing.
-                         * The Guide to FM94-BUFR says:
-                         *   If the quality information has no meaning for some
-                         *   of those following elements, but the field is
-                         *   still there, there is at present no explicit way
-                         *   to indicate "no meaning" within the currently
-                         *   defined meanings. One must either redefine the
-                         *   meaning of the associated field in its entirety
-                         *   (by including 0 31 021 in the message with a data
-                         *   value of 63 - "missing value") or remove the
-                         *   associated field bits by the "cancel" operator: 2
-                         *   04 000.
-                         */
-                        break;
-                    default:
-                        error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", c04_meaning);
-                }
-#endif
-        }
-
-        out.encode_var(info);
-        ++var_pos;
-    }
-
-    return 1;
-}
-
-/* If using delayed replication and count is not -1, use count for the delayed
- * replication factor; else, look for a delayed replication factor among the
- * input variables */
-unsigned Interpreter::do_r_data(const Opcodes& ops, unsigned& var_pos, const Var* bitmap)
-{
-    unsigned used = 1;
-    int group = WR_VAR_X(ops.head());
-    int count = WR_VAR_Y(ops.head());
-
-    IFTRACE{
-        TRACE("bufr_message_encode_r_data %01d%02d%03d %d %d: items: ",
-                WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
-        ops.print(stderr);
-        TRACE("\n");
-    }
-
-    if (count == 0)
-    {
-        // Delayed replication
-
-        // Note: CREX messages do NOT have the repetition count opcode in their
-        // data descriptor section, so we need to act accordingly here
-
-        // Get encoding informations for this repetition count
-        Varinfo info = btable->query(is_crex ? WR_VAR(0, 31, 12) : ops[used]);
-
-        if (bitmap == NULL)
-        {
-            /* Look for a delayed replication factor in the input vars */
-
-            /* Get the repetition count */
-            count = out.encode_repetition_count(info);
-            ++var_pos;
-
-            TRACE("delayed replicator count read as %d\n", count);
-        } else {
-            count = out.encode_bitmap_repetition_count(info, *bitmap);
-
-            TRACE("delayed replicator count passed by caller as %d\n", count);
-        }
-
-        /* Move past the node with the repetition count */
-        if (!is_crex)
-            ++used;
-
-        TRACE("encode_r_data %d items %d times (delayed)\n", group, count);
-    } else
-        TRACE("encode_r_data %d items %d times\n", group, count);
-
-    if (bitmap)
-    {
-        // Encode the bitmap here directly
-        if (ops[used] != WR_VAR(0, 31, 31))
-            error_consistency::throwf("bitmap data descriptor is %d%02d%03d instead of B31031",
-                    WR_VAR_F(ops[used]), WR_VAR_X(ops[used]), WR_VAR_Y(ops[used]));
-
-        out.encode_bitmap(*bitmap);
-        ++var_pos;
-        TRACE("Encoded %d bitmap entries\n", bitmap->info()->len);
-    } else {
-        // Extract the first `group' nodes, to handle here
-        Opcodes group_ops = ops.sub(used, group);
-        IFTRACE {
-            TRACE("Repeat opcodes: ");
-            group_ops.print(stderr);
-        }
-
-        // encode_data_section on it `count' times
-        out.push_repetition(group, count);
-        for (int i = 0; i < count; ++i)
-        {
-            out.start_repetition();
-            do_data_section(group_ops, var_pos);
-        }
-        out.pop_repetition();
-    }
-
-    return used + group;
-}
-
-unsigned Interpreter::do_bitmap(const Opcodes& ops, unsigned& var_pos)
-{
-    unsigned used = 0;
-
-    bitmap_to_encode = out.get_bitmap();
-    ++used;
-    bitmap_use_cur = -1;
-    bitmap_subset_cur = -1;
-
-    IFTRACE{
-        TRACE("Encoding data present bitmap:");
-        bitmap_to_encode->print(stderr);
-    }
-
-    /* Encode the bitmap */
-    used += do_r_data(ops.sub(used), var_pos, bitmap_to_encode);
-
-    /* Point to the first attribute to encode */
-    bitmap_next();
-
-    /*
-        TRACE("Decoded bitmap count %d: ", bitmap_count);
-        for (size_t i = 0; i < dba_var_info(bitmap)->len; ++i)
-        TRACE("%c", dba_var_value(bitmap)[i]);
-        TRACE("\n");
-        */
-    return used;
-}
-
-unsigned Interpreter::do_c_data(const Opcodes& ops, unsigned& var_pos)
-{
-    Varcode code = ops.head();
-    unsigned used = 1;
-
-    TRACE("C DATA %01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
-
-    switch (WR_VAR_X(code))
-    {
-        case 1:
-            // Change data width
-            c_width_change = WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0;
-            TRACE("Set width change to %d\n", c_width_change);
-            break;
-        case 2:
-            // Change data scale
-            c_scale_change = WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0;
-            TRACE("Set scale change to %d\n", c_scale_change);
-            break;
-        case 4:
-            // Add associated field
-            TRACE("Set C04 bits to %d\n", WR_VAR_Y(code));
-            // FIXME: nested C04 modifiers are not currently implemented
-            if (WR_VAR_Y(code) && c04_bits)
-                throw error_unimplemented("nested C04 modifiers are not yet implemented");
-            if (WR_VAR_Y(code) > 32)
-                error_unimplemented::throwf("C04 modifier wants %d bits but only at most 32 are supported", WR_VAR_Y(code));
-            if (WR_VAR_Y(code))
-            {
-                // Get encoding informations for this associated_field_significance
-                Varinfo info = btable->query(WR_VAR(0, 31, 21));
-
-                // Encode B31021
-                c04_meaning = out.encode_repetition_count(info);
-
-                ++var_pos;
-                ++used;
-            }
-            c04_bits = WR_VAR_Y(code);
-            break;
-        case 5:
-            // Encode character data
-            out.encode_char_data(code);
-            ++var_pos;
-            break;
-        case 6:
-            // Length of next local descriptor
-            if (WR_VAR_Y(code) > 32)
-                error_unimplemented::throwf("C06 modifier found for %d bits but only at most 32 are supported", WR_VAR_Y(code));
-            if (WR_VAR_Y(code))
-            {
-                bool skip = true;
-                if (btable->contains(ops[1]))
-                {
-                    Varinfo info = get_varinfo(ops[1]);
-                    if (info->bit_len == WR_VAR_Y(code))
-                    {
-                        // If we can resolve the descriptor and the size is the
-                        // same, attempt decoding
-                        used += do_b_data(ops.sub(1), var_pos);
-                        skip = false;
-                    }
-                }
-                if (skip)
-                {
-                    // Encode all bits all missing
-                    out.encode_padding(WR_VAR_Y(code), true);
-                    used += 1;
-                }
-            }
-            break;
-        case 8: {
-            // Override length of character data
-            int cdatalen = WR_VAR_Y(code);
-            IFTRACE {
-                if (cdatalen)
-                    TRACE("decode_c_data:character size overridden to %d chars for all fields\n", cdatalen);
-                else
-                    TRACE("decode_c_data:character size overridde end\n");
-            }
-            c_string_len_override = cdatalen;
-            break;
-        }
-        case 22:
-            // Quality information
-            if (WR_VAR_Y(code) == 0)
-            {
-                used = do_bitmap(ops, var_pos);
-            } else
-                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
-                            WR_VAR_F(code),
-                            WR_VAR_X(code),
-                            WR_VAR_Y(code));
-            break;
-        case 23:
-            // Substituted values
-            if (WR_VAR_Y(code) == 0)
-            {
-                used = do_bitmap(ops, var_pos);
-            } else if (WR_VAR_Y(code) == 255) {
-                if (bitmap_to_encode == NULL)
-                    error_consistency::throwf("found C23255 with no active bitmap");
-                if ((unsigned)bitmap_use_cur >= bitmap_to_encode->info()->len)
-                    error_consistency::throwf("found C23255 while at the end of active bitmap");
-
-                // Use the details of the corrisponding variable for decoding
-                Varinfo info = in.subsets[0][bitmap_subset_cur].info();
-                // Encode the value
-                out.encode_attr(info, bitmap_subset_cur, info->var);
-                bitmap_next();
-            } else
-                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
-                        WR_VAR_F(code),
-                        WR_VAR_X(code),
-                        WR_VAR_Y(code));
-            break;
-        case 24:
-            // First order statistical values
-            if (WR_VAR_Y(code) == 0)
-            {
-                used += do_r_data(ops.sub(1), var_pos);
-            } else
-                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
-                            WR_VAR_F(code),
-                            WR_VAR_X(code),
-                            WR_VAR_Y(code));
-            break;
-        default:
-            error_unimplemented::throwf("C modifier %d%02d%03d is not yet supported",
-                        WR_VAR_F(code),
-                        WR_VAR_X(code),
-                        WR_VAR_Y(code));
-    }
-    return used;
-}
-
-
-void Interpreter::do_data_section(const Opcodes& ops, unsigned& var_pos)
-{
-    TRACE("bufr_message_encode_data_section: START\n");
-
-    for (unsigned i = 0; i < ops.size(); )
-    {
-        IFTRACE{
-            TRACE("bufr_message_encode_data_section TODO: ");
-            ops.sub(i).print(stderr);
-            TRACE("\n");
-        }
-
-        switch (WR_VAR_F(ops[i]))
-        {
-            case 0: i += do_b_data(ops.sub(i), var_pos); break;
-            case 1: i += do_r_data(ops.sub(i), var_pos); break;
-            case 2: i += do_c_data(ops.sub(i), var_pos); break;
-            case 3:
-            {
-                out.push_dcode(ops[i]);
-                Opcodes exp = in.dtable->query(ops[i]);
-                do_data_section(exp, var_pos);
-                out.pop_dcode();
-                ++i;
-                break;
-            }
-            default:
-                error_consistency::throwf(
-                        "variable %01d%02d%03d cannot be handled",
-                            WR_VAR_F(ops[i]),
-                            WR_VAR_X(ops[i]),
-                            WR_VAR_Y(ops[i]));
-        }
-    }
-}
-
 } // Unnamed namespace
 
 void Bulletin::run_dds(bulletin::DDSExecutor& out) const
 {
     Interpreter e(*this, out);
     e.btable = btable;
+    e.dtable = dtable;
 
     /* Encode all the subsets, uncompressed */
     for (unsigned i = 0; i < subsets.size(); ++i)
     {
+        TRACE("run_dds: start encoding subset %u\n", i);
         /* Encode the data of this subset */
         out.start_subset(i);
-        unsigned var_pos = 0;
-        e.do_data_section(Opcodes(datadesc), var_pos);
+        e.start();
+        Opcodes(datadesc).explore(e);
+        TRACE("run_dds: done encoding subset %u\n", i);
     }
 }
 

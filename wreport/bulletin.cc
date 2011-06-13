@@ -710,6 +710,11 @@ const Var& BaseDDSExecutor::get_var(unsigned var_pos) const
     return (*current_subset)[var_pos];
 }
 
+void BaseDDSExecutor::skip_var(Varcode code)
+{
+    get_var();
+}
+
 void BaseDDSExecutor::start_subset(unsigned subset_no)
 {
     if (subset_no >= bulletin.subsets.size())
@@ -770,6 +775,11 @@ const Var& ConstBaseDDSExecutor::get_var(unsigned var_pos) const
         error_consistency::throwf("requested variable #%u out of a maximum of %u in subset %u",
                 var_pos, max_var, current_subset_no);
     return (*current_subset)[var_pos];
+}
+
+void ConstBaseDDSExecutor::skip_var(Varcode code)
+{
+    get_var();
 }
 
 void ConstBaseDDSExecutor::start_subset(unsigned subset_no)

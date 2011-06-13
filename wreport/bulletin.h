@@ -410,6 +410,11 @@ struct DDSExecutor
     virtual void encode_var(Varinfo info) = 0;
 
     /**
+     * Skip one variable from the input variable list
+     */
+    virtual void skip_var(Varcode code) = 0;
+
+    /**
      * Request encoding, according to \a info, of a variabile that is
      * significant for controlling the encoding process.
      *
@@ -474,6 +479,7 @@ struct BaseDDSExecutor : public DDSExecutor
     const Var& get_var();
     const Var& get_var(unsigned var_pos) const;
 
+    virtual void skip_var(Varcode code);
     virtual void start_subset(unsigned subset_no);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
@@ -495,6 +501,7 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     const Var& get_var();
     const Var& get_var(unsigned var_pos) const;
 
+    virtual void skip_var(Varcode code);
     virtual void start_subset(unsigned subset_no);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
