@@ -391,9 +391,6 @@ struct DDSExecutor
      */
     virtual bool is_special_var(unsigned var_pos) = 0;
 
-    /// Encode \a bit_count bits all set to value
-    virtual void encode_padding(unsigned bit_count, bool value) = 0;
-
     /// Encode associate fielf \a value in \a bit_count bits
     virtual void encode_associated_field(unsigned bit_count, uint32_t value) = 0;
 
@@ -408,11 +405,6 @@ struct DDSExecutor
      * current subset
      */
     virtual void encode_var(Varinfo info) = 0;
-
-    /**
-     * Skip one variable from the input variable list
-     */
-    virtual void skip_var(Varcode code) = 0;
 
     /**
      * Request encoding, according to \a info, of a variabile that is
@@ -463,13 +455,11 @@ struct BaseDDSExecutor : public DDSExecutor
     const Var& get_var();
     const Var& get_var(unsigned var_pos) const;
 
-    virtual void skip_var(Varcode code);
     virtual void start_subset(unsigned subset_no);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap();
 
-    virtual void encode_padding(unsigned bit_count, bool value);
     virtual void encode_associated_field(unsigned bit_count, uint32_t value);
 };
 
@@ -485,13 +475,11 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     const Var& get_var();
     const Var& get_var(unsigned var_pos) const;
 
-    virtual void skip_var(Varcode code);
     virtual void start_subset(unsigned subset_no);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap();
 
-    virtual void encode_padding(unsigned bit_count, bool value);
     virtual void encode_associated_field(unsigned bit_count, uint32_t value);
 };
 
