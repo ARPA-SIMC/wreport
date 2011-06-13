@@ -19,7 +19,7 @@ nobase_wreportinclude_HEADERS = \
 	bulletin.h \
 	bulletin/buffers.h \
 	bulletin/dds-validator.h \
-	bulletin/dds-printer.h
+	bulletin/dds-printer.h \
 	opcode.h \
 	subset.h \
 	var.h \
