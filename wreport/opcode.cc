@@ -79,7 +79,8 @@ void Opcodes::explore(opcode::Explorer& e) const
                         break;
                     case 4:
                         e.c_associated_field(cur, (*this)[i + 1], WR_VAR_Y(cur));
-                        ++i;
+                        if (WR_VAR_Y(cur))
+                            ++i;
                         break;
                     case 5:
                         e.c_char_data(cur);
