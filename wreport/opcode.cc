@@ -82,11 +82,16 @@ void Opcodes::explore(opcode::Explorer& e) const
                     case 2:
                         e.c_change_data_scale(cur, WR_VAR_Y(cur) ? WR_VAR_Y(cur) - 128 : 0);
                         break;
-                    case 4:
-                        e.c_associated_field(cur, (*this)[i + 1], WR_VAR_Y(cur));
+                    case 4: {
+                        Varcode sig_code = 0;
                         if (WR_VAR_Y(cur))
+                        {
+                            sig_code = (*this)[i + 1];
                             ++i;
+                        }
+                        e.c_associated_field(cur, sig_code, WR_VAR_Y(cur));
                         break;
+                    }
                     case 5:
                         e.c_char_data(cur);
                         break;
