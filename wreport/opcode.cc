@@ -222,6 +222,54 @@ void Printer::d_group_end(Varcode code)
     indent -= indent_step;
 }
 
+void Printer::c_change_data_width(Varcode code, int change)
+{
+    print_lead(code);
+    fprintf(out, " change data width to %d\n", change);
+}
+void Printer::c_change_data_scale(Varcode code, int change)
+{
+    print_lead(code);
+    fprintf(out, " change data scale to %d\n", change);
+}
+void Printer::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
+{
+    print_lead(code);
+    fprintf(out, " %d bits of associated field, significance code %d%02d%03d\n",
+           nbits, WR_VAR_F(sig_code), WR_VAR_X(sig_code), WR_VAR_Y(sig_code));
+}
+void Printer::c_char_data(Varcode code)
+{
+    print_lead(code);
+    fputs(" character data\n", out);
+}
+void Printer::c_char_data_override(Varcode code, unsigned new_length)
+{
+    print_lead(code);
+    fprintf(out, " override character data length to %d\n", new_length);
+}
+void Printer::c_quality_information_bitmap(Varcode code)
+{
+    print_lead(code);
+    fputs(" quality information with bitmap\n", out);
+}
+void Printer::c_substituted_value_bitmap(Varcode code)
+{
+    print_lead(code);
+    fputs(" substituted values bitmap\n", out);
+}
+void Printer::c_substituted_value(Varcode code)
+{
+    print_lead(code);
+    fputs(" one substituted value\n", out);
+}
+void Printer::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
+{
+    print_lead(code);
+    fprintf(out, " local descriptor %d%02d%03d %d bits long",
+            WR_VAR_F(desc_code), WR_VAR_X(desc_code), WR_VAR_Y(desc_code), nbits);
+}
+
 }
 
 }
