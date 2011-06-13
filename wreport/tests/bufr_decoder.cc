@@ -1506,6 +1506,29 @@ void to::test<39>()
     test.run("bufr/C06006.bufr");
 }
 
+template<> template<>
+void to::test<40>()
+{
+    struct Tester : public MsgTester {
+        void test(const BufrBulletin& msg)
+        {
+            ensure_equals(msg.edition, 3);
+            ensure_equals(msg.type, 0);
+            ensure_equals(msg.subtype, 255);
+            ensure_equals(msg.localsubtype, 14);
+            ensure_equals(msg.subsets.size(), 94);
+
+            const Subset& s = msg.subset(0);
+            ensure_equals(s.size(), 175u);
+
+            ensure_varcode_equals(s[0].code(), WR_VAR(0, 1, 15));
+            ensure_equals(s[0].enq<string>(), "AQUI-BKG_");
+        }
+    } test;
+
+    test.run("bufr/gps_zenith.bufr");
+}
+
 }
 
 /* vim:set ts=4 sw=4: */

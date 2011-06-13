@@ -441,18 +441,16 @@ struct CompressedDataSection : public DataSection
 
             for (unsigned i = 0; i < subset_count; ++i)
             {
-                bool missing = in.decode_string(diffbits * 8, str, len);
-
                 // Set the variable value
-                if (missing)
+                if (in.decode_string(diffbits * 8, str, len))
                 {
-                    /* Missing value */
-                    TRACE("datadesc:decode_b_string:decoded[%d] as missing\n", i);
-                    var.unset();
-                } else {
                     /* Compute the value for this subset */
                     TRACE("datadesc:decode_b_string:decoded[%d] as \"%s\"\n", i, str);
                     var.setc(str);
+                } else {
+                    /* Missing value */
+                    TRACE("datadesc:decode_b_string:decoded[%d] as missing\n", i);
+                    var.unset();
                 }
 
                 /* Add it to this subset */
