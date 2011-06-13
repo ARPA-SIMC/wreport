@@ -1269,7 +1269,10 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
                 }
                 if (skip)
                 {
-                    ds.in.get_bits(WR_VAR_Y(code));
+                    MutableVarinfo info(MutableVarinfo::create_singleuse());
+                    info->set(code, "UNKNOWN LOCAL DESCRIPTOR", "UNKNOWN", 0, 0,
+                            ceil(log10(exp2(WR_VAR_Y(code)))), 0, WR_VAR_Y(code));
+                    ds.decode_b_value(info, *current_adder);
                     used += 1;
                 }
             }
