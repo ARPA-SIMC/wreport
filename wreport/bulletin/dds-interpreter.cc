@@ -319,6 +319,14 @@ struct Interpreter : public opcode::Explorer
             out.pop_repetition();
         }
     }
+    virtual void d_group_begin(Varcode code)
+    {
+        out.push_dcode(code);
+    }
+    virtual void d_group_end(Varcode code)
+    {
+        out.pop_dcode();
+    }
 };
 
 Varinfo Interpreter::get_varinfo(Varcode code)
