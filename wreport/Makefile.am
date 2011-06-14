@@ -49,11 +49,12 @@ libwreport_la_SOURCES = \
 	crex_decoder.cc \
 	crex_encoder.cc
 
+libwreport_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@
+
 if LUA
 libwreport_la_SOURCES += var-lua.cc
+libwreport_la_LDFLAGS += $(LUA_LIBS)
 endif
-
-libwreport_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@ $(LUA_LIBS)
 
 uniconv.cc: uniconv.gperf
 	if ! gperf < $< > $@; then rm $@; /bin/false; fi
@@ -94,14 +95,14 @@ tut_test_SOURCES = \
 	tests/tut-main.cpp
 tut_test_LDADD = \
 	libwreport.la \
-	$(WIBBLE_LIBS) \
-	$(LUA_LIBS)
+	$(WIBBLE_LIBS)
 
 if LUA
 noinst_HEADERS += test-utils-lua.h
 tut_test_SOURCES += \
 	tests/lua.cc \
 	test-utils-lua.cc
+tut_test_LDADD += $(LUA_LIBS)
 endif
 
 

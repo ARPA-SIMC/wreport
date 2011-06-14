@@ -148,6 +148,7 @@ AC_OUTPUT
 AC_MSG_NOTICE([
 ===================================================
 $PACKAGE_NAME-$PACKAGE_VERSION configuration:
+AS_HELP_STRING([lua bindings:], [$have_lua])
 AS_HELP_STRING([tests:], [$enable_tests])
 AS_HELP_STRING([documentation:], [$enable_docs])
 ===================================================])
