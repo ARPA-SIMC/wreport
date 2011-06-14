@@ -271,9 +271,9 @@ bool BufrInput::decode_string(unsigned bit_len, char* str, size_t& len)
         str[len] = 0;
 
         /* Convert space-padding into zero-padding */
-        for (--len; len > 0 && isspace(str[len]);
-                len--)
-            str[len] = 0;
+        for (; len > 1 && (str[len - 1] == 0 || isspace(str[len - 1]));
+                --len)
+            str[len - 1] = 0;
     }
 
     return !missing;

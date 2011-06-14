@@ -187,9 +187,11 @@ public:
      *   Number of bits (not bytes) to read. It is normally a multiple of 8,
      *   and when it is not, the last character will contain the partial byte
      *   read.
-     * @param str
+     * @retval str
      *   Buffer where the string is written. Must be big enough to contain the
      *   longest string described by info, plus 2 bytes
+     * @retval len
+     *   The string length
      * @return
      *   true if we decoded a real string, false if we decoded a missing string
      *   value
