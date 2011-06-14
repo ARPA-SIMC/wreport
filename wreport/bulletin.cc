@@ -743,7 +743,7 @@ const Var* BaseDDSExecutor::get_bitmap()
     return &var;
 }
 
-void BaseDDSExecutor::encode_associated_field(unsigned bit_count, uint32_t value)
+void BaseDDSExecutor::encode_associated_field(unsigned bit_count, unsigned significance)
 {
 }
 
@@ -801,7 +801,7 @@ const Var* ConstBaseDDSExecutor::get_bitmap()
     return &var;
 }
 
-void ConstBaseDDSExecutor::encode_associated_field(unsigned bit_count, uint32_t value)
+void ConstBaseDDSExecutor::encode_associated_field(unsigned bit_count, unsigned significance)
 {
 }
 

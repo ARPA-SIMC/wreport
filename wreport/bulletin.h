@@ -392,7 +392,7 @@ struct DDSExecutor
     virtual bool is_special_var(unsigned var_pos) = 0;
 
     /// Encode associate fielf \a value in \a bit_count bits
-    virtual void encode_associated_field(unsigned bit_count, uint32_t value) = 0;
+    virtual void encode_associated_field(unsigned bit_count, unsigned significance) = 0;
 
     /**
      * Request encoding, according to \a info, of attribute \a attr_code of
@@ -460,7 +460,7 @@ struct BaseDDSExecutor : public DDSExecutor
     virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap();
 
-    virtual void encode_associated_field(unsigned bit_count, uint32_t value);
+    virtual void encode_associated_field(unsigned bit_count, unsigned significance);
 };
 
 struct ConstBaseDDSExecutor : public DDSExecutor
@@ -480,7 +480,7 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap();
 
-    virtual void encode_associated_field(unsigned bit_count, uint32_t value);
+    virtual void encode_associated_field(unsigned bit_count, unsigned significance);
 };
 
 }

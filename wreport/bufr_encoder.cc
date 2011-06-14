@@ -24,6 +24,7 @@
 #include "bulletin.h"
 #include "bulletin/buffers.h"
 #include "opcode.h"
+#include "notes.h"
 #include "conv.h"
 
 #include <stdio.h>
@@ -104,9 +105,53 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         ob.add_bits(value ? 0xffffffff : 0, bit_count);
     }
 
-    virtual void encode_associated_field(unsigned bit_count, uint32_t value)
+    virtual void encode_associated_field(unsigned bit_count, unsigned significance)
     {
-        ob.add_bits(value, bit_count);
+        const Var& var = get_var(current_var);
+        const Var* att = 0;
+
+        switch (significance)
+        {
+            case 1: att = var.enqa(WR_VAR(0, 33, 2)); break;
+            case 2: att = var.enqa(WR_VAR(0, 33, 3)); break;
+            case 3 ... 5:
+                // Reserved: ignored
+                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                        significance);
+                break;
+            case 6: att = var.enqa(WR_VAR(0, 33, 50)); break;
+            case 9 ... 20:
+                // Reserved: ignored
+                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                        significance);
+                break;
+            case 22 ... 62:
+                notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+                        significance);
+                break;
+            case 63:
+                /*
+                 * Ignore quality information if B31021 is missing.
+                 * The Guide to FM94-BUFR says:
+                 *   If the quality information has no meaning for some
+                 *   of those following elements, but the field is
+                 *   still there, there is at present no explicit way
+                 *   to indicate "no meaning" within the currently
+                 *   defined meanings. One must either redefine the
+                 *   meaning of the associated field in its entirety
+                 *   (by including 0 31 021 in the message with a data
+                 *   value of 63 - "missing value") or remove the
+                 *   associated field bits by the "cancel" operator: 2
+                 *   04 000.
+                 */
+                break;
+            default:
+                error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
+        }
+        if (att && att->isset())
+            ob.add_bits(att->enqi(), bit_count);
+        else
+            ob.append_missing(bit_count);
     }
 
     virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
