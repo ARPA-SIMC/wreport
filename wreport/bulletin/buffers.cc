@@ -417,6 +417,25 @@ void BufrOutput::append_string(const char* val, unsigned len_bits)
     }
 }
 
+void BufrOutput::append_binary(const unsigned char* val, unsigned len_bits)
+{
+    unsigned i, bi;
+    for (i = 0, bi = 0; bi < len_bits; ++i)
+    {
+        /* Strings are space-padded in BUFR */
+        if (len_bits - bi >= 8)
+        {
+            append_byte(val[i]);
+            bi += 8;
+        }
+        else
+        {
+            add_bits(val[i], len_bits - bi);
+            bi = len_bits;
+        }
+    }
+}
+
 void BufrOutput::append_var(Varinfo info, const Var& var)
 {
     if (var.value() == NULL)
@@ -424,6 +443,8 @@ void BufrOutput::append_var(Varinfo info, const Var& var)
         append_missing(info->bit_len);
     } else if (info->is_string()) {
         append_string(var.value(), info->bit_len);
+    } else if (info->is_binary()) {
+        append_binary((const unsigned char*)var.value(), info->bit_len);
     } else {
         unsigned ival = info->encode_bit_int(var.enqd());
         add_bits(ival, info->bit_len);

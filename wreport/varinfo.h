@@ -131,7 +131,8 @@ typedef short unsigned int Alteration;
 /**
  * Varinfo flags
  */
-#define VARINFO_FLAG_STRING	0x01
+#define VARINFO_FLAG_STRING 0x01
+#define VARINFO_FLAG_BINARY 0x02
 
 
 /**
@@ -164,7 +165,7 @@ struct _Varinfo
 	/** The length in bits of the variable when encoded in a bit string (after
 	 * scaling and changing reference value) */
 	unsigned bit_len;
-	/** True if the variable is a string; false if it is a numeric value */
+	/// Variable flags (see VARINFO_FLAG_* constants)
 	unsigned flags;
 	/** Minimum unscaled value the field can have */
 	int imin;
@@ -202,6 +203,12 @@ struct _Varinfo
 	{
 		return (flags & VARINFO_FLAG_STRING) != 0;
 	}
+
+    /// Check if we are a binary value
+    bool is_binary() const
+    {
+        return (flags & VARINFO_FLAG_BINARY) != 0;
+    }
 
     /**
      * Encode a double value into an integer value using Varinfo decimal

@@ -276,6 +276,9 @@ struct BufrOutput
     /// Append a string \a len_bits bits long
     void append_string(const char* val, unsigned len_bits);
 
+    /// Append a binary value \a len_bits bits long
+    void append_binary(const unsigned char* val, unsigned len_bits);
+
     /// Append \a var encoded according to \a info
     void append_var(Varinfo info, const Var& var);
 
