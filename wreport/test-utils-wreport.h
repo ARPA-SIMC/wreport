@@ -50,6 +50,8 @@ std::string slurpfile(const std::string& name);
  */
 std::vector<std::string> all_test_files(const std::string& encoding);
 
+void track_bulletin(const Bulletin& b, const char* tag, const char* fname);
+
 template<typename BULLETIN>
 struct MsgTester
 {
@@ -96,7 +98,13 @@ struct MsgTester
 
         // Ensure the two are the same
         notes::Collect c(std::cerr);
-        ensure_equals(msg1.diff(msg2), 0);
+        unsigned diffs = msg1.diff(msg2);
+        if (diffs)
+        {
+            track_bulletin(msg1, "orig", name);
+            track_bulletin(msg2, "reenc", name);
+        }
+        ensure_equals(diffs, 0);
     }
 
 	void run(const char* tag, const BULLETIN& msg)

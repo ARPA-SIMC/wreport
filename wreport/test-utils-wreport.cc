@@ -78,6 +78,20 @@ std::vector<std::string> all_test_files(const std::string& encoding)
     return res;
 }
 
+void track_bulletin(const Bulletin& b, const char* tag, const char* fname)
+{
+    string dumpfname = "/tmp/bulletin-" + str::basename(fname) + "-" + tag;
+    FILE* out = fopen(dumpfname.c_str(), "wt");
+    fprintf(out, "Contents of %s %s:\n", fname, tag);
+    b.print(out);
+    fprintf(out, "\nData descriptor section of %s %s:\n", fname, tag);
+    b.print_datadesc(out);
+    fprintf(out, "\nStructure of %s %s:\n", fname, tag);
+    b.print_structured(out);
+    fclose(out);
+    fprintf(stderr, "%s %s dumped as %s\n", fname, tag, dumpfname.c_str());
+}
+
 } // namespace tests
 } // namespace wreport
 
