@@ -1028,10 +1028,6 @@ const Var* BaseDDSExecutor::do_bitmap(Varcode code, Varcode delayed_code, const 
     return &var;
 }
 
-void BaseDDSExecutor::encode_associated_field(unsigned bit_count, unsigned significance)
-{
-}
-
 
 ConstBaseDDSExecutor::ConstBaseDDSExecutor(const Bulletin& bulletin)
     : bulletin(bulletin), current_subset_no(0)
@@ -1070,10 +1066,6 @@ const Var* ConstBaseDDSExecutor::do_bitmap(Varcode code, Varcode delayed_code, c
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
                 current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
     return &var;
-}
-
-void ConstBaseDDSExecutor::encode_associated_field(unsigned bit_count, unsigned significance)
-{
 }
 
 }

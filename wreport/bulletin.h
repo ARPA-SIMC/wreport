@@ -356,6 +356,9 @@ struct CrexBulletin : public Bulletin
 
 namespace bulletin {
 
+/**
+ * Associate a Data Present Bitmap to decoded variables in a subset
+ */
 struct Bitmap
 {
     const Var* bitmap;
@@ -442,19 +445,6 @@ struct DDSExecutor : public opcode::Visitor
      */
     Varinfo get_varinfo(Varcode code);
 
-    virtual void b_variable(Varcode code);
-    virtual void c_modifier(Varcode code);
-    virtual void c_change_data_width(Varcode code, int change);
-    virtual void c_change_data_scale(Varcode code, int change);
-    virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
-    virtual void c_char_data(Varcode code);
-    virtual void c_char_data_override(Varcode code, unsigned new_length);
-    virtual void c_quality_information_bitmap(Varcode code);
-    virtual void c_substituted_value_bitmap(Varcode code);
-    virtual void c_substituted_value(Varcode code);
-    virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
-    virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
-
     /// Notify the start of a subset
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
 
@@ -501,6 +491,20 @@ struct DDSExecutor : public opcode::Visitor
      * Request processing of C05yyy character data
      */
     virtual void do_char_data(Varcode code) = 0;
+
+    // opcode::Visitor method implementation
+    virtual void b_variable(Varcode code);
+    virtual void c_modifier(Varcode code);
+    virtual void c_change_data_width(Varcode code, int change);
+    virtual void c_change_data_scale(Varcode code, int change);
+    virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
+    virtual void c_char_data(Varcode code);
+    virtual void c_char_data_override(Varcode code, unsigned new_length);
+    virtual void c_quality_information_bitmap(Varcode code);
+    virtual void c_substituted_value_bitmap(Varcode code);
+    virtual void c_substituted_value(Varcode code);
+    virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
+    virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
 };
 
 struct BaseDDSExecutor : public DDSExecutor
@@ -516,8 +520,6 @@ struct BaseDDSExecutor : public DDSExecutor
 
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
     virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
-
-    virtual void encode_associated_field(unsigned bit_count, unsigned significance);
 };
 
 struct ConstBaseDDSExecutor : public DDSExecutor
@@ -533,8 +535,6 @@ struct ConstBaseDDSExecutor : public DDSExecutor
 
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
     virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
-
-    virtual void encode_associated_field(unsigned bit_count, unsigned significance);
 };
 
 }
