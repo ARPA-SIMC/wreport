@@ -141,10 +141,10 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
     DDSEncoder(const Bulletin& b, Outbuf& ob) : ConstBaseDDSExecutor(b), ob(ob) {}
     virtual ~DDSEncoder() {}
 
-    void start_subset(unsigned subset_no)
+    void start_subset(unsigned subset_no, const Subset& current_subset)
     {
         TRACE("start_subset %u\n", subset_no);
-        bulletin::ConstBaseDDSExecutor::start_subset(subset_no);
+        bulletin::ConstBaseDDSExecutor::start_subset(subset_no, current_subset);
 
         /* Encode the subsection terminator */
         if (subset_no > 0)

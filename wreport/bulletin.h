@@ -362,10 +362,17 @@ namespace bulletin {
  */
 struct DDSExecutor
 {
+    /// B table used to resolve variable information
+    const Vartable* btable;
+
+    /// Current subset (used to refer to past variables)
+    const Subset* current_subset;
+
+    DDSExecutor();
     virtual ~DDSExecutor();
 
     /// Notify the start of a subset
-    virtual void start_subset(unsigned subset_no) = 0;
+    virtual void start_subset(unsigned subset_no, const Subset& current_subset);
 
     /// Notify that we start decoding a R group
     virtual void push_repetition(unsigned length, unsigned count);
@@ -446,7 +453,6 @@ struct DDSExecutor
 struct BaseDDSExecutor : public DDSExecutor
 {
     Bulletin& bulletin;
-    Subset* current_subset;
     unsigned current_subset_no;
     unsigned current_var;
 
@@ -455,7 +461,7 @@ struct BaseDDSExecutor : public DDSExecutor
     const Var& get_var();
     const Var& get_var(unsigned var_pos) const;
 
-    virtual void start_subset(unsigned subset_no);
+    virtual void start_subset(unsigned subset_no, const Subset& current_subset);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap();
@@ -466,7 +472,6 @@ struct BaseDDSExecutor : public DDSExecutor
 struct ConstBaseDDSExecutor : public DDSExecutor
 {
     const Bulletin& bulletin;
-    const Subset* current_subset;
     unsigned current_subset_no;
     unsigned current_var;
 
@@ -475,7 +480,7 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     const Var& get_var();
     const Var& get_var(unsigned var_pos) const;
 
-    virtual void start_subset(unsigned subset_no);
+    virtual void start_subset(unsigned subset_no, const Subset& current_subset);
     virtual unsigned subset_size();
     virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap();

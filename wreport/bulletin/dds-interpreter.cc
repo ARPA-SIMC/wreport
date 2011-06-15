@@ -80,9 +80,6 @@ struct Interpreter : public opcode::Visitor
      */
     int c_string_len_override;
 
-    /* Subset we are encoding */
-    //const Subset* subset;
-
     /* Set these to non-null if we are encoding a data present bitmap */
     const Var* bitmap_to_encode;
     int bitmap_use_cur;
@@ -398,7 +395,7 @@ void Bulletin::run_dds(bulletin::DDSExecutor& out) const
     {
         TRACE("run_dds: start encoding subset %u\n", i);
         /* Encode the data of this subset */
-        out.start_subset(i);
+        out.start_subset(i, subsets[i]);
         e.start();
         Opcodes(datadesc).visit(e);
         TRACE("run_dds: done encoding subset %u\n", i);

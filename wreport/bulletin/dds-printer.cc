@@ -57,9 +57,9 @@ void DDSPrinter::pop_dcode()
     stack.pop_back();
 }
 
-void DDSPrinter::start_subset(unsigned subset_no)
+void DDSPrinter::start_subset(unsigned subset_no, const Subset& current_subset)
 {
-    ConstBaseDDSExecutor::start_subset(subset_no);
+    ConstBaseDDSExecutor::start_subset(subset_no, current_subset);
     stack.clear();
 }
 

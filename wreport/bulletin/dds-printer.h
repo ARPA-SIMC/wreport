@@ -40,7 +40,7 @@ struct DDSPrinter : public ConstBaseDDSExecutor
     void print_context(Varinfo info, unsigned var_pos);
     void print_context(Varcode code, unsigned var_pos);
 
-    virtual void start_subset(unsigned subset_no);
+    virtual void start_subset(unsigned subset_no, const Subset& current_subset);
     virtual void push_dcode(Varcode code);
     virtual void pop_dcode();
     virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code);

@@ -683,7 +683,12 @@ std::auto_ptr<Bulletin> Bulletin::create(dballe::Encoding encoding)
 
 namespace bulletin {
 
+DDSExecutor::DDSExecutor() : btable(0), current_subset(0) {}
 DDSExecutor::~DDSExecutor() {}
+void DDSExecutor::start_subset(unsigned subset_no, const Subset& current_subset)
+{
+    this->current_subset = &current_subset;
+}
 void DDSExecutor::push_repetition(unsigned length, unsigned count) {}
 void DDSExecutor::start_repetition() {}
 void DDSExecutor::pop_repetition() {}
@@ -691,7 +696,7 @@ void DDSExecutor::push_dcode(Varcode code) {}
 void DDSExecutor::pop_dcode() {}
 
 BaseDDSExecutor::BaseDDSExecutor(Bulletin& bulletin)
-    : bulletin(bulletin), current_subset(0), current_subset_no(0)
+    : bulletin(bulletin), current_subset_no(0)
 {
 }
 
@@ -711,11 +716,11 @@ const Var& BaseDDSExecutor::get_var(unsigned var_pos) const
     return (*current_subset)[var_pos];
 }
 
-void BaseDDSExecutor::start_subset(unsigned subset_no)
+void BaseDDSExecutor::start_subset(unsigned subset_no, const Subset& current_subset)
 {
     if (subset_no >= bulletin.subsets.size())
         error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
-    current_subset = &(bulletin.subsets[subset_no]);
+    this->current_subset = &(bulletin.subsets[subset_no]);
     current_subset_no = subset_no;
     current_var = 0;
 }
@@ -749,7 +754,7 @@ void BaseDDSExecutor::encode_associated_field(unsigned bit_count, unsigned signi
 
 
 ConstBaseDDSExecutor::ConstBaseDDSExecutor(const Bulletin& bulletin)
-    : bulletin(bulletin), current_subset(0), current_subset_no(0)
+    : bulletin(bulletin), current_subset_no(0)
 {
 }
 
@@ -769,11 +774,11 @@ const Var& ConstBaseDDSExecutor::get_var(unsigned var_pos) const
     return (*current_subset)[var_pos];
 }
 
-void ConstBaseDDSExecutor::start_subset(unsigned subset_no)
+void ConstBaseDDSExecutor::start_subset(unsigned subset_no, const Subset& current_subset)
 {
+    DDSExecutor::start_subset(subset_no, current_subset);
     if (subset_no >= bulletin.subsets.size())
         error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
-    current_subset = &(bulletin.subsets[subset_no]);
     current_subset_no = subset_no;
     current_var = 0;
 }
