@@ -725,20 +725,6 @@ void BaseDDSExecutor::start_subset(unsigned subset_no, const Subset& current_sub
     current_var = 0;
 }
 
-unsigned BaseDDSExecutor::subset_size()
-{
-    if (!current_subset)
-        return 0;
-    return current_subset->size();
-}
-
-bool BaseDDSExecutor::is_special_var(unsigned var_pos)
-{
-    if (!current_subset) return true;
-    if (var_pos >= current_subset->size()) return true;
-    return WR_VAR_F((*current_subset)[var_pos].code()) != 0;
-}
-
 const Var* BaseDDSExecutor::get_bitmap()
 {
     const Var& var = get_var();
@@ -781,20 +767,6 @@ void ConstBaseDDSExecutor::start_subset(unsigned subset_no, const Subset& curren
         error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
     current_subset_no = subset_no;
     current_var = 0;
-}
-
-unsigned ConstBaseDDSExecutor::subset_size()
-{
-    if (!current_subset)
-        return 0;
-    return current_subset->size();
-}
-
-bool ConstBaseDDSExecutor::is_special_var(unsigned var_pos)
-{
-    if (!current_subset) return true;
-    if (var_pos >= current_subset->size()) return true;
-    return WR_VAR_F((*current_subset)[var_pos].code()) != 0;
 }
 
 const Var* ConstBaseDDSExecutor::get_bitmap()

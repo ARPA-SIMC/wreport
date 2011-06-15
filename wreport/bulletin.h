@@ -389,15 +389,6 @@ struct DDSExecutor
     /// Notify that we ended decoding a D group
     virtual void pop_dcode();
 
-    /// Return the size of the current subset
-    virtual unsigned subset_size() = 0;
-
-    /**
-     * Return true if the variable at \a var_pos is special
-     * (WR_VAR_F(varcode) != 0)
-     */
-    virtual bool is_special_var(unsigned var_pos) = 0;
-
     /// Encode associate fielf \a value in \a bit_count bits
     virtual void encode_associated_field(unsigned bit_count, unsigned significance) = 0;
 
@@ -462,8 +453,6 @@ struct BaseDDSExecutor : public DDSExecutor
     const Var& get_var(unsigned var_pos) const;
 
     virtual void start_subset(unsigned subset_no, const Subset& current_subset);
-    virtual unsigned subset_size();
-    virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap();
 
     virtual void encode_associated_field(unsigned bit_count, unsigned significance);
@@ -481,8 +470,6 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     const Var& get_var(unsigned var_pos) const;
 
     virtual void start_subset(unsigned subset_no, const Subset& current_subset);
-    virtual unsigned subset_size();
-    virtual bool is_special_var(unsigned var_pos);
     virtual const Var* get_bitmap();
 
     virtual void encode_associated_field(unsigned bit_count, unsigned significance);
