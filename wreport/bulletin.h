@@ -356,37 +356,7 @@ struct CrexBulletin : public Bulletin
 
 namespace bulletin {
 
-/**
- * Associate a Data Present Bitmap to decoded variables in a subset
- */
-struct Bitmap
-{
-    const Var* bitmap;
-    std::vector<unsigned> refs;
-    std::vector<unsigned>::const_reverse_iterator iter;
-    unsigned old_anchor;
-
-    Bitmap();
-    ~Bitmap();
-
-    void reset();
-
-    /**
-     * Initialise the bitmap handler
-     *
-     * @param bitmap
-     *   The bitmap
-     * @param subset
-     *   The subset to which the bitmap refers
-     * @param anchor
-     *   The index to the first element after the end of the bitmap (usually
-     *   the C operator that defines or uses the bitmap)
-     */
-    void init(const Var& bitmap, const Subset& subset, unsigned anchor);
-
-    bool eob() const;
-    unsigned next();
-};
+struct Bitmap;
 
 /**
  * Abstract interface for classes that can be used as targets for the Bulletin
@@ -401,7 +371,7 @@ struct Visitor : public opcode::Visitor
     const Subset* current_subset;
 
     /// Bitmap iteration
-    Bitmap bitmap;
+    Bitmap* bitmap;
 
     /// Current value of scale change from C modifier
     int c_scale_change;

@@ -26,6 +26,7 @@
 #include "bulletin.h"
 #include "bulletin/dds-printer.h"
 #include "bulletin/buffers.h"
+#include "bulletin/internals.h"
 #include "notes.h"
 
 #include <cstddef>
@@ -710,67 +711,11 @@ std::auto_ptr<Bulletin> Bulletin::create(dballe::Encoding encoding)
 
 namespace bulletin {
 
-Bitmap::Bitmap() : bitmap(0) {}
-Bitmap::~Bitmap() {}
-
-void Bitmap::reset()
+Visitor::Visitor() : btable(0), current_subset(0), bitmap(new Bitmap) {}
+Visitor::~Visitor()
 {
-    bitmap = 0;
-    old_anchor = 0;
-    refs.clear();
-    iter = refs.rend();
+    if (bitmap) delete bitmap;
 }
-
-void Bitmap::init(const Var& bitmap, const Subset& subset, unsigned anchor)
-{
-    this->bitmap = &bitmap;
-    refs.clear();
-
-    // From the specs it looks like bitmaps refer to all data that precedes
-    // the C operator that defines or uses the bitmap, but from the data
-    // samples that we have it look like when multiple bitmaps are present,
-    // they always refer to the same set of variables. For this reason we
-    // remember the first anchor point that we see and always refer the
-    // other bitmaps that we see to it.
-    if (old_anchor)
-        anchor = old_anchor;
-    else
-        old_anchor = anchor;
-
-    unsigned b_cur = bitmap.info()->len;
-    unsigned s_cur = anchor;
-    if (b_cur == 0) throw error_consistency("data present bitmap has length 0");
-    if (s_cur == 0) throw error_consistency("data present bitmap is anchored at start of subset");
-
-    while (true)
-    {
-        --b_cur;
-        --s_cur;
-        while (WR_VAR_F(subset[s_cur].code()) != 0)
-        {
-            if (s_cur == 0) throw error_consistency("bitmap refers to variables before the start of the subset");
-            --s_cur;
-        }
-
-        if (bitmap.value()[b_cur] == '+')
-            refs.push_back(s_cur);
-
-        if (b_cur == 0)
-            break;
-        if (s_cur == 0)
-            throw error_consistency("bitmap refers to variables before the start of the subset");
-    }
-
-    iter = refs.rbegin();
-}
-
-bool Bitmap::eob() const { return iter == refs.rend(); }
-unsigned Bitmap::next() { unsigned res = *iter; ++iter; return res; }
-
-
-
-Visitor::Visitor() : btable(0), current_subset(0) {}
-Visitor::~Visitor() {}
 
 Varinfo Visitor::get_varinfo(Varcode code)
 {
@@ -806,10 +751,10 @@ void Visitor::b_variable(Varcode code)
 {
     Varinfo info = get_varinfo(code);
     // Choose which value we should encode
-    if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && !bitmap.eob())
+    if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && !bitmap->eob())
     {
         // Attribute of the variable pointed by the bitmap
-        unsigned target = bitmap.next();
+        unsigned target = bitmap->next();
         TRACE("Encode attribute %01d%02d%03d subset pos %u\n",
                 WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code), target);
         do_attr(info, target, code);
@@ -927,11 +872,11 @@ void Visitor::c_substituted_value_bitmap(Varcode code)
 
 void Visitor::c_substituted_value(Varcode code)
 {
-    if (bitmap.bitmap == NULL)
+    if (bitmap->bitmap == NULL)
         error_consistency::throwf("found C23255 with no active bitmap");
-    if (bitmap.eob())
+    if (bitmap->eob())
         error_consistency::throwf("found C23255 while at the end of active bitmap");
-    unsigned target = bitmap.next();
+    unsigned target = bitmap->next();
     // Use the details of the corrisponding variable for decoding
     Varinfo info = (*current_subset)[target].info();
     // Encode the value
@@ -958,7 +903,7 @@ void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
         if (count == 0 && delayed_code == 0)
             delayed_code = WR_VAR(0, 31, 12);
         const Var* bitmap_var = do_bitmap(code, delayed_code, ops);
-        bitmap.init(*bitmap_var, *current_subset, data_pos);
+        bitmap->init(*bitmap_var, *current_subset, data_pos);
         if (delayed_code)
             ++data_pos;
         want_bitmap = false;
@@ -993,7 +938,7 @@ void Visitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
     c_scale_change = 0;
     c_width_change = 0;
     c_string_len_override = 0;
-    bitmap.reset();
+    bitmap->reset();
     c04_bits = 0;
     c04_meaning = 63;
     want_bitmap = false;

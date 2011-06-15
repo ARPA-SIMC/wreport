@@ -18,6 +18,7 @@ nobase_wreportinclude_HEADERS = \
 	fast.h \
 	bulletin.h \
 	bulletin/buffers.h \
+	bulletin/internals.h \
 	bulletin/dds-validator.h \
 	bulletin/dds-printer.h \
 	opcode.h \
@@ -41,6 +42,7 @@ libwreport_la_SOURCES = \
 	subset.cc \
 	bulletin.cc \
 	bulletin/buffers.cc \
+	bulletin/internals.cc \
 	bulletin/dds-validator.cc \
 	bulletin/dds-printer.cc \
 	bufr_decoder.cc \
@@ -90,6 +92,7 @@ tut_test_SOURCES = \
 	tests/bufr_encoder.cc \
 	tests/crex_decoder.cc \
 	bulletin/buffers-tut.cc \
+	bulletin/internals-tut.cc \
 	bulletin/dds-validator-tut.cc \
 	tests/tut-main.cpp
 tut_test_LDADD = \
