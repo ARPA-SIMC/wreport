@@ -154,7 +154,7 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
 
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
     {
-        throw error_unimplemented("encode_attr");
+        throw error_unimplemented("do_attr");
     }
 
     virtual void do_var(Varinfo info)
@@ -167,7 +167,7 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
         ob.append_var(info, var);
     }
 
-    virtual Var do_semantic_var(Varinfo info)
+    virtual const Var& do_semantic_var(Varinfo info)
     {
         const Var& var = get_var();
         IFTRACE {

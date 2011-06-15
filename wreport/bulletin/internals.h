@@ -155,7 +155,7 @@ struct Visitor : public opcode::Visitor
      *
      * @returns a copy of the variable
      */
-    virtual Var do_semantic_var(Varinfo info) = 0;
+    virtual const Var& do_semantic_var(Varinfo info) = 0;
 
     /**
      * Request processing of a data present bitmap.

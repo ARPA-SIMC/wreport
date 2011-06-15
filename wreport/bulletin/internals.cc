@@ -184,7 +184,7 @@ void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
         Varinfo info = btable->query(WR_VAR(0, 31, 21));
 
         // Encode B31021
-        Var var = do_semantic_var(info);
+        const Var& var = do_semantic_var(info);
         c04_meaning = var.enqi();
         ++data_pos;
     }

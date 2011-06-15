@@ -127,7 +127,7 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
         const Var& var = get_var();
         ob.append_var(info, var);
     }
-    virtual Var do_semantic_var(Varinfo info)
+    virtual const Var& do_semantic_var(Varinfo info)
     {
         const Var& var = get_var();
         ob.append_var(info, var);

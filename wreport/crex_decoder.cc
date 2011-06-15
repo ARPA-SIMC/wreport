@@ -24,15 +24,16 @@
 #include "opcode.h"
 #include "bulletin.h"
 #include "bulletin/buffers.h"
+#include "bulletin/internals.h"
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <ctype.h>	/* isspace */
-#include <stdlib.h>	/* malloc */
-#include <string.h>	/* memcpy */
-#include <math.h>	/* NAN */
-#include <assert.h>	/* NAN */
-#include <errno.h>	/* NAN */
+#include <ctype.h>  /* isspace */
+#include <stdlib.h> /* malloc */
+#include <string.h> /* memcpy */
+#include <math.h>   /* NAN */
+#include <assert.h> /* NAN */
+#include <errno.h>  /* NAN */
 
 // #define TRACE_DECODER
 
@@ -47,6 +48,7 @@
 using namespace std;
 
 namespace wreport {
+namespace bulletin {
 
 namespace {
 struct Decoder
@@ -54,14 +56,11 @@ struct Decoder
     /// Input data
     bulletin::CrexInput in;
 
-	/* Output decoded variables */
-	CrexBulletin& out;
-
-	/* Current subset we are decoding */
-	Subset* current_subset;
+    /* Output decoded variables */
+    CrexBulletin& out;
 
     Decoder(const std::string& in, const char* fname, size_t offset, CrexBulletin& out)
-        : in(in), out(out), current_subset(0)
+        : in(in), out(out)
     {
         this->in.fname = fname;
         this->in.offset = offset;
@@ -126,7 +125,7 @@ struct Decoder
         /* data descriptors followed by (E?)\+\+ */
         in.check_eof("data descriptor section");
 
-        out.has_check_digit = 0;
+        out.has_check_digit = false;
         while (1)
         {
             if (*in.cur == 'B' || *in.cur == 'R' || *in.cur == 'C' || *in.cur == 'D')
@@ -160,202 +159,146 @@ struct Decoder
         }
     }
 
-    void decode_data()
-    {
-        // Load tables and set category/subcategory
-        out.load_tables();
-
-        /* Decode crex section 2 (data section) */
-        in.mark_section_start(2);
-
-        // Scan the various subsections
-        for (int i = 0; ; ++i)
-        {
-            current_subset = &out.obtain_subset(i);
-            parse_data_section(Opcodes(out.datadesc));
-            in.skip_spaces();
-            in.check_eof("end of data section");
-
-            if (*in.cur != '+')
-                in.parse_error("there should be a '+' at the end of the data section");
-            ++in.cur;
-
-            /* Peek at the next character to see if it's end of section */
-            in.check_eof("end of data section");
-            if (*in.cur == '+')
-            {
-                ++in.cur;
-                break;
-            }
-        }
-        in.skip_spaces();
-
-        /* Decode crex optional section 3 (optional section) */
-        in.mark_section_start(3);
-        in.check_available_data(4, "CREX optional section 3 or end of CREX message");
-        if (strncmp(in.cur, "SUPP", 4) == 0)
-        {
-            for (in.cur += 4; strncmp(in.cur, "++", 2) != 0; ++in.cur)
-                in.check_available_data(2, "end of CREX optional section 3");
-            in.skip_spaces();
-        }
-
-        /* Decode crex end section 4 */
-        in.mark_section_start(4);
-        in.check_available_data(4, "end of CREX message");
-        if (strncmp(in.cur, "7777", 4) != 0)
-            in.parse_error("unexpected data after data section or optional section 3");
-    }
-
-    void parse_data_section(const Opcodes& ops);
-    unsigned parse_b_data(const Opcodes& ops);
-    unsigned parse_r_data(const Opcodes& ops);
+    void decode_data();
 };
 
-unsigned Decoder::parse_b_data(const Opcodes& ops)
+struct CrexParser : public bulletin::Visitor
 {
-	IFTRACE{
-		TRACE("crex_decoder_parse_b_data: items: ");
-		ops.print(stderr);
-		TRACE("\n");
-	}
+    CrexInput& in;
+    Subset* out;
 
-	// Get variable information
-	Varinfo info = out.btable->query(ops.head());
+    CrexParser(CrexInput& in) : in(in) {}
 
-	// Create the new Var
-	Var var(info);
+    /// Notify the start of a subset
+    //virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
 
-	// Parse value from the data section
-	const char* d_start;
-	const char* d_end;
-	in.parse_value(info->len, !info->is_string(), &d_start, &d_end);
+    void do_var(Varinfo info)
+    {
+        do_semantic_var(info);
+    }
 
-	/* If the variable is not missing, set its value */
-	if (*d_start != '/')
-	{
-		if (info->is_string())
-		{
-			const int len = d_end - d_start;
-			string buf(d_start, len);
-			var.setc(buf.c_str());
-		} else {
-			int val = strtol((const char*)d_start, 0, 10);
+    const Var& do_semantic_var(Varinfo info)
+    {
+        // Create the new Var
+        Var var(info);
 
-			/* FIXME: here goes handling of active C table modifiers */
+        // Parse value from the data section
+        const char* d_start;
+        const char* d_end;
+        in.parse_value(info->len, !info->is_string(), &d_start, &d_end);
 
-			var.seti(val);
-		}
-	}
+        /* If the variable is not missing, set its value */
+        if (*d_start != '/')
+        {
+            if (info->is_string())
+            {
+                const int len = d_end - d_start;
+                string buf(d_start, len);
+                var.setc(buf.c_str());
+            } else {
+                int val = strtol((const char*)d_start, 0, 10);
+                var.seti(val);
+            }
+        }
 
-	/* Store the variable that we found */
-	current_subset->store_variable(var);
-	IFTRACE{
-		TRACE("  stored variable: "); var.print(stderr); TRACE("\n");
-	}
+        /* Store the variable that we found */
+        out->store_variable(var);
+        IFTRACE{
+            TRACE("do_var: stored variable: "); var.print(stderr); TRACE("\n");
+        }
+        return out->back();
+    }
 
-#ifdef TRACE_DECODER
-	{
-		int left = (start + in.size()) - cur;
-		TRACE("crex_decoder_parse_b_data -> %.*s (items:", left > 30 ? 30 : left, cur);
-		ops.sub(1).print(stderr);
-		TRACE(")\n");
-	}
-#endif
+    void do_associated_field(unsigned bit_count, unsigned significance)
+    {
+        // Just ignore for CREX
+    }
+    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+    {
+        throw error_unimplemented("do_attr");
+    }
+    const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+    {
+        throw error_unimplemented("do_bitmap");
+    }
+    void do_char_data(Varcode code)
+    {
+        throw error_unimplemented("do_char_data");
+    }
+};
 
-	return 1;
+void Decoder::decode_data()
+{
+    // Load tables and set category/subcategory
+    out.load_tables();
+
+    /* Decode crex section 2 (data section) */
+    in.mark_section_start(2);
+
+    CrexParser parser(in);
+    parser.btable = out.btable;
+    parser.dtable = out.dtable;
+
+    // Scan the various subsections
+    for (unsigned i = 0; ; ++i)
+    {
+        /* Current subset we are decoding */
+        Subset& current_subset = out.obtain_subset(i);
+
+        parser.out = &current_subset;
+        parser.do_start_subset(i, current_subset);
+        Opcodes(out.datadesc).visit(parser);
+
+        in.skip_spaces();
+        in.check_eof("end of data section");
+
+        if (*in.cur != '+')
+            in.parse_error("there should be a '+' at the end of the data section");
+        ++in.cur;
+
+        /* Peek at the next character to see if it's end of section */
+        in.check_eof("end of data section");
+        if (*in.cur == '+')
+        {
+            ++in.cur;
+            break;
+        }
+    }
+    in.skip_spaces();
+
+    /* Decode crex optional section 3 (optional section) */
+    in.mark_section_start(3);
+    in.check_available_data(4, "CREX optional section 3 or end of CREX message");
+    if (strncmp(in.cur, "SUPP", 4) == 0)
+    {
+        for (in.cur += 4; strncmp(in.cur, "++", 2) != 0; ++in.cur)
+            in.check_available_data(2, "end of CREX optional section 3");
+        in.skip_spaces();
+    }
+
+    /* Decode crex end section 4 */
+    in.mark_section_start(4);
+    in.check_available_data(4, "end of CREX message");
+    if (strncmp(in.cur, "7777", 4) != 0)
+        in.parse_error("unexpected data after data section or optional section 3");
 }
 
-unsigned Decoder::parse_r_data(const Opcodes& ops)
-{
-	unsigned first = 1;
-	int group = WR_VAR_X(ops.head());
-	int count = WR_VAR_Y(ops.head());
-	
-	TRACE("R DATA %01d%02d%03d %d %d", 
-			WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
-
-	if (count == 0)
-	{
-		/* Delayed replication */
-		
-		/* Fetch the repetition count */
-		const char* d_start;
-		const char* d_end;
-		in.parse_value(4, 0, &d_start, &d_end);
-		count = strtol((const char*)d_start, NULL, 10);
-
-		/* Insert the repetition count among the parsed variables */
-		current_subset->store_variable_i(WR_VAR(0, 31, 12), count);
-
-		TRACE("read_c_data %d items %d times (delayed)\n", group, count);
-	} else
-		TRACE("read_c_data %d items %d times\n", group, count);
-
-	// Extract the first `group' nodes, to handle here
-	Opcodes group_ops = ops.sub(first, group);
-
-	// parse_data_section on it `count' times
-	for (int i = 0; i < count; ++i)
-		parse_data_section(group_ops);
-
-	// Number of items processed
-	return first + group;
 }
-
-void Decoder::parse_data_section(const Opcodes& ops)
-{
-	/*
-	fprintf(stderr, "read_data: ");
-	bufrex_opcode_print(ops, stderr);
-	fprintf(stderr, "\n");
-	*/
-	TRACE("crex_decoder_parse_data_section: START\n");
-
-	for (unsigned i = 0; i < ops.size(); )
-	{
-		IFTRACE{
-			TRACE("crex_decoder_parse_data_section TODO: ");
-			ops.sub(i).print(stderr);
-			TRACE("\n");
-		}
-
-		switch (WR_VAR_F(ops[i]))
-		{
-			case 0: i += parse_b_data(ops.sub(i)); break;
-			case 1: i += parse_r_data(ops.sub(i)); break;
-			case 2: in.parse_error("C modifiers are not yet supported for CREX");
-			case 3:
-			{
-				Opcodes exp = out.dtable->query(ops[i]);
-				parse_data_section(exp);
-				++i;
-				break;
-			}
-			default:
-				in.parse_error("cannot handle field %01d%02d%03d",
-							WR_VAR_F(ops[i]),
-							WR_VAR_X(ops[i]),
-							WR_VAR_Y(ops[i]));
-		}
-	}
-}
-
 }
 
 void CrexBulletin::decode_header(const std::string& buf, const char* fname, size_t offset)
 {
-	clear();
-	Decoder d(buf, fname, offset, *this);
-	d.decode_header();
+    clear();
+    bulletin::Decoder d(buf, fname, offset, *this);
+    d.decode_header();
 }
 
 void CrexBulletin::decode(const std::string& buf, const char* fname, size_t offset)
 {
-	clear();
-	Decoder d(buf, fname, offset, *this);
-	d.decode_header();
-	d.decode_data();
+    clear();
+    bulletin::Decoder d(buf, fname, offset, *this);
+    d.decode_header();
+    d.decode_data();
 }
 
 }

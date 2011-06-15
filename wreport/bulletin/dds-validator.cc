@@ -71,7 +71,7 @@ void DDSValidator::do_var(Varinfo info)
     check_fits(info, var);
 }
 
-Var DDSValidator::do_semantic_var(Varinfo info)
+const Var& DDSValidator::do_semantic_var(Varinfo info)
 {
     const Var& var = get_var();
     check_fits(info, var);

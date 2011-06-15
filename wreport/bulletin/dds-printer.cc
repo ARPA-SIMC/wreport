@@ -104,7 +104,7 @@ void DDSPrinter::do_associated_field(unsigned bit_count, unsigned significance)
         fprintf(out, "associated field with significance %d is not present", significance);
 }
 
-Var DDSPrinter::do_semantic_var(Varinfo info)
+const Var& DDSPrinter::do_semantic_var(Varinfo info)
 {
     const Var& var = get_var();
     var.print(out);
