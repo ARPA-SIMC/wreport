@@ -59,7 +59,7 @@ void to::test<1>()
 
 namespace {
 
-struct ExploreCounter : public opcode::Explorer
+struct VisitCounter : public opcode::Visitor
 {
     unsigned count_b;
     unsigned count_r_plain;
@@ -67,7 +67,7 @@ struct ExploreCounter : public opcode::Explorer
     unsigned count_c;
     unsigned count_d;
 
-    ExploreCounter()
+    VisitCounter()
         : count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
 
     void b_variable(Varcode code) { ++count_b; }
@@ -78,14 +78,14 @@ struct ExploreCounter : public opcode::Explorer
             ++count_r_delayed;
         else
             ++count_r_plain;
-        ops.explore(*this);
+        ops.visit(*this);
     }
     void d_group_begin(Varcode code) { ++count_d; }
 };
 
 }
 
-// Test explorer
+// Test visitor
 template<> template<>
 void to::test<2>()
 {
@@ -93,8 +93,8 @@ void to::test<2>()
     Opcodes ops = table->query(WR_VAR(3, 0, 10));
     ensure_equals(ops.size(), 4);
 
-    ExploreCounter c;
-    ops.explore(c, *table);
+    VisitCounter c;
+    ops.visit(c, *table);
 
     ensure_equals(c.count_b, 4u);
     ensure_equals(c.count_c, 0u);

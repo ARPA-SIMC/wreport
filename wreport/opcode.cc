@@ -38,13 +38,13 @@ void Opcodes::print(FILE* out) const
             fprintf(out, "%d%02d%03d ", WR_VAR_F(vals[i]), WR_VAR_X(vals[i]), WR_VAR_Y(vals[i]));
 }
 
-void Opcodes::explore(opcode::Explorer& e, const DTable& dtable) const
+void Opcodes::visit(opcode::Visitor& e, const DTable& dtable) const
 {
     e.dtable = &dtable;
-    explore(e);
+    visit(e);
 }
 
-void Opcodes::explore(opcode::Explorer& e) const
+void Opcodes::visit(opcode::Visitor& e) const
 {
     for (unsigned i = 0; i < size(); ++i)
     {
@@ -144,7 +144,7 @@ void Opcodes::explore(opcode::Explorer& e) const
                 break;
             case 3:
                 e.d_group_begin(cur);
-                e.dtable->query(cur).explore(e);
+                e.dtable->query(cur).visit(e);
                 e.d_group_end(cur);
                 break;
             default:
@@ -156,22 +156,22 @@ void Opcodes::explore(opcode::Explorer& e) const
 
 namespace opcode {
 
-Explorer::Explorer() : dtable(0) {}
-Explorer::~Explorer() {}
-void Explorer::b_variable(Varcode code) {}
-void Explorer::c_modifier(Varcode code) {}
-void Explorer::c_change_data_width(Varcode code, int change) {}
-void Explorer::c_change_data_scale(Varcode code, int change) {}
-void Explorer::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
-void Explorer::c_char_data(Varcode code) {}
-void Explorer::c_char_data_override(Varcode code, unsigned new_length) {}
-void Explorer::c_quality_information_bitmap(Varcode code) {}
-void Explorer::c_substituted_value_bitmap(Varcode code) {}
-void Explorer::c_substituted_value(Varcode code) {}
-void Explorer::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
-void Explorer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) {}
-void Explorer::d_group_begin(Varcode code) {}
-void Explorer::d_group_end(Varcode code) {}
+Visitor::Visitor() : dtable(0) {}
+Visitor::~Visitor() {}
+void Visitor::b_variable(Varcode code) {}
+void Visitor::c_modifier(Varcode code) {}
+void Visitor::c_change_data_width(Varcode code, int change) {}
+void Visitor::c_change_data_scale(Varcode code, int change) {}
+void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
+void Visitor::c_char_data(Varcode code) {}
+void Visitor::c_char_data_override(Varcode code, unsigned new_length) {}
+void Visitor::c_quality_information_bitmap(Varcode code) {}
+void Visitor::c_substituted_value_bitmap(Varcode code) {}
+void Visitor::c_substituted_value(Varcode code) {}
+void Visitor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
+void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) {}
+void Visitor::d_group_begin(Varcode code) {}
+void Visitor::d_group_end(Varcode code) {}
 
 Printer::Printer()
     : out(stdout), btable(0), indent(0), indent_step(2)
@@ -216,7 +216,7 @@ void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
     else
         fputs(" (delayed) times\n", out);
     indent += indent_step;
-    ops.explore(*this);
+    ops.visit(*this);
     indent -= indent_step;
 }
 

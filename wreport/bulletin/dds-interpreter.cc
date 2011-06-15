@@ -63,7 +63,7 @@ namespace wreport {
 
 namespace {
 
-struct Interpreter : public opcode::Explorer
+struct Interpreter : public opcode::Visitor
 {
     const Bulletin& in;
     /// Input message data
@@ -314,7 +314,7 @@ struct Interpreter : public opcode::Explorer
             for (int i = 0; i < count; ++i)
             {
                 out.start_repetition();
-                ops.explore(*this);
+                ops.visit(*this);
             }
             out.pop_repetition();
         }
@@ -400,7 +400,7 @@ void Bulletin::run_dds(bulletin::DDSExecutor& out) const
         /* Encode the data of this subset */
         out.start_subset(i);
         e.start();
-        Opcodes(datadesc).explore(e);
+        Opcodes(datadesc).visit(e);
         TRACE("run_dds: done encoding subset %u\n", i);
     }
 }

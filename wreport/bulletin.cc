@@ -207,9 +207,9 @@ void CrexBulletin::encode(std::string& buf) const
 }
 */
 
-void Bulletin::explore_datadesc(opcode::Explorer& e) const
+void Bulletin::visit_datadesc(opcode::Visitor& e) const
 {
-    Opcodes(datadesc).explore(e, *dtable);
+    Opcodes(datadesc).visit(e, *dtable);
 }
 
 void Bulletin::print(FILE* out) const
@@ -279,7 +279,7 @@ void Bulletin::print_datadesc(FILE* out, unsigned indent) const
     printer.dtable = dtable;
     printer.indent = indent;
 
-    Opcodes(datadesc).explore(printer);
+    Opcodes(datadesc).visit(printer);
 }
 
 unsigned Bulletin::diff(const Bulletin& msg) const

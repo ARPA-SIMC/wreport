@@ -33,7 +33,7 @@
 namespace wreport {
 
 namespace opcode {
-struct Explorer;
+struct Visitor;
 }
 
 struct Vartable;
@@ -133,18 +133,18 @@ struct Opcodes
 	}
 
     /**
-     * Walk the structure of the opcodes sending events to an opcode::Explorer.
+     * Walk the structure of the opcodes sending events to an opcode::Visitor.
      *
      * Initialise e.dtable with \a dtable.
      */
-    void explore(opcode::Explorer& e, const DTable& dtable) const;
+    void visit(opcode::Visitor& e, const DTable& dtable) const;
 
     /**
-     * Walk the structure of the opcodes sending events to an opcode::Explorer
+     * Walk the structure of the opcodes sending events to an opcode::Visitor
      *
      * Assume that e.dtable is already initialised.
      */
-    void explore(opcode::Explorer& e) const;
+    void visit(opcode::Visitor& e) const;
 
     /// Print the contents of this opcode list
     void print(FILE* out) const;
@@ -164,12 +164,12 @@ namespace opcode
  * All interface methods have a default implementations that do nothing, so you
  * can override only what you need.
  */
-struct Explorer
+struct Visitor
 {
     const DTable* dtable;
 
-    Explorer();
-    virtual ~Explorer();
+    Visitor();
+    virtual ~Visitor();
 
     virtual void b_variable(Varcode code);
     virtual void c_modifier(Varcode code);
@@ -187,7 +187,7 @@ struct Explorer
     virtual void d_group_end(Varcode code);
 };
 
-class Printer : public Explorer
+class Printer : public Visitor
 {
 protected:
     void print_lead(Varcode code);
