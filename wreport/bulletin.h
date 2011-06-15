@@ -36,7 +36,7 @@
 namespace wreport {
 
 namespace bulletin {
-struct DDSExecutor;
+struct Visitor;
 struct BufrInput;
 }
 
@@ -155,7 +155,7 @@ struct Bulletin
      * Run the Data Descriptor Section interpreter, sending commands to \a
      * executor
      */
-    void run_dds(bulletin::DDSExecutor& out) const;
+    void visit(bulletin::Visitor& out) const;
 
 	/**
 	 * Dump the contents of this bulletin
@@ -392,7 +392,7 @@ struct Bitmap
  * Abstract interface for classes that can be used as targets for the Bulletin
  * Data Descriptor Section interpreters.
  */
-struct DDSExecutor : public opcode::Visitor
+struct Visitor : public opcode::Visitor
 {
     /// B table used to resolve variable information
     const Vartable* btable;
@@ -436,8 +436,8 @@ struct DDSExecutor : public opcode::Visitor
     unsigned data_pos;
 
 
-    DDSExecutor();
-    virtual ~DDSExecutor();
+    Visitor();
+    virtual ~Visitor();
 
     /**
      * Return the Varinfo describing the variable \a code, possibly altered
@@ -507,13 +507,13 @@ struct DDSExecutor : public opcode::Visitor
     virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
 };
 
-struct BaseDDSExecutor : public DDSExecutor
+struct BaseVisitor : public Visitor
 {
     Bulletin& bulletin;
     unsigned current_subset_no;
     unsigned current_var;
 
-    BaseDDSExecutor(Bulletin& bulletin);
+    BaseVisitor(Bulletin& bulletin);
 
     Var& get_var();
     Var& get_var(unsigned var_pos) const;
@@ -522,13 +522,13 @@ struct BaseDDSExecutor : public DDSExecutor
     virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
 };
 
-struct ConstBaseDDSExecutor : public DDSExecutor
+struct ConstBaseVisitor : public Visitor
 {
     const Bulletin& bulletin;
     unsigned current_subset_no;
     unsigned current_var;
 
-    ConstBaseDDSExecutor(const Bulletin& bulletin);
+    ConstBaseVisitor(const Bulletin& bulletin);
 
     const Var& get_var();
     const Var& get_var(unsigned var_pos) const;

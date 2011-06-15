@@ -134,17 +134,17 @@ struct Outbuf
     }
 };
 
-struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
+struct DDSEncoder : public bulletin::ConstBaseVisitor
 {
     Outbuf& ob;
 
-    DDSEncoder(const Bulletin& b, Outbuf& ob) : ConstBaseDDSExecutor(b), ob(ob) {}
+    DDSEncoder(const Bulletin& b, Outbuf& ob) : ConstBaseVisitor(b), ob(ob) {}
     virtual ~DDSEncoder() {}
 
     void do_start_subset(unsigned subset_no, const Subset& current_subset)
     {
         TRACE("start_subset %u\n", subset_no);
-        bulletin::ConstBaseDDSExecutor::do_start_subset(subset_no, current_subset);
+        bulletin::ConstBaseVisitor::do_start_subset(subset_no, current_subset);
 
         /* Encode the subsection terminator */
         if (subset_no > 0)
@@ -293,7 +293,7 @@ struct Encoder
         sec2_start = out.buf.size();
 
         DDSEncoder e(in, out);
-        in.run_dds(e);
+        in.visit(e);
         out.raw_append("++\r\r\n", 5);
 
         TRACE("SEC2 encoded as [[[%s]]]", out.buf.substr(sec2_start).c_str());

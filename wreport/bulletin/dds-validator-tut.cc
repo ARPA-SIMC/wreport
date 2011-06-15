@@ -43,7 +43,7 @@ static void _validate(Bulletin& b, const wibble::tests::Location& loc)
     try {
         // Validate them
         bulletin::DDSValidator validator(b);
-        b.run_dds(validator);
+        b.visit(validator);
     } catch (std::exception& e) {
         try {
             b.print_structured(stderr);

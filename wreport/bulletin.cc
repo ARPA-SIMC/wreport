@@ -223,6 +223,22 @@ void Bulletin::visit_datadesc(opcode::Visitor& e) const
     Opcodes(datadesc).visit(e, *dtable);
 }
 
+void Bulletin::visit(bulletin::Visitor& out) const
+{
+    out.btable = btable;
+    out.dtable = dtable;
+
+    /* Run all the subsets, uncompressed */
+    for (unsigned i = 0; i < subsets.size(); ++i)
+    {
+        TRACE("visit: start encoding subset %u\n", i);
+        /* Encode the data of this subset */
+        out.do_start_subset(i, subsets[i]);
+        Opcodes(datadesc).visit(out);
+        TRACE("visit: done encoding subset %u\n", i);
+    }
+}
+
 void Bulletin::print(FILE* out) const
 {
 	fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
@@ -265,7 +281,7 @@ void Bulletin::print_structured(FILE* out) const
     print_details(out);
     fprintf(out, " Variables:\n");
     bulletin::DDSPrinter printer(*this, out);
-    run_dds(printer);
+    visit(printer);
 }
 
 void Bulletin::print_details(FILE* out) const {}
@@ -753,10 +769,10 @@ unsigned Bitmap::next() { unsigned res = *iter; ++iter; return res; }
 
 
 
-DDSExecutor::DDSExecutor() : btable(0), current_subset(0) {}
-DDSExecutor::~DDSExecutor() {}
+Visitor::Visitor() : btable(0), current_subset(0) {}
+Visitor::~Visitor() {}
 
-Varinfo DDSExecutor::get_varinfo(Varcode code)
+Varinfo Visitor::get_varinfo(Varcode code)
 {
     Varinfo peek = btable->query(code);
 
@@ -786,7 +802,7 @@ Varinfo DDSExecutor::get_varinfo(Varcode code)
     return btable->query_altered(code, scale, bit_len);
 }
 
-void DDSExecutor::b_variable(Varcode code)
+void Visitor::b_variable(Varcode code)
 {
     Varinfo info = get_varinfo(code);
     // Choose which value we should encode
@@ -808,24 +824,24 @@ void DDSExecutor::b_variable(Varcode code)
     }
 }
 
-void DDSExecutor::c_modifier(Varcode code)
+void Visitor::c_modifier(Varcode code)
 {
     TRACE("C DATA %01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
-void DDSExecutor::c_change_data_width(Varcode code, int change)
+void Visitor::c_change_data_width(Varcode code, int change)
 {
     TRACE("Set width change from %d to %d\n", c_width_change, change);
     c_width_change = change;
 }
 
-void DDSExecutor::c_change_data_scale(Varcode code, int change)
+void Visitor::c_change_data_scale(Varcode code, int change)
 {
     TRACE("Set scale change from %d to %d\n", c_scale_change, change);
     c_scale_change = change;
 }
 
-void DDSExecutor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
+void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
 {
     // Add associated field
     TRACE("Set C04 bits to %d\n", WR_VAR_Y(code));
@@ -847,12 +863,12 @@ void DDSExecutor::c_associated_field(Varcode code, Varcode sig_code, unsigned nb
     c04_bits = WR_VAR_Y(code);
 }
 
-void DDSExecutor::c_char_data(Varcode code)
+void Visitor::c_char_data(Varcode code)
 {
     do_char_data(code);
 }
 
-void DDSExecutor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
+void Visitor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
 {
     // Length of next local descriptor
     if (WR_VAR_Y(code) > 32)
@@ -882,7 +898,7 @@ void DDSExecutor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned n
     }
 }
 
-void DDSExecutor::c_char_data_override(Varcode code, unsigned new_length)
+void Visitor::c_char_data_override(Varcode code, unsigned new_length)
 {
     IFTRACE {
         if (new_length)
@@ -893,7 +909,7 @@ void DDSExecutor::c_char_data_override(Varcode code, unsigned new_length)
     c_string_len_override = new_length;
 }
 
-void DDSExecutor::c_quality_information_bitmap(Varcode code)
+void Visitor::c_quality_information_bitmap(Varcode code)
 {
     // Quality information
     if (WR_VAR_Y(code) != 0)
@@ -904,12 +920,12 @@ void DDSExecutor::c_quality_information_bitmap(Varcode code)
     want_bitmap = true;
 }
 
-void DDSExecutor::c_substituted_value_bitmap(Varcode code)
+void Visitor::c_substituted_value_bitmap(Varcode code)
 {
     want_bitmap = true;
 }
 
-void DDSExecutor::c_substituted_value(Varcode code)
+void Visitor::c_substituted_value(Varcode code)
 {
     if (bitmap.bitmap == NULL)
         error_consistency::throwf("found C23255 with no active bitmap");
@@ -925,7 +941,7 @@ void DDSExecutor::c_substituted_value(Varcode code)
 /* If using delayed replication and count is not -1, use count for the delayed
  * replication factor; else, look for a delayed replication factor among the
  * input variables */
-void DDSExecutor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     //int group = WR_VAR_X(code);
     unsigned count = WR_VAR_Y(code);
@@ -970,7 +986,7 @@ void DDSExecutor::r_replication(Varcode code, Varcode delayed_code, const Opcode
     }
 }
 
-void DDSExecutor::do_start_subset(unsigned subset_no, const Subset& current_subset)
+void Visitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
 {
     this->current_subset = &current_subset;
 
@@ -984,23 +1000,23 @@ void DDSExecutor::do_start_subset(unsigned subset_no, const Subset& current_subs
     data_pos = 0;
 }
 
-void DDSExecutor::do_start_repetition(unsigned idx) {}
+void Visitor::do_start_repetition(unsigned idx) {}
 
 
 
-BaseDDSExecutor::BaseDDSExecutor(Bulletin& bulletin)
+BaseVisitor::BaseVisitor(Bulletin& bulletin)
     : bulletin(bulletin), current_subset_no(0)
 {
 }
 
-Var& BaseDDSExecutor::get_var()
+Var& BaseVisitor::get_var()
 {
     Var& res = get_var(current_var);
     ++current_var;
     return res;
 }
 
-Var& BaseDDSExecutor::get_var(unsigned var_pos) const
+Var& BaseVisitor::get_var(unsigned var_pos) const
 {
     unsigned max_var = current_subset->size();
     if (var_pos >= max_var)
@@ -1009,9 +1025,9 @@ Var& BaseDDSExecutor::get_var(unsigned var_pos) const
     return bulletin.subsets[current_subset_no][var_pos];
 }
 
-void BaseDDSExecutor::do_start_subset(unsigned subset_no, const Subset& current_subset)
+void BaseVisitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
 {
-    DDSExecutor::do_start_subset(subset_no, current_subset);
+    Visitor::do_start_subset(subset_no, current_subset);
     if (subset_no >= bulletin.subsets.size())
         error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
     this->current_subset = &(bulletin.subsets[subset_no]);
@@ -1019,7 +1035,7 @@ void BaseDDSExecutor::do_start_subset(unsigned subset_no, const Subset& current_
     current_var = 0;
 }
 
-const Var* BaseDDSExecutor::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+const Var* BaseVisitor::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
@@ -1029,19 +1045,19 @@ const Var* BaseDDSExecutor::do_bitmap(Varcode code, Varcode delayed_code, const 
 }
 
 
-ConstBaseDDSExecutor::ConstBaseDDSExecutor(const Bulletin& bulletin)
+ConstBaseVisitor::ConstBaseVisitor(const Bulletin& bulletin)
     : bulletin(bulletin), current_subset_no(0)
 {
 }
 
-const Var& ConstBaseDDSExecutor::get_var()
+const Var& ConstBaseVisitor::get_var()
 {
     const Var& res = get_var(current_var);
     ++current_var;
     return res;
 }
 
-const Var& ConstBaseDDSExecutor::get_var(unsigned var_pos) const
+const Var& ConstBaseVisitor::get_var(unsigned var_pos) const
 {
     unsigned max_var = current_subset->size();
     if (var_pos >= max_var)
@@ -1050,16 +1066,16 @@ const Var& ConstBaseDDSExecutor::get_var(unsigned var_pos) const
     return (*current_subset)[var_pos];
 }
 
-void ConstBaseDDSExecutor::do_start_subset(unsigned subset_no, const Subset& current_subset)
+void ConstBaseVisitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
 {
-    DDSExecutor::do_start_subset(subset_no, current_subset);
+    Visitor::do_start_subset(subset_no, current_subset);
     if (subset_no >= bulletin.subsets.size())
         error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
     current_subset_no = subset_no;
     current_var = 0;
 }
 
-const Var* ConstBaseDDSExecutor::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+const Var* ConstBaseVisitor::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
@@ -1069,23 +1085,6 @@ const Var* ConstBaseDDSExecutor::do_bitmap(Varcode code, Varcode delayed_code, c
 }
 
 }
-
-void Bulletin::run_dds(bulletin::DDSExecutor& out) const
-{
-    out.btable = btable;
-    out.dtable = dtable;
-
-    /* Encode all the subsets, uncompressed */
-    for (unsigned i = 0; i < subsets.size(); ++i)
-    {
-        TRACE("run_dds: start encoding subset %u\n", i);
-        /* Encode the data of this subset */
-        out.do_start_subset(i, subsets[i]);
-        Opcodes(datadesc).visit(out);
-        TRACE("run_dds: done encoding subset %u\n", i);
-    }
-}
-
 
 }
 

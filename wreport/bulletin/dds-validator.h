@@ -29,7 +29,7 @@
 namespace wreport {
 namespace bulletin {
 
-struct DDSValidator : public ConstBaseDDSExecutor
+struct DDSValidator : public ConstBaseVisitor
 {
     bool is_crex;
 
@@ -40,8 +40,6 @@ struct DDSValidator : public ConstBaseDDSExecutor
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
     virtual void do_var(Varinfo info);
     virtual Var do_semantic_var(Varinfo info);
-    virtual unsigned do_bitmap_repetition_count(Varinfo info, const Var& bitmap);
-    virtual void do_bitmap(const Var& bitmap);
     virtual void do_char_data(Varcode code);
     virtual void do_associated_field(unsigned bit_count, unsigned significance);
 };

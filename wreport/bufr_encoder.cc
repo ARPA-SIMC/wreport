@@ -93,11 +93,11 @@ static dba_err dump_bits(void* buf, int ofs, int count, FILE* out)
 }
 #endif
 
-struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
+struct DDSEncoder : public bulletin::ConstBaseVisitor
 {
     bulletin::BufrOutput& ob;
 
-    DDSEncoder(const Bulletin& b, bulletin::BufrOutput& ob) : ConstBaseDDSExecutor(b), ob(ob)
+    DDSEncoder(const Bulletin& b, bulletin::BufrOutput& ob) : ConstBaseVisitor(b), ob(ob)
     {
         btable = b.btable;
     }
@@ -358,7 +358,7 @@ void Encoder::encode_sec4()
     out.append_byte(0);
 
     DDSEncoder e(in, out);
-    in.run_dds(e);
+    in.visit(e);
 
     /* Write all the bits and pad the data section to reach an even length */
     out.flush();

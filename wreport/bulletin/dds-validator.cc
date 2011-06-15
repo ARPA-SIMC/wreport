@@ -28,7 +28,7 @@ namespace wreport {
 namespace bulletin {
 
 DDSValidator::DDSValidator(const Bulletin& b)
-    : ConstBaseDDSExecutor(b)
+    : ConstBaseVisitor(b)
 {
     is_crex = dynamic_cast<const CrexBulletin*>(&b) != NULL;
 }
@@ -76,15 +76,6 @@ Var DDSValidator::do_semantic_var(Varinfo info)
     const Var& var = get_var();
     check_fits(info, var);
     return var;
-}
-
-unsigned DDSValidator::do_bitmap_repetition_count(Varinfo info, const Var& bitmap)
-{
-    return bitmap.info()->len;
-}
-
-void DDSValidator::do_bitmap(const Var& bitmap)
-{
 }
 
 void DDSValidator::do_char_data(Varcode code)
