@@ -416,6 +416,31 @@ struct CrexInput
 
 struct CrexOutput
 {
+    std::string& buf;
+
+    /// True if the CREX message uses the check digit feature
+    int has_check_digit;
+
+    /// Value of the next expected check digit
+    int expected_check_digit;
+
+
+    CrexOutput(std::string& buf);
+
+    /// Append a string
+    void raw_append(const char* str, int len);
+
+    /// Append a printf-formatted string
+    void raw_appendf(const char* fmt, ...) __attribute__ ((format(printf, 2, 3)));
+
+    /// Generate and append a check digit
+    void encode_check_digit();
+
+    /// Append a missing variable encoded according to \a info
+    void append_missing(Varinfo info);
+
+    /// Append a variable encoded according to \a info
+    void append_var(Varinfo info, const Var& var);
 };
 
 }

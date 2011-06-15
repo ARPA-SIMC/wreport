@@ -613,5 +613,66 @@ void CrexInput::debug_dump_next(const char* desc) const
     putc('\n', stderr);
 }
 
+
+CrexOutput::CrexOutput(std::string& buf) : buf(buf), has_check_digit(0), expected_check_digit(0)
+{
+}
+
+void CrexOutput::raw_append(const char* str, int len)
+{
+    buf.append(str, len);
+}
+
+void CrexOutput::raw_appendf(const char* fmt, ...)
+{
+    char sbuf[256];
+    va_list ap;
+    va_start(ap, fmt);
+    int len = vsnprintf(sbuf, 255, fmt, ap);
+    va_end(ap);
+
+    buf.append(sbuf, len);
+}
+
+void CrexOutput::encode_check_digit()
+{
+    if (!has_check_digit) return;
+
+    char c = '0' + expected_check_digit;
+    raw_append(&c, 1);
+    expected_check_digit = (expected_check_digit + 1) % 10;
+}
+
+void CrexOutput::append_missing(Varinfo info)
+{
+    // TRACE("encode_b missing len: %d\n", info->len);
+    for (unsigned i = 0; i < info->len; i++)
+        raw_append("/", 1);
+}
+
+void CrexOutput::append_var(Varinfo info, const Var& var)
+{
+    if (var.value() == NULL)
+        return append_missing(info);
+
+    int len = info->len;
+    raw_append(" ", 1);
+    encode_check_digit();
+
+    if (info->is_string()) {
+        raw_appendf("%-*.*s", len, len, var.value());
+        // TRACE("encode_b string len: %d val %-*.*s\n", len, len, len, var.value());
+    } else {
+        int val = var.enqi();
+
+        /* FIXME: here goes handling of active C table modifiers */
+
+        if (val < 0) ++len;
+
+        raw_appendf("%0*d", len, val);
+        // TRACE("encode_b num len: %d val %0*d\n", len, len, val);
+    }
+}
+
 }
 }
