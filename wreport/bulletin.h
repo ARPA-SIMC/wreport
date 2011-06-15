@@ -356,11 +356,40 @@ struct CrexBulletin : public Bulletin
 
 namespace bulletin {
 
+struct Bitmap
+{
+    const Var* bitmap;
+    std::vector<unsigned> refs;
+    std::vector<unsigned>::const_reverse_iterator iter;
+    unsigned old_anchor;
+
+    Bitmap();
+    ~Bitmap();
+
+    void reset();
+
+    /**
+     * Initialise the bitmap handler
+     *
+     * @param bitmap
+     *   The bitmap
+     * @param subset
+     *   The subset to which the bitmap refers
+     * @param anchor
+     *   The index to the first element after the end of the bitmap (usually
+     *   the C operator that defines or uses the bitmap)
+     */
+    void init(const Var& bitmap, const Subset& subset, unsigned anchor);
+
+    bool eob() const;
+    unsigned next();
+};
+
 /**
  * Abstract interface for classes that can be used as targets for the Bulletin
  * Data Descriptor Section interpreters.
  */
-struct DDSExecutor
+struct DDSExecutor : public opcode::Visitor
 {
     /// B table used to resolve variable information
     const Vartable* btable;
@@ -368,44 +397,89 @@ struct DDSExecutor
     /// Current subset (used to refer to past variables)
     const Subset* current_subset;
 
+    /// Bitmap iteration
+    Bitmap bitmap;
+
+    /// Current value of scale change from C modifier
+    int c_scale_change;
+
+    /// Current value of width change from C modifier
+    int c_width_change;
+
+    /**
+     * Current value of string length override from C08 modifiers (0 for no
+     * override)
+     */
+    int c_string_len_override;
+
+    /**
+     * Number of extra bits inserted by the current C04yyy modifier (0 for no
+     * C04yyy operator in use)
+     */
+    int c04_bits;
+
+    /// Meaning of C04yyy field according to code table B31021
+    int c04_meaning;
+
+    /// True if a Data Present Bitmap is expected
+    bool want_bitmap;
+
+    /**
+     * Number of data items processed so far.
+     *
+     * This is used to generate reference to past decoded data, used when
+     * associating attributes to variables.
+     */
+    unsigned data_pos;
+
+
     DDSExecutor();
     virtual ~DDSExecutor();
 
-    /// Notify the start of a subset
-    virtual void start_subset(unsigned subset_no, const Subset& current_subset);
+    /**
+     * Return the Varinfo describing the variable \a code, possibly altered
+     * taking into account current C modifiers
+     */
+    Varinfo get_varinfo(Varcode code);
 
-    /// Notify that we start decoding a R group
-    virtual void push_repetition(unsigned length, unsigned count);
+    virtual void b_variable(Varcode code);
+    virtual void c_modifier(Varcode code);
+    virtual void c_change_data_width(Varcode code, int change);
+    virtual void c_change_data_scale(Varcode code, int change);
+    virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
+    virtual void c_char_data(Varcode code);
+    virtual void c_char_data_override(Varcode code, unsigned new_length);
+    virtual void c_quality_information_bitmap(Varcode code);
+    virtual void c_substituted_value_bitmap(Varcode code);
+    virtual void c_substituted_value(Varcode code);
+    virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
+    virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
+
+    /// Notify the start of a subset
+    virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
 
     /// Notify the beginning of one instance of an R group
-    virtual void start_repetition();
-
-    /// Notify that we ended decoding a R group
-    virtual void pop_repetition();
-
-    /// Notify that we start decoding a D group
-    virtual void push_dcode(Varcode code);
-
-    /// Notify that we ended decoding a D group
-    virtual void pop_dcode();
-
-    /// Encode associate fielf \a value in \a bit_count bits
-    virtual void encode_associated_field(unsigned bit_count, unsigned significance) = 0;
+    virtual void do_start_repetition(unsigned idx);
 
     /**
-     * Request encoding, according to \a info, of attribute \a attr_code of
-     * variable in position \a var_pos in the current subset.
+     * Request processing of \a bit_count bits of associated field with the
+     * given \a significance
      */
-    virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
+    virtual void do_associated_field(unsigned bit_count, unsigned significance) = 0;
 
     /**
-     * Request encoding, according to \a info, of the next variable in the
-     * current subset
+     * Request processing, according to \a info, of the attribute \a attr_code
+     * of the variable in position \a var_pos in the current subset.
      */
-    virtual void encode_var(Varinfo info) = 0;
+    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
 
     /**
-     * Request encoding, according to \a info, of a variabile that is
+     * Request processing, according to \a info, of a data variable.
+     */
+    virtual void do_var(Varinfo info) = 0;
+
+    /**
+     * Request processing, according to \a info, of a data variabile that is
      * significant for controlling the encoding process.
      *
      * This means that the variable has always the same value on all datasets
@@ -414,15 +488,19 @@ struct DDSExecutor
      *
      * @returns a copy of the variable
      */
-    virtual Var encode_semantic_var(Varinfo info) = 0;
+    virtual Var do_semantic_var(Varinfo info) = 0;
 
+    /**
+     * Request processing of a data present bitmap.
+     *
+     * Returns a pointer to the bitmap that has been processed.
+     */
     virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops) = 0;
 
     /**
-     * Request encoding of C05yyy character data, as stored in the next
-     * variable in the current dataset
+     * Request processing of C05yyy character data
      */
-    virtual void encode_char_data(Varcode code) = 0;
+    virtual void do_char_data(Varcode code) = 0;
 };
 
 struct BaseDDSExecutor : public DDSExecutor
@@ -433,10 +511,10 @@ struct BaseDDSExecutor : public DDSExecutor
 
     BaseDDSExecutor(Bulletin& bulletin);
 
-    const Var& get_var();
-    const Var& get_var(unsigned var_pos) const;
+    Var& get_var();
+    Var& get_var(unsigned var_pos) const;
 
-    virtual void start_subset(unsigned subset_no, const Subset& current_subset);
+    virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
     virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
 
     virtual void encode_associated_field(unsigned bit_count, unsigned significance);
@@ -453,7 +531,7 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     const Var& get_var();
     const Var& get_var(unsigned var_pos) const;
 
-    virtual void start_subset(unsigned subset_no, const Subset& current_subset);
+    virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
     virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
 
     virtual void encode_associated_field(unsigned bit_count, unsigned significance);

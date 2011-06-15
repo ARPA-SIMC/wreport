@@ -103,61 +103,17 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
     }
     virtual ~DDSEncoder() {}
 
-    virtual void encode_padding(unsigned bit_count, bool value)
-    {
-        ob.add_bits(value ? 0xffffffff : 0, bit_count);
-    }
-
-    virtual void encode_associated_field(unsigned bit_count, unsigned significance)
+    virtual void do_associated_field(unsigned bit_count, unsigned significance)
     {
         const Var& var = get_var(current_var);
-        const Var* att = 0;
-
-        switch (significance)
-        {
-            case 1: att = var.enqa(WR_VAR(0, 33, 2)); break;
-            case 2: att = var.enqa(WR_VAR(0, 33, 3)); break;
-            case 3 ... 5:
-                // Reserved: ignored
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
-                        significance);
-                break;
-            case 6: att = var.enqa(WR_VAR(0, 33, 50)); break;
-            case 9 ... 20:
-                // Reserved: ignored
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
-                        significance);
-                break;
-            case 22 ... 62:
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
-                        significance);
-                break;
-            case 63:
-                /*
-                 * Ignore quality information if B31021 is missing.
-                 * The Guide to FM94-BUFR says:
-                 *   If the quality information has no meaning for some
-                 *   of those following elements, but the field is
-                 *   still there, there is at present no explicit way
-                 *   to indicate "no meaning" within the currently
-                 *   defined meanings. One must either redefine the
-                 *   meaning of the associated field in its entirety
-                 *   (by including 0 31 021 in the message with a data
-                 *   value of 63 - "missing value") or remove the
-                 *   associated field bits by the "cancel" operator: 2
-                 *   04 000.
-                 */
-                break;
-            default:
-                error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
-        }
+        const Var* att = var.enqa_by_associated_field_significance(significance);
         if (att && att->isset())
             ob.add_bits(att->enqi(), bit_count);
         else
             ob.append_missing(bit_count);
     }
 
-    virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
     {
         const Var& var = get_var(var_pos);
         if (const Var* a = var.enqa(attr_code))
@@ -165,12 +121,12 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         else
             ob.append_missing(info);
     }
-    virtual void encode_var(Varinfo info)
+    virtual void do_var(Varinfo info)
     {
         const Var& var = get_var();
         ob.append_var(info, var);
     }
-    virtual Var encode_semantic_var(Varinfo info)
+    virtual Var do_semantic_var(Varinfo info)
     {
         const Var& var = get_var();
         ob.append_var(info, var);
@@ -210,7 +166,7 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
 
         return &var;
     }
-    virtual void encode_char_data(Varcode code)
+    virtual void do_char_data(Varcode code)
     {
         const Var& var = get_var();
         const char* val = var.value();

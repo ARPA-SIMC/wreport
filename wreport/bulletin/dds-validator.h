@@ -37,12 +37,13 @@ struct DDSValidator : public ConstBaseDDSExecutor
 
     void check_fits(Varinfo info, const Var& var);
 
-    virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
-    virtual void encode_var(Varinfo info);
-    virtual Var encode_semantic_var(Varinfo info);
-    virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap);
-    virtual void encode_bitmap(const Var& bitmap);
-    virtual void encode_char_data(Varcode code);
+    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
+    virtual void do_var(Varinfo info);
+    virtual Var do_semantic_var(Varinfo info);
+    virtual unsigned do_bitmap_repetition_count(Varinfo info, const Var& bitmap);
+    virtual void do_bitmap(const Var& bitmap);
+    virtual void do_char_data(Varcode code);
+    virtual void do_associated_field(unsigned bit_count, unsigned significance);
 };
 
 }

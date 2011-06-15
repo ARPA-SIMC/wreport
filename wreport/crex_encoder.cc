@@ -141,22 +141,22 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
     DDSEncoder(const Bulletin& b, Outbuf& ob) : ConstBaseDDSExecutor(b), ob(ob) {}
     virtual ~DDSEncoder() {}
 
-    void start_subset(unsigned subset_no, const Subset& current_subset)
+    void do_start_subset(unsigned subset_no, const Subset& current_subset)
     {
         TRACE("start_subset %u\n", subset_no);
-        bulletin::ConstBaseDDSExecutor::start_subset(subset_no, current_subset);
+        bulletin::ConstBaseDDSExecutor::do_start_subset(subset_no, current_subset);
 
         /* Encode the subsection terminator */
         if (subset_no > 0)
             ob.raw_append("+\r\r\n", 4);
     }
 
-    virtual void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
     {
         throw error_unimplemented("encode_attr");
     }
 
-    virtual void encode_var(Varinfo info)
+    virtual void do_var(Varinfo info)
     {
         const Var& var = get_var();
         IFTRACE {
@@ -166,7 +166,7 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         ob.append_var(info, var);
     }
 
-    virtual Var encode_semantic_var(Varinfo info)
+    virtual Var do_semantic_var(Varinfo info)
     {
         const Var& var = get_var();
         IFTRACE {
@@ -195,19 +195,20 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         return var;
     }
 
-    virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
+    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
     {
-        throw error_unimplemented("encode_bitmap_repetition_count");
+        throw error_unimplemented("do_bitmap");
     }
 
-    virtual void encode_bitmap(const Var& bitmap)
+    virtual void do_char_data(Varcode code)
     {
-        throw error_unimplemented("encode_bitmap");
+        throw error_unimplemented("do_char_data");
     }
 
-    virtual void encode_char_data(Varcode code)
+    virtual void do_associated_field(unsigned bit_count, unsigned significance)
     {
-        throw error_unimplemented("encode_char_data");
+        // Do nothing: CREX does not have associated fields
+        //throw error_unimplemented("do_associated_field");
     }
 };
 

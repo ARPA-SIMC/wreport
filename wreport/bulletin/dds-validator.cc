@@ -58,42 +58,48 @@ void DDSValidator::check_fits(Varinfo info, const Var& var)
     }
 }
 
-void DDSValidator::encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+void DDSValidator::do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
 {
     const Var& var = get_var(var_pos);
     if (const Var* a = var.enqa(attr_code))
         check_fits(info, *a);
 }
 
-void DDSValidator::encode_var(Varinfo info)
+void DDSValidator::do_var(Varinfo info)
 {
     const Var& var = get_var();
     check_fits(info, var);
 }
 
-Var DDSValidator::encode_semantic_var(Varinfo info)
+Var DDSValidator::do_semantic_var(Varinfo info)
 {
     const Var& var = get_var();
     check_fits(info, var);
     return var;
 }
 
-unsigned DDSValidator::encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
+unsigned DDSValidator::do_bitmap_repetition_count(Varinfo info, const Var& bitmap)
 {
     return bitmap.info()->len;
 }
 
-void DDSValidator::encode_bitmap(const Var& bitmap)
+void DDSValidator::do_bitmap(const Var& bitmap)
 {
 }
 
-void DDSValidator::encode_char_data(Varcode code)
+void DDSValidator::do_char_data(Varcode code)
 {
     const Var& var = get_var();
     if (var.code() != code)
         error_consistency::throwf("input variable %d%02d%03d differs from expected variable %d%02d%03d",
                 WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()),
                 WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+}
+
+void DDSValidator::do_associated_field(unsigned bit_count, unsigned significance)
+{
+    const Var& var = get_var(current_var);
+    /*const Var* att =*/ var.enqa_by_associated_field_significance(significance);
 }
 
 }

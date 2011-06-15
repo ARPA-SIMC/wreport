@@ -355,6 +355,49 @@ const Var* Var::enqa(Varcode code) const
 	return NULL;
 }
 
+const Var* Var::enqa_by_associated_field_significance(unsigned significance) const
+{
+    switch (significance)
+    {
+        case 1: return enqa(WR_VAR(0, 33, 2)); break;
+        case 2: return enqa(WR_VAR(0, 33, 3)); break;
+        case 3 ... 5:
+            // Reserved: ignored
+            notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                    significance);
+            break;
+        case 6: return enqa(WR_VAR(0, 33, 50)); break;
+        case 9 ... 20:
+            // Reserved: ignored
+            notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                    significance);
+            break;
+        case 22 ... 62:
+            notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+                    significance);
+            break;
+        case 63:
+            /*
+             * Ignore quality information if B31021 is missing.
+             * The Guide to FM94-BUFR says:
+             *   If the quality information has no meaning for some
+             *   of those following elements, but the field is
+             *   still there, there is at present no explicit way
+             *   to indicate "no meaning" within the currently
+             *   defined meanings. One must either redefine the
+             *   meaning of the associated field in its entirety
+             *   (by including 0 31 021 in the message with a data
+             *   value of 63 - "missing value") or remove the
+             *   associated field bits by the "cancel" operator: 2
+             *   04 000.
+             */
+            break;
+        default:
+            error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
+    }
+    return 0;
+}
+
 void Var::seta(const Var& attr)
 {
 	seta(auto_ptr<Var>(new Var(attr)));

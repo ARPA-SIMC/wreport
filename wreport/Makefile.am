@@ -41,7 +41,6 @@ libwreport_la_SOURCES = \
 	subset.cc \
 	bulletin.cc \
 	bulletin/buffers.cc \
-	bulletin/dds-interpreter.cc \
 	bulletin/dds-validator.cc \
 	bulletin/dds-printer.cc \
 	bufr_decoder.cc \

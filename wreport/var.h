@@ -203,6 +203,12 @@ public:
 	 */
 	const Var* enqa(Varcode code) const;
 
+    /**
+     * Query variable attribute according to significance given in CODE TABLE
+     * 031021
+     */
+    const Var* enqa_by_associated_field_significance(unsigned significance) const;
+
 	/**
 	 * Set an attribute of the variable.  An existing attribute with the same
 	 * wreport::Varcode will be replaced.

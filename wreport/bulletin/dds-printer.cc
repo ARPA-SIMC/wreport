@@ -47,23 +47,32 @@ void DDSPrinter::print_context(Varcode code, unsigned var_pos)
     fprintf(out, "%01d%02d%03d: ", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
-void DDSPrinter::push_dcode(Varcode code)
+void DDSPrinter::d_group_begin(Varcode code)
 {
+    ConstBaseDDSExecutor::d_group_begin(code);
     stack.push_back(code);
 }
 
-void DDSPrinter::pop_dcode()
+void DDSPrinter::d_group_end(Varcode code)
 {
+    ConstBaseDDSExecutor::d_group_end(code);
     stack.pop_back();
 }
 
-void DDSPrinter::start_subset(unsigned subset_no, const Subset& current_subset)
+void DDSPrinter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
-    ConstBaseDDSExecutor::start_subset(subset_no, current_subset);
+    stack.push_back(code);
+    ConstBaseDDSExecutor::r_replication(code, delayed_code, ops);
+    stack.pop_back();
+}
+
+void DDSPrinter::do_start_subset(unsigned subset_no, const Subset& current_subset)
+{
+    ConstBaseDDSExecutor::do_start_subset(subset_no, current_subset);
     stack.clear();
 }
 
-void DDSPrinter::encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+void DDSPrinter::do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
 {
     print_context(info, var_pos);
     fprintf(out, "(attr)");
@@ -75,7 +84,7 @@ void DDSPrinter::encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
         fprintf(out, "(undef)");
 }
 
-void DDSPrinter::encode_var(Varinfo info)
+void DDSPrinter::do_var(Varinfo info)
 {
     print_context(info, current_var);
 
@@ -83,31 +92,41 @@ void DDSPrinter::encode_var(Varinfo info)
     var.print(out);
 }
 
-Var DDSPrinter::encode_semantic_var(Varinfo info)
+void DDSPrinter::do_associated_field(unsigned bit_count, unsigned significance)
 {
-    print_context(info, current_var);
+    const Var& var = get_var(current_var);
+    print_context(var.info(), current_var);
 
+    const Var* att = var.enqa_by_associated_field_significance(significance);
+    if (att)
+        att->print(out);
+    else
+        fprintf(out, "associated field with significance %d is not present", significance);
+}
+
+Var DDSPrinter::do_semantic_var(Varinfo info)
+{
     const Var& var = get_var();
     var.print(out);
     return var;
 }
 
-unsigned DDSPrinter::encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
+const Var* DDSPrinter::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
-    print_context(info, 0);
-
-    Var var(info, (int)bitmap.info()->len);
-    var.print(out);
-    return bitmap.info()->len;
+    const Var* res = ConstBaseDDSExecutor::do_bitmap(code, delayed_code, ops);
+    if (delayed_code)
+    {
+        Varinfo info = btable->query(delayed_code);
+        print_context(info, 0);
+        Var var(info, (int)res->info()->len);
+        var.print(out);
+    }
+    print_context(res->info(), 0);
+    res->print(out);
+    return res;
 }
 
-void DDSPrinter::encode_bitmap(const Var& bitmap)
-{
-    print_context(bitmap.info(), 0);
-    bitmap.print(out);
-}
-
-void DDSPrinter::encode_char_data(Varcode code)
+void DDSPrinter::do_char_data(Varcode code)
 {
     print_context(code, 0);
 
