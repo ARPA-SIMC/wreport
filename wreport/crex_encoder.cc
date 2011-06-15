@@ -23,6 +23,7 @@
 
 #include "opcode.h"
 #include "bulletin.h"
+#include "bulletin/internals.h"
 
 #include <stdio.h>
 #include <stdarg.h>

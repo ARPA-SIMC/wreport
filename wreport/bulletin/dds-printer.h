@@ -23,6 +23,7 @@
 #define WREPORT_BULLETIN_DDS_PRINTER_H
 
 #include <wreport/bulletin.h>
+#include <wreport/bulletin/internals.h>
 #include <vector>
 #include <cstdio>
 

@@ -24,6 +24,7 @@
 #define WREPORT_BULLETIN_DDS_VALIDATOR_H
 
 #include <wreport/bulletin.h>
+#include <wreport/bulletin/internals.h>
 #include <vector>
 
 namespace wreport {

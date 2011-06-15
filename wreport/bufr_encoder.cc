@@ -23,6 +23,7 @@
 
 #include "bulletin.h"
 #include "bulletin/buffers.h"
+#include "bulletin/internals.h"
 #include "opcode.h"
 #include "notes.h"
 #include "conv.h"
