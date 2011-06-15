@@ -97,7 +97,10 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
 {
     bulletin::BufrOutput& ob;
 
-    DDSEncoder(const Bulletin& b, bulletin::BufrOutput& ob) : ConstBaseDDSExecutor(b), ob(ob) {}
+    DDSEncoder(const Bulletin& b, bulletin::BufrOutput& ob) : ConstBaseDDSExecutor(b), ob(ob)
+    {
+        btable = b.btable;
+    }
     virtual ~DDSEncoder() {}
 
     virtual void encode_padding(unsigned bit_count, bool value)
@@ -173,15 +176,39 @@ struct DDSEncoder : public bulletin::ConstBaseDDSExecutor
         ob.append_var(info, var);
         return var;
     }
-    virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap)
+    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
     {
-        ob.add_bits(bitmap.info()->len, info->bit_len);
-        return bitmap.info()->len;
-    }
-    virtual void encode_bitmap(const Var& bitmap)
-    {
-        for (unsigned i = 0; i < bitmap.info()->len; ++i)
-            ob.add_bits(bitmap.value()[i] == '+' ? 0 : 1, 1);
+        const Var& var = get_var();
+        if (WR_VAR_F(var.code()) != 2)
+            error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
+                    current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
+        IFTRACE{
+            TRACE("Encoding data present bitmap:");
+            var.print(stderr);
+        }
+
+        //int group = WR_VAR_X(code);
+        int count = WR_VAR_Y(code);
+
+        if (count == 0)
+        {
+            Varinfo info = btable->query(delayed_code);
+            count = var.info()->len;
+            ob.add_bits(count, info->bit_len);
+        }
+        TRACE("encode_r_data bitmap %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
+
+        // Encode the bitmap here directly
+        if (ops[0] != WR_VAR(0, 31, 31))
+            error_consistency::throwf("bitmap data descriptor is %d%02d%03d instead of B31031",
+                    WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
+        if (ops.size() != 1)
+            error_consistency::throwf("repeated sequence for bitmap encoding contains more than just B31031");
+
+        for (unsigned i = 0; i < var.info()->len; ++i)
+            ob.add_bits(var.value()[i] == '+' ? 0 : 1, 1);
+
+        return &var;
     }
     virtual void encode_char_data(Varcode code)
     {

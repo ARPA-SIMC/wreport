@@ -329,7 +329,6 @@ struct Interpreter : public opcode::Visitor
      * input variables */
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
     {
-        unsigned used = 1;
         int group = WR_VAR_X(code);
         int count = WR_VAR_Y(code);
 
@@ -342,32 +341,12 @@ struct Interpreter : public opcode::Visitor
 
         if (want_bitmap)
         {
-            const Var* bitmap_var = out.get_bitmap();
-            if (!bitmap_var)
-                throw error_consistency("bitmap required but not provided by DDS interpreter");
+            if (count == 0 && delayed_code == 0)
+                delayed_code = WR_VAR(0, 31, 12);
+            const Var* bitmap_var = out.do_bitmap(code, delayed_code, ops);
             bitmap.init(*bitmap_var, *out.current_subset, read_pos);
-
-            IFTRACE{
-                TRACE("Encoding data present bitmap:");
-                bitmap.bitmap->print(stderr);
-            }
-
-            if (count == 0)
-            {
-                Varinfo info = btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
-                count = out.encode_bitmap_repetition_count(info, *bitmap.bitmap);
+            if (delayed_code)
                 ++read_pos;
-            }
-            TRACE("encode_r_data bitmap %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
-
-            // Encode the bitmap here directly
-            if (ops[0] != WR_VAR(0, 31, 31))
-                error_consistency::throwf("bitmap data descriptor is %d%02d%03d instead of B31031",
-                        WR_VAR_F(ops[used]), WR_VAR_X(ops[used]), WR_VAR_Y(ops[used]));
-            if (ops.size() != 1)
-                error_consistency::throwf("repeated sequence for bitmap encoding contains more than just B31031");
-
-            out.encode_bitmap(*bitmap.bitmap);
             want_bitmap = false;
         } else {
             if (count == 0)

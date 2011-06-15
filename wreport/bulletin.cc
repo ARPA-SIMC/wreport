@@ -725,7 +725,7 @@ void BaseDDSExecutor::start_subset(unsigned subset_no, const Subset& current_sub
     current_var = 0;
 }
 
-const Var* BaseDDSExecutor::get_bitmap()
+const Var* BaseDDSExecutor::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
@@ -769,7 +769,7 @@ void ConstBaseDDSExecutor::start_subset(unsigned subset_no, const Subset& curren
     current_var = 0;
 }
 
-const Var* ConstBaseDDSExecutor::get_bitmap()
+const Var* ConstBaseDDSExecutor::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)

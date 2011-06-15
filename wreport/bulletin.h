@@ -416,29 +416,13 @@ struct DDSExecutor
      */
     virtual Var encode_semantic_var(Varinfo info) = 0;
 
-    /**
-     * Request encoding, according to \a info, of repetition count
-     * corresponding to the length of \a bitmap.
-     *
-     * @return the value of the repetition count.
-     */
-    virtual unsigned encode_bitmap_repetition_count(Varinfo info, const Var& bitmap) = 0;
-
-    /**
-     * Request encoding of \a bitmap
-     */
-    virtual void encode_bitmap(const Var& bitmap) = 0;
+    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops) = 0;
 
     /**
      * Request encoding of C05yyy character data, as stored in the next
      * variable in the current dataset
      */
     virtual void encode_char_data(Varcode code) = 0;
-
-    /**
-     * Get the bitmap as stored in the next variable in the current dataset
-     */
-    virtual const Var* get_bitmap() = 0;
 };
 
 struct BaseDDSExecutor : public DDSExecutor
@@ -453,7 +437,7 @@ struct BaseDDSExecutor : public DDSExecutor
     const Var& get_var(unsigned var_pos) const;
 
     virtual void start_subset(unsigned subset_no, const Subset& current_subset);
-    virtual const Var* get_bitmap();
+    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
 
     virtual void encode_associated_field(unsigned bit_count, unsigned significance);
 };
@@ -470,7 +454,7 @@ struct ConstBaseDDSExecutor : public DDSExecutor
     const Var& get_var(unsigned var_pos) const;
 
     virtual void start_subset(unsigned subset_no, const Subset& current_subset);
-    virtual const Var* get_bitmap();
+    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
 
     virtual void encode_associated_field(unsigned bit_count, unsigned significance);
 };
