@@ -326,6 +326,13 @@ struct CrexInput
     /// Cursor inside in.data() used for decoding
     const char* cur;
 
+    /* True if the CREX message uses the check digit feature */
+    int has_check_digit;
+
+    /* Value of the next expected check digit */
+    int expected_check_digit;
+
+
     CrexInput(const std::string& in);
 
     /// Return true if the cursor is at the end of the buffer
@@ -388,6 +395,20 @@ struct CrexInput
      *   the word will be at most \a len-1 characters long.
      */
     void read_word(char* buf, size_t len);
+
+    /**
+     * Parse a data value from the input buffer
+     *
+     * @param len
+     *   Length in characters of the value to parse
+     * @param is_signed
+     *   True if the value can be preceded by a + or - sign
+     * @retval d_start
+     *   Start of the parsed token
+     * @retval d_end
+     *   End of the parsed token
+     */
+    void parse_value(int len, int is_signed, const char** d_start, const char** d_end);
 
     /// Dump to stderr the contents of the next bit of buffer
     void debug_dump_next(const char* desc) const;

@@ -313,7 +313,7 @@ struct CrexBulletin : public Bulletin
 	/** Table version number */
 	int table;
 	/** True if the CREX message uses the check digit feature */
-	int has_check_digit;
+	bool has_check_digit;
 
 	void clear();
 	virtual const char* encoding_name() const throw () { return "CREX"; }

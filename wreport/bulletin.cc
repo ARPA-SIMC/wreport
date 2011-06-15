@@ -173,8 +173,9 @@ void BufrBulletin::encode(std::string& buf) const
 
 void CrexBulletin::clear()
 {
-	Bulletin::clear();
-	table = has_check_digit = 0;
+    Bulletin::clear();
+    table = 0;
+    has_check_digit = false;
 }
 
 void CrexBulletin::load_tables()
@@ -283,7 +284,7 @@ void BufrBulletin::print_details(FILE* out) const
 
 void CrexBulletin::print_details(FILE* out) const
 {
-	fprintf(out, " CREX details: T%02d%02d%02d cd%d\n", master_table_number, edition, table, has_check_digit);
+	fprintf(out, " CREX details: T%02d%02d%02d cd%d\n", master_table_number, edition, table, (int)has_check_digit);
 }
 
 void Bulletin::print_datadesc(FILE* out, unsigned indent) const
@@ -508,7 +509,7 @@ unsigned CrexBulletin::diff_details(const Bulletin& msg) const
     if (has_check_digit != m->has_check_digit)
     {
         notes::logf("CREX has_check_digit differ (first is %d, second is %d)\n",
-                has_check_digit, m->has_check_digit);
+                (int)has_check_digit, (int)m->has_check_digit);
         ++diffs;
     }
     return diffs;

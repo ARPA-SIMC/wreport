@@ -474,7 +474,7 @@ void BufrOutput::flush()
 
 
 CrexInput::CrexInput(const std::string& in)
-    : data(in.c_str()), data_len(in.size()), fname(NULL), offset(0), cur(data)
+    : data(in.c_str()), data_len(in.size()), fname(NULL), offset(0), cur(data), has_check_digit(false)
 {
     for (int i = 0; i < 5; ++i)
         sec[i] = 0;
@@ -548,6 +548,46 @@ void CrexInput::read_word(char* buf, size_t len)
     buf[i] = 0;
 
     skip_spaces();
+}
+
+void CrexInput::parse_value(int len, int is_signed, const char** d_start, const char** d_end)
+{
+    //TRACE("crex_decoder_parse_value(%d, %s): ", len, is_signed ? "signed" : "unsigned");
+
+    /* Check for 2 more because we may have extra sign and check digit */
+    check_available_data(len + 2, "end of data descriptor section");
+
+    if (has_check_digit)
+    {
+        if ((*cur - '0') != expected_check_digit)
+            parse_error("check digit mismatch: expected %d, found %d, rest of message: %.*s",
+                    expected_check_digit,
+                    (*cur - '0'),
+                    (int)remaining(),
+                    cur);
+
+        expected_check_digit = (expected_check_digit + 1) % 10;
+        ++cur;
+    }
+
+    /* Set the value to start after the check digit (if present) */
+    *d_start = cur;
+
+    /* Cope with one extra character in case the sign is present */
+    if (is_signed && *cur == '-')
+        ++len;
+
+    /* Go to the end of the message */
+    cur += len;
+
+    /* Set the end value, removing trailing spaces */
+    for (*d_end = cur; *d_end > *d_start && isspace(*(*d_end - 1)); (*d_end)--)
+        ;
+
+    /* Skip trailing spaces */
+    skip_spaces();
+
+    //TRACE("%.*s\n", *d_end - *d_start, *d_start);
 }
 
 void CrexInput::debug_dump_next(const char* desc) const

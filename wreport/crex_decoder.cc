@@ -60,12 +60,8 @@ struct Decoder
 	/* Current subset we are decoding */
 	Subset* current_subset;
 
-	/* Value of the next expected check digit */
-	int expected_check_digit;
-
     Decoder(const std::string& in, const char* fname, size_t offset, CrexBulletin& out)
-        : in(in), out(out), current_subset(0),
-          expected_check_digit(0)
+        : in(in), out(out), current_subset(0)
     {
         this->in.fname = fname;
         this->in.offset = offset;
@@ -141,8 +137,9 @@ struct Decoder
             }
             else if (*in.cur == 'E')
             {
-                out.has_check_digit = 1;
-                expected_check_digit = 1;
+                out.has_check_digit = true;
+                in.has_check_digit = true;
+                in.expected_check_digit = 1;
                 in.skip_data_and_spaces(1);
             }
             else if (*in.cur == '+')
@@ -213,94 +210,7 @@ struct Decoder
     void parse_data_section(const Opcodes& ops);
     unsigned parse_b_data(const Opcodes& ops);
     unsigned parse_r_data(const Opcodes& ops);
-    void parse_value(int len, int is_signed, const char** d_start, const char** d_end);
 };
-
-void Decoder::parse_value(int len, int is_signed, const char** d_start, const char** d_end)
-{
-    TRACE("crex_decoder_parse_value(%d, %s): ", len, is_signed ? "signed" : "unsigned");
-
-    /* Check for 2 more because we may have extra sign and check digit */
-    in.check_available_data(len + 2, "end of data descriptor section");
-
-    if (out.has_check_digit)
-    {
-        if ((*in.cur - '0') != expected_check_digit)
-            in.parse_error("check digit mismatch: expected %d, found %d, rest of message: %.*s",
-                    expected_check_digit,
-                    (*in.cur - '0'),
-                    (int)in.remaining(),
-                    in.cur);
-
-        expected_check_digit = (expected_check_digit + 1) % 10;
-        ++in.cur;
-    }
-
-    /* Set the value to start after the check digit (if present) */
-    *d_start = in.cur;
-
-    /* Cope with one extra character in case the sign is present */
-    if (is_signed && *in.cur == '-')
-        ++len;
-
-    /* Go to the end of the message */
-    in.cur += len;
-
-    /* Set the end value, removing trailing spaces */
-    for (*d_end = in.cur; *d_end > *d_start && isspace(*(*d_end - 1)); (*d_end)--)
-        ;
-
-    /* Skip trailing spaces */
-    in.skip_spaces();
-
-    TRACE("%.*s\n", *d_end - *d_start, *d_start);
-}
-
-#if 0
-/**
- * Compute a value from a CREX message
- *
- * @param value
- *   The value as found in the CREX message
- *
- * @param info
- *   The B table informations for the value
- *
- * @param cmodifier
- *   The C table modifier in effect for this value, or NULL if no C table
- *   modifier is in effect
- *
- * @returns
- *   The decoded value
- */
-/* TODO: implement c modifier computation */
-static double crex_decoder_compute_value(bufrex_decoder decoder, const char* value, dba_varinfo* info)
-{
-	double val;
-
-	/* TODO use the C table values */
-	
-	if (value[0] == '/')
-		return NAN;
- 
-	val = strtol(value, NULL, 10);
-
-	if (info->scale != 0)
-	{
-		int scale = info->scale;
-
-		if (info->scale > 0)
-			while (scale--)
-				val /= 10;
-		else
-			while (scale++)
-				val *= 10;
-	}
-
-	3A
-	return val;
-}
-#endif
 
 unsigned Decoder::parse_b_data(const Opcodes& ops)
 {
@@ -319,7 +229,7 @@ unsigned Decoder::parse_b_data(const Opcodes& ops)
 	// Parse value from the data section
 	const char* d_start;
 	const char* d_end;
-	parse_value(info->len, !info->is_string(), &d_start, &d_end);
+	in.parse_value(info->len, !info->is_string(), &d_start, &d_end);
 
 	/* If the variable is not missing, set its value */
 	if (*d_start != '/')
@@ -356,65 +266,6 @@ unsigned Decoder::parse_b_data(const Opcodes& ops)
 	return 1;
 }
 
-#if 0
-static dba_err crex_read_c_data(bufrex_decoder decoder, bufrex_opcode* ops)
-{
-	bufrex_opcode op;
-	dba_err err;
-	/* Node affected by the operator */
-	bufrex_opcode affected_op;
-
-	/* Pop the C modifier node */
-	DBA_RUN_OR_RETURN(bufrex_opcode_pop(ops, &op));
-
-	TRACE("read_c_data\n");
-
-	/* Pop the first node, since we handle it here */
-	if ((err = bufrex_opcode_pop(ops, &affected_op)) != DBA_OK)
-		goto fail1;
-
-	/* Activate this C modifier */
-	switch (WR_VAR_X(op->val))
-	{
-		case 1:
-			decoder->c_width = WR_VAR_Y(op->val);
-			break;
-		case 2:
-			decoder->c_scale = WR_VAR_Y(op->val);
-			break;
-		case 5:
-		case 7:
-		case 60:
-			err = dba_error_parse(decoder->fname, decoder->line_no,
-					"C modifier %d is not supported", WR_VAR_X(op->val));
-			goto fail;
-		default:
-			err = dba_error_parse(decoder->fname, decoder->line_no,
-					"Unknown C modifier %d", WR_VAR_X(op->val));
-			goto fail;
-	}
-
-	/* Decode the affected data */
-	if ((err = crex_read_data(decoder, &affected_op)) != DBA_OK)
-		goto fail;
-
-	/* Deactivate the C modifier */
-	decoder->c_width = 0;
-	decoder->c_scale = 0;
-
-	/* FIXME: affected_op should always be NULL */
-	assert(affected_op == NULL);
-	bufrex_opcode_delete(&affected_op);
-	return dba_error_ok();
-
-fail:
-	bufrex_opcode_delete(&affected_op);
-fail1:
-	bufrex_opcode_delete(&op);
-	return err;
-}
-#endif
-
 unsigned Decoder::parse_r_data(const Opcodes& ops)
 {
 	unsigned first = 1;
@@ -431,7 +282,7 @@ unsigned Decoder::parse_r_data(const Opcodes& ops)
 		/* Fetch the repetition count */
 		const char* d_start;
 		const char* d_end;
-		parse_value(4, 0, &d_start, &d_end);
+		in.parse_value(4, 0, &d_start, &d_end);
 		count = strtol((const char*)d_start, NULL, 10);
 
 		/* Insert the repetition count among the parsed variables */
