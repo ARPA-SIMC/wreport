@@ -63,9 +63,89 @@ namespace wreport {
 
 namespace {
 
+struct Bitmap
+{
+    const Var* bitmap;
+    const Subset* subset;
+    vector<unsigned> refs;
+    vector<unsigned>::const_reverse_iterator iter;
+    unsigned old_anchor;
+
+    Bitmap() : bitmap(0), subset(0) {}
+    ~Bitmap() {}
+
+    void reset()
+    {
+        bitmap = 0;
+        subset = 0;
+        old_anchor = 0;
+        refs.clear();
+        iter = refs.rend();
+    }
+
+    /**
+     * Initialise the bitmap handler
+     *
+     * @param bitmap
+     *   The bitmap
+     * @param subset
+     *   The subset to which the bitmap refers
+     * @param anchor
+     *   The index to the first element after the end of the bitmap (usually
+     *   the C operator that defines or uses the bitmap)
+     */
+    void init(const Var& bitmap, const Subset& subset, unsigned anchor)
+    {
+        this->bitmap = &bitmap;
+        this->subset = &subset;
+        refs.clear();
+
+        // From the specs it looks like bitmaps refer to all data that precedes
+        // the C operator that defines or uses the bitmap, but from the data
+        // samples that we have it look like when multiple bitmaps are present,
+        // they always refer to the same set of variables. For this reason we
+        // remember the first anchor point that we see and always refer the
+        // other bitmaps that we see to it.
+        if (old_anchor)
+            anchor = old_anchor;
+        else
+            old_anchor = anchor;
+
+        unsigned b_cur = bitmap.info()->len;
+        unsigned s_cur = anchor;
+        if (b_cur == 0) throw error_consistency("data present bitmap has length 0");
+        if (s_cur == 0) throw error_consistency("data present bitmap is anchored at start of subset");
+
+        while (true)
+        {
+            --b_cur;
+            --s_cur;
+            while (WR_VAR_F(subset[s_cur].code()) != 0)
+            {
+                if (s_cur == 0) throw error_consistency("bitmap refers to variables before the start of the subset");
+                --s_cur;
+            }
+
+            if (bitmap.value()[b_cur] == '+')
+                refs.push_back(s_cur);
+
+            if (b_cur == 0)
+                break;
+            if (s_cur == 0)
+                throw error_consistency("bitmap refers to variables before the start of the subset");
+        }
+
+        iter = refs.rbegin();
+    }
+
+    bool eob() const { return iter == refs.rend(); }
+    unsigned next() { unsigned res = *iter; ++iter; return res; }
+};
+
 struct Interpreter : public opcode::Visitor
 {
     const Bulletin& in;
+
     /// Input message data
     const Vartable* btable;
     /// Executor of the interpreter commands
@@ -80,10 +160,8 @@ struct Interpreter : public opcode::Visitor
      */
     int c_string_len_override;
 
-    /* Set these to non-null if we are encoding a data present bitmap */
-    const Var* bitmap_to_encode;
-    int bitmap_use_cur;
-    int bitmap_subset_cur;
+    /// Bitmap iteration
+    Bitmap bitmap;
 
     /**
      * Number of extra bits inserted by the current C04yyy modifier (0 for no
@@ -96,10 +174,11 @@ struct Interpreter : public opcode::Visitor
     // True if a Data Present Bitmap is expected
     bool want_bitmap;
 
+    unsigned read_pos;
+
     Interpreter(const Bulletin& in, bulletin::DDSExecutor& out)
         : in(in), out(out),
           c_scale_change(0), c_width_change(0), c_string_len_override(0),
-          bitmap_to_encode(0), bitmap_use_cur(0), bitmap_subset_cur(0),
           c04_bits(0), c04_meaning(63), want_bitmap(false)
     {
     }
@@ -109,32 +188,26 @@ struct Interpreter : public opcode::Visitor
         c_scale_change = 0;
         c_width_change = 0;
         c_string_len_override = 0;
-        bitmap_to_encode = 0;
-        bitmap_use_cur = 0;
-        bitmap_subset_cur = 0;
+        bitmap.reset();
         c04_bits = 0;
         c04_meaning = 63;
         want_bitmap = false;
+        read_pos = 0;
     }
 
     Varinfo get_varinfo(Varcode code);
-
-    void bitmap_next();
 
     void b_variable(Varcode code)
     {
         Varinfo info = get_varinfo(code);
         // Choose which value we should encode
-        if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33
-                && bitmap_to_encode != NULL && (unsigned)bitmap_use_cur < bitmap_to_encode->info()->len)
+        if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && !bitmap.eob())
         {
             // Attribute of the variable pointed by the bitmap
-            TRACE("Encode attribute %01d%02d%03d %d/%d subset pos %d\n",
-                    WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code),
-                    bitmap_use_cur, bitmap_to_encode->info()->len,
-                    bitmap_subset_cur);
-            out.encode_attr(info, bitmap_subset_cur, code);
-            bitmap_next();
+            unsigned target = bitmap.next();
+            TRACE("Encode attribute %01d%02d%03d subset pos %u\n",
+                    WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code), target);
+            out.encode_attr(info, target, code);
         } else {
             // Proper variable
             TRACE("Encode variable %01d%02d%03d\n",
@@ -142,6 +215,7 @@ struct Interpreter : public opcode::Visitor
             if (c04_bits > 0)
                 out.encode_associated_field(c04_bits, c04_meaning);
             out.encode_var(info);
+            ++read_pos;
         }
     }
 
@@ -176,6 +250,7 @@ struct Interpreter : public opcode::Visitor
             // Encode B31021
             Var var = out.encode_semantic_var(info);
             c04_meaning = var.enqi();
+            ++read_pos;
         }
         c04_bits = WR_VAR_Y(code);
     }
@@ -209,6 +284,7 @@ struct Interpreter : public opcode::Visitor
                         ceil(log10(exp2(WR_VAR_Y(code)))), 0, WR_VAR_Y(code), VARINFO_FLAG_STRING);
                 out.encode_var(info);
             }
+            ++read_pos;
         }
     }
     void c_char_data_override(Varcode code, unsigned new_length)
@@ -237,16 +313,15 @@ struct Interpreter : public opcode::Visitor
     }
     void c_substituted_value(Varcode code)
     {
-        if (bitmap_to_encode == NULL)
+        if (bitmap.bitmap == NULL)
             error_consistency::throwf("found C23255 with no active bitmap");
-        if ((unsigned)bitmap_use_cur >= bitmap_to_encode->info()->len)
+        if (bitmap.eob())
             error_consistency::throwf("found C23255 while at the end of active bitmap");
-
+        unsigned target = bitmap.next();
         // Use the details of the corrisponding variable for decoding
-        Varinfo info = in.subsets[0][bitmap_subset_cur].info();
+        Varinfo info = in.subsets[0][target].info();
         // Encode the value
-        out.encode_attr(info, bitmap_subset_cur, info->var);
-        bitmap_next();
+        out.encode_attr(info, target, info->var);
     }
 
     /* If using delayed replication and count is not -1, use count for the delayed
@@ -267,20 +342,21 @@ struct Interpreter : public opcode::Visitor
 
         if (want_bitmap)
         {
-            bitmap_to_encode = out.get_bitmap();
-            bitmap_use_cur = -1;
-            bitmap_subset_cur = -1;
-            bitmap_next();
+            const Var* bitmap_var = out.get_bitmap();
+            if (!bitmap_var)
+                throw error_consistency("bitmap required but not provided by DDS interpreter");
+            bitmap.init(*bitmap_var, *out.current_subset, read_pos);
 
             IFTRACE{
                 TRACE("Encoding data present bitmap:");
-                bitmap_to_encode->print(stderr);
+                bitmap.bitmap->print(stderr);
             }
 
             if (count == 0)
             {
                 Varinfo info = btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
-                count = out.encode_bitmap_repetition_count(info, *bitmap_to_encode);
+                count = out.encode_bitmap_repetition_count(info, *bitmap.bitmap);
+                ++read_pos;
             }
             TRACE("encode_r_data bitmap %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
 
@@ -291,7 +367,7 @@ struct Interpreter : public opcode::Visitor
             if (ops.size() != 1)
                 error_consistency::throwf("repeated sequence for bitmap encoding contains more than just B31031");
 
-            out.encode_bitmap(*bitmap_to_encode);
+            out.encode_bitmap(*bitmap.bitmap);
             want_bitmap = false;
         } else {
             if (count == 0)
@@ -299,11 +375,13 @@ struct Interpreter : public opcode::Visitor
                 Varinfo info = btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
                 Var var = out.encode_semantic_var(info);
                 count = var.enqi();
+                ++read_pos;
             }
             TRACE("encode_r_data %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
             IFTRACE {
                 TRACE("Repeat opcodes: ");
                 ops.print(stderr);
+                TRACE("\n");
             }
 
             // encode_data_section on it `count' times
@@ -354,32 +432,6 @@ Varinfo Interpreter::get_varinfo(Varcode code)
 
     TRACE("get_info:requesting alteration scale:%d, bit_len:%d\n", scale, bit_len);
     return btable->query_altered(code, scale, bit_len);
-}
-
-void Interpreter::bitmap_next()
-{
-    if (bitmap_to_encode == NULL)
-        throw error_consistency("applying a data present bitmap with no current bitmap");
-    TRACE("bitmap_next pre %d %d %d\n", bitmap_use_cur, bitmap_subset_cur, bitmap_to_encode->info()->len);
-    ++bitmap_use_cur;
-    ++bitmap_subset_cur;
-    while (bitmap_use_cur < 0 || (
-                (unsigned)bitmap_use_cur < bitmap_to_encode->info()->len &&
-                bitmap_to_encode->value()[bitmap_use_cur] == '-'))
-    {
-        TRACE("INCR\n");
-        ++bitmap_use_cur;
-        ++bitmap_subset_cur;
-
-        while ((unsigned)bitmap_subset_cur < out.subset_size() &&
-                out.is_special_var(bitmap_subset_cur))
-            ++bitmap_subset_cur;
-    }
-    if ((unsigned)bitmap_use_cur > bitmap_to_encode->info()->len)
-        throw error_consistency("moved past end of data present bitmap");
-    if ((unsigned)bitmap_subset_cur == out.subset_size())
-        throw error_consistency("end of data reached when applying attributes");
-    TRACE("bitmap_next post %d %d\n", bitmap_use_cur, bitmap_subset_cur);
 }
 
 } // Unnamed namespace
