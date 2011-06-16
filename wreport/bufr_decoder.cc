@@ -326,7 +326,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
                 associated_field = new Var(btable->query(WR_VAR(0, 33, 2)), (int)val);
                 break;
             case 2:
-                // Add attribute B33002=val
+                // Add attribute B33003=val
                 associated_field = new Var(btable->query(WR_VAR(0, 33, 3)), (int)val);
                 break;
             case 3 ... 5:
