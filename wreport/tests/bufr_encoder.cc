@@ -72,7 +72,8 @@ void to::test<1>()
 		}
 	} test;
 
-    BufrBulletin msg;
+    auto_ptr<BufrBulletin> pmsg(BufrBulletin::create());
+    BufrBulletin& msg = *pmsg;
     msg.clear();
 
 	/* Initialise common message bits */
@@ -117,10 +118,11 @@ void to::test<1>()
 	// Ensure that the encoded strings are space-padded
 	ensure(memfind(rmsg, "abcdefg       ", 14));
 
-	// Decode the message and retest
-	BufrBulletin msg1;
-	msg1.decode(rmsg);
-	test.run("reencoded", msg1);
+    // Decode the message and retest
+    auto_ptr<BufrBulletin> pmsg1(BufrBulletin::create());
+    BufrBulletin& msg1 = *pmsg1;
+    msg1.decode(rmsg);
+    test.run("reencoded", msg1);
 }
 
 // Encode a BUFR with an optional section
@@ -147,7 +149,8 @@ void to::test<2>()
 		}
 	} test;
 
-    BufrBulletin msg;
+    auto_ptr<BufrBulletin> pmsg(BufrBulletin::create());
+    BufrBulletin& msg = *pmsg;
     msg.clear();
 
 	// Initialise common message bits
@@ -195,9 +198,10 @@ void to::test<2>()
 	// Ensure that the encoded strings are space-padded
 	ensure(memfind(rmsg, "abcdefg       ", 14));
 
-	// Decode the message and retest
-	BufrBulletin msg1;
-	msg1.decode(rmsg);
+    // Decode the message and retest
+    auto_ptr<BufrBulletin> pmsg1(BufrBulletin::create());
+    BufrBulletin& msg1 = *pmsg1;
+    msg1.decode(rmsg);
 
 	// Check that the optional section has been padded
 	ensure_equals(msg1.optional_section_length, 6);
@@ -210,7 +214,8 @@ void to::test<2>()
 template<> template<>
 void to::test<3>()
 {
-	BufrBulletin msg;
+    auto_ptr<BufrBulletin> pmsg(BufrBulletin::create());
+    BufrBulletin& msg = *pmsg;
 
 	// Initialise common message bits
 	msg.edition = 3;            // BUFR ed.4

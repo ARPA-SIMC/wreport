@@ -1310,9 +1310,9 @@ void to::test<35>()
     std::string raw1 = tests::slurpfile("bufr/corrupted.bufr");
 
     // Decode the original contents
-    BufrBulletin msg1;
+    auto_ptr<BufrBulletin> msg1(BufrBulletin::create());
     try {
-        msg1.decode(raw1, "bufr/corrupted.bufr");
+        msg1->decode(raw1, "bufr/corrupted.bufr");
     } catch (std::exception& e) {
         ensure_contains(e.what(), "Only BUFR edition 3 and 4 are supported");
     }

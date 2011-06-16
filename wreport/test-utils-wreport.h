@@ -71,38 +71,38 @@ struct MsgTester
 		// Read the whole contents of the test file
 		std::string raw1 = slurpfile(name);
 
-		// Decode the original contents
-		BULLETIN msg1;
+        // Decode the original contents
+        std::auto_ptr<BULLETIN> msg1 = BULLETIN::create();
         try {
-            msg1.decode(raw1, name);
+            msg1->decode(raw1, name);
         } catch (wreport::error_parse& e) {
             try {
-                msg1.print_structured(stderr);
+                msg1->print_structured(stderr);
             } catch (wreport::error& e) {
                 std::cerr << "Dump interrupted: " << e.what();
             }
             throw;
         }
-        (*this)("orig", msg1);
+        (*this)("orig", *msg1);
 
 		// Encode it again
 		std::string raw;
-		msg1.encode(raw);
+		msg1->encode(raw);
 
-		// Decode our encoder's output
-		BULLETIN msg2;
-		msg2.decode(raw, name);
+        // Decode our encoder's output
+        std::auto_ptr<BULLETIN> msg2 = BULLETIN::create();
+        msg2->decode(raw, name);
 
-		// Test the decoded version
-		(*this)("reencoded", msg2);
+        // Test the decoded version
+        (*this)("reencoded", *msg2);
 
         // Ensure the two are the same
         notes::Collect c(std::cerr);
-        unsigned diffs = msg1.diff(msg2);
+        unsigned diffs = msg1->diff(*msg2);
         if (diffs)
         {
-            track_bulletin(msg1, "orig", name);
-            track_bulletin(msg2, "reenc", name);
+            track_bulletin(*msg1, "orig", name);
+            track_bulletin(*msg2, "reenc", name);
         }
         ensure_equals(diffs, 0);
     }

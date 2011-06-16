@@ -67,10 +67,24 @@ const Subset& Bulletin::subset(unsigned subsection) const
 	return subsets[subsection];
 }
 
+BufrCodecOptions::BufrCodecOptions()
+    : decode_adds_undef_attrs(false)
+{
+}
+
+std::auto_ptr<BufrCodecOptions> BufrCodecOptions::create()
+{
+    return auto_ptr<BufrCodecOptions>(new BufrCodecOptions);
+}
 
 BufrBulletin::BufrBulletin()
-	: optional_section_length(0), optional_section(0), raw_details(0), codec_options(0)
+    : optional_section_length(0), optional_section(0), raw_details(0), codec_options(0)
 {
+}
+
+std::auto_ptr<BufrBulletin> BufrBulletin::create()
+{
+    return auto_ptr<BufrBulletin>(new BufrBulletin);
 }
 
 BufrBulletin::~BufrBulletin()
@@ -170,6 +184,16 @@ void BufrBulletin::encode(std::string& buf) const
 {
 }
 */
+
+CrexBulletin::CrexBulletin()
+{
+}
+
+std::auto_ptr<CrexBulletin> CrexBulletin::create()
+{
+    return auto_ptr<CrexBulletin>(new CrexBulletin);
+}
+
 
 void CrexBulletin::clear()
 {

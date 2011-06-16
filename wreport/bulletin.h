@@ -197,16 +197,20 @@ struct Bulletin
 
 
 /**
- * Options used to configure BUFR decoding
+ * Options used to configure BUFR decoding.
+ *
+ * Options may be added at any time to future versions of the structure. To
+ * reduce the likelyhook of breaking ABI, construction on stack is discouraged
+ * in favour of an allocator function.
  */
 struct BufrCodecOptions
 {
     bool decode_adds_undef_attrs;
 
-    BufrCodecOptions()
-        : decode_adds_undef_attrs(false)
-    {
-    }
+    static std::auto_ptr<BufrCodecOptions> create();
+
+protected:
+    BufrCodecOptions();
 };
 
 /**
@@ -255,7 +259,6 @@ struct BufrBulletin : public Bulletin
     const BufrCodecOptions* codec_options;
 
 
-	BufrBulletin();
 	virtual ~BufrBulletin();
 
 	void clear();
@@ -301,6 +304,15 @@ struct BufrBulletin : public Bulletin
 	 *   File name to use in error messages
 	 */
 	static void write(const std::string& buf, FILE* out, const char* fname = 0);
+
+    /**
+     * To prevent breaking ABI if new members are added to bulletins, direct
+     * construction is discouraged in favour of an allocator function
+     */
+    static std::auto_ptr<BufrBulletin> create();
+
+protected:
+    BufrBulletin();
 };
 
 /**
@@ -351,6 +363,15 @@ struct CrexBulletin : public Bulletin
 	 *   File name to use in error messages
 	 */
 	static void write(const std::string& buf, FILE* out, const char* fname = 0);
+
+    /**
+     * To prevent breaking ABI if new members are added to bulletins, direct
+     * construction is discouraged in favour of an allocator function
+     */
+    static std::auto_ptr<CrexBulletin> create();
+
+protected:
+    CrexBulletin();
 };
 
 }
