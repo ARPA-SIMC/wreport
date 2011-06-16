@@ -133,7 +133,7 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
         ob.append_var(info, var);
         return var;
     }
-    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
     {
         const Var& var = get_var();
         if (WR_VAR_F(var.code()) != 2)
@@ -144,8 +144,8 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
             var.print(stderr);
         }
 
-        //int group = WR_VAR_X(code);
-        int count = WR_VAR_Y(code);
+        //int group = WR_VAR_X(rep_code);
+        int count = WR_VAR_Y(rep_code);
 
         if (count == 0)
         {
@@ -165,7 +165,7 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
         for (unsigned i = 0; i < var.info()->len; ++i)
             ob.add_bits(var.value()[i] == '+' ? 0 : 1, 1);
 
-        return &var;
+        return var;
     }
     virtual void do_char_data(Varcode code)
     {

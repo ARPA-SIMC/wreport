@@ -111,18 +111,18 @@ const Var& DDSPrinter::do_semantic_var(Varinfo info)
     return var;
 }
 
-const Var* DDSPrinter::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+const Var& DDSPrinter::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
-    const Var* res = ConstBaseVisitor::do_bitmap(code, delayed_code, ops);
+    const Var& res = ConstBaseVisitor::do_bitmap(code, rep_code, delayed_code, ops);
     if (delayed_code)
     {
         Varinfo info = btable->query(delayed_code);
         print_context(info, 0);
-        Var var(info, (int)res->info()->len);
+        Var var(info, (int)res.info()->len);
         var.print(out);
     }
-    print_context(res->info(), 0);
-    res->print(out);
+    print_context(res.info(), 0);
+    res.print(out);
     return res;
 }
 

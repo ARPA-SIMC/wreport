@@ -45,7 +45,7 @@ struct DDSPrinter : public ConstBaseVisitor
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
     virtual void do_var(Varinfo info);
     virtual const Var& do_semantic_var(Varinfo info);
-    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
+    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
     virtual void do_char_data(Varcode code);
     void do_associated_field(unsigned bit_count, unsigned significance);
 

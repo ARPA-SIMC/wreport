@@ -138,12 +138,12 @@ void Visitor::b_variable(Varcode code)
     {
         // Attribute of the variable pointed by the bitmap
         unsigned target = bitmap.next();
-        TRACE("Encode attribute %01d%02d%03d subset pos %u\n",
+        TRACE("b_variable attribute %01d%02d%03d subset pos %u\n",
                 WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code), target);
         do_attr(info, target, code);
     } else {
         // Proper variable
-        TRACE("Encode variable %01d%02d%03d\n",
+        TRACE("b_variable variable %01d%02d%03d\n",
                 WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
         if (c04_bits > 0)
             do_associated_field(c04_bits, c04_meaning);
@@ -219,7 +219,7 @@ void Visitor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits
         {
             MutableVarinfo info(MutableVarinfo::create_singleuse());
             info->set(code, "UNKNOWN LOCAL DESCRIPTOR", "UNKNOWN", 0, 0,
-                    ceil(log10(exp2(WR_VAR_Y(code)))), 0, WR_VAR_Y(code), VARINFO_FLAG_STRING);
+                    ceil(log10(exp2(WR_VAR_Y(code)))), 0, WR_VAR_Y(code), VARINFO_FLAG_BINARY);
             do_var(info);
         }
         ++data_pos;
@@ -245,12 +245,12 @@ void Visitor::c_quality_information_bitmap(Varcode code)
                     WR_VAR_F(code),
                     WR_VAR_X(code),
                     WR_VAR_Y(code));
-    want_bitmap = true;
+    want_bitmap = code;
 }
 
 void Visitor::c_substituted_value_bitmap(Varcode code)
 {
-    want_bitmap = true;
+    want_bitmap = code;
 }
 
 void Visitor::c_substituted_value(Varcode code)
@@ -271,12 +271,12 @@ void Visitor::c_substituted_value(Varcode code)
  * input variables */
 void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
-    //int group = WR_VAR_X(code);
+    // unsigned group = WR_VAR_X(code);
     unsigned count = WR_VAR_Y(code);
 
     IFTRACE{
-        TRACE("bufr_message_encode_r_data %01d%02d%03d %d %d: items: ",
-                WR_VAR_F(ops.head()), WR_VAR_X(ops.head()), WR_VAR_Y(ops.head()), group, count);
+        TRACE("visitor r_replication %01d%02d%03d, %u times, %u opcodes: ",
+                WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code), count, WR_VAR_X(code));
         ops.print(stderr);
         TRACE("\n");
     }
@@ -285,21 +285,21 @@ void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
     {
         if (count == 0 && delayed_code == 0)
             delayed_code = WR_VAR(0, 31, 12);
-        const Var* bitmap_var = do_bitmap(code, delayed_code, ops);
-        bitmap.init(*bitmap_var, *current_subset, data_pos);
+        const Var& bitmap_var = do_bitmap(want_bitmap, code, delayed_code, ops);
+        bitmap.init(bitmap_var, *current_subset, data_pos);
         if (delayed_code)
             ++data_pos;
-        want_bitmap = false;
+        want_bitmap = 0;
     } else {
         if (count == 0)
         {
             Varinfo info = btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
-            Var var = do_semantic_var(info);
+            const Var& var = do_semantic_var(info);
             count = var.enqi();
             ++data_pos;
         }
-        TRACE("encode_r_data %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
         IFTRACE {
+            TRACE("visitor r_replication %d items %d times%s\n", WR_VAR_X(code), count, delayed_code ? " (delayed)" : "");
             TRACE("Repeat opcodes: ");
             ops.print(stderr);
             TRACE("\n");
@@ -365,13 +365,13 @@ void BaseVisitor::do_start_subset(unsigned subset_no, const Subset& current_subs
     current_var = 0;
 }
 
-const Var* BaseVisitor::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+const Var& BaseVisitor::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
                 current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-    return &var;
+    return var;
 }
 
 
@@ -405,13 +405,13 @@ void ConstBaseVisitor::do_start_subset(unsigned subset_no, const Subset& current
     current_var = 0;
 }
 
-const Var* ConstBaseVisitor::do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+const Var& ConstBaseVisitor::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
                 current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-    return &var;
+    return var;
 }
 
 }

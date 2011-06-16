@@ -217,7 +217,7 @@ struct CrexParser : public bulletin::Visitor
     {
         throw error_unimplemented("do_attr");
     }
-    const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+    const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
     {
         throw error_unimplemented("do_bitmap");
     }

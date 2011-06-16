@@ -214,7 +214,8 @@ void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
     if (count)
         fprintf(out, " %u times\n", count);
     else
-        fputs(" (delayed) times\n", out);
+        fprintf(out, " (delayed %d%02d%03d) times\n",
+                WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code));
     indent += indent_step;
     ops.visit(*this);
     indent -= indent_step;

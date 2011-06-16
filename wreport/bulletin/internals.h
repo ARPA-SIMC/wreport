@@ -101,8 +101,8 @@ struct Visitor : public opcode::Visitor
     /// Meaning of C04yyy field according to code table B31021
     int c04_meaning;
 
-    /// True if a Data Present Bitmap is expected
-    bool want_bitmap;
+    /// Nonzero if a Data Present Bitmap is expected
+    Varcode want_bitmap;
 
     /**
      * Number of data items processed so far.
@@ -162,7 +162,7 @@ struct Visitor : public opcode::Visitor
      *
      * Returns a pointer to the bitmap that has been processed.
      */
-    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops) = 0;
+    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) = 0;
 
     /**
      * Request processing of C05yyy character data
@@ -196,7 +196,7 @@ struct BaseVisitor : public Visitor
     Var& get_var(unsigned var_pos) const;
 
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
-    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
+    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
 };
 
 struct ConstBaseVisitor : public Visitor
@@ -211,7 +211,7 @@ struct ConstBaseVisitor : public Visitor
     const Var& get_var(unsigned var_pos) const;
 
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
-    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
+    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
 };
 
 }

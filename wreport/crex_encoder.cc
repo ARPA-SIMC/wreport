@@ -112,7 +112,7 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
         return var;
     }
 
-    virtual const Var* do_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
     {
         throw error_unimplemented("do_bitmap");
     }
