@@ -3,7 +3,8 @@
 \section intro Introduction
 
 This library provides BUFR and CREX encoding and decoding functions, supported
-by function to manage weather bulletin variables.
+by functions to manage weather bulletin variables. See @ref features for a list
+of features.
 
 The infrastructure for working with variable is based on wreport::Var variables
 (see @ref var.h) that are described by wreport::Varinfo structures (see @ref

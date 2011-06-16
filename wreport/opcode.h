@@ -166,30 +166,165 @@ namespace opcode
  */
 struct Visitor
 {
+    /**
+     * D table to use to expand D groups.
+     *
+     * This must be provided by the caller
+     */
     const DTable* dtable;
 
     Visitor();
     virtual ~Visitor();
 
+    /**
+     * Notify of a B variable entry
+     *
+     * @param code
+     *   The B variable code
+     */
     virtual void b_variable(Varcode code);
+
+    /**
+     * Notify of a C modifier
+     *
+     * Whenever the modifier is a supported one, this is followed by an
+     * invocation of one of the specific c_* methods.
+     *
+     * @param code
+     *   The C modifier code
+     */
     virtual void c_modifier(Varcode code);
+
+    /**
+     * Notify a change of data width
+     *
+     * @param code
+     *   The C modifier code
+     * @param change
+     *   The width change (positive or negative)
+     */
     virtual void c_change_data_width(Varcode code, int change);
+
+    /**
+     * Notify a change of data scale
+     *
+     * @param code
+     *   The C modifier code
+     * @param change
+     *   The scale change (positive or negative)
+     */
     virtual void c_change_data_scale(Varcode code, int change);
+
+    /**
+     * Notify the declaration of an associated field for the next values.
+     *
+     * @param code
+     *   The C modifier code
+     * @param sig_code
+     *   The B code of the associated field significance opcode (or 0 to mark
+     *   the end of the associated field encoding)
+     * @param nbits
+     *   The number of bits used for the associated field.
+     */
     virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
+
+    /**
+     * Notify raw character data encoded via a C modifier
+     *
+     * @param code
+     *   The C modifier code
+     */
     virtual void c_char_data(Varcode code);
+
+    /**
+     * Notify an override of character data length
+     *
+     * @param code
+     *   The C modifier code
+     * @param new_length
+     *   New length of all following character data (or 0 to reset to default)
+     */
     virtual void c_char_data_override(Varcode code, unsigned new_length);
+
+    /**
+     * Notify a bitmap for quality information data
+     *
+     * @param code
+     *   The C modifier code
+     */
     virtual void c_quality_information_bitmap(Varcode code);
+
+    /**
+     * Notify a bitmap for substituted values
+     *
+     * @param code
+     *   The C modifier code
+     */
     virtual void c_substituted_value_bitmap(Varcode code);
+
+    /**
+     * Notify a substituted value
+     *
+     * @param code
+     *   The C modifier code
+     */
     virtual void c_substituted_value(Varcode code);
+
+    /**
+     * Notify the length of the following local descriptor
+     *
+     * @param code
+     *   The C modifier code
+     * @param desc_code
+     *   Local descriptor for which the length is provided
+     * @param nbits
+     *   Bit size of the data described by \a desc_code
+     */
     virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
+
+    /**
+     * Notify a replicated section
+     * 
+     * @param code
+     *   The R replication code
+     * @param delayed_code
+     *   The delayed replication B code, or 0 if delayed replication is not
+     *   used
+     * @param ops
+     *   The replicated operators
+     */
     virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
+
+    /**
+     * Notify the start of a D group
+     *
+     * @param code
+     *   The D code that is being expanded
+     */
     virtual void d_group_begin(Varcode code);
+
+    /**
+     * Notify the end of a D group
+     *
+     * @param code
+     *   The D code that has just been expanded
+     */
     virtual void d_group_end(Varcode code);
 };
 
+/**
+ * opcode::Visitor that pretty-prints the opcodes using indentation to show
+ * structure
+ */
 class Printer : public Visitor
 {
 protected:
+    /**
+     * Print line lead (indentation and formatted code)
+     *
+     * @param code
+     *   Code to format in the line lead
+     */
     void print_lead(Varcode code);
 
 public:

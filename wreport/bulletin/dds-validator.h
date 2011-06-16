@@ -35,13 +35,19 @@ namespace bulletin {
  * bulletin subsets can actualy be encoded matching the bulletin Data
  * Descriptor Section.
  */
-struct DDSValidator : public ConstBaseVisitor
+class DDSValidator : public ConstBaseVisitor
 {
     bool is_crex;
-
-    DDSValidator(const Bulletin& b);
-
     void check_fits(Varinfo info, const Var& var);
+
+public:
+    /**
+     * Create a new DDS validator
+     *
+     * @param b
+     *   Reference to the bulletin being visited
+     */
+    DDSValidator(const Bulletin& b);
 
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
     virtual void do_var(Varinfo info);

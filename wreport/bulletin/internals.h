@@ -38,9 +38,34 @@ namespace bulletin {
  */
 struct Bitmap
 {
+    /// Bitmap being iterated
     const Var* bitmap;
+
+    /**
+     * Arrays of variable indices corresponding to positions in the bitmap
+     * where data is present
+     */
     std::vector<unsigned> refs;
+
+    /**
+     * Iterator over refs
+     *
+     * Since refs is filled while going backwards over the subset, iteration is
+     * done via a reverse_iterator.
+     */
     std::vector<unsigned>::const_reverse_iterator iter;
+
+    /**
+     * Anchor point of the first bitmap found since the last reset().
+     *
+     * From the specs it looks like bitmaps refer to all data that precedes the
+     * C operator that defines or uses them, but from the data samples that we
+     * have it look like when multiple bitmaps are present, they always refer
+     * to the same set of variables.
+     *
+     * For this reason we remember the first anchor point that we see and
+     * always refer the other bitmaps that we see to it.
+     */
     unsigned old_anchor;
 
     Bitmap();
@@ -182,7 +207,8 @@ struct Visitor : public opcode::Visitor
      */
     virtual void do_char_data(Varcode code) = 0;
 
-    // opcode::Visitor method implementation
+    //@{
+    /// opcode::Visitor methods implementation
     virtual void b_variable(Varcode code);
     virtual void c_modifier(Varcode code);
     virtual void c_change_data_width(Varcode code, int change);
@@ -195,6 +221,7 @@ struct Visitor : public opcode::Visitor
     virtual void c_substituted_value(Varcode code);
     virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
     virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
+    //@}
 };
 
 /**
@@ -204,10 +231,14 @@ struct Visitor : public opcode::Visitor
  */
 struct BaseVisitor : public Visitor
 {
+    /// Bulletin being visited
     Bulletin& bulletin;
+    /// Index of the subset being visited
     unsigned current_subset_no;
+    /// Index of the next variable to be visited
     unsigned current_var;
 
+    /// Create visitor for the given bulletin
     BaseVisitor(Bulletin& bulletin);
 
     /// Get the next variable
@@ -226,10 +257,14 @@ struct BaseVisitor : public Visitor
  */
 struct ConstBaseVisitor : public Visitor
 {
+    /// Bulletin being visited
     const Bulletin& bulletin;
+    /// Index of the subset being visited
     unsigned current_subset_no;
+    /// Index of the next variable to be visited
     unsigned current_var;
 
+    /// Create visitor for the given bulletin
     ConstBaseVisitor(const Bulletin& bulletin);
 
     /// Get the next variable

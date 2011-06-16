@@ -99,8 +99,9 @@ struct error_notfound : public error
 {
 	std::string msg; ///< error message returned by what()
 
-	error_notfound(const std::string& msg) : msg(msg) {}
-	~error_notfound() throw () {}
+    /// @param msg error message
+    error_notfound(const std::string& msg) : msg(msg) {}
+    ~error_notfound() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_NOTFOUND; }
 
@@ -118,8 +119,9 @@ struct error_type : public error
 {
 	std::string msg; ///< error message returned by what()
 
-	error_type(const std::string& msg) : msg(msg) {}
-	~error_type() throw () {}
+    /// @param msg error message
+    error_type(const std::string& msg) : msg(msg) {}
+    ~error_type() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_TYPE; }
 
@@ -134,8 +136,14 @@ struct error_alloc : public error
 {
 	const char* msg; ///< error message returned by what()
 
-	error_alloc(const char* msg) : msg(msg) {}
-	~error_alloc() throw () {}
+    /**
+     * @param msg
+     *    error message. It is a plain const char* in this case in order to
+     *    keep things as simple as possible in case we really are very short of
+     *    memory.
+     */
+    error_alloc(const char* msg) : msg(msg) {}
+    ~error_alloc() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_ALLOC; }
 
@@ -152,8 +160,9 @@ struct error_handles : public error
 {
 	std::string msg; ///< error message returned by what()
 
-	error_handles(const std::string& msg) : msg(msg) {}
-	~error_handles() throw () {}
+    /// @param msg error message
+    error_handles(const std::string& msg) : msg(msg) {}
+    ~error_handles() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_HANDLES; }
 
@@ -168,8 +177,9 @@ struct error_toolong : public error
 {
 	std::string msg; ///< error message returned by what()
 
-	error_toolong(const std::string& msg) : msg(msg) {}
-	~error_toolong() throw () {}
+    /// @param msg error message
+    error_toolong(const std::string& msg) : msg(msg) {}
+    ~error_toolong() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_TOOLONG; }
 
@@ -187,9 +197,21 @@ struct error_system : public error
 {
 	std::string msg; ///< error message returned by what()
 
-	error_system(const std::string& msg);
-	error_system(const std::string& msg, int errno_val);
-	~error_system() throw () {}
+    /**
+     * Create an exception taking further information from errno.
+     *
+     * @param msg error message
+     */
+    error_system(const std::string& msg);
+    /**
+     * Create an exception taking further information from an explicit errno
+     * value.
+     *
+     * @param msg error message
+     * @param errno_val explicit errno value
+     */
+    error_system(const std::string& msg, int errno_val);
+    ~error_system() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_SYSTEM; }
 
@@ -204,8 +226,9 @@ struct error_consistency : public error
 {
 	std::string msg; ///< error message returned by what()
 
-	error_consistency(const std::string& msg) : msg(msg) {};
-	~error_consistency() throw () {}
+    /// @param msg error message
+    error_consistency(const std::string& msg) : msg(msg) {};
+    ~error_consistency() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_CONSISTENCY; }
 
@@ -220,7 +243,8 @@ struct error_parse : public error
 {
 	std::string msg; ///< error message returned by what()
 
-	error_parse(const std::string& msg) : msg(msg) {}
+    /// @param msg error message
+    error_parse(const std::string& msg) : msg(msg) {}
 	/**
 	 * @param file
 	 *   The file that is being parsed
@@ -270,8 +294,9 @@ struct error_unimplemented : public error
 {
 	std::string msg; ///< error message returned by what()
 
-	error_unimplemented(const std::string& msg) : msg(msg) {};
-	~error_unimplemented() throw () {}
+    /// @param msg error message
+    error_unimplemented(const std::string& msg) : msg(msg) {};
+    ~error_unimplemented() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_UNIMPLEMENTED; }
 
@@ -286,8 +311,9 @@ struct error_domain : public error
 {
 	std::string msg; ///< error message returned by what()
 
-	error_domain(const std::string& msg) : msg(msg) {}
-	~error_domain() throw () {}
+    /// @param msg error message
+    error_domain(const std::string& msg) : msg(msg) {}
+    ~error_domain() throw () {}
 
 	ErrorCode code() const throw () { return WR_ERR_DOMAIN; }
 

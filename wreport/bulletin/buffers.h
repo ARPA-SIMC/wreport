@@ -38,6 +38,15 @@ namespace bulletin {
 struct CompressedVarSink
 {
     virtual ~CompressedVarSink() {}
+
+    /**
+     * Send a variable to a subset
+     *
+     * @param var
+     *   Variable to send
+     * @param idx
+     *   Index of the subset that will get \a var
+     */
     virtual void operator()(const Var& var, unsigned idx) = 0;
 };
 
@@ -90,7 +99,13 @@ public:
     /// Offsets of the start of BUFR sections
     unsigned sec[6];
 
-
+ 
+    /**
+     * Wrap a string iinto a BufrInput
+     *
+     * @param in
+     *   String with the data to read
+     */
     BufrInput(const std::string& in);
 
     /// Start decoding a different buffer
@@ -323,6 +338,12 @@ struct BufrOutput
     /// Number of bits already encoded in pbyte
     int pbyte_len;
 
+    /**
+     * Wrap a string into a BufrOutput
+     *
+     * @param out
+     *   String to append data to
+     */
     BufrOutput(std::string& out);
 
     /**
@@ -416,13 +437,19 @@ struct CrexInput
     /// Cursor inside in.data() used for decoding
     const char* cur;
 
-    /* True if the CREX message uses the check digit feature */
+    /// True if the CREX message uses the check digit feature
     int has_check_digit;
 
-    /* Value of the next expected check digit */
+    /// Value of the next expected check digit
     int expected_check_digit;
 
 
+    /**
+     * Wrap a string into a CrexInput
+     *
+     * @param in
+     *   The string with the data to read
+     */
     CrexInput(const std::string& in);
 
     /// Return true if the cursor is at the end of the buffer
@@ -511,6 +538,7 @@ struct CrexInput
  */
 struct CrexOutput
 {
+    /// String we append to
     std::string& buf;
 
     /// True if the CREX message uses the check digit feature
@@ -520,6 +548,12 @@ struct CrexOutput
     int expected_check_digit;
 
 
+    /**
+     * Wrap a string with a CrexOutput
+     *
+     * @param buf
+     *   The string to append to
+     */
     CrexOutput(std::string& buf);
 
     /// Append a string

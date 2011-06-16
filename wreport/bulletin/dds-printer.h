@@ -33,16 +33,25 @@ namespace bulletin {
 /**
  * bulletin::Visitor that prints the bulletin contents and its structure
  */
-struct DDSPrinter : public ConstBaseVisitor
+class DDSPrinter : public ConstBaseVisitor
 {
     std::vector<Varcode> stack;
     FILE* out;
 
-    DDSPrinter(const Bulletin& b, FILE* out);
-    virtual ~DDSPrinter();
-
     void print_context(Varinfo info, unsigned var_pos);
     void print_context(Varcode code, unsigned var_pos);
+
+public:
+    /**
+     * Create a new DDS printer
+     *
+     * @param b
+     *   Reference to the bulletin being visited
+     * @param out
+     *   FILE to print to
+     */
+    DDSPrinter(const Bulletin& b, FILE* out);
+    virtual ~DDSPrinter();
 
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code);

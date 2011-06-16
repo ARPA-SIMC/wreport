@@ -41,6 +41,7 @@ namespace notes {
 /// Set the target stream where the notes are sent
 void set_target(std::ostream& out);
 
+/// Get the current target stream for notes
 std::ostream* get_target();
 
 /// Return true if there is any target to which notes are sent
@@ -60,8 +61,12 @@ void logf(const char* fmt, ...) WREPORT_PRINTF_ATTRS(1, 2);
  */
 struct Collect
 {
+    /**
+     * Old target stream to be restored whemn the object goes out of scope
+     */
     std::ostream* old;
 
+    /// Direct notes to \a out for the lifetime of the object
     Collect(std::ostream& out)
     {
         old = get_target();

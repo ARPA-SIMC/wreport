@@ -337,6 +337,8 @@ void Visitor::do_start_repetition(unsigned idx) {}
 BaseVisitor::BaseVisitor(Bulletin& bulletin)
     : bulletin(bulletin), current_subset_no(0)
 {
+    btable = bulletin.btable;
+    dtable = bulletin.dtable;
 }
 
 Var& BaseVisitor::get_var()
@@ -378,6 +380,8 @@ const Var& BaseVisitor::do_bitmap(Varcode code, Varcode rep_code, Varcode delaye
 ConstBaseVisitor::ConstBaseVisitor(const Bulletin& bulletin)
     : bulletin(bulletin), current_subset_no(0)
 {
+    btable = bulletin.btable;
+    dtable = bulletin.dtable;
 }
 
 const Var& ConstBaseVisitor::get_var()

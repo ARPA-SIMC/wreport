@@ -200,15 +200,27 @@ struct Bulletin
 
 /**
  * Options used to configure BUFR decoding.
- *
- * Options may be added at any time to future versions of the structure. To
- * reduce the likelyhook of breaking ABI, construction on stack is discouraged
- * in favour of an allocator function.
  */
 struct BufrCodecOptions
 {
+    /**
+     * By default (false) undefined attributes are not added to variables, and
+     * there is no difference between an undefined or a missing attribute.
+     *
+     * If this is set to true, undefined attributes are added to variables, so
+     * that it is possible to tell between a variable with no attributes and a
+     * variable for which the bulletin provides attributes but they have an
+     * missing value.
+     */
     bool decode_adds_undef_attrs;
 
+    /**
+     * Create a BufrCodecOptions
+     *
+     * Options may be added at any time to future versions of the structure. To
+     * reduce the likelyhook of breaking ABI, construction on stack is discouraged
+     * in favour of an allocator function.
+     */
     static std::auto_ptr<BufrCodecOptions> create();
 
 protected:

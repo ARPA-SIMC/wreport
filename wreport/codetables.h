@@ -31,6 +31,8 @@ namespace wreport {
 
 // 7 bit, leftmost is bit 1
 namespace BUFR08001 {
+//@{
+/// BUFR08001 code table constants
 const unsigned int MISSING = 0x01; /* 7 */
 const unsigned int SIGWIND = 0x02; /* 6 */
 const unsigned int SIGTH   = 0x04; /* 5 */
@@ -39,10 +41,13 @@ const unsigned int TROPO   = 0x10; /* 3 */
 const unsigned int STD     = 0x20; /* 2 */
 const unsigned int SURFACE = 0x40; /* 1 */
 const unsigned int ALL_MISSING = 0x7f;
+//@}
 }
 
 // 18 bit, leftmost is bit 1
 namespace BUFR08042 {
+//@{
+/// BUFR08042 code table constants
 const unsigned int MISSING  = 0x00001; /* 18 */
 const unsigned int H2PRESS  = 0x00002; /* 17 */
 const unsigned int RESERVED = 0x00004; /* 16 */
@@ -62,6 +67,7 @@ const unsigned int TROPO    = 0x08000; /*  3 */
 const unsigned int STD      = 0x10000; /*  2 */
 const unsigned int SURFACE  = 0x20000; /*  1 */
 const unsigned int ALL_MISSING = 0x3ffff;
+//@}
 }
 
 }

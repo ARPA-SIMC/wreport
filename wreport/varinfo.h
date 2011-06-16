@@ -130,10 +130,12 @@ Varcode descriptor_code(const char* desc);
 typedef short unsigned int Alteration;
 
 /**
- * Varinfo flags
+ * @defgroup VarinfoFlags Varinfo flags
+ * @{
  */
-#define VARINFO_FLAG_STRING 0x01
-#define VARINFO_FLAG_BINARY 0x02
+#define VARINFO_FLAG_STRING 0x01  ///< Mark string variables
+#define VARINFO_FLAG_BINARY 0x02  ///< Mark literal binary variables
+/**@}*/
 
 
 /**
@@ -289,23 +291,32 @@ class Varinfo;
 class MutableVarinfo
 {
 protected:
-	_Varinfo* impl;
+    /// Varinfo structure to which the pointer refers
+    _Varinfo* m_impl;
 
 public:
-	MutableVarinfo(_Varinfo* impl) : impl(impl) { impl->do_ref(); }
-	MutableVarinfo(const MutableVarinfo& vi) : impl(vi.impl) { impl->do_ref(); }
-	~MutableVarinfo() { if (impl->do_unref()) delete impl; }
+    //@{
+    /// Create a smart pointer to the given variable information
+    MutableVarinfo(_Varinfo* impl) : m_impl(impl) { m_impl->do_ref(); }
+    MutableVarinfo(const MutableVarinfo& vi) : m_impl(vi.m_impl) { m_impl->do_ref(); }
+    //@}
+    ~MutableVarinfo() { if (m_impl->do_unref()) delete m_impl; }
 
-	MutableVarinfo& operator=(const MutableVarinfo& vi)
-	{
-		vi.impl->do_ref();
-		if (impl->do_unref()) delete impl;
-		impl = vi.impl;
-		return *this;
-	}
+    //@{
+    /// Standard smart pointer methods
+    MutableVarinfo& operator=(const MutableVarinfo& vi)
+    {
+        vi.m_impl->do_ref();
+        if (m_impl->do_unref()) delete m_impl;
+        m_impl = vi.m_impl;
+        return *this;
+    }
+    _Varinfo* operator->() { return m_impl; }
+    _Varinfo& operator*() { return *m_impl; }
+    //@}
 
-	_Varinfo* operator->() { return impl; }
-	_Varinfo& operator*() { return *impl; }
+    /// Access the underlying _Varinfo structure
+    _Varinfo* impl() const { return m_impl; }
 
 	/**
 	 * Create a single use varinfo structure.
@@ -318,33 +329,41 @@ public:
 	 */
 	static MutableVarinfo create_singleuse();
 
-	friend class wreport::Varinfo;
+    friend class wreport::Varinfo;
 };
 
 /// Smart pointer to handle/use varinfos
 class Varinfo
 {
 protected:
-	const _Varinfo* m_impl;
+    /// Varinfo structure to which the pointer refers
+    const _Varinfo* m_impl;
 
 public:
-	Varinfo(const _Varinfo* impl) : m_impl(impl) { m_impl->do_ref(); }
-	Varinfo(const _Varinfo& impl) : m_impl(&impl) { m_impl->do_ref(); }
-	Varinfo(const Varinfo& vi) : m_impl(vi.m_impl) { m_impl->do_ref(); }
-	Varinfo(const MutableVarinfo& vi) : m_impl(vi.impl) { m_impl->do_ref(); }
-	~Varinfo() { if (m_impl->do_unref()) delete m_impl; }
+    //@{
+    /// Create a smart pointer to the given variable information
+    Varinfo(const _Varinfo* impl) : m_impl(impl) { m_impl->do_ref(); }
+    Varinfo(const _Varinfo& impl) : m_impl(&impl) { m_impl->do_ref(); }
+    Varinfo(const Varinfo& vi) : m_impl(vi.m_impl) { m_impl->do_ref(); }
+    Varinfo(const MutableVarinfo& vi) : m_impl(vi.m_impl) { m_impl->do_ref(); }
+    //@}
+    ~Varinfo() { if (m_impl->do_unref()) delete m_impl; }
 
-	const Varinfo& operator=(const Varinfo& vi)
-	{
-		vi.m_impl->do_ref();
-		if (m_impl->do_unref()) delete m_impl;
-		m_impl = vi.m_impl;
-		return *this;
-	}
+    //@{
+    /// Standard smart pointer methods
+    const Varinfo& operator=(const Varinfo& vi)
+    {
+        vi.m_impl->do_ref();
+        if (m_impl->do_unref()) delete m_impl;
+        m_impl = vi.m_impl;
+        return *this;
+    }
+    const _Varinfo& operator*() const { return *m_impl; }
+    const _Varinfo* operator->() const { return m_impl; }
+    //@}
 
-	const _Varinfo& operator*() const { return *m_impl; }
-	const _Varinfo* operator->() const { return m_impl; }
-	const _Varinfo* impl() const { return m_impl; }
+    /// Access the underlying _Varinfo structure
+    const _Varinfo* impl() const { return m_impl; }
 };
 
 }

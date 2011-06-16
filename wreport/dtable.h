@@ -44,8 +44,12 @@ struct Entry
 	/// Position in the main table one past where the expansion ends
 	unsigned end;
 
-	Entry(Varcode code, unsigned begin, unsigned end)
-		: code(code), begin(begin), end(end) {}
+protected:
+    /// Constructor used internally by DTable::load
+    Entry(Varcode code, unsigned begin, unsigned end)
+        : code(code), begin(begin), end(end) {}
+
+    friend class wreport::DTable;
 };
 }
 
