@@ -298,6 +298,11 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     {
         BaseBufrDecoder::do_start_subset(subset_no, current_subset);
         target = &d.out.obtain_subset(subset_no);
+        if (associated_field)
+        {
+            delete associated_field;
+            associated_field = 0;
+        }
     }
 
     /**
@@ -534,42 +539,6 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(code));
     }
 };
-
-#if 0
-struct opcode_interpreter_plain : public opcode_interpreter
-{
-    void add_subst(Var& var, int subset=-1)
-    {
-        TRACE("bulletin:adding substitute value %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value(),
-                WR_VAR_F((*current_subset)[bitmap.subset_index].code()),
-                WR_VAR_X((*current_subset)[bitmap.subset_index].code()),
-                WR_VAR_Y((*current_subset)[bitmap.subset_index].code()),
-                bitmap.subset_index, current_subset->size());
-        (*current_subset)[bitmap.subset_index].seta(var);
-    }
-};
-
-struct opcode_interpreter_compressed : public opcode_interpreter
-{
-    void add_subst(Var& var, int subset=-1)
-    {
-        TRACE("bulletin:adding substitute var %01d%02d%03d %s as attribute to %01d%02d%03d bsi %d/%zd\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value(),
-                WR_VAR_F(d.out.subsets[subset][bitmap.subset_index].code()),
-                WR_VAR_X(d.out.subsets[subset][bitmap.subset_index].code()),
-                WR_VAR_Y(d.out.subsets[subset][bitmap.subset_index].code()),
-                bitmap.subset_index, d.out.subsets[subset].size());
-        d.out.subsets[subset][bitmap.subset_index].seta(var);
-    }
-};
-#endif
 
 const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
