@@ -164,6 +164,14 @@ public:
 	void setc(const char* val);
 
     /**
+     * Set the raw, binary value from a string value.
+     *
+     * This is similar to setc(), but it always copies as many bytes as the
+     * variable is long, including null bytes.
+     */
+    void set_binary(const unsigned char* val);
+
+    /**
      * Set the value from a string value, truncating \a val if it is too long
      *
      * If a value is truncated, the last character is set to '>' to mark the

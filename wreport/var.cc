@@ -64,15 +64,20 @@ Var::Var(Varinfo info, const char* val)
 }
 
 Var::Var(const Var& var)
-	: m_info(var.m_info), m_value(NULL), m_attrs(NULL)
+    : m_info(var.m_info), m_value(NULL), m_attrs(NULL)
 {
-	/* Copy the value */
-	if (var.m_value != NULL)
-		setc(var.m_value);
+    /* Copy the value */
+    if (var.m_value != NULL)
+    {
+        if (var.m_info->is_binary())
+            set_binary((const unsigned char*)var.m_value);
+        else
+            setc(var.m_value);
+    }
 
-	/* Copy the attributes */
-	if (var.m_attrs)
-		m_attrs = new Var(*var.m_attrs);
+    /* Copy the attributes */
+    if (var.m_attrs)
+        m_attrs = new Var(*var.m_attrs);
 }
 
 Var::Var(const Var& var, bool with_attrs)
@@ -300,6 +305,15 @@ void Var::setc(const char* val)
 	m_value[m_info->len + 1] = 0;
 }
 
+void Var::set_binary(const unsigned char* val)
+{
+    /* Set the value */
+    if (m_value == NULL &&
+        (m_value = new char[m_info->len + 2]) == NULL)
+        throw error_alloc("allocating space for Var value");
+    memcpy(m_value, val, m_info->len);
+}
+
 void Var::setc_truncate(const char* val)
 {
     /* Set the value */
@@ -497,17 +511,28 @@ void Var::copy_attrs_if_defined(const Var& src)
 
 std::string Var::format(const char* ifundef) const
 {
-	if (m_value == NULL)
-		return ifundef;
-	else if (info()->is_string())
-		return m_value;
-	else
-	{
-		Varinfo i = info();
-		char buf[30];
-		snprintf(buf, 20, "%.*f", i->scale > 0 ? i->scale : 0, enqd());
-		return buf;
-	}
+    if (m_value == NULL)
+        return ifundef;
+    else if (info()->is_binary())
+    {
+        string res;
+        for (unsigned i = 0; i < info()->len; ++i)
+        {
+            char buf[4];
+            snprintf(buf, 4, "%X", ((const unsigned char*)m_value)[i]);
+            res += buf;
+        }
+        return res;
+    }
+    else if (info()->is_string())
+        return m_value;
+    else
+    {
+        Varinfo i = info();
+        char buf[30];
+        snprintf(buf, 20, "%.*f", i->scale > 0 ? i->scale : 0, enqd());
+        return buf;
+    }
 }
 
 
@@ -585,8 +610,23 @@ unsigned Var::diff(const Var& var) const
                 m_value);
         return 1;
     }
-    if (m_info->is_string() || m_info->scale == 0)
+    if (m_info->is_binary())
     {
+        if (m_info->bit_len != var.info()->bit_len)
+        {
+            notes::logf("[%d%02d%03d %s] binary values differ: first is %u bits, second is %u bits\n",
+                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                    m_info->bit_len, var.info()->bit_len);
+            return 1;
+        }
+        if (memcmp(m_value, var.m_value, m_info->len) != 0)
+        {
+            notes::logf("[%d%02d%03d %s] values differ: first is \"%.*s\", second is \"%.*s\"\n",
+                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                    m_info->len, m_value, m_info->len, var.m_value);
+            return 1;
+        }
+    } else if (m_info->is_string() || m_info->scale == 0) {
         if (strcmp(m_value, var.m_value) != 0)
         {
             notes::logf("[%d%02d%03d %s] values differ: first is \"%s\", second is \"%s\"\n",
