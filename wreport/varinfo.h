@@ -77,6 +77,7 @@ namespace wreport {
  */
 typedef short unsigned int Varcode;
 
+/// Format a varcode into a string
 std::string varcode_format(Varcode code);
 
 /**

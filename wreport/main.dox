@@ -21,4 +21,6 @@ Error handling is done via exceptions. wreport has its own lightweight
 exception tree (see @ref error.h) with a common root on wreport::error, which
 in turn descends from std::exception, meaning error handling works as
 expected..
+
+For coding style, see @ref style.
 */

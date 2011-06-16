@@ -20,7 +20,7 @@ install-data-local:
 uninstall-local:
 	rm -rf $(DESTDIR)$(docdir)/apidocs
 
-mainpages = ../wreport/main.dox 
+mainpages = ../wreport/main.dox  ../wreport/style.dox
 
 libwreport.doxytags apidocs/index.html: $(cdoxdeps) $(mainpages)
 	@test $(DOXYGEN_WARN_IF_UNDOCUMENTED) = NO && \
