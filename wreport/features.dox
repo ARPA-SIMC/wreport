@@ -1,7 +1,44 @@
 /** @page features Library features
 
-\section features_bufr
+\section features_bufr_decoder BUFR decoder features
 
-\section features_crex
+The decoder supports BUFR editions 2, 3 and 4, both uncompressed and
+compressed.
+
+C operators supported are:
+
+ - 1 change data width
+ - 2 change data scale
+ - 4 add associated field, limited to 32 bits of associated fields and to
+   associated field significances 1, 2, and 6.
+ - 5 character data
+ - 6 local descriptor with explicit length
+ - 8 override length of character data
+ - 22 quality information matched via data present bitmap
+ - 23 substituted values matched via data present bitmap
+ - 24 first order statistical values matched via data present bitmap
+
+
+\section features_bufr_encoder BUFR encoder features
+
+All features supported by the decoder are supported by the encoder, and tested
+via decode/reencode/decode runs.
+
+The encoder however does not yet support compression of multisubset data
+sections.
+
+
+\section features_crex_decoder CREX decoder features
+
+The decoder supports CREX edition 1.
+
+B, R and D opcodes are supported. Some C modifiers may be supported, but are
+untested due to lack of real-world samples.
+
+
+\section features_crex_encoder CREX encoder features
+
+All features supported by the decoder are supported by the encoder, and tested
+via decode/reencode/decode runs.
 
 */

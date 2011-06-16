@@ -199,8 +199,6 @@ void Visitor::c_char_data(Varcode code)
 void Visitor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
 {
     // Length of next local descriptor
-    if (WR_VAR_Y(code) > 32)
-        error_unimplemented::throwf("C06 modifier found for %d bits but only at most 32 are supported", WR_VAR_Y(code));
     if (WR_VAR_Y(code))
     {
         bool skip = true;
