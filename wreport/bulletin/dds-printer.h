@@ -30,6 +30,9 @@
 namespace wreport {
 namespace bulletin {
 
+/**
+ * bulletin::Visitor that prints the bulletin contents and its structure
+ */
 struct DDSPrinter : public ConstBaseVisitor
 {
     std::vector<Varcode> stack;

@@ -148,27 +148,6 @@ protected:
 	void append_c_with_dpb(Varcode ccode, int count, const char* bitmap);
 };
 
-#if 0
-
-/**
- * Scan the first 'size' variables appending the attribute 'attr' when found.
- *
- * The delayed replicator factor with the number of attributes found will also
- * be appended before the attributes.
- *
- * @param subset
- *   The message to operate on
- * @param size
- *   The number of variables to scan
- * @param attr
- *   The code of the attribute to look for.  See @ref vartable.h
- * @return
- *   The error indicator for the function.  See @ref error.h
- */
-dba_err bufrex_subset_append_attrs(bufrex_subset subset, int size, dba_varcode attr);
-#endif
-
-
 }
 
 /* vim:set ts=4 sw=4: */

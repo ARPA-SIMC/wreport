@@ -30,6 +30,11 @@
 namespace wreport {
 namespace bulletin {
 
+/**
+ * bulletin::Visitor that checks if the data that has been added to the
+ * bulletin subsets can actualy be encoded matching the bulletin Data
+ * Descriptor Section.
+ */
 struct DDSValidator : public ConstBaseVisitor
 {
     bool is_crex;

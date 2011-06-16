@@ -41,6 +41,9 @@ struct CompressedVarSink
     virtual void operator()(const Var& var, unsigned idx) = 0;
 };
 
+/**
+ * Binary buffer with bit-level read operations
+ */
 class BufrInput
 {
 protected:
@@ -269,6 +272,9 @@ public:
     void decode_binary(Var& dest);
 };
 
+/**
+ * Binary buffer with bit-level append operations
+ */
 struct BufrOutput
 {
     /// Output buffer to which we append encoded data
@@ -336,6 +342,9 @@ struct BufrOutput
     void flush();
 };
 
+/**
+ * Text input buffer
+ */
 struct CrexInput
 {
     /// Input buffer
@@ -458,6 +467,9 @@ struct CrexInput
     void debug_dump_next(const char* desc) const;
 };
 
+/**
+ * Text output buffer
+ */
 struct CrexOutput
 {
     std::string& buf;

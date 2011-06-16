@@ -60,20 +60,6 @@ protected:
 	Var* m_attrs;
 
 public:
-#if 0
-	/// Create a new Var, from the local B table, with undefined value
-	Var(Varcode code);
-
-	/// Create a new Var, from the local B table, with integer value
-	Var(Varcode code, int val);
-
-	/// Create a new Var, from the local B table, with double value
-	Var(Varcode code, double val);
-
-	/// Create a new Var, from the local B table, with string value
-	Var(Varcode code, const char* val);
-#endif
-
 	/// Create a new Var, with undefined value
 	Var(Varinfo info);
 

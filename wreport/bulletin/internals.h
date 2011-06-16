@@ -46,6 +46,10 @@ struct Bitmap
     Bitmap();
     ~Bitmap();
 
+    /**
+     * Resets the object. To be called at start of decoding, to discard all
+     * previous leftover context, if any.
+     */
     void reset();
 
     /**
@@ -61,7 +65,16 @@ struct Bitmap
      */
     void init(const Var& bitmap, const Subset& subset, unsigned anchor);
 
+    /**
+     * True if there is no bitmap or if the bitmap has been iterated until the
+     * end
+     */
     bool eob() const;
+
+    /**
+     * Return the next variable offset for which the bitmap reports that data
+     * is present
+     */
     unsigned next();
 };
 
@@ -184,6 +197,11 @@ struct Visitor : public opcode::Visitor
     virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
 };
 
+/**
+ * Common bulletin::Visitor base for visitors that modify the bulletin.
+ *
+ * This assumes a fully decoded bulletin.
+ */
 struct BaseVisitor : public Visitor
 {
     Bulletin& bulletin;
@@ -192,13 +210,20 @@ struct BaseVisitor : public Visitor
 
     BaseVisitor(Bulletin& bulletin);
 
+    /// Get the next variable
     Var& get_var();
+    /// Get the variable at the given position
     Var& get_var(unsigned var_pos) const;
 
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
     virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
 };
 
+/**
+ * Common bulletin::Visitor base for visitors that do not modify the bulletin.
+ *
+ * This assumes a fully decoded bulletin.
+ */
 struct ConstBaseVisitor : public Visitor
 {
     const Bulletin& bulletin;
@@ -207,7 +232,9 @@ struct ConstBaseVisitor : public Visitor
 
     ConstBaseVisitor(const Bulletin& bulletin);
 
+    /// Get the next variable
     const Var& get_var();
+    /// Get the variable at the given position
     const Var& get_var(unsigned var_pos) const;
 
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
