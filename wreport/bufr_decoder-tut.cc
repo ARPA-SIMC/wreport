@@ -981,9 +981,6 @@ void to::test<27>()
 template<> template<>
 void to::test<28>()
 {
-#if 0
-	// TODO: reenable after implementing C05060
-
 	struct Tester : public MsgTester {
 		void test(const BufrBulletin& msg)
 		{
@@ -1026,7 +1023,6 @@ void to::test<28>()
 
 	// FIXME: recoding might not work
 	test.run("bufr/C05060.bufr");
-#endif
 }
 
 // Custom ARPA temp forecast message saved as ARPA generic
