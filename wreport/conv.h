@@ -33,15 +33,15 @@ namespace wreport {
  * Convert between different units
  *
  * @param from
- *   Unit of the value to convert (see ::dba_varinfo)
+ *   Unit of the value to convert (see wreport::Varinfo)
  * @param to
- *   Unit to convert to (see ::dba_varinfo)
+ *   Unit to convert to (see wreport::Varinfo)
  * @param val
  *   Value to convert
  * @retval res
  *   Converted value
  * @returns
- *   The error indicator for the function (See @ref ::dba_err)
+ *   The error indicator for the function (See @ref error.h)
  */
 double convert_units(const char* from, const char* to, double val);
 
@@ -99,9 +99,9 @@ int convert_BUFR08042_to_BUFR08001(int from);
  * Get the multiplier used in the given conversion
  *
  * @param from
- *   Unit of the value to convert (see ::dba_varinfo)
+ *   Unit of the value to convert (see wreport::Varinfo)
  * @param to
- *   Unit to convert to (see ::dba_varinfo)
+ *   Unit to convert to (see wreport::Varinfo)
  * @returns
  *   Multiplier factor used in the conversion
  */
@@ -111,9 +111,9 @@ double convert_units_get_mul(const char* from, const char* to);
  * Check if conversion is possible among the given units
  *
  * @param from
- *   Unit of the value to convert (see ::dba_varinfo)
+ *   Unit of the value to convert (see wreport::Varinfo)
  * @param to
- *   Unit to convert to (see ::dba_varinfo)
+ *   Unit to convert to (see wreport::Varinfo)
  * @returns
  *   True if conversion is supported, else false.
  */

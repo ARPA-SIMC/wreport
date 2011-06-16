@@ -33,6 +33,9 @@
 #include <vector>
 #include <memory>
 
+/**
+ * Main namespace
+ */
 namespace wreport {
 
 namespace bulletin {

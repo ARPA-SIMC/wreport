@@ -130,7 +130,7 @@ Varcode descriptor_code(const char* desc);
 typedef short unsigned int Alteration;
 
 /**
- * @defgroup VarinfoFlags Varinfo flags
+ * Varinfo flags
  * @{
  */
 #define VARINFO_FLAG_STRING 0x01  ///< Mark string variables
