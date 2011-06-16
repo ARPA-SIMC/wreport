@@ -1,3 +1,12 @@
+wreport (2.0-1) unstable; urgency=low
+
+  * New upstream version
+     - Big code, API and ABI cleanup
+     - Finished C04yyy implementation for all data samples that we have
+     - Documentation improvements
+
+ -- Enrico Zini <enrico@debian.org>  Thu, 16 Jun 2011 14:12:33 +0200
+
 wreport (1.8-1) unstable; urgency=low
 
   * New upstream version 

@@ -38,7 +38,7 @@ Description: documentation for libwreport
  .
  This is the documentation for the library.
 
-Package: libwreport1
+Package: libwreport2
 Section: libs
 Architecture: any
 Depends: wreport-common, ${shlibs:Depends}, ${misc:Depends}
