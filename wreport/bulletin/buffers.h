@@ -32,6 +32,15 @@ struct Var;
 
 namespace bulletin {
 
+/**
+ * Destination for decoded variables from compressed BUFRs
+ */
+struct CompressedVarSink
+{
+    virtual ~CompressedVarSink() {}
+    virtual void operator()(const Var& var, unsigned idx) = 0;
+};
+
 class BufrInput
 {
 protected:
@@ -181,6 +190,36 @@ public:
     void check_available_data(unsigned section, unsigned pos, size_t datalen, const char* expected);
 
     /**
+     * Decode a compressed number as described by dest.info(), ad set it as
+     * value for \a dest.
+     *
+     * @param base
+     *   The base value for the compressed number
+     * @param diffbits
+     *   The number of bits used to encode the difference from \a base
+     */
+    void decode_number(Var& dest, uint32_t base, unsigned diffbits);
+
+    /**
+     * Decode a number as described by dest.info(), and set it as value for \a
+     * dest.
+     */
+    void decode_number(Var& dest);
+
+    /**
+     * Decode a number as described by \a info from a compressed bufr with
+     * \a subsets subsets, and send the resulting variables to \a dest
+     */
+    void decode_number(Varinfo info, unsigned subsets, CompressedVarSink& dest);
+
+    /**
+     * Decode a number as described by dest.info(), and set it as value for \a
+     * dest. The number is decoded for \a subsets compressed datasets, and an
+     * exception is thrown if the values differ.
+     */
+    void decode_number(Var& dest, unsigned subsets);
+
+    /**
      * Read a string from the data section
      *
      * @param bit_len
@@ -199,23 +238,6 @@ public:
     bool decode_string(unsigned bit_len, char* str, size_t& len);
 
     /**
-     * Decode a number as described by dest.info(), ad set it as value for \a
-     * dest.
-     */
-    void decode_number(Var& dest);
-
-    /**
-     * Decode a compressed number as described by dest.info(), ad set it as
-     * value for \a dest.
-     *
-     * @param base
-     *   The base value for the compressed number
-     * @param diffbits
-     *   The number of bits used to encode the difference from \a base
-     */
-    void decode_number(Var& dest, uint32_t base, unsigned diffbits);
-
-    /**
      * Decode a string as described by dest.info(), ad set it as value for \a
      * dest.
      *
@@ -223,6 +245,28 @@ public:
      * missing value, \a dest will not be touched.
      */
     void decode_string(Var& dest);
+
+    /**
+     * Decode a string as described by dest.info(), and set it as value for \a
+     * dest. The string is decoded for \a subsets compressed datasets, and an
+     * exception is thrown if the values differ.
+     */
+    void decode_string(Var& dest, unsigned subsets);
+
+    /**
+     * Decode a string as described by \a info from a compressed bufr with \a
+     * subsets subsets, and send the resulting variables to \a dest
+     */
+    void decode_string(Varinfo info, unsigned subsets, CompressedVarSink& dest);
+
+    /**
+     * Decode a generic binary value as-is, as described by dest.info(), ad set
+     * it as value for \a dest.
+     *
+     * It is assumed that \a dest is not set, therefore in case we decode a
+     * missing value, \a dest will not be touched.
+     */
+    void decode_binary(Var& dest);
 };
 
 struct BufrOutput

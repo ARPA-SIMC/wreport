@@ -293,6 +293,32 @@ void BufrInput::decode_string(Var& dest)
         dest.setc(str);
 }
 
+void BufrInput::decode_binary(Var& dest)
+{
+    Varinfo info = dest.info();
+
+    unsigned char buf[info->bit_len / 8 + 1];
+    size_t len = 0;
+    unsigned toread = info->bit_len;
+    bool missing = true;
+
+    while (toread > 0)
+    {
+        unsigned count = toread > 8 ? 8 : toread;
+        uint32_t bitval = get_bits(count);
+        /* Check that the string is not all 0xff, meaning missing value */
+        if (bitval != 0xff)
+            missing = false;
+        buf[len++] = bitval;
+        toread -= count;
+    }
+
+    /* Store the variable that we found */
+    // Set the variable value
+    if (!missing)
+        dest.set_binary(buf);
+}
+
 void BufrInput::decode_number(Var& dest)
 {
     Varinfo info = dest.info();
@@ -301,8 +327,22 @@ void BufrInput::decode_number(Var& dest)
 
     // TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, val);
 
-    /* Check if there are bits which are not 1 (that is, if the value is present) */
-    bool missing = (val == all_ones(info->bit_len));
+    // Check if there are bits which are not 1 (that is, if the value is present)
+    // In case of delayed replications, there is no missing value
+    bool missing = false;
+    if (WR_VAR_X(info->var) == 31 && WR_VAR_F(info->var) == 0)
+        switch (WR_VAR_Y(info->var))
+        {
+            case 1:
+            case 2:
+            case 11:
+            case 12:
+                break;
+            default:
+                missing = (val == all_ones(info->bit_len));
+        }
+    else
+        missing = (val == all_ones(info->bit_len));
 
     // TRACE("datasec:decode_b_num:len %d val %d info-len %d info-desc %s\n", info->bit_len, val, info->bit_len, info->desc);
 
@@ -350,6 +390,226 @@ void BufrInput::decode_number(Var& dest, uint32_t base, unsigned diffbits)
         dest.setd(dval);
     }
 }
+
+void BufrInput::decode_number(Varinfo info, unsigned subsets, CompressedVarSink& dest)
+{
+    Var var(info);
+
+    uint32_t base = get_bits(info->bit_len);
+
+    //TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, base);
+
+    /* Check if there are bits which are not 1 (that is, if the value is present) */
+    bool missing = (base == all_ones(info->bit_len));
+
+    /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, base, info.type);*/
+    //TRACE("datasec:decode_b_num:len %d base %d info-len %d info-desc %s\n", info->bit_len, base, info->bit_len, info->desc);
+
+    /* Store the variable that we found */
+
+    /* If compression is in use, then we just decoded the base value.  Now
+     * we need to decode all the offsets */
+
+    /* Decode the number of bits (encoded in 6 bits) that these difference
+     * values occupy */
+    uint32_t diffbits = get_bits(6);
+    if (missing && diffbits != 0)
+        error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
+
+    //TRACE("Compressed number, base value %d diff bits %d\n", base, diffbits);
+
+    for (unsigned i = 0; i < subsets; ++i)
+    {
+        decode_number(var, base, diffbits);
+        dest(var, i);
+    }
+}
+
+void BufrInput::decode_number(Var& dest, unsigned subsets)
+{
+    Varinfo info = dest.info();
+
+    uint32_t base = get_bits(info->bit_len);
+
+    //TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, base);
+
+    /* Check if there are bits which are not 1 (that is, if the value is present) */
+    bool missing = (base == all_ones(info->bit_len));
+
+    /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, base, info.type);*/
+    //TRACE("datasec:decode_b_num:len %d base %d info-len %d info-desc %s\n", info->bit_len, base, info->bit_len, info->desc);
+
+    /* Store the variable that we found */
+
+    /* If compression is in use, then we just decoded the base value.  Now
+     * we need to decode all the offsets */
+
+    /* Decode the number of bits (encoded in 6 bits) that these difference
+     * values occupy */
+    uint32_t diffbits = get_bits(6);
+    if (missing && diffbits != 0)
+        error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
+
+    //TRACE("Compressed number, base value %d diff bits %d\n", base, diffbits);
+
+    // Decode the destination variable
+    decode_number(dest, base, diffbits);
+
+    // Decode all other versions and ensure they are the same
+    Var copy(dest.info());
+    for (unsigned i = 1; i < subsets; ++i)
+    {
+        // TODO: only compare the diffbits without needing to reconstruct the var
+        decode_number(copy, base, diffbits);
+        if (dest != copy)
+        {
+            string val1 = dest.format();
+            string val2 = copy.format();
+            error_consistency::throwf("When decoding %d%02d%03d from compressed BUFR data, decoded values differ (%s != %s) but should all be the same",
+                   WR_VAR_F(dest.code()), WR_VAR_X(dest.code()), WR_VAR_Y(dest.code()),
+                   val2.c_str(), val1.c_str());
+        }
+    }
+}
+
+void BufrInput::decode_string(Varinfo info, unsigned subsets, CompressedVarSink& dest)
+{
+    /* Read a string */
+    Var var(info);
+    //size_t len = 0;
+
+    char str[info->bit_len / 8 + 2];
+    size_t len;
+    bool missing = !decode_string(info->bit_len, str, len);
+
+    /* Store the variable that we found */
+
+    /* If compression is in use, then we just decoded the base value.  Now
+     * we need to decode all the offsets */
+
+    /* Decode the number of bits (encoded in 6 bits) that these difference
+     * values occupy */
+    uint32_t diffbits = get_bits(6);
+
+    //TRACE("datadesc:decode_b_string:compressed string, base:%.*s, diff bits %d\n", (int)len, str, diffbits);
+
+    if (diffbits != 0)
+    {
+        /* For compressed strings, the reference value must be all zeros */
+        for (size_t i = 0; i < len; ++i)
+            if (str[i] != 0)
+                error_unimplemented::throwf("compressed strings with %d bit deltas have non-zero reference value", diffbits);
+
+        /* Let's also check that the number of
+         * difference characters is the same length as
+         * the reference string */
+        if (diffbits > len)
+            error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
+
+        for (unsigned i = 0; i < subsets; ++i)
+        {
+            // Set the variable value
+            if (decode_string(diffbits * 8, str, len))
+            {
+                /* Compute the value for this subset */
+                //TRACE("datadesc:decode_b_string:decoded[%d] as \"%s\"\n", i, str);
+                var.setc(str);
+            } else {
+                /* Missing value */
+                //TRACE("datadesc:decode_b_string:decoded[%d] as missing\n", i);
+                var.unset();
+            }
+
+            /* Add it to this subset */
+            dest(var, i);
+        }
+    } else {
+        /* Add the string to all the subsets */
+        for (unsigned i = 0; i < subsets; ++i)
+        {
+            // Set the variable value
+            if (!missing) var.setc(str);
+            dest(var, i);
+        }
+    }
+}
+
+void BufrInput::decode_string(Var& dest, unsigned subsets)
+{
+    Varinfo info = dest.info();
+
+    char str[info->bit_len / 8 + 2];
+    size_t len;
+    bool missing = !decode_string(info->bit_len, str, len);
+
+    /* Store the variable that we found */
+
+    /* If compression is in use, then we just decoded the base value.  Now
+     * we need to decode all the offsets */
+
+    /* Decode the number of bits (encoded in 6 bits) that these difference
+     * values occupy */
+    uint32_t diffbits = get_bits(6);
+
+    //TRACE("datadesc:decode_b_string:compressed string, base:%.*s, diff bits %d\n", (int)len, str, diffbits);
+
+    if (diffbits == 0)
+    {
+        if (!missing)
+            dest.setc(str);
+    } else {
+        /* For compressed strings, the reference value must be all zeros */
+        for (size_t i = 0; i < len; ++i)
+            if (str[i] != 0)
+                error_unimplemented::throwf("compressed strings with %d bit deltas have non-zero reference value", diffbits);
+
+        /* Let's also check that the number of
+         * difference characters is the same length as
+         * the reference string */
+        if (diffbits > len)
+            error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
+
+        // Set the variable value
+        if (decode_string(diffbits * 8, str, len))
+        {
+            /* Compute the value for this subset */
+            //TRACE("datadesc:decode_b_string:decoded[%d] as \"%s\"\n", i, str);
+            dest.setc(str);
+        } else {
+            /* Missing value */
+            //TRACE("datadesc:decode_b_string:decoded[%d] as missing\n", i);
+            dest.unset();
+        }
+
+        Var copy(dest.info());
+        for (unsigned i = 1; i < subsets; ++i)
+        {
+            // TODO: only compare the diffbits without needing to reconstruct the var
+
+            // Set the variable value
+            if (decode_string(diffbits * 8, str, len))
+            {
+                /* Compute the value for this subset */
+                //TRACE("datadesc:decode_b_string:decoded[%d] as \"%s\"\n", i, str);
+                copy.setc(str);
+            } else {
+                /* Missing value */
+                //TRACE("datadesc:decode_b_string:decoded[%d] as missing\n", i);
+                copy.unset();
+            }
+
+            if (dest != copy)
+            {
+                string val1 = dest.format();
+                string val2 = copy.format();
+                error_consistency::throwf("When decoding %d%02d%03d from compressed BUFR data, decoded values differ (%s != %s) but should all be the same",
+                       WR_VAR_F(dest.code()), WR_VAR_X(dest.code()), WR_VAR_Y(dest.code()),
+                       val2.c_str(), val1.c_str());
+            }
+        }
+    }
+}
+
 
 BufrOutput::BufrOutput(std::string& out)
     : out(out), pbyte(0), pbyte_len(0)
