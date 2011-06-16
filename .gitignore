@@ -37,6 +37,6 @@ Makefile
 /debian/*.debhelper
 /debian/libwreport-dev/
 /debian/libwreport-doc/
-/debian/libwreport1/
+/debian/libwreport2/
 /debian/tmp/
 /debian/wreport-common/
