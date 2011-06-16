@@ -760,7 +760,7 @@ struct opcode_interpreter
         return 1;
     }
 
-    unsigned decode_bitmap(const Opcodes& ops, Varcode code, VarAdder& adder);
+    unsigned decode_bitmap(const Opcodes& ops, Varcode code);
 
     /**
      * Decode instant or delayed replication information.
@@ -1085,7 +1085,7 @@ void BufrBulletin::decode(const std::string& buf, const char* fname, size_t offs
 }
 
 
-unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code, VarAdder& adder)
+unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code)
 {
 	if (bitmap.bitmap) delete[] bitmap.bitmap;
 	bitmap.bitmap = 0;
@@ -1146,9 +1146,9 @@ unsigned opcode_interpreter::decode_bitmap(const Opcodes& ops, Varcode code, Var
     if (d.out.compression)
     {
         for (unsigned i = 0; i < d.out.subsets.size(); ++i)
-            adder.add_var(bmp, i);
+            current_adder->add_var(bmp, i);
     } else {
-        adder.add_var(bmp);
+        current_adder->add_var(bmp);
     }
 
 	// Bitmap will stay set as a reference to the variable to use as the
@@ -1289,7 +1289,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
         case 22:
             if (WR_VAR_Y(code) == 0)
             {
-                used += decode_bitmap(ops.sub(1), code, *current_adder);
+                used += decode_bitmap(ops.sub(1), code);
             } else
                 ds.in.parse_error("decode_c_data:C modifier %d%02d%03d not yet supported",
                             WR_VAR_F(code),
@@ -1299,7 +1299,7 @@ unsigned opcode_interpreter::decode_c_data(const Opcodes& ops)
         case 23:
             if (WR_VAR_Y(code) == 0)
             {
-                used += decode_bitmap(ops.sub(1), code, *current_adder);
+                used += decode_bitmap(ops.sub(1), code);
             } else if (WR_VAR_Y(code) == 255) {
                 if (!bitmap.bitmap)
                     ds.in.parse_error("C23255 found but there is no active bitmap");
