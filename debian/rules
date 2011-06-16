@@ -1,8 +1,19 @@
 #!/usr/bin/make -f
 
+VERSION=$(shell debian/vercheck)
+RELEASE_PACKAGE=wreport
+
+
 %:
 	dh $@
 
 override_dh_fixperms:
 	dh_fixperms
 	test -e /usr/bin/dh_buildinfo && dh_buildinfo
+
+vercheck:
+	debian/vercheck > /dev/null
+
+debsrc: vercheck
+	git-buildpackage -S -us -uc
+	rm -f ../$(RELEASE_PACKAGE)_$(VERSION)_source.changes
