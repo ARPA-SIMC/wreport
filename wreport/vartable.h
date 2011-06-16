@@ -116,15 +116,18 @@ public:
 	/**
 	 * Query an altered version of the vartable
 	 *
-	 * @param var wreport::Varcode to query
-	 * @param change
-	 *   WMO C table entry specify a change on the variable characteristics
+	 * @param var
+     *    wreport::Varcode to query
+	 * @param scale
+     *   Scale to use instead of the default
+     * @param bit_len
+     *   Bit length to use instead of the default
 	 * @return
 	 *   the wreport::Varinfo structure with the results of the query.  The returned
 	 *   Varinfo is stored inside the dba_vartable, can be freely copied around
 	 *   and does not need to be deallocated.
 	 */
-	Varinfo query_altered(Varcode var, int scale=0, unsigned bit_len=0) const;
+	Varinfo query_altered(Varcode var, int scale, unsigned bit_len) const;
 
 	/**
 	 * Return a Vartable by id, loading it if necessary

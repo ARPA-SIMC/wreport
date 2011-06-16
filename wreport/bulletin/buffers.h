@@ -176,6 +176,10 @@ public:
      * Check that the input buffer contains at least \a datalen characters
      * after offset \a pos; throw error_parse otherwise.
      *
+     * @param pos
+     *   Starting offset of the required data
+     * @param datalen
+     *   Required amount of data expected starting from \a pos
      * @param expected
      *    name of what we are about to decode, used for generating nice error
      *    messages
@@ -186,9 +190,15 @@ public:
      * Check that the input buffer contains at least \a datalen characters
      * after offset \a pos in section \a section; throw error_parse otherwise.
      *
+     * @param section
+     *   Number of the section to check
+     * @param pos
+     *   Starting offset inside the section of the required data
+     * @param datalen
+     *   Required amount of data expected starting from \a pos
      * @param expected
-     *    name of what we are about to decode, used for generating nice error
-     *    messages
+     *   Name of what we are about to decode, used for generating nice error
+     *   messages
      */
     void check_available_data(unsigned section, unsigned pos, size_t datalen, const char* expected);
 
@@ -196,6 +206,9 @@ public:
      * Decode a compressed number as described by dest.info(), ad set it as
      * value for \a dest.
      *
+     * @param dest
+     *   Variable which holds the decoding information and that will hold the
+     *   decoded value
      * @param base
      *   The base value for the compressed number
      * @param diffbits
@@ -206,6 +219,10 @@ public:
     /**
      * Decode a number as described by dest.info(), and set it as value for \a
      * dest.
+     *
+     * @param dest
+     *   Variable which holds the decoding information and that will hold the
+     *   decoded value
      */
     void decode_number(Var& dest);
 
@@ -219,6 +236,12 @@ public:
      * Decode a number as described by dest.info(), and set it as value for \a
      * dest. The number is decoded for \a subsets compressed datasets, and an
      * exception is thrown if the values differ.
+     *
+     * @param dest
+     *   Variable which holds the decoding information and that will hold the
+     *   decoded value
+     * @param subsets
+     *   Number of subsets in the compressed data section
      */
     void decode_number(Var& dest, unsigned subsets);
 
@@ -246,6 +269,10 @@ public:
      *
      * It is assumed that \a dest is not set, therefore in case we decode a
      * missing value, \a dest will not be touched.
+     *
+     * @param dest
+     *   Variable which holds the decoding information and that will hold the
+     *   decoded value
      */
     void decode_string(Var& dest);
 
@@ -253,6 +280,12 @@ public:
      * Decode a string as described by dest.info(), and set it as value for \a
      * dest. The string is decoded for \a subsets compressed datasets, and an
      * exception is thrown if the values differ.
+     *
+     * @param dest
+     *   Variable which holds the decoding information and that will hold the
+     *   decoded value
+     * @param subsets
+     *   Number of subsets in the compressed data section
      */
     void decode_string(Var& dest, unsigned subsets);
 
@@ -268,6 +301,10 @@ public:
      *
      * It is assumed that \a dest is not set, therefore in case we decode a
      * missing value, \a dest will not be touched.
+     *
+     * @param dest
+     *   Variable which holds the decoding information and that will hold the
+     *   decoded value
      */
     void decode_binary(Var& dest);
 };
@@ -402,8 +439,8 @@ struct CrexInput
      * error_parse otherwise.
      *
      * @param expected
-     *    name of what we are about to decode, used for generating nice error
-     *    messages
+     *   name of what we are about to decode, used for generating nice error
+     *   messages
      */
     void check_eof(const char* expected) const;
 
@@ -411,9 +448,11 @@ struct CrexInput
      * Check that the input buffer contains at least \a datalen characters
      * after the cursor, throw error_parse otherwise.
      *
+     * @param datalen
+     *   number of bytes expected to still be available at the current location
      * @param expected
-     *    name of what we are about to decode, used for generating nice error
-     *    messages
+     *   name of what we are about to decode, used for generating nice error
+     *   messages
      */
     void check_available_data(unsigned datalen, const char* expected) const;
 

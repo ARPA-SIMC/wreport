@@ -173,6 +173,8 @@ struct Bulletin
     /**
      * Pretty-print the data descriptor section
      *
+     * @param out
+     *   Output stream to use
      * @param indent
      *   Indent all output by this amount of spaces
      */
@@ -373,6 +375,13 @@ struct CrexBulletin : public Bulletin
 protected:
     CrexBulletin();
 };
+
+/**
+ * The bulletin namespace contains bulletin implementation details, internals
+ * and utility functions.
+ */
+namespace bulletin {
+}
 
 }
 
