@@ -24,7 +24,8 @@ mainpages = ../wreport/main.dox  ../wreport/style.dox
 
 libwreport.doxytags apidocs/index.html: $(cdoxdeps) $(mainpages)
 	@test $(DOXYGEN_WARN_IF_UNDOCUMENTED) = NO && \
-		echo "No doxygen warnings about undocumented functions. Use ./configure --enable-doxy-undoc-warnings to turn them on"
+		echo "No doxygen warnings about undocumented functions. Use ./configure --enable-doxy-undoc-warnings to turn them on" \
+		|| true
 	doxygen $<
 endif
 
