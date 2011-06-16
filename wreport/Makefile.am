@@ -79,22 +79,22 @@ noinst_HEADERS = test-utils-wreport.h
 
 tut_test_SOURCES = \
 	test-utils-wreport.cc \
-	tests/error.cc \
-	tests/conv.cc \
-	tests/fast.cc \
-	tests/varinfo.cc \
-	tests/vartable.cc \
-	tests/var.cc \
-	tests/opcode.cc \
-	tests/dtable.cc \
-	tests/bulletin.cc \
-	tests/bufr_decoder.cc \
-	tests/bufr_encoder.cc \
-	tests/crex_decoder.cc \
+	error-tut.cc \
+	conv-tut.cc \
+	fast-tut.cc \
+	varinfo-tut.cc \
+	vartable-tut.cc \
+	var-tut.cc \
+	opcode-tut.cc \
+	dtable-tut.cc \
+	bulletin-tut.cc \
+	bufr_decoder-tut.cc \
+	bufr_encoder-tut.cc \
+	crex_decoder-tut.cc \
 	bulletin/buffers-tut.cc \
 	bulletin/internals-tut.cc \
 	bulletin/dds-validator-tut.cc \
-	tests/tut-main.cpp
+	tut-main.cpp
 tut_test_LDADD = \
 	libwreport.la \
 	$(WIBBLE_LIBS)
@@ -102,7 +102,7 @@ tut_test_LDADD = \
 if LUA
 noinst_HEADERS += test-utils-lua.h
 tut_test_SOURCES += \
-	tests/lua.cc \
+	lua-tut.cc \
 	test-utils-lua.cc
 tut_test_LDADD += $(LUA_LIBS)
 endif
