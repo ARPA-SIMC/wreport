@@ -15,5 +15,7 @@ vercheck:
 	debian/vercheck > /dev/null
 
 debsrc: vercheck
+	make dist
+	mv $(RELEASE_PACKAGE)-$(VERSION).tar.gz ../$(RELEASE_PACKAGE)_$(VERSION).orig.tar.gz
 	git-buildpackage -S -us -uc
 	rm -f ../$(RELEASE_PACKAGE)_$(VERSION)_source.changes
