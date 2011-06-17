@@ -3,13 +3,13 @@ Section: misc
 Priority: optional
 Maintainer: Enrico Zini <enrico@debian.org>
 Build-Depends: debhelper (>= 7.0.50~), dh-buildinfo, doxygen, gperf, pkg-config, liblua5.1-0-dev
-Standards-Version: 3.8.4.0
+Standards-Version: 3.9.1.0
 Homepage: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
 
 Package: libwreport-dev
 Section: libdevel
 Architecture: any
-Depends: libwreport1 (= ${binary:Version}), ${misc:Depends}
+Depends: libwreport2 (= ${binary:Version}), ${misc:Depends}
 Recommends: pkg-config
 Description: library for working with weather reports
  libwreport is a C++ library for working with weather reports.
