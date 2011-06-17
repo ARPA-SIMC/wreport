@@ -30,6 +30,8 @@
 using namespace wreport;
 using namespace std;
 
+// These are split in separate files so they can be loaded as example code by
+// the documentation
 #include "info.cc"
 #include "input.cc"
 #include "output.cc"
