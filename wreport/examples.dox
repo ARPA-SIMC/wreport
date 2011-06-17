@@ -1,0 +1,15 @@
+/** @page examples Code examples
+
+\section examples_reading Reading and decoding bulletins
+
+\include input.cc
+
+\section examples_printing Printing bulletin contents
+
+\include output.cc
+
+\section examples_config Printing library configuration
+
+\include info.cc
+
+*/

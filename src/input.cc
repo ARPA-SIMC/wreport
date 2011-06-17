@@ -22,6 +22,8 @@
 #include <wreport/bulletin.h>
 #include "options.h"
 
+using namespace wreport;
+
 // Read all BUFR messages from a file
 void read_bufr(const Options& opts, const char* fname, BulletinHandler& handler)
 {
@@ -46,7 +48,7 @@ void read_bufr(const Options& opts, const char* fname, BulletinHandler& handler)
         // Read all BUFR data in the input file, one message at a time. Extra
         // data before and after each BUFR message is skipped.
         // fname and offset are optional and we pass them just to have nicer
-        // error messages
+        // error messages.
         while (BufrBulletin::read(in, raw_data, fname, &offset))
         {
             // Decode the raw data. fname and offset are optional and we pass
@@ -89,7 +91,7 @@ void read_crex(const Options& opts, const char* fname, BulletinHandler& handler)
         // Read all CREX data in the input file, one message at a time. Extra
         // data before and after each CREX message is skipped.
         // fname and offset are optional and we pass them just to have nicer
-        // error messages
+        // error messages.
         while (CrexBulletin::read(in, raw_data, fname, &offset))
         {
             // Decode the raw data. fname and offset are optional and we pass
