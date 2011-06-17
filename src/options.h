@@ -30,7 +30,8 @@ enum Action {
     DUMP,
     DUMP_STRUCTURE,
     DUMP_DDS,
-    INFO
+    INFO,
+    HELP,
 };
 
 // wrep runtime configuration

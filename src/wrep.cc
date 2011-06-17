@@ -34,6 +34,27 @@ using namespace std;
 #include "input.cc"
 #include "output.cc"
 
+void do_usage(FILE* out)
+{
+    fputs("Usage: wrep [options] file1 [file2 [file3 ..]]\n", out);
+}
+
+void do_help(FILE* out)
+{
+    do_usage(out);
+    fputs(
+        "Simple weather bulletin handling functions\n"
+        "Options:\n"
+        "  -v,--verbose        verbose operation\n"
+        "  -c,--crex           read CREX instead of BUFR\n"
+        "  -h,--help           print this help message\n"
+        "  -i,--info           print configuration information\n"
+        "  -d,--dump           (default) dump message contents\n"
+        "  -s,--structure      dump message contents and structure\n"
+        "  -D,--dds            dump message Data Descriptor Section\n"
+    , out);
+}
+
 int main(int argc, char* argv[])
 {
     static struct option long_options[] =
@@ -45,6 +66,7 @@ int main(int argc, char* argv[])
         {"dds",       no_argument,       NULL, 'D'},
         {"info",      no_argument,       NULL, 'i'},
         {"verbose",   no_argument,       NULL, 'v'},
+        {"help",      no_argument,       NULL, 'h'},
         {0, 0, 0, 0}
     };
 
@@ -55,7 +77,7 @@ int main(int argc, char* argv[])
         // getopt_long stores the option index here
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "cvdsDi",
+        int c = getopt_long(argc, argv, "cvdsDih",
                 long_options, &option_index);
 
         // Detect the end of the options
@@ -70,6 +92,7 @@ int main(int argc, char* argv[])
             case 's': options.action = DUMP_STRUCTURE; break;
             case 'D': options.action = DUMP_DDS; break;
             case 'i': options.action = INFO; break;
+            case 'h': options.action = HELP; break;
             default:
                 error_consistency::throwf("unknown option character %c (%d)", c, c);
                 break;
@@ -84,18 +107,21 @@ int main(int argc, char* argv[])
     auto_ptr<BulletinHandler> handler;
     switch (options.action)
     {
-        case DUMP: handler.reset(new PrintContents); break;
-        case DUMP_STRUCTURE: handler.reset(new PrintStructure); break;
-        case DUMP_DDS: handler.reset(new PrintDDS); break;
+        case HELP:
+            do_help(stdout);
+            return 0;
         case INFO:
             do_info();
             return 0;
+        case DUMP: handler.reset(new PrintContents); break;
+        case DUMP_STRUCTURE: handler.reset(new PrintStructure); break;
+        case DUMP_DDS: handler.reset(new PrintDDS); break;
     }
 
     // Ensure we have some file to process
     if (optind >= argc)
     {
-        fprintf(stderr, "Usage: %s [-cv] file1 [file2 [file3 ..]]\n", argv[0]);
+        do_usage(stderr);
         return 1;
     }
 
