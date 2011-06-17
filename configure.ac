@@ -136,6 +136,7 @@ AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
 AC_CONFIG_FILES([
 Makefile
 wreport/Makefile
+src/Makefile
 tables/Makefile
 testdata/Makefile
 doc/Makefile

@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = wreport tables testdata
+SUBDIRS = wreport src tables testdata
 if DO_DOCS
 SUBDIRS += doc
 endif
