@@ -22,6 +22,9 @@
 #ifndef WREP_OPTIONS_H
 #define WREP_OPTIONS_H
 
+#include <wreport/varinfo.h>
+#include <vector>
+
 namespace wreport {
 struct Bulletin;
 }
@@ -30,6 +33,7 @@ enum Action {
     DUMP,
     DUMP_STRUCTURE,
     DUMP_DDS,
+    PRINT_VARS,
     INFO,
     HELP,
 };
@@ -45,11 +49,16 @@ struct Options
     // Action requested
     enum Action action;
 
+    // List of varcodes selected by the user
+    std::vector<wreport::Varcode> varcodes;
+
     // Initialise with default values
     Options()
         : crex(false), verbose(false), action(DUMP)
     {
     }
+
+    void init_varcodes(const char* str);
 };
 
 // Interface for classes that process bulletins

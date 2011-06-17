@@ -50,6 +50,24 @@ struct DTable;
  */
 struct Bulletin
 {
+    /**
+     * Input file name (optional).
+     *
+     * If available, it will be used to generate better error messages.
+     *
+     * If not available, it is NULL.
+     */
+    const char* fname;
+
+    /**
+     * File offset of the start of the message.
+     *
+     * If available, it will be used to generate better error messages.
+     *
+     * If not available, it is 0.
+     */
+    size_t offset;
+
 	/** Message category */
 	int type;
 	/** International message subcategory */

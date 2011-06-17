@@ -39,17 +39,19 @@ using namespace std;
 
 namespace wreport {
 
-Bulletin::Bulletin() : btable(0), dtable(0) {}
+Bulletin::Bulletin() : fname(0), offset(0), btable(0), dtable(0) {}
 Bulletin::~Bulletin() {}
 
 void Bulletin::clear()
 {
-	datadesc.clear();
-	subsets.clear();
-	type = subtype = localsubtype = edition = master_table_number = 0;
-	rep_year = rep_month = rep_day = rep_hour = rep_minute = rep_second = 0;
-	btable = 0;
-	dtable = 0;
+    datadesc.clear();
+    subsets.clear();
+    fname = 0;
+    offset = 0;
+    type = subtype = localsubtype = edition = master_table_number = 0;
+    rep_year = rep_month = rep_day = rep_hour = rep_minute = rep_second = 0;
+    btable = 0;
+    dtable = 0;
 }
 
 Subset& Bulletin::obtain_subset(unsigned subsection)

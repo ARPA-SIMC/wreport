@@ -89,7 +89,7 @@ std::string varcode_format(Varcode code);
  * Convert a XXYYY string to a WMO variable code.
  *
  * This is useful only in rare cases, such as when parsing tables; use
- * dba_descriptor_code to parse proper entry names such as "B01003" or "D21301".
+ * descriptor_code() to parse proper entry names such as "B01003" or "D21301".
  */
 #define WR_STRING_TO_VAR(str) ((wreport::Varcode)( \
 		(( ((str)[0] - '0')*10 + ((str)[1] - '0') ) << 8) | \

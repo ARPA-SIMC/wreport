@@ -1,5 +1,5 @@
 /*
- * output - output bulletin contents
+ * options - wrep runtime configuration
  *
  * Copyright (C) 2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
@@ -19,32 +19,18 @@
  * Author: Enrico Zini <enrico@enricozini.com>
  */
 
-#include <wreport/bulletin.h>
 #include "options.h"
+#include <cstring>
 
-struct PrintContents : public BulletinHandler
-{
-    /// Dump the contents of a message
-    virtual void handle(const wreport::Bulletin& b)
-    {
-        b.print(stderr);
-    }
-};
+using namespace wreport;
 
-struct PrintStructure : public BulletinHandler
+void Options::init_varcodes(const char* str)
 {
-    /// Dump the contents of a message, with structure
-    virtual void handle(const wreport::Bulletin& b)
+    varcodes.clear();
+    while (str && *str && strlen(str) >= 6)
     {
-        b.print_structured(stderr);
+        varcodes.push_back(descriptor_code(str));
+        str = strchr(str, ',');
+        if (str && *str) ++str;
     }
-};
-
-struct PrintDDS : public BulletinHandler
-{
-    /// Dump the contents of the Data Descriptor Section a message
-    virtual void handle(const wreport::Bulletin& b)
-    {
-        b.print_datadesc(stderr);
-    }
-};
+}

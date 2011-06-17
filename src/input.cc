@@ -1,5 +1,5 @@
 /*
- * options - BUFR and CREX I/O examples
+ * input - BUFR and CREX input examples
  *
  * Copyright (C) 2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *

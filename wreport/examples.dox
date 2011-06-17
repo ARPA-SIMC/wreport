@@ -12,4 +12,8 @@
 
 \include info.cc
 
+\section examples_iterate Iterating bulletin contents
+
+\include iterate.cc
+
 */

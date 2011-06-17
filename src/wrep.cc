@@ -33,6 +33,7 @@ using namespace std;
 #include "info.cc"
 #include "input.cc"
 #include "output.cc"
+#include "iterate.cc"
 
 void do_usage(FILE* out)
 {
@@ -52,6 +53,9 @@ void do_help(FILE* out)
         "  -d,--dump           (default) dump message contents\n"
         "  -s,--structure      dump message contents and structure\n"
         "  -D,--dds            dump message Data Descriptor Section\n"
+        "  -p,--print=VARCODES for each input bulletin, print the given\n"
+        "                      comma-separated list of varcodes (e.g.\n"
+        "                      \"B01019,B05001,B06001\")\n"
     , out);
 }
 
@@ -64,6 +68,7 @@ int main(int argc, char* argv[])
         {"dump",      no_argument,       NULL, 'd'},
         {"structure", no_argument,       NULL, 's'},
         {"dds",       no_argument,       NULL, 'D'},
+        {"print",     required_argument, NULL, 'p'},
         {"info",      no_argument,       NULL, 'i'},
         {"verbose",   no_argument,       NULL, 'v'},
         {"help",      no_argument,       NULL, 'h'},
@@ -77,7 +82,7 @@ int main(int argc, char* argv[])
         // getopt_long stores the option index here
         int option_index = 0;
 
-        int c = getopt_long(argc, argv, "cvdsDih",
+        int c = getopt_long(argc, argv, "cvdsDihp:",
                 long_options, &option_index);
 
         // Detect the end of the options
@@ -91,11 +96,16 @@ int main(int argc, char* argv[])
             case 'd': options.action = DUMP; break;
             case 's': options.action = DUMP_STRUCTURE; break;
             case 'D': options.action = DUMP_DDS; break;
+            case 'p':
+                options.action = PRINT_VARS;
+                options.init_varcodes(optarg);
+                break;
             case 'i': options.action = INFO; break;
             case 'h': options.action = HELP; break;
             default:
-                error_consistency::throwf("unknown option character %c (%d)", c, c);
-                break;
+                fprintf(stderr, "unknown option character %c (%d)\n", c, c);
+                do_help(stderr);
+                return 1;
         }
     }
 
@@ -116,6 +126,7 @@ int main(int argc, char* argv[])
         case DUMP: handler.reset(new PrintContents); break;
         case DUMP_STRUCTURE: handler.reset(new PrintStructure); break;
         case DUMP_DDS: handler.reset(new PrintDDS); break;
+        case PRINT_VARS: handler.reset(new PrintVars(options.varcodes)); break;
     }
 
     // Ensure we have some file to process

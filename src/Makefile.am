@@ -8,6 +8,6 @@ dist_noinst_HEADERS = options.h
 
 bin_PROGRAMS = wrep
 
-wrep_SOURCES = wrep.cc
+wrep_SOURCES = options.cc wrep.cc
 wrep_LDFLAGS = $(WREPLIBS)
 wrep_DEPENDENCIES = $(WREPLIBS)

@@ -289,6 +289,8 @@ void Decoder::decode_data()
 void CrexBulletin::decode_header(const std::string& buf, const char* fname, size_t offset)
 {
     clear();
+    this->fname = fname;
+    this->offset = offset;
     bulletin::Decoder d(buf, fname, offset, *this);
     d.decode_header();
 }
@@ -296,6 +298,8 @@ void CrexBulletin::decode_header(const std::string& buf, const char* fname, size
 void CrexBulletin::decode(const std::string& buf, const char* fname, size_t offset)
 {
     clear();
+    this->fname = fname;
+    this->offset = offset;
     bulletin::Decoder d(buf, fname, offset, *this);
     d.decode_header();
     d.decode_data();
