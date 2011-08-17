@@ -190,10 +190,10 @@ void to::test<3>()
 template<> template<>
 void to::test<4>()
 {
-	const Vartable* table = NULL;
-	table = Vartable::get("B0000000000000012000");
-	table = Vartable::get("B0000000000000013000");
-	table = Vartable::get("B0000000000000014000");
+	//const Vartable* table = NULL;
+	/* table = */ Vartable::get("B0000000000000012000");
+	/* table = */ Vartable::get("B0000000000000013000");
+	/* table = */ Vartable::get("B0000000000000014000");
 }
 
 }
