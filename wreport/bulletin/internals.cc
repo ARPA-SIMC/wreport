@@ -324,7 +324,7 @@ void Visitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
     bitmap.reset();
     c04_bits = 0;
     c04_meaning = 63;
-    want_bitmap = false;
+    want_bitmap = 0;
     data_pos = 0;
 }
 
