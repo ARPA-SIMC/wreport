@@ -163,7 +163,13 @@ struct Visitor : public opcode::Visitor
     /// Notify the start of a subset
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
 
-    /// Notify the beginning of one instance of an R group
+    /**
+     * Notify the beginning of one instance of an R group
+     *
+     * @param idx
+     *  The repetition sequence number (0 at the first iteration, 1 at the
+     *  second, and so on)
+     */
     virtual void do_start_repetition(unsigned idx);
 
     /**
@@ -198,7 +204,17 @@ struct Visitor : public opcode::Visitor
     /**
      * Request processing of a data present bitmap.
      *
-     * Returns a pointer to the bitmap that has been processed.
+     * @param code
+     *   The C modifier code that defines the bitmap
+     * @param rep_code
+     *   The R replicator that defines the bitmap
+     * @param delayed_code
+     *   The B delayed replicator that defines the bitmap length (it is 0 if
+     *   the length is encoded in the YYY part of rep_code
+     * @param ops
+     *   The replicated opcodes that define the bitmap
+     * @returns
+     *   The bitmap that has been processed.
      */
     virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) = 0;
 
