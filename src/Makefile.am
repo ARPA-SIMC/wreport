@@ -7,6 +7,7 @@ WREPLIBS =  ../wreport/libwreport.la
 dist_noinst_HEADERS = options.h info.cc input.cc output.cc iterate.cc
 
 bin_PROGRAMS = wrep
+dist_bin_SCRIPTS = wrep-importtable
 
 wrep_SOURCES = options.cc wrep.cc
 wrep_LDFLAGS = $(WREPLIBS)
