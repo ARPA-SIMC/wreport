@@ -220,6 +220,14 @@ elif sys.argv[1].endswith(".zip"):
     finally:
         infd.close()
 else:
-    pass
+    print >>sys.stderr, "Usage: %s [file.zip]" % sys.argv[0]
+    print >>sys.stderr
+    print >>sys.stderr, "Builds ECMWF-style BUFR/CREX table files from zipped WMO XML table information."
+    print >>sys.stderr, "Files are written in the current directory."
+    print >>sys.stderr
+    print >>sys.stderr, "If no zip file is given as argument, it is downloaded from:"
+    print >>sys.stderr, " ", DOWNLOAD_URL
+    sys.exit(1)
 
 print "Done. You can copy the table files to the table directory (see wrep --info for its location)."
+sys.exit(0)
