@@ -106,7 +106,9 @@ def make_xml_b_lines(text):
 
 def do_b_table(text, v, sv, lv):
     out1 = open("B0000000000000%03d%03d.txt" % (v, sv), "w")
+    print "Writing %s..." % out1.name
     out2 = open("B00%02d%02d.txt" % (v, sv), "w")
+    print "Writing %s..." % out2.name
     try:
         for line in make_xml_b_lines(text):
             print >>out1, line
@@ -154,6 +156,7 @@ def make_xml_d_lines(d):
 def do_bufr_d_table(text, v, sv, lv):
     d = read_d_table(text, "Exp_BUFRTableD_E")
     out = open("D0000000000000%03d%03d.txt" % (v, sv), "w")
+    print "Writing %s..." % out.name
     try:
         for line in make_xml_d_lines(d):
             print >>out, line
@@ -163,6 +166,7 @@ def do_bufr_d_table(text, v, sv, lv):
 def do_crex_d_table(text, v, sv, lv):
     d = read_d_table(text, "Exp_CREXTableD_E")
     out = open("D00%02d%02d.txt" % (v, sv), "w")
+    print "Writing %s..." % out.name
     try:
         for line in make_xml_d_lines(d):
             print >>out, line
@@ -218,3 +222,4 @@ elif sys.argv[1].endswith(".zip"):
 else:
     pass
 
+print "Done. You can copy the table files to the table directory (see wrep --info for its location)."
