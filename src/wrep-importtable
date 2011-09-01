@@ -4,63 +4,32 @@ import zipfile
 import urllib2
 import sys
 import re
+import tempfile
+import shutil
 import xml.dom.minidom as xmd
 import xml.dom as xdom
 
 DOWNLOAD_URL = "http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/2010edition/latestTables.zip"
-re_fname = re.compile(r"^BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_xml/BUFRCREX_(?P=v)_(?P=sv)_(?P=lv)_TableB_E.xml$")
+re_fname_b = re.compile(r"^BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_xml/BUFRCREX_(?P=v)_(?P=sv)_(?P=lv)_TableB_E.xml$")
+re_fname_bufr_d = re.compile(r"BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_xml/BUFR_(?P=v)_(?P=sv)_(?P=lv)_TableD_E.xml$")
+re_fname_crex_d = re.compile(r"BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_xml/CREX_(?P=v)_(?P=sv)_(?P=lv)_TableD_E.xml$")
 
 BUFR_UNIT_MAP = { "CCITT IA5": "CCITTIA5" }
 CREX_UNIT_MAP = {}
 
-class open_zip(dict):
+def wrap_in_tempfile(fd):
     """
-    Open the XML table file from inside a zip file
-    """
-    def __init__(self, infd):
-        self["zf"] = zipfile.ZipFile(infd, "r")
-        self["fd_b"] = None
-        for i in self["zf"].infolist():
-            mo = re_fname.match(i.filename)
-            if mo is not None:
-                self["fd_b"] = self["zf"].open(i, "r")
-                self["v"] = int(mo.group("v"))
-                self["sv"] = int(mo.group("sv"))
-                self["lv"] = int(mo.group("lv"))
+    Copy all the contents of a fd to a tempfile, then seek it to the beginning.
 
-    def close(self):
-        for key in ["fd_b"]:
-            if self[key] is not None:
-                self[key].close()
-        self["zf"].close()
-
-def read_mapping(node):
+    This is helpful to turn a non-seekable stream into a seekable stream, or to
+    work around bugs in the zipfile decompression library
     """
-    Convert a DOM node in the form <foo>bar</foo> into a (foo, bar) couple
-    """
-    key = node.nodeName
-    res = []
-    for t in node.childNodes:
-        if t.nodeType != xdom.Node.TEXT_NODE: continue
-        if not t.data: continue
-        res.append(t.data)
-    return key, "".join(res)
-
-def read_b_table(fd):
-    """
-    Read an XML B table from the given file descriptor and yield DICTs with all
-    the <key>value</key> elements of B table records
-    """
-    dom = xmd.parse(fd)
-    for n in dom.documentElement.childNodes:
-        if n.nodeType != xdom.Node.ELEMENT_NODE: continue
-        if n.nodeName != "Exp_BUFRCREXTableB_E": continue
-        data = dict()
-        for x in n.childNodes:
-            if x.nodeType != xdom.Node.ELEMENT_NODE: continue
-            k, v = read_mapping(x)
-            data[k] = v
-        yield data
+    tfd = tempfile.TemporaryFile()
+    buf = fd.read()
+    tfd.write(buf)
+    tfd.flush()
+    tfd.seek(0)
+    return tfd
 
 def normalise_bufr_unit(unit):
     """
@@ -76,14 +45,47 @@ def normalise_crex_unit(unit):
     unit = unit.upper()
     return CREX_UNIT_MAP.get(unit, unit)
 
-def process_xml_b(info, out):
+def read_text(el):
+    """
+    Return the concatenation of all text nodes that are direct children of el
+    """
+    res = []
+    for t in el.childNodes:
+        if t.nodeType != xdom.Node.TEXT_NODE: continue
+        if not t.data: continue
+        res.append(t.data)
+    return "".join(res)
+
+def read_mapping(node):
+    """
+    Convert a DOM node in the form <foo>bar</foo> into a (foo, bar) couple
+    """
+    return node.nodeName, read_text(node)
+
+def read_b_table(text):
+    """
+    Read an XML B table from the given file descriptor and yield DICTs with all
+    the <key>value</key> elements of B table records
+    """
+    dom = xmd.parseString(text)
+    for n in dom.documentElement.childNodes:
+        if n.nodeType != xdom.Node.ELEMENT_NODE: continue
+        if n.nodeName != "Exp_BUFRCREXTableB_E": continue
+        data = dict()
+        for x in n.childNodes:
+            if x.nodeType != xdom.Node.ELEMENT_NODE: continue
+            k, v = read_mapping(x)
+            data[k] = v
+        yield data
+
+def make_xml_b_lines(text):
     """
     Open info["fd_b"] as XML and build a BUFR table file with its contents,
-    writing it to out
+    yielding the formatted table lines
     """
-    for data in sorted(read_b_table(info["fd_b"]), key=lambda x:x["FXY"]):
+    for data in sorted(read_b_table(text), key=lambda x:x["FXY"]):
         if "CREX_Unit" not in data or "CREX_Scale" not in data or "CREX_DataWidth_Char" not in data:
-            print >>out, " %6.6s %64.64s %24.24s %3d %12d %3d" % (
+            yield " %-6.6s %-64.64s %-24.24s %3d %12d %3d" % (
                 data["FXY"],
                 data["ElementName_E"],
                 normalise_bufr_unit(data["BUFR_Unit"]),
@@ -91,7 +93,7 @@ def process_xml_b(info, out):
                 int(data["BUFR_ReferenceValue"]),
                 int(data["BUFR_DataWidth_Bits"]))
         else:
-            print >>out, " %6.6s %-64.64s %-24.24s %3d %12d %3d %-24.24s %2d %9d" % (
+            yield " %-6.6s %-64.64s %-24.24s %3d %12d %3d %-24.24s %2d %9d" % (
                 data["FXY"],
                 data["ElementName_E"],
                 normalise_bufr_unit(data["BUFR_Unit"]),
@@ -102,28 +104,115 @@ def process_xml_b(info, out):
                 int(data["CREX_Scale"]),
                 int(data["CREX_DataWidth_Char"]))
 
-def process_info(info):
-    if info.get("fd_b", None):
-        out = open("B0000000000000%03d%03d.txt" % (info["v"], info["sv"]), "w")
-        try:
-            process_xml_b(info, out)
-        finally:
-            out.close()
+def do_b_table(text, v, sv, lv):
+    out1 = open("B0000000000000%03d%03d.txt" % (v, sv), "w")
+    out2 = open("B00%02d%02d.txt" % (v, sv), "w")
+    try:
+        for line in make_xml_b_lines(text):
+            print >>out1, line
+            print >>out2, line
+    finally:
+        out1.close()
+        out2.close()
+
+def read_d_table(text, elname="Exp_BUFRTableD_E"):
+    """
+    Read an XML D table from the given file descriptor and return a dict
+    mapping D codes to lists of B and D codes
+    """
+    dom = xmd.parseString(text)
+    res = dict()
+    for n in dom.documentElement.childNodes:
+        if n.nodeType != xdom.Node.ELEMENT_NODE: continue
+        if n.nodeName != elname: continue
+        # This is an odd way to encode a D table: each element maps a D code to
+        # one element of its expansion, instead of mapping a D code to a list
+        # of expanded codes
+        fxy1 = None
+        fxy2 = None
+        for x in n.childNodes:
+            if x.nodeType != xdom.Node.ELEMENT_NODE: continue
+            if x.nodeName == "FXY1": fxy1 = read_text(x).strip()
+            if x.nodeName == "FXY2": fxy2 = read_text(x).strip()
+        if fxy1 is not None and fxy2 is not None:
+            res.setdefault(fxy1, []).append(fxy2)
+    return res
+
+def make_xml_d_lines(d):
+    """
+    Yield the formatted table lines for D table entries in dict d
+    """
+    keys = d.keys()
+    keys.sort()
+    for k in keys:
+        vals = d[k]
+        if not vals: continue
+        yield " %-6.6s %2d %-6.6s" % (k, len(vals), vals[0])
+        for v in vals[1:]:
+            yield "           %-6.6s" % v
+
+def do_bufr_d_table(text, v, sv, lv):
+    d = read_d_table(text, "Exp_BUFRTableD_E")
+    out = open("D0000000000000%03d%03d.txt" % (v, sv), "w")
+    try:
+        for line in make_xml_d_lines(d):
+            print >>out, line
+    finally:
+        out.close()
+
+def do_crex_d_table(text, v, sv, lv):
+    d = read_d_table(text, "Exp_CREXTableD_E")
+    out = open("D00%02d%02d.txt" % (v, sv), "w")
+    try:
+        for line in make_xml_d_lines(d):
+            print >>out, line
+    finally:
+        out.close()
+
+def do_zip(infd):
+    """
+    Open the XML table file from inside a zip file
+    """
+    zf = zipfile.ZipFile(infd, "r")
+    def read_version(mo):
+        return int(mo.group("v")), int(mo.group("sv")), int(mo.group("lv"))
+    try:
+        zf.testzip()
+        for i in zf.infolist():
+            mo = re_fname_b.match(i.filename)
+            if mo is not None:
+                fd = zf.open(i, "r")
+                do_b_table(fd.read(), *read_version(mo))
+                fd.close()
+                continue
+            mo = re_fname_bufr_d.match(i.filename)
+            if mo is not None:
+                fd = zf.open(i, "r")
+                do_bufr_d_table(fd.read(), *read_version(mo))
+                fd.close()
+                continue
+            mo = re_fname_crex_d.match(i.filename)
+            if mo is not None:
+                fd = zf.open(i, "r")
+                do_crex_d_table(fd.read(), *read_version(mo))
+                fd.close()
+                continue
+    finally:
+        zf.close()
 
 
 if len(sys.argv) == 1:
     infd = urllib2.urlopen(DOWNLOAD_URL)
-    # TODO: download to a temp file: zipfile doesn't document it, but wants seek
     try:
-        info = open_zip(infd)
-        process_info(info)
+        # Download to a temp file: zipfile doesn't document it, but wants to
+        # seek on its input
+        do_zip(wrap_in_tempfile(infd))
     finally:
         infd.close()
 elif sys.argv[1].endswith(".zip"):
     infd = open(sys.argv[1])
     try:
-        info = open_zip(infd)
-        process_info(info)
+        do_zip(infd)
     finally:
         infd.close()
 else:
