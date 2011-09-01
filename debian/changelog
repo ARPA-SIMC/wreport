@@ -1,3 +1,10 @@
+wreport (2.2-1) unstable; urgency=low
+
+  * New upstream version
+     - Added wrep-importtables to import WMO BUFR/CREX tables
+
+ -- Enrico Zini <enrico@debian.org>  Thu, 01 Sep 2011 12:59:14 +0100
+
 wreport (2.1-1) unstable; urgency=low
 
   * New upstream version
