@@ -67,7 +67,14 @@ void read_bufr(const Options& opts, const char* fname, BulletinHandler& handler)
     }
 }
 
-// Read all CREX messages from a file
+/*
+ * Read all CREX messages from a file
+ *
+ * Note that the code is basically the same as with reading BUFRs, with only
+ * two changes:
+ *  - it uses a CrexBulletin instead of a BufrBulletin
+ *  - it uses CrexBulletin::read instead of BufrBulletin::read
+ */
 void read_crex(const Options& opts, const char* fname, BulletinHandler& handler)
 {
     // Open the input file
