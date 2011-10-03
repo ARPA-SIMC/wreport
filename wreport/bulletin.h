@@ -47,6 +47,18 @@ struct DTable;
 
 /**
  * Storage for the decoded data of a BUFR or CREX message.
+ *
+ * A Bulletin roughly reflects the structure of a BUFR or CREX message: it
+ * contains metadata, a sequence of wreport::Varcode with the contents of a
+ * Data Descriptor Section, and one or more wreport::Subset with the decoded
+ * values.
+ *
+ * Subsets are essentially sequences of wreport::Var objects, and therefore
+ * contain the values together with the full range of variable information,
+ * including type, measurement units and number of significant digits.
+ *
+ * Extra values like quality control statistics or replaced values are
+ * represented as 'attributes' to the wreport::Var objects.
  */
 struct Bulletin
 {
