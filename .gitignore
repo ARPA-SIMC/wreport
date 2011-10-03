@@ -41,3 +41,4 @@ Makefile
 /debian/tmp/
 /debian/wreport-common/
 /src/wrep
+/src/examples

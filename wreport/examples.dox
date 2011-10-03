@@ -4,6 +4,10 @@
 
 \include input.cc
 
+\section examples_writing Creating bulletins
+
+\include makebuoy.cc
+
 \section examples_printing Printing bulletin contents
 
 \include output.cc
