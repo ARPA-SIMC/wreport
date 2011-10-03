@@ -62,17 +62,20 @@ Values that refer to other values (such as associated fields, quality
 information, substituted values and so on) are stored as attributes of the
 variable they refer to.
 
-Data Present Bitmaps and other C modifier parameters are stored as wreport::Var
-with ad-hoc wreport::Varinfo information:
+Data Present Bitmaps and other C modifier parameters are stored as special
+wreport::Var objects, using ad-hoc wreport::Varinfo information that is not
+found in the usual tables:
 
- - bitmaps are stored as string values where "+" means "data present" and "-"
-   means "data not present"
- - associated fields are stored as attributes according to their significance:
-    - 1: attribute B33002
-    - 2: attribute B33003
-    - 6: attribute B33050
- - quality information is stored as B33* attributes
- - substituted fields are stored as attributes having the same wreport::Varcode
-   as the variable they substitute
-
+ - Data Present Bitmaps are stored as string variables, where "+" means "data
+   present" and "-" means "data not present".
+ - Associated fields are stored as attributes to the wreport::Var object they
+   refer to, according to their Associate Field Significance:
+    - significance code 1: stored as a B33002 attribute
+    - significance code 2: stored as a B33003 attribute
+    - significance code 6: stored as a B33050 attribute
+ - Quality information is stored as attributes of the variable they refer to,
+   using the appropriate B33YYY descriptor for the attribute values.
+ - Substituted fields are stored as attributes of the variables they
+   substitute; the attributes will have the same wreport::Varcode as the
+   variable.
 */
