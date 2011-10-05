@@ -125,5 +125,6 @@ void do_makebuoy()
     bulletin->encode(encoded);
 
     // Output the BUFR
-    fwrite(encoded.data(), encoded.size(), 1, stdout);
+    if (fwrite(encoded.data(), encoded.size(), 1, stdout) != 1)
+        perror("cannot write BUFR to standard output");
 }
