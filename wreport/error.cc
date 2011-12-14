@@ -31,8 +31,6 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <execinfo.h>
-
 #include <sstream>
 
 namespace wreport {
