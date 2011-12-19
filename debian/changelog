@@ -1,3 +1,10 @@
+wreport (2.4-1) unstable; urgency=low
+
+  * New upstream version 
+     - Added compatibility functions to build on odd systems
+
+ -- Enrico Zini <enrico@debian.org>  Mon, 19 Dec 2011 23:16:45 +0100
+
 wreport (2.3-1) unstable; urgency=low
 
   * New upstream version
