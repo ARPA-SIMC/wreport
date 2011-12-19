@@ -24,16 +24,7 @@
 #include "buffers.h"
 #include "conv.h"
 #include "var.h"
-//#include "opcode.h"
-//#include "bulletin.h"
-//#include "bulletin/dds-printer.h"
-//#include "notes.h"
-//
-//#include <stddef.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <errno.h>
-//#include <netinet/in.h>
+#include "vasprintf.h"
 
 #include <cctype>
 #include <cstdio>

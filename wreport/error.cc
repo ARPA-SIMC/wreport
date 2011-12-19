@@ -23,7 +23,7 @@
 
 #include <config.h>
 
-#include <stdio.h>	/* vasprintf */
+#include "vasprintf.h"	/* vasprintf */
 #include <stdlib.h>	/* free */
 #include <string.h>	/* strerror */
 #include <stdarg.h> /* va_start, va_end */

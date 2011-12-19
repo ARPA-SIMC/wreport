@@ -10,6 +10,7 @@ wreportincludedir = $(includedir)/wreport
 
 # Include the .cc files that contain template definitions
 nobase_wreportinclude_HEADERS = \
+	vasprintf.h \
 	codetables.h \
 	conv.h \
 	dtable.h \
@@ -30,6 +31,7 @@ nobase_wreportinclude_HEADERS = \
 
 lib_LTLIBRARIES = libwreport.la
 libwreport_la_SOURCES = \
+	vasprintf.cc \
 	error.cc \
 	notes.cc \
 	uniconv.cc \
