@@ -24,7 +24,7 @@
 #include "buffers.h"
 #include "conv.h"
 #include "var.h"
-#include "vasprintf.h"
+#include "compat.h"
 
 #include <cctype>
 #include <cstdio>

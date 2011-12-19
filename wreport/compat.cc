@@ -1,4 +1,4 @@
-#include "vasprintf.h"
+#include "compat.h"
 
 #if _WIN32 || __xlC__
 int vasprintf (char **result, const char *format, va_list args)

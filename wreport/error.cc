@@ -23,7 +23,7 @@
 
 #include <config.h>
 
-#include "vasprintf.h"	/* vasprintf */
+#include <stdio.h>	/* vasprintf */
 #include <stdlib.h>	/* free */
 #include <string.h>	/* strerror */
 #include <stdarg.h> /* va_start, va_end */
@@ -32,6 +32,8 @@
 #include <assert.h>
 
 #include <sstream>
+
+#include "compat.h"
 
 namespace wreport {
 

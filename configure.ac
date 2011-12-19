@@ -42,6 +42,15 @@ AC_HEADER_STDC
 dnl Needed by subdir-objects
 AM_PROG_CC_C_O
 
+dnl Check for missing functions in libc
+AC_CHECK_FUNC(vasprintf, , [
+	AC_DEFINE([USE_OWN_VASPRINTF], 1, [we need to use our own vasprintf])
+])
+AC_CHECK_FUNC(exp10, , [
+	AC_DEFINE([USE_OWN_EXP10], 1, [we need to use our own exp10])
+])
+
+dnl Check for gperf
 AC_CHECK_PROG(have_gperf, gperf, true)
 if test x$have_gperf != xtrue
 then

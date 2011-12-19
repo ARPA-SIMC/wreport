@@ -30,6 +30,7 @@
 
 #include "varinfo.h"
 #include "error.h"
+#include "compat.h"
 
 namespace wreport {
 
