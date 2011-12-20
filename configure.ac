@@ -47,6 +47,11 @@ AC_CHECK_FUNC(vasprintf, , [
 	AC_DEFINE([USE_OWN_VASPRINTF], 1, [we need to use our own vasprintf])
 ])
 
+dnl Check for missing functions in libc
+AC_CHECK_FUNC(getopt_long, [
+	AC_DEFINE([HAS_GETOPT_LONG], 1, [we can use long options])
+])
+
 dnl Check for gperf
 AC_CHECK_PROG(have_gperf, gperf, true)
 if test x$have_gperf != xtrue

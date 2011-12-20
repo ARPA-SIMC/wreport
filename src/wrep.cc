@@ -25,7 +25,11 @@
 #include <string>
 #include <iostream>
 #include <cstdio>
+#include "config.h"
+
+#ifdef HAS_GETOPT_LONG
 #include <getopt.h>
+#endif
 
 using namespace wreport;
 using namespace std;
@@ -58,11 +62,15 @@ void do_help(FILE* out)
         "  -p,--print=VARCODES for each input bulletin, print the given\n"
         "                      comma-separated list of varcodes (e.g.\n"
         "                      \"B01019,B05001,B06001\")\n"
+#ifndef HAS_GETOPT_LONG
+        "NOTE: long options are not supported on this system\n"
+#endif
     , out);
 }
 
 int main(int argc, char* argv[])
 {
+#ifdef HAS_GETOPT_LONG
     static struct option long_options[] =
     {
         /* These options set a flag. */
@@ -76,6 +84,7 @@ int main(int argc, char* argv[])
         {"help",      no_argument,       NULL, 'h'},
         {0, 0, 0, 0}
     };
+#endif
 
     // Parse command line options
     Options options;
@@ -84,8 +93,12 @@ int main(int argc, char* argv[])
         // getopt_long stores the option index here
         int option_index = 0;
 
+#ifdef HAS_GETOPT_LONG
         int c = getopt_long(argc, argv, "cvdsDihp:",
                 long_options, &option_index);
+#else
+        int c = getopt_long(argc, argv, "cvdsDihp:");
+#endif
 
         // Detect the end of the options
         if (c == -1)
