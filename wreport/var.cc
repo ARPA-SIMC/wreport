@@ -375,21 +375,14 @@ const Var* Var::enqa_by_associated_field_significance(unsigned significance) con
     {
         case 1: return enqa(WR_VAR(0, 33, 2)); break;
         case 2: return enqa(WR_VAR(0, 33, 3)); break;
-        case 3 ... 5:
+	case 3:
+	case 4:
+	case 5:
             // Reserved: ignored
             notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
                     significance);
             break;
         case 6: return enqa(WR_VAR(0, 33, 50)); break;
-        case 9 ... 20:
-            // Reserved: ignored
-            notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
-                    significance);
-            break;
-        case 22 ... 62:
-            notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
-                    significance);
-            break;
         case 63:
             /*
              * Ignore quality information if B31021 is missing.
@@ -407,7 +400,16 @@ const Var* Var::enqa_by_associated_field_significance(unsigned significance) con
              */
             break;
         default:
-            error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
+	    if (significance >= 9 and significance <= 20)
+		    // Reserved: ignored
+		    notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+			    significance);
+	    else if (significance >= 22 and significance <= 62)
+		    notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+				    significance);
+	    else
+		    error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
+	    break;
     }
     return 0;
 }
