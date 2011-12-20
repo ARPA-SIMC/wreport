@@ -54,7 +54,11 @@ dnl Check for gperf
 AC_CHECK_PROG(have_gperf, gperf, true)
 if test x$have_gperf != xtrue
 then
-	AC_MSG_ERROR([gperf was not found])
+	AC_MSG_WARN([gperf was not found: relying on prebuild wreport/uniconv.cc])
+	if ! test -f wreport/uniconv.cc
+	then
+		AC_MSG_ERROR([please extract wreport/uniconv.cc from the distribution tarball])
+	fi
 fi
 
 dnl Check if std::vector has a std::vector::data method
