@@ -329,7 +329,9 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
                 // Add attribute B33003=val
                 associated_field = new Var(btable->query(WR_VAR(0, 33, 3)), (int)val);
                 break;
-            case 3 ... 5:
+	    case 3:
+	    case 4:
+	    case 5:
                 // Reserved: ignored
                 notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
                         significance);
@@ -342,15 +344,6 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
                     if (val != 15)
                        associated_field->seti(val);
                 }
-                break;
-            case 9 ... 20:
-                // Reserved: ignored
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
-                        c04_meaning);
-                break;
-            case 22 ... 62:
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
-                        c04_meaning);
                 break;
             case 63:
                 /*
@@ -369,7 +362,15 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
                  */
                 break;
             default:
-                error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", c04_meaning);
+		if (significance >= 9 and significance <= 20)
+			// Reserved: ignored
+			notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+				c04_meaning);
+		else if (significance >= 22 and significance <= 62)
+			notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+					c04_meaning);
+		else
+			error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", c04_meaning);
         }
     }
 
