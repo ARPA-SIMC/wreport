@@ -1,6 +1,6 @@
 #include "compat.h"
 
-#if _WIN32 || __xlC__
+#if USE_OWN_VASPRINTF
 int vasprintf (char **result, const char *format, va_list args)
 {
   const char *p = format;
