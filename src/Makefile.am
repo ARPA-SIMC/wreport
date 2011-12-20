@@ -9,8 +9,8 @@ WREPLIBS =  ../wreport/libwreport.la
 if USE_OWN_GETOPT
 noinst_LTLIBRARIES = libgetopt.la
 libgetopt_la_SOURCES = \
-	getopt1.c \
-	getopt.c
+	getopt1.cc \
+	getopt.cc
 WREPLIBS += libgetopt.la
 EXTRA_DIST += getopt.h getopt_int.h
 endif
