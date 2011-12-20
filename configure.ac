@@ -13,8 +13,6 @@ LT_INIT()
 LT_LANG([C++])
 AM_PROG_LIBTOOL
 
-gl_INIT
-
 AC_ARG_ENABLE([docs],
     [AS_HELP_STRING(
         [--enable-docs],
@@ -37,8 +35,6 @@ AC_LANG([C++])
 AC_ISC_POSIX
 AC_PROG_CC
 AC_PROG_CXX
-
-gl_EARLY
 
 AM_PROG_CC_STDC
 AC_HEADER_STDC
@@ -149,7 +145,6 @@ AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
 
 AC_CONFIG_FILES([
 Makefile
-lib/Makefile
 wreport/Makefile
 src/Makefile
 tables/Makefile

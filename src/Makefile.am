@@ -2,7 +2,7 @@
 
 INCLUDES = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir) -I$(top_srcdir)/lib
 
-WREPLIBS =  ../wreport/libwreport.la $(LTLIBINTL)
+WREPLIBS =  ../wreport/libwreport.la
 
 dist_noinst_HEADERS = options.h info.cc input.cc output.cc iterate.cc makebuoy.cc
 
