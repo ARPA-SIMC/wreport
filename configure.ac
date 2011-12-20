@@ -13,6 +13,8 @@ LT_INIT()
 LT_LANG([C++])
 AM_PROG_LIBTOOL
 
+gl_INIT
+
 AC_ARG_ENABLE([docs],
     [AS_HELP_STRING(
         [--enable-docs],
@@ -43,8 +45,6 @@ AC_HEADER_STDC
 
 dnl Needed by subdir-objects
 AM_PROG_CC_C_O
-
-gl_INIT
 
 dnl Check for missing functions in libc
 AC_CHECK_FUNC(vasprintf, , [
