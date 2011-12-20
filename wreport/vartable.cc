@@ -31,7 +31,6 @@
 #include <limits.h>		/* PATH_MAX, INT_MIN, INT_MAX */
 
 #include "vartable.h"
-#include "aliases.h"
 #include "error.h"
 
 #include <map>
