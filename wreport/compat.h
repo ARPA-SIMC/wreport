@@ -87,7 +87,7 @@ static int vasprintf (char **result, const char *format, va_list args)
 #endif
 
 #if USE_OWN_EXP10
-#define exp10(x) pow(10.0, (x))
+#define exp10(x) pow((double)10.0, (double)(x))
 #endif
 
 #endif
