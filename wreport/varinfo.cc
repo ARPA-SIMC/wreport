@@ -30,9 +30,27 @@
 
 #include "varinfo.h"
 #include "error.h"
-#include "compat.h"
 
 namespace wreport {
+
+static int intexp10(unsigned x)
+{
+	switch (x)
+	{
+		case  0: return 1;
+		case  1: return 10;
+		case  2: return 100;
+		case  3: return 1000;
+		case  4: return 10000;
+		case  5: return 100000;
+		case  6: return 1000000;
+		case  7: return 10000000;
+		case  8: return 100000000;
+		case  9: return 1000000000;
+		default:
+			error_domain::throwf("%u^10 would not fit in 32 bits", x);
+	}
+}
 
 Varcode descriptor_code(const char* entry)
 {
@@ -146,8 +164,8 @@ void _Varinfo::compute_range()
 				bufr_max -= 2;
 			// We subtract 2 because 10^len-1 is the
 			// CREX missing value
-			int crex_min = -(int)(exp10(len) - 1.0);
-			int crex_max = (int)(exp10(len) - 2.0);
+			int crex_min = -(intexp10(len) - 1.0);
+			int crex_max = (intexp10(len) - 2.0);
 			/*
 			 * If the unit is the same between BUFR and CREX, take
 			 * the most restrictive extremes.

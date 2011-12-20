@@ -306,7 +306,7 @@ struct error_unimplemented : public error
 	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
-/// Report an error with a buffer being to short for the data it needs to fit.
+/// Report that a parameter is outside the acceptable domain
 struct error_domain : public error
 {
 	std::string msg; ///< error message returned by what()

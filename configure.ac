@@ -46,12 +46,6 @@ dnl Check for missing functions in libc
 AC_CHECK_FUNC(vasprintf, , [
 	AC_DEFINE([USE_OWN_VASPRINTF], 1, [we need to use our own vasprintf])
 ])
-AC_CHECK_FUNC(exp10, , [
-	AC_DEFINE([USE_OWN_EXP10], 1, [we need to use our own exp10])
-])
-AC_CHECK_FUNC(log10, , [
-	AC_DEFINE([USE_OWN_LOG10], 1, [we need to use our own log10])
-])
 
 dnl Check for gperf
 AC_CHECK_PROG(have_gperf, gperf, true)
