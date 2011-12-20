@@ -36,11 +36,15 @@ AC_ISC_POSIX
 AC_PROG_CC
 AC_PROG_CXX
 
+gl_EARLY
+
 AM_PROG_CC_STDC
 AC_HEADER_STDC
 
 dnl Needed by subdir-objects
 AM_PROG_CC_C_O
+
+gl_INIT
 
 dnl Check for missing functions in libc
 AC_CHECK_FUNC(vasprintf, , [
@@ -145,6 +149,7 @@ AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
 
 AC_CONFIG_FILES([
 Makefile
+lib/Makefile
 wreport/Makefile
 src/Makefile
 tables/Makefile

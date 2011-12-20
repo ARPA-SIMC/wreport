@@ -2,7 +2,7 @@
 
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = wreport src tables testdata
+SUBDIRS = lib wreport src tables testdata
 if DO_DOCS
 SUBDIRS += doc
 endif
@@ -11,4 +11,4 @@ SUBDIRS += .
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA=libwreport.pc
 
-EXTRA_DIST = libwreport.pc.in run-local runtest wreport.spec TODO-threads INSTALL
+EXTRA_DIST = m4/gnulib-cache.m4 libwreport.pc.in run-local runtest wreport.spec TODO-threads INSTALL
