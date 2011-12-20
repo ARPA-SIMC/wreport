@@ -25,21 +25,7 @@
 #include <cstdarg>
 #include <cstdlib>
 #include <iostream>
-#if 0
-#include <config.h>
-
-#include <stdio.h>	/* vasprintf */
-#include <stdlib.h>	/* free */
-#include <string.h>	/* strerror */
-#include <stdarg.h> /* va_start, va_end */
-#include <regex.h>	/* regerror */
-#include <errno.h>
-#include <assert.h>
-
-#include <execinfo.h>
-
-#include <sstream>
-#endif
+#include "compat.h"
 
 using namespace std;
 
