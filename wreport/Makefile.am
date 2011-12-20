@@ -9,8 +9,7 @@ INCLUDES = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir) $(LUA_CFLAGS)
 wreportincludedir = $(includedir)/wreport
 
 # Include the .cc files that contain template definitions
-nobase_wreportinclude_HEADERS = \
-	compat.h \
+nobase_wreportinclude_HEADERS =
 	codetables.h \
 	conv.h \
 	dtable.h \
@@ -31,7 +30,6 @@ nobase_wreportinclude_HEADERS = \
 
 lib_LTLIBRARIES = libwreport.la
 libwreport_la_SOURCES = \
-	compat.cc \
 	error.cc \
 	notes.cc \
 	uniconv.cc \
@@ -63,7 +61,7 @@ uniconv.cc: uniconv.gperf
 	if ! gperf < $< > $@; then rm $@; /bin/false; fi
 
 BUILT_SOURCES = uniconv.cc
-EXTRA_DIST = uniconv.gperf uniconv.cc main.dox style.dox features.dox examples.dox
+EXTRA_DIST = compat.h uniconv.gperf uniconv.cc main.dox style.dox features.dox examples.dox
 
 #
 # Unit testing
