@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
         int c = getopt_long(argc, argv, "cvdsDihp:",
                 long_options, &option_index);
 #else
-        int c = getopt_long(argc, argv, "cvdsDihp:");
+        int c = getopt(argc, argv, "cvdsDihp:");
 #endif
 
         // Detect the end of the options

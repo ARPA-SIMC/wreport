@@ -24,7 +24,11 @@
 #include <string>
 #include <iostream>
 #include <cstdio>
+#include "config.h"
+
+#ifdef HAS_GETOPT_LONG
 #include <getopt.h>
+#endif
 
 using namespace wreport;
 using namespace std;
@@ -32,9 +36,6 @@ using namespace std;
 // These are split in separate files so they can be loaded as example code by
 // the documentation
 #include "makebuoy.cc"
-//#include "input.cc"
-//#include "output.cc"
-//#include "iterate.cc"
 
 void do_usage(FILE* out)
 {
@@ -49,20 +50,25 @@ void do_help(FILE* out)
         "Options:\n"
         "  -v,--verbose        verbose operation\n"
         "  -h,--help           print this help message\n"
-        "     --makebuoy       generate a buoy BUFR message\n"
+        "  -B,--makebuoy       generate a buoy BUFR message\n"
+#ifndef HAS_GETOPT_LONG
+        "NOTE: long options are not supported on this system\n"
+#endif
     , out);
 }
 
 int main(int argc, char* argv[])
 {
+#ifdef HAS_GETOPT_LONG
     static struct option long_options[] =
     {
         /* These options set a flag. */
-        {"makebuoy",  no_argument,       NULL, 1},
+        {"makebuoy",  no_argument,       NULL, 'B'},
         {"verbose",   no_argument,       NULL, 'v'},
         {"help",      no_argument,       NULL, 'h'},
         {0, 0, 0, 0}
     };
+#endif
 
     // Parse command line options
     bool verbose = false;
@@ -72,8 +78,12 @@ int main(int argc, char* argv[])
         // getopt_long stores the option index here
         int option_index = 0;
 
+#ifdef HAS_GETOPT_LONG
         int c = getopt_long(argc, argv, "vh",
                 long_options, &option_index);
+#else
+        int c = getopt(argc, argv, "vh");
+#endif
 
         // Detect the end of the options
         if (c == -1)
@@ -83,7 +93,7 @@ int main(int argc, char* argv[])
         {
             case 'v': verbose = true; break;
             case 'h': action = HELP; break;
-            case   1: action = MAKEBUOY; break;
+            case 'B': action = MAKEBUOY; break;
             default:
                 fprintf(stderr, "unknown option character %c (%d)\n", c, c);
                 do_help(stderr);
