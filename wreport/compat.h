@@ -85,6 +85,14 @@ static int vasprintf (char **result, const char *format, va_list args)
     return 0;
   }
 }
+static int asprintf (char **result, const char *format, ...)
+{
+	va_list ap;
+	va_start(ap, format);
+	int res = vasprintf(result, format, ap);
+	va_end(ap);
+	return res;
+}
 #endif
 
 #endif
