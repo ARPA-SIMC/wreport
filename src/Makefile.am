@@ -2,18 +2,7 @@
 
 INCLUDES = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir)
 
-EXTRA_DIST =
-
 WREPLIBS =  ../wreport/libwreport.la
-
-if USE_OWN_GETOPT
-noinst_LTLIBRARIES = libgetopt.la
-libgetopt_la_SOURCES = \
-	getopt1.cc \
-	getopt.cc
-WREPLIBS += libgetopt.la
-EXTRA_DIST += getopt.h getopt_int.h
-endif
 
 dist_noinst_HEADERS = options.h info.cc input.cc output.cc iterate.cc makebuoy.cc
 
@@ -28,3 +17,4 @@ wrep_DEPENDENCIES = $(WREPLIBS)
 examples_SOURCES = examples.cc
 examples_LDFLAGS = $(WREPLIBS)
 examples_DEPENDENCIES = $(WREPLIBS)
+
