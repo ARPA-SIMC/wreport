@@ -9,7 +9,7 @@ INCLUDES = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir) $(LUA_CFLAGS)
 wreportincludedir = $(includedir)/wreport
 
 # Include the .cc files that contain template definitions
-nobase_wreportinclude_HEADERS =
+dist_nobase_wreportinclude_HEADERS =
 	codetables.h \
 	conv.h \
 	dtable.h \
@@ -75,7 +75,7 @@ TESTS = $(check_PROGRAMS)
 
 CXXFLAGS += -O0
 
-noinst_HEADERS = test-utils-wreport.h
+dist_noinst_HEADERS = test-utils-wreport.h
 
 tut_test_SOURCES = \
 	test-utils-wreport.cc \
@@ -100,7 +100,7 @@ tut_test_LDADD = \
 	$(WIBBLE_LIBS)
 
 if LUA
-noinst_HEADERS += test-utils-lua.h
+dist_noinst_HEADERS += test-utils-lua.h
 tut_test_SOURCES += \
 	lua-tut.cc \
 	test-utils-lua.cc
