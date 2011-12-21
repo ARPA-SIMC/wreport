@@ -145,8 +145,8 @@ dnl AC_DEFINE_UNQUOTED(TABLE_DIR, "$def_tabledir", "Default location for table f
 LIBWREPORT_VERSION_INFO=`echo $VERSION | awk -F. '{ printf "%d:%d:%d", $1+$2, $3, $2 }'`
 AC_SUBST(LIBWREPORT_VERSION_INFO)
 
-CFLAGS="-Wall -Werror $CFLAGS"
-CXXFLAGS="-Wall -Werror $CFLAGS"
+dnl Give me warnings
+AX_CXXFLAGS_WARN_ALL
 
 if test x"$enable_doxy_undoc_warnings" = x"no"
 then
