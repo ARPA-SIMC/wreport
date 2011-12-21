@@ -52,6 +52,17 @@ AC_CHECK_FUNC(getopt_long, [
 	AC_DEFINE([HAS_GETOPT_LONG], 1, [we can use long options])
 ])
 
+if test x$enable_docs = xyes
+then
+	dnl Check for doxygen
+	AC_CHECK_PROG(have_doxygen, doxygen, true)
+	if test x$have_doxygen != xtrue
+	then
+		AC_MSG_WARN([doxygen was not found: documentation will not be built])
+		enable_docs=no
+	fi
+fi
+
 dnl Check for gperf
 AC_CHECK_PROG(have_gperf, gperf, true)
 if test x$have_gperf != xtrue
