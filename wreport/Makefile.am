@@ -9,7 +9,7 @@ INCLUDES = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir) $(LUA_CFLAGS)
 wreportincludedir = $(includedir)/wreport
 
 # Include the .cc files that contain template definitions
-dist_nobase_wreportinclude_HEADERS =
+nobase_dist_wreportinclude_HEADERS =
 	codetables.h \
 	conv.h \
 	dtable.h \
