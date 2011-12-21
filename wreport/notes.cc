@@ -38,8 +38,12 @@ struct null_streambuf : public std::streambuf
     int overflow(int c) { return c; }
 };
 
-
+#if __xlC__
+#warning Use in a multithreaded environment is not currently supported in xlC. Patches welcome.
+ostream* target = 0;
+#else
 __thread ostream* target = 0;
+#endif
 null_streambuf* null_sb = 0;
 ostream* null_stream = 0;
 
