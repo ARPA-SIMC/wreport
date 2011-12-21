@@ -49,7 +49,8 @@ using namespace std;
 
 namespace wreport {
 
-static std::map<string, Vartable> tables;
+// Using a pointer: static constructors don't seem to work with old versions of xlC
+static std::map<string, Vartable>* tables = 0;
 
 // see http://stackoverflow.com/questions/1068849/how-do-i-determine-the-number-of-decimal-digits-of-an-integer-in-c
 // for benchmarks
@@ -175,13 +176,15 @@ const Vartable* Vartable::get(const char* id)
 }
 const Vartable* Vartable::get(const std::pair<std::string, std::string>& idfile)
 {
+	if (!tables) tables = new std::map<string, Vartable>;
+
 	// Return it from cache if we have it
-	std::map<string, Vartable>::const_iterator i = tables.find(idfile.first);
-	if (i != tables.end())
+	std::map<string, Vartable>::const_iterator i = tables->find(idfile.first);
+	if (i != tables->end())
 		return &(i->second);
 
 	// Else, instantiate it
-	Vartable* res = &tables[idfile.first];
+	Vartable* res = &(*tables)[idfile.first];
 	res->load(idfile);
 
 	return res;

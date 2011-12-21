@@ -123,7 +123,8 @@ void DTable::load(const std::pair<std::string, std::string>& idfile)
 	m_id = id;
 }
 
-static std::map<string, DTable> tables;
+// Using a pointer: static constructors don't seem to work with old versions of xlC
+static std::map<string, DTable>* tables = 0;
 
 const DTable* DTable::get(const char* id)
 {
@@ -131,13 +132,15 @@ const DTable* DTable::get(const char* id)
 }
 const DTable* DTable::get(const std::pair<std::string, std::string>& idfile)
 {
+	if (!tables) tables = new std::map<string, DTable>;
+
 	// Return it from cache if we have it
-	std::map<string, DTable>::const_iterator i = tables.find(idfile.first);
-	if (i != tables.end())
+	std::map<string, DTable>::const_iterator i = tables->find(idfile.first);
+	if (i != tables->end())
 		return &(i->second);
 
 	// Else, instantiate it
-	DTable* res = &tables[idfile.first];
+	DTable* res = &(*tables)[idfile.first];
 	res->load(idfile);
 
 	return res;
