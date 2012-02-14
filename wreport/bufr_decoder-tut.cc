@@ -1525,6 +1525,29 @@ void to::test<40>()
     test.run("bufr/gps_zenith.bufr");
 }
 
+template<> template<>
+void to::test<41>()
+{
+    struct Tester : public MsgTester {
+        void test(const BufrBulletin& msg)
+        {
+            ensure_equals(msg.edition, 4);
+            ensure_equals(msg.type, 12);
+            ensure_equals(msg.subtype, 255);
+            ensure_equals(msg.localsubtype, 223);
+            ensure_equals(msg.subsets.size(), 1722);
+
+            const Subset& s = msg.subset(0);
+            ensure_equals(s.size(), 124u);
+
+            ensure_varcode_equals(s[0].code(), WR_VAR(0, 1, 33));
+            ensure_equals(s[0].enq<int>(), 254);
+        }
+    } test;
+
+    test.run("bufr/ascat1.bufr");
+}
+
 }
 
 /* vim:set ts=4 sw=4: */
