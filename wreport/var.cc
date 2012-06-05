@@ -32,6 +32,7 @@
 #include <assert.h>		/* assert */
 
 #include "var.h"
+#include "options.h"
 #include "vartable.h"
 #include "fast.h"
 #include "conv.h"
@@ -229,15 +230,17 @@ void Var::seti(int val)
 {
 	fail_if_string(m_info, "seti");
 
-	/* Guard against overflows */
-	if (val < m_info->imin || val > m_info->imax)
-	{
-		unset();
-		error_domain::throwf("Value %i is outside the range [%i,%i] for B%02d%03d (%s)",
-				val, m_info->imin, m_info->imax,
-				WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc);
-	}
-	
+    /* Guard against overflows */
+    if (val < m_info->imin || val > m_info->imax)
+    {
+        unset();
+        if (options::var_silent_domain_errors)
+            return;
+        error_domain::throwf("Value %i is outside the range [%i,%i] for B%02d%03d (%s)",
+                val, m_info->imin, m_info->imax,
+                WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc);
+    }
+
 	/* Set the value */
 	if (m_value == NULL &&
 		(m_value = new char[m_info->len + 2]) == NULL)
@@ -253,23 +256,27 @@ void Var::setd(double val)
 {
 	fail_if_string(m_info, "setd");
 
-	/* Guard against NaNs */
-	if (isnan(val))
-	{
-		unset();
-		error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
-				val, m_info->dmin, m_info->dmax,
-				WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc);
-	}
-	
-	/* Guard against overflows */
-	if (val < m_info->dmin || val > m_info->dmax)
-	{
-		unset();
-		error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
-				val, m_info->dmin, m_info->dmax,
-				WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc);
-	}
+    /* Guard against NaNs */
+    if (isnan(val))
+    {
+        unset();
+        if (options::var_silent_domain_errors)
+            return;
+        error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
+                val, m_info->dmin, m_info->dmax,
+                WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc);
+    }
+
+    /* Guard against overflows */
+    if (val < m_info->dmin || val > m_info->dmax)
+    {
+        unset();
+        if (options::var_silent_domain_errors)
+            return;
+        error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
+                val, m_info->dmin, m_info->dmax,
+                WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc);
+    }
 
 	/* Set the value */
 	if (m_value == NULL && 
@@ -294,12 +301,14 @@ void Var::setc(const char* val)
 	 * negative numeric values */
 	if (!m_info->is_string() && val[0] == '-')
 		--len;
-	if (len > m_info->len)
-	{
-		unset();
-		error_domain::throwf("Value \"%s\" is too long for B%02d%03d (%s): maximum length is %d",
-				val, WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc, m_info->len);
-	}
+    if (len > m_info->len)
+    {
+        unset();
+        if (options::var_silent_domain_errors)
+            return;
+        error_domain::throwf("Value \"%s\" is too long for B%02d%03d (%s): maximum length is %d",
+                val, WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc, m_info->len);
+    }
 
 	strncpy(m_value, val, m_info->len + 1);
 	m_value[m_info->len + 1] = 0;

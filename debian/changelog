@@ -1,3 +1,12 @@
+wreport (2.5-1) UNRELEASED; urgency=low
+
+  * New upstream version 
+     - Added wreport::options to configure library behaviour
+     - Implemented options::var_silent_domain_errors to silence domain
+       errors and just unset the variable when assigning out of range values.
+
+ -- Enrico Zini <enrico@debian.org>  Tue, 05 Jun 2012 15:22:22 +0200
+
 wreport (2.4-1) unstable; urgency=low
 
   * New upstream version 

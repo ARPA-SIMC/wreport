@@ -20,6 +20,7 @@
 #include <test-utils-wreport.h>
 #include <wreport/var.h>
 #include <wreport/vartable.h>
+#include <wreport/options.h>
 #include <math.h>
 
 using namespace wreport;
@@ -298,6 +299,47 @@ void to::test<9>()
     Var norm(info);
     norm.set(ext);
     ensure_var_equals(norm, "Budapest Pestszentl>");
+}
+
+// Test domain erros and var_silent_domain_errors
+template<> template<>
+void to::test<10>()
+{
+    const Vartable* table = Vartable::get("B0000000000000014000");
+    // WMO BLOCK NUMBER, 0--99
+    Varinfo info = table->query(WR_VAR(0, 1, 1));
+    Var var(info, 10);
+
+    // Setting an out of bound value raises error_domain by default
+    try {
+        var.seti(200);
+        ensure(false);
+    } catch (error_domain& e) {
+        // ok, it should throw
+    }
+
+    // If we ignore the exception, we find that the variable has been unset
+    ensure(!var.isset());
+
+    // Set a value again
+    var.seti(10);
+    ensure_equals(var.enqi(), 10);
+
+    // If we set var_silent_domain_errors, the var becomes unset without an
+    // error being raised
+    {
+        options::LocalOverride<bool> o(options::var_silent_domain_errors, true);
+        var.seti(200);
+        ensure(!var.isset());
+    }
+
+    // Check that the behaviour is restored correctly
+    try {
+        var.seti(200);
+        ensure(false);
+    } catch (error_domain& e) {
+        // ok, it should throw
+    }
 }
 
 #if 0

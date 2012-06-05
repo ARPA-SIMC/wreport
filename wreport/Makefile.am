@@ -22,6 +22,7 @@ nobase_dist_wreportinclude_HEADERS = \
 	bulletin/dds-validator.h \
 	bulletin/dds-printer.h \
 	opcode.h \
+	options.h \
 	subset.h \
 	var.h \
 	varinfo.h \
@@ -30,6 +31,7 @@ nobase_dist_wreportinclude_HEADERS = \
 
 lib_LTLIBRARIES = libwreport.la
 libwreport_la_SOURCES = \
+	options.cc \
 	error.cc \
 	notes.cc \
 	uniconv.cc \
@@ -79,6 +81,7 @@ dist_noinst_HEADERS = test-utils-wreport.h
 
 tut_test_SOURCES = \
 	test-utils-wreport.cc \
+	options-tut.cc \
 	error-tut.cc \
 	conv-tut.cc \
 	fast-tut.cc \
