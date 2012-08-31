@@ -131,6 +131,7 @@ struct uniconv { const char* tag; double mul; double add; };
 "M**2/S**2->MGP",		0.101971621,	0
 "cal/s/cm**2->W/M**2",		41868,		0
 "cal/h/cm**2->W/M**2",		11.63,		0
+"Mj/m**2->J/M**2",		1000000,	0
 %%
 
 bool convert_units_allowed(const char* from, const char* to)
