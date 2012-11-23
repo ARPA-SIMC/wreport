@@ -73,6 +73,8 @@ struct uniconv { const char* tag; double mul; double add; };
 "MM->M",			0.001,	0
 "M->cm",			100,	0
 "cm->M",			0.01,	0
+"M->KM",			0.001,	0
+"KM->M",			1000,	0
 "%->PERCENT",			1,	0
 "PERCENT->%",			1,	0
 "M->FT",			3.2808,	0
