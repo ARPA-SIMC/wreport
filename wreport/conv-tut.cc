@@ -69,6 +69,22 @@ void to::test<3>()
 
     ensure_equals(convert_units("ms/cm", "S/M", 1.0), 0.1);
     ensure_equals(convert_units("S/M", "ms/cm", 0.1), 1.0);
+
+    ensure_equals(convert_octants_to_degrees(0),   0.0);
+    ensure_equals(convert_octants_to_degrees(1),  45.0);
+    ensure_equals(convert_octants_to_degrees(2),  90.0);
+    ensure_equals(convert_octants_to_degrees(3), 135.0);
+    ensure_equals(convert_octants_to_degrees(4), 180.0);
+    ensure_equals(convert_octants_to_degrees(5), 225.0);
+    ensure_equals(convert_octants_to_degrees(6), 270.0);
+    ensure_equals(convert_octants_to_degrees(7), 315.0);
+    ensure_equals(convert_octants_to_degrees(8), 360.0);
+
+    ensure_equals(convert_degrees_to_octants(  0.0),  0);
+    ensure_equals(convert_degrees_to_octants( 10.0),  8);
+    ensure_equals(convert_degrees_to_octants( 22.5),  8);
+    ensure_equals(convert_degrees_to_octants( 47.0),  1);
+    ensure_equals(convert_degrees_to_octants(360.0),  8);
 }
 
 }

@@ -56,6 +56,16 @@ double convert_icao_to_press(double from);
 double convert_press_to_icao(double from);
 
 /**
+ * Convert wind direction (in octants) to degrees
+ */
+double convert_octants_to_degrees(int from);
+
+/**
+ * Convert wind direction (in degrees) to octancts
+ */
+int convert_degrees_to_octants(double from);
+
+/**
  * Convert vertical sounding significance from the AOF encoding to BUFR code
  * table 08001.
  */

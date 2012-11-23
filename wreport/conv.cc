@@ -231,6 +231,37 @@ double convert_press_to_icao(double from)
 	throw error_unimplemented("converting pressure to ICAO height is not implemented");
 }
 
+double convert_octants_to_degrees(int from)
+{
+  if (from < 0 || from > 8)
+    error_domain::throwf("cannot handle octants (%d) values below 0 or above 8", from);
+  return from * 45.0;
+}
+
+int convert_degrees_to_octants(double from)
+{
+  if (from < 0 || from > 360)
+    error_domain::throwf("cannot handle  degrees (%f) values below 0.0 or above 360.0", from);
+  if (from == 0)
+    return 0;
+  if (from > 337.5 || from <= 22.5)
+    return 8;
+  if (from >  22.5 && from <=  67.5)
+    return 1;
+  if (from >  67.5 && from <= 112.5)
+    return 2;
+  if (from > 112.5 && from <= 157.5)
+    return 3;
+  if (from > 157.5 && from <= 202.5)
+    return 4;
+  if (from > 202.5 && from <= 247.5)
+    return 5;
+  if (from > 247.5 && from <= 292.5)
+    return 6;
+  if (from > 292.5 && from <= 337.5)
+    return 7;
+}
+
 int convert_AOFVSS_to_BUFR08042(int from)
 {
 	int res = 0;
