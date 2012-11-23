@@ -61,6 +61,16 @@ void to::test<2>()
     ensure_equals(convert_BUFR08042_to_BUFR08001(BUFR08042::SIGHUM), BUFR08001::SIGTH);
 }
 
+template<> template<>
+void to::test<3>()
+{
+    ensure_equals(convert_units("RATIO", "%", 1.0), 100.0);
+    ensure_equals(convert_units("%", "RATIO", 100.0), 1.0);
+
+    ensure_equals(convert_units("ms/cm", "S/M", 1.0), 0.1);
+    ensure_equals(convert_units("S/M", "ms/cm", 0.1), 1.0);
+}
+
 }
 
 /* vim:set ts=4 sw=4: */
