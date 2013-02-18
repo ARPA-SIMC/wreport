@@ -392,6 +392,7 @@ const Var* Var::enqa_by_associated_field_significance(unsigned significance) con
                     significance);
             break;
         case 6: return enqa(WR_VAR(0, 33, 50)); break;
+        case 21: return enqa(WR_VAR(0, 33, 41)); break;
         case 63:
             /*
              * Ignore quality information if B31021 is missing.

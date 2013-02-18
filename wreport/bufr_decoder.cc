@@ -345,6 +345,11 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
                        associated_field->seti(val);
                 }
                 break;
+            case 21:
+                // Add attribute B33041=val
+                if (d.conf_add_undef_attrs || val != 1)
+                    associated_field = new Var(btable->query(WR_VAR(0, 33, 41)), 0);
+                break;
             case 63:
                 /*
                  * Ignore quality information if B31021 is missing.
@@ -566,8 +571,6 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
                 WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
 
     // Bitmap size is now in count
-
-    in.debug_dump_next_bits(200);
 
     // Read the bitmap
     char buf[count + 1];
