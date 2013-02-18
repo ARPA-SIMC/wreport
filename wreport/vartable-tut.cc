@@ -184,6 +184,18 @@ void to::test<3>()
 	ensure_equals(info->bit_len, 14);
 	ensure_equals(info->len, 5);
 	ensure(!info->is_string());
+
+    table = Vartable::get("B0000000000000014000");
+
+    info = table->query(WR_VAR(0, 15, 12));
+    ensure_equals(info->var, WR_VAR(0, 15, 12));
+    ensure_equals(strcmp(info->desc, "TOTAL ELECTRON COUNT PER SQUARE METER"), 0);
+    ensure_equals(strcmp(info->unit, "1/M**2"), 0);
+    ensure_equals(info->scale, -16) ;
+    ensure_equals(info->bit_ref, 0);
+    ensure_equals(info->bit_len, 6);
+    ensure_equals(info->len, 2);
+    ensure(!info->is_string());
 }
 
 /* Test reading WMO standard tables */

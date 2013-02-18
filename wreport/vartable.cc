@@ -301,7 +301,7 @@ void Vartable::load(const std::pair<std::string, std::string>& idfile)
 				;
 			entry->unit[i+1] = 0;
 
-			entry->scale = getnumber(line+138);
+			entry->scale = getnumber(line+143);
 			entry->ref = 0;
 			entry->len = getnumber(line+149);
 
