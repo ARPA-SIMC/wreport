@@ -35,6 +35,7 @@
 #define IFTRACE if (0)
 #endif
 
+
 namespace wreport {
 namespace bulletin {
 
@@ -151,6 +152,7 @@ void Visitor::b_variable(Varcode code)
         ++data_pos;
     }
 }
+
 
 void Visitor::c_modifier(Varcode code)
 {

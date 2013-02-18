@@ -1,7 +1,7 @@
 /*
  * wreport/bulletin - BUFR encoder
  *
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2013  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,34 +65,6 @@ using namespace std;
 namespace wreport {
 
 namespace {
-
-#if 0
-/* Dump 'count' bits of 'buf', starting at the 'ofs-th' bit */
-static dba_err dump_bits(void* buf, int ofs, int count, FILE* out)
-{
-	bitvec vec;
-	int i, j;
-	DBA_RUN_OR_RETURN(bitvec_create(&vec, "mem", 0, buf, (count + ofs) / 8 + 2));
-	for (i = 0, j = 0; i < ofs; i++, j++)
-	{
-		uint32_t val;
-		DBA_RUN_OR_RETURN(bitvec_get_bits(vec, 1, &val));
-		if (j != 0 && (j % 8) == 0)
-			putc(' ', out);
-		putc(val ? ',' : '.', out);
-	}
-	for (i = 0; i < count; i++, j++)
-	{
-		uint32_t val;
-		DBA_RUN_OR_RETURN(bitvec_get_bits(vec, 1, &val));
-		if (j != 0 && (j % 8) == 0)
-			putc(' ', out);
-		putc(val ? '1' : '0', out);
-	}
-	bitvec_delete(vec);
-	return dba_error_ok();
-}
-#endif
 
 struct DDSEncoder : public bulletin::ConstBaseVisitor
 {

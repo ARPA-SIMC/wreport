@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2013  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1546,6 +1546,31 @@ void to::test<41>()
     } test;
 
     test.run("bufr/ascat1.bufr");
+}
+
+template<> template<>
+void to::test<42>()
+{
+    struct Tester : public MsgTester {
+        void test(const BufrBulletin& msg)
+        {
+#if 0
+            ensure_equals(msg.edition, 4);
+            ensure_equals(msg.type, 12);
+            ensure_equals(msg.subtype, 255);
+            ensure_equals(msg.localsubtype, 223);
+            ensure_equals(msg.subsets.size(), 1722);
+
+            const Subset& s = msg.subset(0);
+            ensure_equals(s.size(), 124u);
+
+            ensure_varcode_equals(s[0].code(), WR_VAR(0, 1, 33));
+            ensure_equals(s[0].enq<int>(), 254);
+#endif
+        }
+    } test;
+
+    test.run("bufr/unparsable1.bufr");
 }
 
 }

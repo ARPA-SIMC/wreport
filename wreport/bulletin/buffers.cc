@@ -1,7 +1,7 @@
 /*
  * wreport/bulletin/buffers - Low-level I/O operations
  *
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2013  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,17 @@
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
+
+// #define TRACE_INTERPRETER
+
+#ifdef TRACE_INTERPRETER
+#define TRACE(...) fprintf(stderr, __VA_ARGS__)
+#define IFTRACE if (1)
+#else
+#define TRACE(...) do { } while (0)
+#define IFTRACE if (0)
+#endif
+
 
 using namespace std;
 
@@ -371,11 +382,12 @@ void BufrInput::decode_number(Var& dest, uint32_t base, unsigned diffbits)
         /* Compute the value for this subset */
         uint32_t newval = base + diff;
         double dval = info->bufr_decode_int(newval);
-        //TRACE("datasec:decode_b_num:decoded[%d] as %d+%d=%d->%f %s\n", i, val, diff, newval, dval, info->bufr_unit);
+        TRACE("BufrInput:decode_number:decoded diffbits %u %u+%u=%u->%f %s\n",
+		       	diffbits, base, diff, newval, dval, info->bufr_unit);
 
         /* Convert to target unit */
         dval = convert_units(info->bufr_unit, info->unit, dval);
-        //TRACE("datasec:decode_b_num:converted to %f %s\n", dval, info->unit);
+        TRACE("BufrInput:decode_number:converted to %f %s\n", dval, info->unit);
 
         /* Create the new Var */
         dest.setd(dval);

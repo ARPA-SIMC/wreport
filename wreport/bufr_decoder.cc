@@ -1,7 +1,7 @@
 /*
  * wreport/bulletin - BUFR decoder
  *
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2013  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -546,6 +546,8 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
     unsigned group = WR_VAR_X(rep_code);
     unsigned count = WR_VAR_Y(rep_code);
 
+    TRACE("do_bitmap %d\n", count);
+
     if (count == 0)
     {
         // Fetch the repetition count
@@ -563,25 +565,34 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
         in.parse_error("bitmap element descriptor is %02d%02d%03d instead of B31031",
                 WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
 
-    // If compressed, ensure that the difference bits are 0 and they are
-    // not trying to transmit odd things like delta bitmaps 
-    if (d.out.compression)
-    {
-        /* Decode the number of bits (encoded in 6 bits) that these difference
-         * values occupy */
-        uint32_t diffbits = in.get_bits(6);
-        if (diffbits != 0)
-            in.parse_error("bitmap declares %d difference bits per bitmap value, but we only support 0", diffbits);
-    }
-
     // Bitmap size is now in count
+
+    in.debug_dump_next_bits(200);
 
     // Read the bitmap
     char buf[count + 1];
-    for (unsigned i = 0; i < count; ++i)
+    if (d.out.compression)
     {
-        uint32_t val = in.get_bits(1);
-        buf[i] = (val == 0) ? '+' : '-';
+        for (unsigned i = 0; i < count; ++i)
+        {
+            uint32_t val = in.get_bits(1);
+            buf[i] = (val == 0) ? '+' : '-';
+            // Decode the number of bits (encoded in 6 bits) of difference
+            // values. It's odd to repeat this for each bit in the bitmap, but
+            // that's how things are transmitted and it's somewhat consistent
+            // with how data compression is specified
+            val = in.get_bits(6);
+            // If compressed, ensure that the difference bits are 0 and they are
+            // not trying to transmit odd things like delta bitmaps 
+            if (val != 0)
+                in.parse_error("bitmap entry %u declares %u difference bits, but we only support 0", i, val);
+        }
+    } else {
+        for (unsigned i = 0; i < count; ++i)
+        {
+            uint32_t val = in.get_bits(1);
+            buf[i] = (val == 0) ? '+' : '-';
+        }
     }
     buf[count] = 0;
 
