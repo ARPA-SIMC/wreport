@@ -3,6 +3,8 @@ wreport (2.6-1) UNRELEASED; urgency=low
   * New upstream version
      - Correctly decode bitmaps in compressed messages
      - Deal with C04 with B31021=21
+     - Updated table D000000000980601 after seeing BUFR files which expect a
+       different version of it
 
  -- Enrico Zini <enrico@debian.org>  Mon, 18 Feb 2013 20:56:25 +0100
 
