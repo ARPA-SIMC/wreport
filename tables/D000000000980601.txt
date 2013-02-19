@@ -141,16 +141,16 @@
            202000                                                                                                       
            304030                                                                                                       
            304031                                                                                                       
- 301046 10 001007   SeaWinds header information::SATELLITE IDENTIFIER
-           001012                                DIRECTION OF MOTION OF MOVING OBSERVING PLATFORM
-           002048                                SATELLITE SENSOR INDICATOR
-           021119                             WIND SCATTEROMETER GEOPHYSICAL MODEL FUNCTION
-           025060                             SOFTWARE INDENTIFICATION
-           202124                                *** decrease scaling by 10^4
-           002026                                ALONG TRACK RESOLUTION
-           002027                                CROSS TRACK RESOLUTION
-           202000                                *** cancel change scaling
-           005040                                ORBIT NUMBER
+ 301046 10 001007   
+           001012  
+           002048 
+           021119
+           025060 
+           202124
+           002026 
+           002027
+           202000 
+           005040
  301047 15 001007                                                                                                       
            025060                                                                                                       
            001033                                                                                                       
@@ -218,10 +218,11 @@
  301070  3 002143
            002142
            002144
- 301071  4 002143
-           002142
-           002145
-           002146
+ 301071  5 001007
+           001031
+           002020
+           002028
+           002029
  301072  4 301071
            301011
            301013
@@ -278,6 +279,15 @@
            002070
            002063
            002001
+ 301198  9 001011
+           001012
+           001013
+           002011
+           002012
+           301011
+           301012
+           301023
+           007001
  301200  2 001032                                                                                                       
            033194                                                                                                       
  301201  2 101003                                                                                                       
@@ -830,6 +840,16 @@
            301012
            301074
            307030
+ 307060  2 007061
+           012030
+ 307061  3 301031
+           101005
+           307060
+ 307062  3 301032
+           101005
+           307060
+ 307063  2 007061
+           012130
  308001  3 301033                                                                                                       
            302011                                                                                                       
            022042                                                                                                       
@@ -971,6 +991,11 @@
            101000                                                                                                       
            031001                                                                                                       
            303014                                                                                                       
+ 309198  5 301198
+           302004
+           101000
+           031001
+           303014
  310001  5 301042                                                                                                       
            303031                                                                                                       
            303032                                                                                                       
@@ -1078,72 +1103,72 @@
            012063
            202000
            201000
- 310013 62 001007   Satellite ID
-           005040   Orbit number
-           004001   Year
-           004002   Month
-           004003   Day
-           004004   Hour
-           004005   Minute
-           004006   Second
-           005001   Latitude
-           006001   Longitude
-           007025   Solar zenith angle
-           005043   Field of view number
-           025085   Fraction of clear pixels in HIRS field of view
-           201131   Change width
-           202129   Change scale
-           002150   TOVS/ATOVS/AVHRR instrumentation channel number
-           008023   First order statistics
-           008072   Pixel(s) type
-           014027   Albedo
-           008072   Pixel(s) type
-           014027   Albedo
-           002150   TOVS/ATOVS/AVHRR instrumentation channel number
-           008023   First order statistics
-           008072   Pixel(s) type
-           014027   Albedo
-           008072   Pixel(s) type
-           014027   Albedo
-           002150   ATOVS/AVHRR instrumentation channel number
-           008023   First order statistics
-           008072   Pixel(s) type
-           014027   Albedo
-           008072   Pixel(s) type
-           014027   Albedo
-           202000   Change scale
-           201000   Change width
-           201132   Change width
-           202129   Change scale
-           002150   ATOVS/AVHRR instrumentation channel number
-           008023   First order statistics
-           008072   Pixel(s) type
-           012063   Brightness temperature
-           008072   Pixel(s) type
-           012063   Brightness temperature
-           002150   ATOVS/AVHRR instrumentation channel number
-           008023   First order statistics
-           008072   Pixel(s) type
-           012063   Brightness temperature
-           008072   Pixel(s) type
-           012063   Brightness temperature
-           008023   First order statistics
-           008072   Pixel(s) type
-           012063   Brightness temperature
-           008072   Pixel(s) type
-           012063   Brightness temperature
-           002150   ATOVS/AVHRR instrumentation channel number
-           008023   First order statistics
-           008072   Pixel(s) type
-           012063   Brightness temperature
-           008072   Pixel(s) type
-           012063   Brightness temperature
-           202000   Change scale
-           201000   Change width
- 310014  3 301072   Satellite geostationary wind data
+ 310013 62 001007   
+           005040   
+           004001   
+           004002   
+           004003   
+           004004   
+           004005   
+           004006   
+           005001   
+           006001   
+           007025   
+           005043   
+           025085   
+           201131   
+           202129   
+           002150   
+           008023   
+           008072   
+           014027   
+           008072   
+           014027   
+           002150   
+           008023   
+           008072   
+           014027   
+           008072   
+           014027   
+           002150   
+           008023   
+           008072   
+           014027   
+           008072   
+           014027   
+           202000   
+           201000   
+           201132   
+           202129   
+           002150   
+           008023   
+           008072   
+           012063   
+           008072   
+           012063   
+           002150   
+           008023   
+           008072   
+           012063   
+           008072   
+           012063   
+           008023   
+           008072   
+           012063   
+           008072   
+           012063   
+           002150   
+           008023   
+           008072   
+           012063   
+           008072   
+           012063   
+           202000   
+           201000   
+ 310014  3 301072   
            303041
            304011
- 310015 13 301072   Meteosat radiance data
+ 310015 13 301072   
            007024
            010002
            303041
@@ -1156,7 +1181,7 @@
            013003
            101003
            304033
- 310016 13 301072 Meteosat second generation radiance data
+ 310016 13 301072  
            007024
            010002
            303041
@@ -1485,25 +1510,25 @@
            022098
            022099
            022100
- 312026 19 301046   SeaWinds 25km data::SeaWinds header information
-           301011                       Date information
-           301013                       Time information
-           301023                       Position information
-           312031                       SeaWinds WVC information
-           101004                       *** replicate 1 descriptor 4 times
-           312030                       SeaWinds ambiguous wind data
-           021110                       NUMBER OF INNER-BEAM SIGMA-0 (FORWARD OF SATELLITE)
-           301023                       Position information
-           321027                       SeaWinds Sigma-0 data
-           021111                       NUMBER OF OUTER-BEAM SIGMA-0 (FORWARD OF SATELLITE)
-           301023                       Position information
-           321027                       SeaWinds Sigma-0 data
-           021112                       NUMBER OF INNER-BEAM SIGMA-0 (AFT OF SATELLITE)
-           301023                       Position information
-           321027                       SeaWinds Sigma-0 data
-           021113                       NUMBER OF OUTER-BEAM SIGMA-0 (AFT OF SATELLITE)
-           301023                       Position information
-           321027                       SeaWinds Sigma-0 data
+ 312026 19 301046   
+           301011   
+           301013   
+           301023   
+           312031   
+           101004   
+           312030   
+           021110   
+           301023   
+           321027   
+           021111   
+           301023   
+           321027   
+           021112   
+           301023   
+           321027   
+           021113   
+           301023   
+           321027   
  312027  9 301047
            105009
            301023
@@ -1539,27 +1564,27 @@
            021113
            301023
            321028
- 312030 13 201130   SeaWinds ambiguous wind data::*** increase data width by 2 bits
-           202129                                 *** increase scaling by 10^1
-           011012                                 WIND SPEED AT 10 M
-           202000                                 *** cancel change scaling
-           201000                                 *** cancel change data width
-           011052                                 FORMAL UNCERTAINTY IN WIND SPEED
-           201135                                 *** increase data width by 7 bits
-           202130                                 *** increase scaling by 10^2
-           011011                                 WIND DIRECTION AT 10 M
-           202000                                 *** cancel change scaling
-           201000                                 *** cancel change data width
-           011053                                 FORMAL UNCERTAINTY IN WIND DIRECTION
-           021104                                 LIKELIHOOD COMPUTED FOR SOLUTION
- 312031  8 005034   SeaWinds WVC information::ALONG TRACK ROW NUMBER
-           006034                             CROSS TRACK CELL NUMBER
-           021109                             QSCAT WIND VECTOR CELL QUALITY FLAG
-           011081                             MODEL WIND DIRECTION AT 10 M
-           011082                             MODEL WIND SPEED AT 10 M
-           021101                             NUMBER OF VECTOR AMBIGUITIES
-           021102                             INDEX OF SELECTED WIND VECTOR
-           021103                             TOTAL NUMBER OF SIGMA-0 MEASUREMENTS
+ 312030 13 201130   
+           202129   
+           011012   
+           202000   
+           201000   
+           011052   
+           201135   
+           202130   
+           011011   
+           202000   
+           201000   
+           011053   
+           021104   
+ 312031  8 005034   
+           006034   
+           021109   
+           011081   
+           011082   
+           021101   
+           021102   
+           021103   
  312032  4 021120
            021121
            013055
@@ -1672,25 +1697,25 @@
            202000                                                                                                       
            304228                                                                                                       
            304229                                                                                                       
- 312211 19 301046      SeaWinds 50km data::SeaWinds header information
-           301011               Date information
-           301013               Time information
-           301023               Position information
-           312031               SeaWinds WVC information
-           101004               *** replicate 1 descriptor 4 times
-           312030               SeaWinds ambiguous wind data
-           021110               NUMBER OF INNER-BEAM SIGMA-0 (FORWARD OF SATELLITE)
-           101004                       *** replicate 1 descriptor 4 times
-           312212                       SeaWinds Sigma-0 position and data
-           021111               NUMBER OF OUTER-BEAM SIGMA-0 (FORWARD OF SATELLITE)
-           101004                       *** replicate 1 descriptor 4 times
-           312212                       SeaWinds Sigma-0 position and data
-           021112               NUMBER OF INNER-BEAM SIGMA-0 (AFT OF SATELLITE)
-           101004                       *** replicate 1 descriptor 4 times
-           312212                       SeaWinds Sigma-0 position and data
-           021113               NUMBER OF OUTER-BEAM SIGMA-0 (AFT OF SATELLITE)
-           101004                       *** replicate 1 descriptor 4 times
-           312212                       SeaWinds Sigma-0 position and data
+ 312211 19 301046  
+           301011   
+           301013   
+           301023   
+           312031   
+           101004   
+           312030   
+           021110   
+           101004  
+           312212  
+           021111  
+           101004  
+           312212  
+           021112  
+           101004  
+           312212  
+           021113  
+           101004  
+           312212  
  312212  2 301023
            321027
  313009  4 021001                                                                                                       
@@ -2039,39 +2064,39 @@
            011073
            011074
            204000
- 321027 18 021118   SeaWinds Sigma-0 data::ATTENUATION CORRECTION ON SIGMA-0
-           202129                          *** increase scaling by 10^1
-           201132                          *** increase data width by 4 bits
-           002112                          RADAR LOOK ANGLE
-           201000                          *** cancel change data width
-           201131                          *** increase data width by 3 bits
-           002111                          RADAR INCIDENCE ANGLE
-           201000                          *** cancel change data width
-           202000                          *** cancel change scaling
-           002104                          ANTENNA POLARISATION
-           021105                          NORMALIZED RADAR CROSS SECTION
-           021106                          Kp VARIANCE COEFFICIENT (ALPHA)
-           021107                          Kp VARIANCE COEFFICIENT (BETA)
-           021114                          Kp VARIANCE COEFFICIENT (GAMMA)
-           021115                          SEAWINDS SIGMA-0 QUALITY FLAG
-           021116                          SEAWINDS SIGMA-0 MODE FLAG
-           008018                          SEAWINDS LAND/ICE SURFACE FLAG
-           021117                          SIGMA-0 VARIANCE QUALITY CONTROL
- 321028 18 021118  SeaWinds Sigma-0 data::ATTENUATION CORRECTION ON SIGMA-0
+ 321027 18 021118   
+           202129   
+           201132   
+           002112   
+           201000   
+           201131   
+           002111   
+           201000   
+           202000   
+           002104   
+           021105   
+           021106   
+           021107   
+           021114   
+           021115   
+           021116   
+           008018   
+           021117  
+ 321028 18 021118  
            202129
-           201132                          *** increase data width by 4 bits
-           002112                          RADAR LOOK ANGLE
-           201000                          *** cancel change data width
-           201131                          *** increase data width by 3 bits
-           002111                          RADAR INCIDENCE ANGLE
-           201000                          *** cancel change data width
-           202000                          *** cancel change scaling
-           002104                          ANTENNA POLARISATION
-           021123                          SeaWinds NORMALIZED RADAR CROSS SECTION
-           021106                          Kp VARIANCE COEFFICIENT (ALPHA)
-           021107                          Kp VARIANCE COEFFICIENT (BETA)
-           021114                          Kp VARIANCE COEFFICIENT (GAMMA)
-           021115                          SEAWINDS SIGMA-0 QUALITY FLAG
-           021116                          SEAWINDS SIGMA-0 MODE FLAG
-           008018                          SEAWINDS LAND/ICE SURFACE FLAG
-           021117    
+           201132 
+           002112 
+           201000 
+           201131 
+           002111 
+           201000 
+           202000 
+           002104    
+           021123   
+           021106   
+           021107   
+           021114   
+           021115   
+           021116   
+           008018   
+           021117   
