@@ -187,7 +187,7 @@ void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
 
         // Encode B31021
         const Var& var = do_semantic_var(info);
-        c04_meaning = var.enqi();
+        c04_meaning = var.enq(63);
         ++data_pos;
     }
     c04_bits = WR_VAR_Y(code);
