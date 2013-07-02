@@ -338,6 +338,7 @@ void Visitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
     c_scale_change = 0;
     c_width_change = 0;
     c_string_len_override = 0;
+    c_scale_ref_width_increase = 0;
     bitmap.reset();
     c04_bits = 0;
     c04_meaning = 63;

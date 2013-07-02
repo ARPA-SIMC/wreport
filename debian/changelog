@@ -3,6 +3,7 @@ wreport (2.9-1) UNRELEASED; urgency=low
   * New upstream version
      - Allow to dump data descriptor section without needing to decode the
        rest of the message
+     - Implemented support for BUFR C07yyy modifiers
 
  -- Enrico Zini <enrico@debian.org>  Tue, 02 Jul 2013 14:42:16 +0200
 
