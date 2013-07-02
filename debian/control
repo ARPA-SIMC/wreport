@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Enrico Zini <enrico@debian.org>
 Build-Depends: debhelper (>= 7.0.50~), dh-buildinfo, doxygen, gperf, pkg-config, liblua5.1-0-dev, libwibble-dev
-Standards-Version: 3.9.3.0
+Standards-Version: 3.9.4.0
 Homepage: http://sourceforge.net/p/wreport
 Vcs-Svn: https://svn.smr.arpa.emr.it/dballe/wreport/trunk
 
