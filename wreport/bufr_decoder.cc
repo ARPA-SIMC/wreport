@@ -223,6 +223,8 @@ struct Decoder
        TRACE("\n");
        }
        */
+        // Once we filled the Bulletin header info, load decoding tables and allocate subsets
+        out.load_tables();
     }
 
     /* Decode message data section after the header has been decoded */
@@ -623,8 +625,6 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
 
 void Decoder::decode_data()
 {
-    // Once we filled the Bulletin header info, load decoding tables and allocate subsets
-    out.load_tables();
     out.obtain_subset(expected_subsets - 1);
 
     /* Read BUFR section 4 (Data section) */

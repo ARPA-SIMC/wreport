@@ -70,7 +70,7 @@ struct BulletinHandler
 };
 
 // Signature for functions that read bulletins from a file
-typedef void (*bulletin_reader)(const Options&, const char*, BulletinHandler& handler);
+typedef void (*bulletin_reader)(const Options&, const char*, BulletinHandler& handler, bool header_only);
 
 
 #endif

@@ -130,6 +130,7 @@ int main(int argc, char* argv[])
 
     // Choose the right handler for the action requested by the user
     auto_ptr<BulletinHandler> handler;
+    bool header_only = false;
     switch (options.action)
     {
         case HELP:
@@ -140,7 +141,10 @@ int main(int argc, char* argv[])
             return 0;
         case DUMP: handler.reset(new PrintContents(stdout)); break;
         case DUMP_STRUCTURE: handler.reset(new PrintStructure(stdout)); break;
-        case DUMP_DDS: handler.reset(new PrintDDS(stdout)); break;
+        case DUMP_DDS:
+            handler.reset(new PrintDDS(stdout));
+            header_only = true;
+            break;
         case PRINT_VARS: handler.reset(new PrintVars(options.varcodes)); break;
     }
 
@@ -159,7 +163,7 @@ int main(int argc, char* argv[])
         while (optind < argc)
         {
             if (options.verbose) fprintf(stderr, "Reading from %s\n", argv[optind]);
-            reader(options, argv[optind++], *handler);
+            reader(options, argv[optind++], *handler, header_only);
         }
 
         handler->done();

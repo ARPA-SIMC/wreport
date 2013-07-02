@@ -157,6 +157,9 @@ struct Decoder
                 TRACE(" %01d%02d%03d", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
             TRACE("\n");
         }
+
+        // Load tables and set category/subcategory
+        out.load_tables();
     }
 
     void decode_data();
@@ -229,9 +232,6 @@ struct CrexParser : public bulletin::Visitor
 
 void Decoder::decode_data()
 {
-    // Load tables and set category/subcategory
-    out.load_tables();
-
     /* Decode crex section 2 (data section) */
     in.mark_section_start(2);
 
