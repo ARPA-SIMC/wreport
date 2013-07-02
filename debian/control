@@ -42,6 +42,8 @@ Description: documentation for libwreport
 Package: libwreport2
 Section: libs
 Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
 Depends: wreport-common, ${shlibs:Depends}, ${misc:Depends}
 Description: shared library for working with weather reports
  libwreport is a C++ library to read and write weather reports in BUFR and CREX
@@ -52,6 +54,7 @@ Description: shared library for working with weather reports
 Package: wreport-common
 Section: misc
 Architecture: any
+Multi-Arch: foreign
 Depends: ${misc:Depends}
 Description: common data files for libwreport
  libwreport is a C++ library to read and write weather reports in BUFR and CREX

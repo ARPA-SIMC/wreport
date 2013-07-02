@@ -1,1 +1,1 @@
-usr/lib/libwreport.so.*
+usr/lib/*/libwreport.so.*

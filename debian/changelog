@@ -4,6 +4,7 @@ wreport (2.8-1) unstable; urgency=low
      - Include BUFR tables version 16
   * Updated standards-version, no change required
   * Debhelper compat level bumped to 9, to get hardening flags
+  * Switched to multiarch
 
  -- Enrico Zini <enrico@debian.org>  Thu, 27 Jun 2013 16:27:12 +0200
 
