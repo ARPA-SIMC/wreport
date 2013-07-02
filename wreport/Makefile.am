@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir) $(LUA_CFLAGS)
+AM_CPPFLAGS = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir) $(LUA_CFLAGS)
 
 #
 # Shared library
@@ -73,7 +73,12 @@ if DO_TESTS
 
 check_PROGRAMS = tut_test
 TESTS_ENVIRONMENT = $(top_srcdir)/runtest
-TESTS = $(check_PROGRAMS)
+#TESTS = $(check_PROGRAMS)
+
+check-local:
+	for test in $(check_PROGRAMS); do \
+		$(TESTS_ENVIRONMENT) $$test ; \
+	done
 
 CXXFLAGS += -O0
 
