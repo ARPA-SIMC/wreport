@@ -1,4 +1,4 @@
-wreport (2.8-1) UNRELEASED; urgency=low
+wreport (2.8-1) unstable; urgency=low
 
   * New upstream version
      - Include BUFR tables version 16
