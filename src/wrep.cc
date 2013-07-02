@@ -138,9 +138,9 @@ int main(int argc, char* argv[])
         case INFO:
             do_info();
             return 0;
-        case DUMP: handler.reset(new PrintContents); break;
-        case DUMP_STRUCTURE: handler.reset(new PrintStructure); break;
-        case DUMP_DDS: handler.reset(new PrintDDS); break;
+        case DUMP: handler.reset(new PrintContents(stdout)); break;
+        case DUMP_STRUCTURE: handler.reset(new PrintStructure(stdout)); break;
+        case DUMP_DDS: handler.reset(new PrintDDS(stdout)); break;
         case PRINT_VARS: handler.reset(new PrintVars(options.varcodes)); break;
     }
 

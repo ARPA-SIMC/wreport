@@ -21,10 +21,11 @@
 
 struct PrintVars : public BulletinHandler
 {
+    FILE* out;
     const std::vector<wreport::Varcode>& codes;
 
-    PrintVars(const std::vector<wreport::Varcode>& codes)
-        : codes(codes) {}
+    PrintVars(const std::vector<wreport::Varcode>& codes, FILE* out=stdout)
+        : out(out), codes(codes) {}
 
     const Var* find_varcode(const wreport::Subset& subset, Varcode code)
     {
@@ -39,17 +40,17 @@ struct PrintVars : public BulletinHandler
     {
         for (size_t sset = 0; sset < b.subsets.size(); ++sset)
         {
-            printf("%s:%zd:", b.fname, sset + 1);
+            fprintf(out, "%s:%zd:", b.fname, sset + 1);
             for (size_t i = 0; i < codes.size(); ++i)
             {
                 const Var* var = find_varcode(b.subsets[sset], codes[i]);
                 if (var)
                 {
                     string formatted = var->format();
-                    printf("\t%s", formatted.c_str());
+                    fprintf(out, "\t%s", formatted.c_str());
                 }
             }
-            putc('\n', stdout);
+            putc('\n', out);
         }
     }
 };

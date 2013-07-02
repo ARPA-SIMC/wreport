@@ -24,27 +24,36 @@
 
 struct PrintContents : public BulletinHandler
 {
+    FILE* out;
+    PrintContents(FILE* out=stderr) : out(out) {}
+
     /// Dump the contents of a message
     virtual void handle(const wreport::Bulletin& b)
     {
-        b.print(stderr);
+        b.print(out);
     }
 };
 
 struct PrintStructure : public BulletinHandler
 {
+    FILE* out;
+    PrintStructure(FILE* out=stderr) : out(out) {}
+
     /// Dump the contents of a message, with structure
     virtual void handle(const wreport::Bulletin& b)
     {
-        b.print_structured(stderr);
+        b.print_structured(out);
     }
 };
 
 struct PrintDDS : public BulletinHandler
 {
+    FILE* out;
+    PrintDDS(FILE* out=stderr) : out(out) {}
+
     /// Dump the contents of the Data Descriptor Section a message
     virtual void handle(const wreport::Bulletin& b)
     {
-        b.print_datadesc(stderr);
+        b.print_datadesc(out);
     }
 };
