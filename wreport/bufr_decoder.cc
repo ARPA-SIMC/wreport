@@ -190,8 +190,9 @@ struct Decoder
                 error_consistency::throwf("BUFR edition is %d, but I can only decode 2, 3 and 4", out.edition);
         }
 
-        TRACE("info:ed %d opt %d upd %d origin %d.%d tables %d.%d type %d.%d %04d-%02d-%02d %02d:%02d\n", 
-                out.edition, out.optional_section_length, out.update_sequence_number,
+        TRACE("BUFR:edition %d, optional section %db, update sequence number %d\n",
+                out.edition, out.optional_section_length, out.update_sequence_number);
+        TRACE("     origin %d.%d tables %d.%d type %d.%d %04d-%02d-%02d %02d:%02d\n",
                 out.centre, out.subcentre,
                 out.master_table, out.local_table,
                 out.type, out.subtype,
@@ -213,7 +214,7 @@ struct Decoder
         out.compression = (in.read_byte(3, 6) & 0x40) ? 1 : 0;
         for (unsigned i = 0; i < (in.sec[4] - in.sec[3] - 7)/2; i++)
             out.datadesc.push_back((Varcode)in.read_number(3, 7 + i * 2, 2));
-        TRACE("info:s3length %d subsets %zd observed %d compression %d byte7 %x\n",
+        TRACE("     s3length %d subsets %zd observed %d compression %d byte7 %x\n",
                 in.sec[4] - in.sec[3], expected_subsets, (in.read_byte(3, 6) & 0x80) ? 1 : 0,
                 out.compression, in.read_byte(3, 6));
         /*
@@ -628,7 +629,7 @@ void Decoder::decode_data()
     out.obtain_subset(expected_subsets - 1);
 
     /* Read BUFR section 4 (Data section) */
-    TRACE("decode_data:section 4 is %d bytes long (%02x %02x %02x %02x)\n",
+    TRACE("  decode_data:section 4 is %d bytes long (%02x %02x %02x %02x)\n",
             in.read_number(4, 0, 3),
             in.read_byte(4, 0),
             in.read_byte(4, 1),

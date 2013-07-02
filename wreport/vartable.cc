@@ -123,7 +123,7 @@ Varinfo Vartable::query_altered(Varcode var, int scale, unsigned bit_len) const
     const _Varinfo* i = start.impl();
     for ( ; i->alterations != NULL; i = i->alterations)
     {
-        if (i->scale == scale && i->bit_len == bit_len)
+        if (i->scale == scale && i->bufr_scale == scale && i->bit_len == bit_len)
         {
             current = i;
             break;

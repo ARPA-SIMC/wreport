@@ -99,6 +99,9 @@ void Opcodes::visit(opcode::Visitor& e) const
                         e.c_local_descriptor(cur, (*this)[i + 1], WR_VAR_Y(cur));
                         ++i;
                         break;
+                    case 7:
+                        e.c_increase_scale_ref_width(cur, WR_VAR_Y(cur));
+                        break;
                     case 8:
                         e.c_char_data_override(cur, WR_VAR_Y(cur));
                         break;
@@ -162,6 +165,7 @@ void Visitor::b_variable(Varcode code) {}
 void Visitor::c_modifier(Varcode code) {}
 void Visitor::c_change_data_width(Varcode code, int change) {}
 void Visitor::c_change_data_scale(Varcode code, int change) {}
+void Visitor::c_increase_scale_ref_width(Varcode code, int change) {}
 void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
 void Visitor::c_char_data(Varcode code) {}
 void Visitor::c_char_data_override(Varcode code, unsigned new_length) {}

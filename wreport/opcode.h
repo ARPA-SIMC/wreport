@@ -310,6 +310,16 @@ struct Visitor
      *   The D code that has just been expanded
      */
     virtual void d_group_end(Varcode code);
+
+    /**
+     * Notify an increase of scale, reference value and data width
+     *
+     * @param code
+     *   The C modifier code
+     * @param change
+     *   The increase, to be handled according to table C, X=7
+     */
+    virtual void c_increase_scale_ref_width(Varcode code, int change);
 };
 
 /**

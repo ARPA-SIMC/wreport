@@ -105,26 +105,35 @@ Varinfo Visitor::get_varinfo(Varcode code)
 {
     Varinfo peek = btable->query(code);
 
-    if (!c_scale_change && !c_width_change && !c_string_len_override)
+    if (!c_scale_change && !c_width_change && !c_string_len_override && !c_scale_ref_width_increase)
         return peek;
 
     int scale = peek->scale;
     if (c_scale_change)
     {
-        TRACE("get_info:applying %d scale change\n", c_scale_change);
+        TRACE("get_varinfo:applying %d scale change\n", c_scale_change);
         scale += c_scale_change;
     }
 
     int bit_len = peek->bit_len;
     if (peek->is_string() && c_string_len_override)
     {
-        TRACE("get_info:overriding string to %d bytes\n", c_string_len_override);
+        TRACE("get_varinfo:overriding string to %d bytes\n", c_string_len_override);
         bit_len = c_string_len_override * 8;
     }
     else if (c_width_change)
     {
-        TRACE("get_info:applying %d width change\n", c_width_change);
+        TRACE("get_varinfo:applying %d width change\n", c_width_change);
         bit_len += c_width_change;
+    }
+
+    if (c_scale_ref_width_increase)
+    {
+        TRACE("get_varinfo:applying %d increase of scale, ref, width\n", c_scale_ref_width_increase);
+        // TODO: misses reference value adjustment
+        scale += c_scale_ref_width_increase;
+        bit_len += (10 * c_scale_ref_width_increase + 2) / 3;
+        // c_ref *= 10**code
     }
 
     TRACE("get_info:requesting alteration scale:%d, bit_len:%d\n", scale, bit_len);
@@ -169,6 +178,12 @@ void Visitor::c_change_data_scale(Varcode code, int change)
 {
     TRACE("Set scale change from %d to %d\n", c_scale_change, change);
     c_scale_change = change;
+}
+
+void Visitor::c_increase_scale_ref_width(Varcode code, int change)
+{
+    TRACE("Increase scale, reference value and data width by %d\n", change);
+    c_scale_ref_width_increase = change;
 }
 
 void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)

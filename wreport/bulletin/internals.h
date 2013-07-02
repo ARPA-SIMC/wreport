@@ -130,6 +130,9 @@ struct Visitor : public opcode::Visitor
      */
     int c_string_len_override;
 
+    /// Increase of scale, reference value and data width
+    int c_scale_ref_width_increase;
+
     /**
      * Number of extra bits inserted by the current C04yyy modifier (0 for no
      * C04yyy operator in use)
@@ -237,6 +240,7 @@ struct Visitor : public opcode::Visitor
     virtual void c_substituted_value(Varcode code);
     virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
     virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
+    virtual void c_increase_scale_ref_width(Varcode code, int change);
     //@}
 };
 

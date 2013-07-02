@@ -383,7 +383,7 @@ void BufrInput::decode_number(Var& dest, uint32_t base, unsigned diffbits)
         uint32_t newval = base + diff;
         double dval = info->bufr_decode_int(newval);
         TRACE("BufrInput:decode_number:decoded diffbits %u %u+%u=%u->%f %s\n",
-		       	diffbits, base, diff, newval, dval, info->bufr_unit);
+                diffbits, base, diff, newval, dval, info->bufr_unit);
 
         /* Convert to target unit */
         dval = convert_units(info->bufr_unit, info->unit, dval);
