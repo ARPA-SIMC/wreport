@@ -3,8 +3,9 @@ wreport (2.8-1) unstable; urgency=low
   * New upstream version
      - Include BUFR tables version 16
   * Updated standards-version, no change required
+  * Debhelper compat level bumped to 9, to get hardening flags
 
- -- Enrico Zini <enrico@debian.org>  Mon, 18 Feb 2013 20:56:25 +0100
+ -- Enrico Zini <enrico@debian.org>  Thu, 27 Jun 2013 16:27:12 +0200
 
 wreport (2.7-1) UNRELEASED; urgency=low
 
