@@ -65,6 +65,8 @@ struct uniconv { const char* tag; double mul; double add; };
 "KG/KG->G/G",			1,	0
 "G/M**3->KG/M**3",		0.001,	0
 "KG/M**3->G/M**3",		1000,	0
+"ug/m**3->KG/M**3",		0.000000001,	0
+"KG/M**3->ug/m**3",		1000000000,	0
 "PA->KPA",			0.001,	0
 "KPA->PA",			1000,	0
 "m**(2/3)/S->M**(2/3)/S",	1,	0

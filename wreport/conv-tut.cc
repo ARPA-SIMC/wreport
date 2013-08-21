@@ -87,6 +87,13 @@ void to::test<3>()
     ensure_equals(convert_degrees_to_octants(360.0),  8);
 }
 
+template<> template<>
+void to::test<4>()
+{
+    ensure_similar(convert_units("ug/m**3", "KG/M**3", 45), 4.5e-08, 1e-10);
+    ensure_similar(convert_units("KG/M**3", "ug/m**3", 0.000000051), 51.0, 1e-10);
+}
+
 }
 
 /* vim:set ts=4 sw=4: */
