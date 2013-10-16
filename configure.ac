@@ -96,6 +96,9 @@ then
 	AC_SUBST(docdir)
 fi
 
+DEP_LIBS=""
+AC_SUBST(DEP_LIBS)
+
 dnl Check for lua
 PKG_CHECK_EXISTS([lua5.1], [have_lua=yes], [have_lua=no])
 if test x$have_lua = xyes
@@ -118,6 +121,7 @@ fi
 if test x$have_lua = xyes
 then
         AC_DEFINE([HAVE_LUA], 1, [lua is available])
+        DEP_LIBS="$DEP_LIBS $LUA_LIBS"
 fi
 AM_CONDITIONAL([LUA], [test x"$have_lua" = x"yes"])
 
@@ -127,6 +131,7 @@ if test x$have_wibble = xyes
 then
 	PKG_CHECK_MODULES(WIBBLE,libwibble)
 	enable_tests=yes
+    DEP_LIBS="$DEP_LIBS $WIBBLE_LIBS"
 else
 	AC_MSG_WARN([libwibble not found, tests will be disabled])
 	enable_tests=no
