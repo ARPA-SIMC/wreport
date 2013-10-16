@@ -1,7 +1,7 @@
 /*
  * wreport/tests - Unit test utilities
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2013  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 namespace wreport {
 namespace tests {
 
+#ifndef ensure_contains
 #define ensure_contains(x, y) wreport::tests::impl_ensure_contains(wibble::tests::Location(__FILE__, __LINE__, #x " == " #y), (x), (y))
 #define inner_ensure_contains(x, y) wreport::tests::impl_ensure_contains(wibble::tests::Location(loc, __FILE__, __LINE__, #x " == " #y), (x), (y))
 static inline void impl_ensure_contains(const wibble::tests::Location& loc, const std::string& haystack, const std::string& needle)
@@ -55,6 +56,7 @@ static inline void impl_ensure_not_contains(const wibble::tests::Location& loc, 
 		throw tut::failure(loc.msg(ss.str()));
 	}
 }
+#endif
 
 #define ensure_varcode_equals(x, y) wreport::tests::_ensure_varcode_equals(wibble::tests::Location(__FILE__, __LINE__, #x " == " #y), (x), (y))
 #define inner_ensure_varcode_equals(x, y) wreport::tests::_ensure_varcode_equals(wibble::tests::Location(loc, __FILE__, __LINE__, #x " == " #y), (x), (y))
