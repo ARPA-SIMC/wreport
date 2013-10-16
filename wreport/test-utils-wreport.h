@@ -18,6 +18,8 @@
  *
  * Author: Enrico Zini <enrico@enricozini.com>
  */
+#ifndef WREPORT_TESTS_UTILS
+#define WREPORT_TESTS_UTILS
 
 #include <wibble/tests.h>
 #include <wreport/varinfo.h>
@@ -116,4 +118,4 @@ struct MsgTester
 } // namespace tests
 } // namespace wreport
 
-// vim:set ts=4 sw=4:
+#endif
