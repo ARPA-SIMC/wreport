@@ -119,7 +119,40 @@ public:
 	}
 };
 
-} // namespace tests
-} // namespace wreport
+#ifdef wassert
+/// Check that actual and expected have the same vars
+struct TestVarEqual
+{
+    Var avar;
+    Var evar;
+    bool inverted;
+
+    TestVarEqual(const Var& actual, const Var& expected, bool inverted=false) : avar(actual), evar(expected), inverted(inverted) {}
+    TestVarEqual operator!() { return TestVarEqual(avar, evar, !inverted); }
+
+    void check(WIBBLE_TEST_LOCPRM) const;
+};
+
+struct ActualVar : public wibble::tests::Actual<Var>
+{
+    ActualVar(const Var& actual) : wibble::tests::Actual<Var>(actual) {}
+
+    TestVarEqual operator==(const Var& expected) const { return TestVarEqual(actual, expected); }
+    TestVarEqual operator!=(const Var& expected) const { return TestVarEqual(actual, expected, true); }
+};
+#endif
+
+}
+}
+
+#ifdef wassert
+namespace wibble {
+namespace tests {
+
+inline wreport::tests::ActualVar actual(const wreport::Var& actual) { return wreport::tests::ActualVar(actual); }
+
+}
+}
+#endif
 
 #endif

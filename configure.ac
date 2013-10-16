@@ -158,6 +158,7 @@ AC_SUBST(DOXYGEN_WARN_IF_UNDOCUMENTED)
 
 AM_CONDITIONAL([DO_DOCS], [test x"$enable_docs" = x"yes"])
 AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
+AM_CONDITIONAL([WIBBLE], [test x"$have_wibble" = x"yes"])
 
 AC_CONFIG_FILES([
 Makefile

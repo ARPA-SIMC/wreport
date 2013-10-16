@@ -134,34 +134,33 @@ bool Var::operator==(const Var& var) const
 {
 	// FIXME: fails if the code is the same but one has alterations
 	if (code() != var.code()) return false;
-	if (m_value == NULL && var.m_value == NULL) return true;
-	if (m_value == NULL || var.m_value == NULL) return false;
-
-	// Compare value
-	if (m_info->is_string() || m_info->scale == 0)
-	{
-		if (strcmp(m_value, var.m_value) != 0)
-			return false;
-	}
-	else
-	{
-		// In FC12 [g++ (GCC) 4.4.4 20100630 (Red Hat 4.4.4-10)], for obscure
-		// reasons we cannot compare the two enqd()s directly: the test fails
-		// even if they have the same values.  Assigning them to doubles first
-		// works. WTH?
-		double a = enqd();
-		double b = var.enqd();
-		if (a != b)
-		//if (enqd() != var.enqd())
-		{
-			return false;
-		}
-	}
+    if (!value_equals(var)) return false;
 
 	// Compare attrs
 	if (m_attrs == NULL && var.m_attrs == NULL) return true;
 	if (m_attrs == NULL || var.m_attrs == NULL) return false;
 	return *m_attrs == *var.m_attrs;
+}
+
+bool Var::value_equals(const Var& var) const
+{
+    if (m_value == NULL && var.m_value == NULL) return true;
+    if (m_value == NULL || var.m_value == NULL) return false;
+
+    // Compare value
+    if (m_info->is_string() || m_info->scale == 0)
+        return strcmp(m_value, var.m_value) == 0;
+    else
+    {
+        // In FC12 [g++ (GCC) 4.4.4 20100630 (Red Hat 4.4.4-10)], for obscure
+        // reasons we cannot compare the two enqd()s directly: the test fails
+        // even if they have the same values.  Assigning them to doubles first
+        // works. WTH?
+        double a = enqd();
+        double b = var.enqd();
+        return a == b;
+            //(enqd() == var.enqd())
+    }
 }
 
 Varcode Var::code() const throw ()

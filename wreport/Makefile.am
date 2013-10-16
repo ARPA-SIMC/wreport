@@ -26,8 +26,11 @@ nobase_dist_wreportinclude_HEADERS = \
 	subset.h \
 	var.h \
 	varinfo.h \
-	vartable.h \
-	tests.h
+	vartable.h
+
+if WIBBLE
+nobase_dist_wreportinclude_HEADERS += tests.h
+endif
 
 lib_LTLIBRARIES = libwreport.la
 libwreport_la_SOURCES = \
@@ -51,6 +54,10 @@ libwreport_la_SOURCES = \
 	bufr_encoder.cc \
 	crex_decoder.cc \
 	crex_encoder.cc
+
+if WIBBLE
+libwreport_la_SOURCES += tests.cc
+endif
 
 libwreport_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@
 
@@ -102,6 +109,7 @@ tut_test_SOURCES = \
 	bulletin/buffers-tut.cc \
 	bulletin/internals-tut.cc \
 	bulletin/dds-validator-tut.cc \
+	tests-tut.cc \
 	tut-main.cpp
 tut_test_LDADD = \
 	libwreport.la \

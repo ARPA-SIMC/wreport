@@ -1,5 +1,5 @@
 /*
- * wreport/test-utils-wreport - Unit test utilities
+ * wreport/test-utils-wreport - Unit test utilities, not included in the library
  *
  * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *

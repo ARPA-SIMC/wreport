@@ -101,6 +101,12 @@ public:
 	/// Equality
 	bool operator!=(const Var& var) const { return !operator==(var); }
 
+    /**
+     * Test if the values are the same, regardless of variable codes or
+     * attributes
+     */
+    bool value_equals(const Var& var) const;
+
 	/// Retrieve the Varcode for a variable
 	Varcode code() const throw ();
 
