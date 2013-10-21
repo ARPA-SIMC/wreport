@@ -1,4 +1,4 @@
-wreport (2.9-1) UNRELEASED; urgency=low
+wreport (2.9-1) unstable; urgency=low
 
   * New upstream version
      - Allow to dump data descriptor section without needing to decode the
@@ -7,8 +7,9 @@ wreport (2.9-1) UNRELEASED; urgency=low
      - Build with new libwibble which already has some of our test utils
      - Added optionally compiled wibble test functions for Var
      - Add optional libs ldflags to pkg-config metadata
+  * Depend on libwibble 1.0
 
- -- Enrico Zini <enrico@debian.org>  Tue, 02 Jul 2013 14:42:16 +0200
+ -- Enrico Zini <enrico@debian.org>  Mon, 21 Oct 2013 23:46:10 +0200
 
 wreport (2.8-1) unstable; urgency=low
 

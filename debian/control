@@ -2,7 +2,11 @@ Source: wreport
 Section: misc
 Priority: optional
 Maintainer: Enrico Zini <enrico@debian.org>
-Build-Depends: debhelper (>= 7.0.50~), dh-buildinfo, doxygen, gperf, pkg-config, liblua5.1-0-dev, libwibble-dev (>= 0.2.2)
+Build-Depends:
+  debhelper (>= 9), dh-buildinfo,
+  doxygen, gperf, pkg-config,
+  liblua5.1-0-dev,
+  libwibble-dev (>= 1.0), libwibble-dev (<< 2.0)
 Standards-Version: 3.9.4.0
 Homepage: http://sourceforge.net/p/wreport
 Vcs-Svn: https://svn.smr.arpa.emr.it/dballe/wreport/trunk
