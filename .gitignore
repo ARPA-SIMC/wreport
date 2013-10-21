@@ -28,6 +28,7 @@ Makefile
 /stamp-h1
 /m4/lt*.m4
 /m4/libtool.m4
+/test-driver
 /wreport/btable.dox
 /wreport/uniconv.cc
 /wreport/tut_test
