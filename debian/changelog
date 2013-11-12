@@ -1,3 +1,11 @@
+wreport (2.10-1) unstable; urgency=low
+
+  * New upstream version
+     - No changes, but bumped the version number to succeed an internally
+       released 2.9
+
+ -- Enrico Zini <enrico@debian.org>  Tue, 12 Nov 2013 12:26:52 +0100
+
 wreport (2.9-1) unstable; urgency=low
 
   * New upstream version
