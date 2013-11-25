@@ -131,7 +131,7 @@ if test x$have_wibble = xyes
 then
 	PKG_CHECK_MODULES(WIBBLE,libwibble)
 	enable_tests=yes
-    DEP_LIBS="$DEP_LIBS $WIBBLE_LIBS"
+	DEP_LIBS="$DEP_LIBS $WIBBLE_LIBS"
 else
 	AC_MSG_WARN([libwibble not found, tests will be disabled])
 	enable_tests=no
