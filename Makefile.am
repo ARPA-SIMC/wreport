@@ -9,6 +9,10 @@ endif
 SUBDIRS += .
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA=libwreport.pc
+pkgconfig_DATA = libwreport.pc
 
-EXTRA_DIST = libwreport.pc.in run-local runtest wreport.spec TODO-threads INSTALL
+if WIBBLE
+pkgconfig_DATA += libwreport-test.pc
+endif
+
+EXTRA_DIST = libwreport.pc.in libwreport-test.pc.in run-local runtest wreport.spec TODO-threads INSTALL

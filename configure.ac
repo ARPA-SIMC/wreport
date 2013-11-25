@@ -174,6 +174,7 @@ testdata/Makefile
 doc/Makefile
 doc/libwreport.dox
 libwreport.pc
+libwreport-test.pc
 ])
 #tools/Makefile
 AC_OUTPUT

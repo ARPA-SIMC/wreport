@@ -27,12 +27,12 @@ nobase_dist_wreportinclude_HEADERS = \
 	var.h \
 	varinfo.h \
 	vartable.h
-
 if WIBBLE
 nobase_dist_wreportinclude_HEADERS += tests.h
 endif
 
 lib_LTLIBRARIES = libwreport.la
+libwreport_la_LIBADD =
 libwreport_la_SOURCES = \
 	options.cc \
 	error.cc \
@@ -54,16 +54,17 @@ libwreport_la_SOURCES = \
 	bufr_encoder.cc \
 	crex_decoder.cc \
 	crex_encoder.cc
-
-if WIBBLE
-libwreport_la_SOURCES += tests.cc
-endif
-
 libwreport_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@
-
 if LUA
 libwreport_la_SOURCES += var-lua.cc
-libwreport_la_LDFLAGS += $(LUA_LIBS)
+libwreport_la_LIBADD += $(LUA_LIBS)
+endif
+
+if WIBBLE
+lib_LTLIBRARIES += libwreport-test.la
+libwreport_test_la_SOURCES = tests.cc
+libwreport_test_la_LIBADD = libwreport.la $(WIBBLE_LIBS)
+libwreport_test_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@
 endif
 
 uniconv.cc: uniconv.gperf
@@ -113,6 +114,7 @@ tut_test_SOURCES = \
 	tut-main.cpp
 tut_test_LDADD = \
 	libwreport.la \
+	libwreport-test.la \
 	$(WIBBLE_LIBS)
 
 if LUA
