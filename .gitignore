@@ -24,6 +24,7 @@ Makefile
 /ltmain.sh
 /missing
 /libwreport.pc
+/libwreport-test.pc
 /libtool
 /stamp-h1
 /m4/lt*.m4
