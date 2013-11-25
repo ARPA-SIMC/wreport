@@ -10,4 +10,4 @@ Name: libwreport
 Description: Weather report library
 Version: @VERSION@
 Cflags: -I${includedir}
-Libs: -L${libdir} -lwreport @DEP_LIBS@
+Libs: -L${libdir} -lwreport-test -lwreport @DEP_LIBS@
