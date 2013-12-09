@@ -61,6 +61,8 @@ struct uniconv { const char* tag; double mul; double add; };
 "sec->S",			1,	0
 "S->sec",			1,	0
 "minuti->S",                    60,     0
+"MINUTE->S",                    60,     0
+"S->MINUTE",					1.0/60,   0
 "G/G->KG/KG",			1,	0
 "KG/KG->G/G",			1,	0
 "G/M**3->KG/M**3",		0.001,	0
@@ -89,6 +91,8 @@ struct uniconv { const char* tag; double mul; double add; };
 "JM-2->J/M**2",			1,	0
 "cal/cm**2->J/M**2",		41868,	0
 "J/M**2->cal/cm**2",		0.000023885,	0
+"J/M**2->MJ/M**2",			0.000001, 0
+"MJ/M**2->J/M**2",			1000000, 0
 "Bq/L->BQ L-1",			1,		0
 "BQ L-1->Bq/L",			1,		0
 "DOBSON->DU",			1,		0
@@ -142,6 +146,8 @@ struct uniconv { const char* tag; double mul; double add; };
 "%->RATIO",				0.01,		0
 "ms/cm->S/M",			0.1,		0
 "S/M->ms/cm",			10,			0
+"mS/cm->S/M",			0.1,		0
+"S/M->mS/cm",			10,			0
 %%
 
 bool convert_units_allowed(const char* from, const char* to)

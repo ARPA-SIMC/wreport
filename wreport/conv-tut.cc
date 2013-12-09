@@ -94,6 +94,20 @@ void to::test<4>()
     ensure_similar(convert_units("KG/M**3", "ug/m**3", 0.000000051), 51.0, 1e-10);
 }
 
+template<> template<>
+void to::test<5>()
+{
+    ensure_equals(convert_units("S", "MINUTE", 60.0), 1.0);
+    ensure_equals(convert_units("MINUTE", "S", 1.0), 60.0);
+}
+
+template<> template<>
+void to::test<6>()
+{
+    ensure_equals(convert_units("J/M**2", "MJ/M**2", 1), 0.000001);
+    ensure_equals(convert_units("MJ/M**2", "J/M**2", 1), 1000000);
+}
+
 }
 
 /* vim:set ts=4 sw=4: */
