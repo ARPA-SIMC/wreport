@@ -119,7 +119,7 @@ static int dbalua_var_tostring(lua_State *L)
 }
 
 
-static const struct luaL_reg dbalua_var_lib [] = {
+static const struct luaL_Reg dbalua_var_lib [] = {
 	{ "code", dbalua_var_code },
         { "enqi", dbalua_var_enqi },
         { "enqd", dbalua_var_enqd },
