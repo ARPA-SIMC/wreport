@@ -1,22 +1,33 @@
 Summary: Library for working with (coded) weather reports
 Name: wreport
-Version: 1.9
-Release: 3335
+Version: 2.11
+Release: 4207%{dist}
 License: GPL2
 Group: Applications/Meteo
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: doxygen, libtool, libwibble-devel, gperf,lua-devel >= 5.1.1
+BuildRequires: doxygen, libtool, libwibble-devel >= 1.1, gperf,lua-devel >= 5.1.1
 %description
 null
 
-%package -n lib%{name}1
+Summary: Tools for working with weather reports
+Group: Applications/Meteo
+Requires: lib%{name}-common
+
+%description
+ libwreport is a C++ library to read and write weather reports in BUFR and CREX
+ formats.
+
+The tools provide simple weather bulletin handling functions
+
+
+%package -n lib%{name}2
 Summary: shared library for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}-common
 
-%description -n lib%{name}1
+%description -n lib%{name}2
  libwreport is a C++ library to read and write weather reports in BUFR and CREX
  formats.
  
@@ -68,6 +79,8 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %build
 %configure
 make
+
+%check
 make check
 
 %install
@@ -77,8 +90,12 @@ make install DESTDIR="%{buildroot}"
 %clean
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
 
+%files
+%defattr(-,root,root,-)
+%{_bindir}/wrep
+%{_bindir}/wrep-importtable
 
-%files -n lib%{name}1
+%files -n lib%{name}2
 %defattr(-,root,root,-)
 %{_libdir}/libwreport.so.*
 
@@ -93,6 +110,9 @@ make install DESTDIR="%{buildroot}"
 %{_libdir}/libwreport.la
 %{_libdir}/pkgconfig/libwreport.pc
 %{_libdir}/libwreport.so
+%{_libdir}/libwreport-test.a
+%{_libdir}/libwreport-test.la
+%{_libdir}/pkgconfig/libwreport-test.pc
 
 %dir %{_includedir}/%{name}
 %{_includedir}/%{name}/*
@@ -105,5 +125,23 @@ make install DESTDIR="%{buildroot}"
 %doc %{_docdir}/%{name}/examples/*
 
 %changelog
+* Wed Nov 13 2013 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 2.10-4116%{dist}
+- Fixed linking bug.
+
+* Tue Nov 12 2013 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 2.10-4104%{dist}
+- No changes, but bumped the version number to succeed an internally released 2.9
+
+* Fri Aug 23 2013 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 2.9-3968%{dist}
+- Aggiunta conversione ug/m**3->KG/M**3 (e viceversa)
+
+* Fri Nov 23 2012 root <dbranchini@arpa.emr.it> - 2.5-3724%{dist}
+- Aggiornamento sorgenti
+
+* Tue Jun 12 2012 root <dbranchini@arpa.emr.it> - 2.5-3633%{dist}
+- Aggiornamento sorgenti
+
+* Tue May 8 2012 root <dbranchini@arpa.emr.it> - 2.4-3621%{dist}
+- Aggiunta conversione da minuti (oracle) a S
+
 * Tue Sep 28 2010 root <ppatruno@arpa.emr.it> - 1.0
 - Initial build.
