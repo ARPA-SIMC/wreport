@@ -64,7 +64,7 @@ if WIBBLE
 lib_LTLIBRARIES += libwreport-test.la
 libwreport_test_la_SOURCES = tests.cc
 libwreport_test_la_LIBADD = libwreport.la $(WIBBLE_LIBS)
-libwreport_test_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@
+libwreport_test_la_LDFLAGS = -static -version-info @LIBWREPORT_VERSION_INFO@
 endif
 
 uniconv.cc: uniconv.gperf
