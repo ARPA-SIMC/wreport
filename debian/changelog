@@ -2,6 +2,7 @@ wreport (2.11-1) UNRELEASED; urgency=low
 
   * New upstream version
      - Split test suite support code into libwibble-test.so
+     - Added support for Lua 5.2
 
  -- Enrico Zini <enrico@debian.org>  Mon, 25 Nov 2013 13:55:24 +0100
 
