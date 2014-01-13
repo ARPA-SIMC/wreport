@@ -26,7 +26,8 @@ nobase_dist_wreportinclude_HEADERS = \
 	subset.h \
 	var.h \
 	varinfo.h \
-	vartable.h
+	vartable.h \
+	utils/lua.h
 if WIBBLE
 nobase_dist_wreportinclude_HEADERS += tests.h
 endif
@@ -56,7 +57,7 @@ libwreport_la_SOURCES = \
 	crex_encoder.cc
 libwreport_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@
 if LUA
-libwreport_la_SOURCES += var-lua.cc
+libwreport_la_SOURCES += utils/lua.cc var-lua.cc
 libwreport_la_LIBADD += $(LUA_LIBS)
 endif
 

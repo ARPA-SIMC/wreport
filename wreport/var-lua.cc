@@ -21,12 +21,8 @@
 
 #include "config.h"
 #include "var.h"
-
-#ifdef HAVE_LUA
-extern "C" {
-#include <lauxlib.h>
-#include <lualib.h>
-}
+#define WREPORT_LUA_REQUIRED
+#include "utils/lua.h"
 
 namespace wreport {
 
@@ -120,44 +116,17 @@ static int dbalua_var_tostring(lua_State *L)
 
 
 static const struct luaL_Reg dbalua_var_lib [] = {
-	{ "code", dbalua_var_code },
-        { "enqi", dbalua_var_enqi },
-        { "enqd", dbalua_var_enqd },
-        { "enqc", dbalua_var_enqc },
-        { "__tostring", dbalua_var_tostring },
-        {NULL, NULL}
+    { "code", dbalua_var_code },
+    { "enqi", dbalua_var_enqi },
+    { "enqd", dbalua_var_enqd },
+    { "enqc", dbalua_var_enqc },
+    { "__tostring", dbalua_var_tostring },
+    {NULL, NULL}
 };
 
 void Var::lua_push(lua_State* L)
 {
-        // The 'Var' object is a userdata that holds a pointer to this Var structure
-        Var** s = (Var**)lua_newuserdata(L, sizeof(Var*));
-        *s = this;
-
-        // Set the metatable for the userdata
-        if (luaL_newmetatable(L, "dballe.var"))
-        {
-                // If the metatable wasn't previously created, create it now
-                lua_pushstring(L, "__index");
-                lua_pushvalue(L, -2);  /* pushes the metatable */
-                lua_settable(L, -3);  /* metatable.__index = metatable */
-
-                // Load normal methods
-                luaL_register(L, NULL, dbalua_var_lib);
-        }
-
-        lua_setmetatable(L, -2);
+    lua::push_object(L, this, "dballe.var", dbalua_var_lib);
 }
-
-#else
-void Var::lua_push(lua_State* L)
-{
-	try error_unimplemented("DB-All.e compiled without Lua support");
-}
-Var* Var::lua_check(lua_State* L, int idx)
-{
-	try error_unimplemented("DB-All.e compiled without Lua support");
-}
-#endif
 
 }
