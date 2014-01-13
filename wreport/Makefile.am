@@ -88,7 +88,7 @@ check-local:
 		$(TESTS_ENVIRONMENT) $$test ; \
 	done
 
-CXXFLAGS += -O0
+#CXXFLAGS += -O0
 
 dist_noinst_HEADERS = test-utils-wreport.h
 
