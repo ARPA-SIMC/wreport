@@ -16,6 +16,9 @@ import xml.dom as xdom
 # This seems to change from time to time, you may be better off downloading zip
 # files normally. Note: the version 17 zip file was published without XML files
 # inside.
+# The tables are currently (as of 2014-08-01) published here:
+# http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/LatestVERSION.html
+# http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/PrevVERSIONS/PreviousVERSIONS.html
 DOWNLOAD_URL = "http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/latestTables.zip"
 
 BUFR_UNIT_MAP = { "CCITT IA5": "CCITTIA5" }
