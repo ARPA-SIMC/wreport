@@ -5,6 +5,7 @@ wreport (2.12-1) unstable; urgency=low
        published by WMO
      - Ship more tables (CREX table 17 is a copy of table 18 as a workaround,
        since I could not find a parseable version of table 17)
+  * Updated standards-version, no change required
 
  -- Enrico Zini <enrico@debian.org>  Fri, 01 Aug 2014 12:38:37 +0200
 
