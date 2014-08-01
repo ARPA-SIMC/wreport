@@ -3,7 +3,7 @@ wreport (2.12-1) UNRELEASED; urgency=low
   * New upstream version
      - Updated wrep-importtable to deal with new zipfiles and XML files
        published by WMO
-     - Ship more tables (table 17 is a copy of table 18 as a workaround,
+     - Ship more tables (CREX table 17 is a copy of table 18 as a workaround,
        since I could not find a parseable version of table 17)
 
  -- Enrico Zini <enrico@debian.org>  Mon, 25 Nov 2013 13:55:24 +0100

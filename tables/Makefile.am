@@ -10,6 +10,7 @@ bufrbtables = B0000000000000012000.txt \
 	      B0000000000098013102.txt \
 	      B0000000000000014000.txt \
 	      B0000000000000016000.txt \
+	      B0000000000000017000.txt \
 	      B0000000000000018000.txt \
 	      B0000000000000019000.txt \
 	      B0000000000000020000.txt \
@@ -32,6 +33,7 @@ bufrdtables = D0000000000000012000.txt \
 	      D0000000000098013102.txt \
 	      D0000000000000014000.txt \
 	      D0000000000000016000.txt \
+	      D0000000000000017000.txt \
 	      D0000000000000018000.txt \
 	      D0000000000000019000.txt \
 	      D0000000000000020000.txt \
@@ -48,19 +50,14 @@ bufrdtables = D0000000000000012000.txt \
 	      D000000002551104.txt \
 	      D000000000981301.txt
 
-# Table 17 seems only to be available in .doc or .pdf format. Until I manage to
-# acquire a parseable version, I work around the issue by using a copy of table
-# 18 instead.
+# Table 17 seems only to be available in .doc or .pdf format. I only managed to
+# acquire a BUFR version of it, so for CREX I work around the issue by using a
+# copy of table 18 instead.
 generated_tables = \
-	      B0000000000000017000.txt D0000000000000017000.txt \
 	      B001700.txt D001700.txt 
 
 table_DATA = $(crexbtables) $(crexdtables) $(bufrbtables) $(bufrdtables) $(generated_tables)
 
-B0000000000000017000.txt: B0000000000000018000.txt
-	cp $< $@
-D0000000000000017000.txt: D0000000000000018000.txt
-	cp $< $@
 B001700.txt: B001800.txt
 	cp $< $@
 D001700.txt: D001800.txt
