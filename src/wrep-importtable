@@ -1,5 +1,9 @@
 #!/usr/bin/python
-
+# coding: utf-8
+from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import unicode_literals
 import zipfile
 import urllib2
 import sys
@@ -9,13 +13,16 @@ import shutil
 import xml.dom.minidom as xmd
 import xml.dom as xdom
 
-DOWNLOAD_URL = "http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/2010edition/latestTables.zip"
-re_fname_b = re.compile(r"^BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_xml/BUFRCREX_(?P=v)_(?P=sv)_(?P=lv)_TableB_E.xml$")
-re_fname_bufr_d = re.compile(r"BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_xml/BUFR_(?P=v)_(?P=sv)_(?P=lv)_TableD_E.xml$")
-re_fname_crex_d = re.compile(r"BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_xml/CREX_(?P=v)_(?P=sv)_(?P=lv)_TableD_E.xml$")
+# This seems to change from time to time, you may be better off downloading zip
+# files normally. Note: the version 17 zip file was published without XML files
+# inside.
+DOWNLOAD_URL = "http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/latestTables.zip"
 
 BUFR_UNIT_MAP = { "CCITT IA5": "CCITTIA5" }
 CREX_UNIT_MAP = {}
+
+def verbose(s):
+    print(s)
 
 def wrap_in_tempfile(fd):
     """
@@ -62,172 +69,213 @@ def read_mapping(node):
     """
     return node.nodeName, read_text(node)
 
-def read_b_table(text):
-    """
-    Read an XML B table from the given file descriptor and yield DICTs with all
-    the <key>value</key> elements of B table records
-    """
-    dom = xmd.parseString(text)
-    for n in dom.documentElement.childNodes:
-        if n.nodeType != xdom.Node.ELEMENT_NODE: continue
-        if n.nodeName != "Exp_BUFRCREXTableB_E": continue
-        data = dict()
-        for x in n.childNodes:
-            if x.nodeType != xdom.Node.ELEMENT_NODE: continue
-            k, v = read_mapping(x)
-            data[k] = v
-        yield data
+class Table(object):
+    def __init__(self, v, sv, lv, text=None):
+        # Version
+        self.v = v
+        # Subversion
+        self.sv = sv
+        # Local version
+        self.lv = lv
+        if text is not None:
+            self.parse(text)
 
-def make_xml_b_lines(text):
-    """
-    Open info["fd_b"] as XML and build a BUFR table file with its contents,
-    yielding the formatted table lines
-    """
-    for data in sorted(read_b_table(text), key=lambda x:x["FXY"]):
-        if "CREX_Unit" not in data or "CREX_Scale" not in data or "CREX_DataWidth_Char" not in data:
-            yield " %-6.6s %-64.64s %-24.24s %3d %12d %3d" % (
-                data["FXY"],
-                data["ElementName_E"],
-                normalise_bufr_unit(data["BUFR_Unit"]),
-                int(data["BUFR_Scale"]),
-                int(data["BUFR_ReferenceValue"]),
-                int(data["BUFR_DataWidth_Bits"]))
-        else:
-            yield " %-6.6s %-64.64s %-24.24s %3d %12d %3d %-24.24s %2d %9d" % (
-                data["FXY"],
-                data["ElementName_E"],
-                normalise_bufr_unit(data["BUFR_Unit"]),
-                int(data["BUFR_Scale"]),
-                int(data["BUFR_ReferenceValue"]),
-                int(data["BUFR_DataWidth_Bits"]),
-                normalise_crex_unit(data["CREX_Unit"]),
-                int(data["CREX_Scale"]),
-                int(data["CREX_DataWidth_Char"]))
+class TableB(Table):
+    def parse_xml(self, text):
+        """
+        Read an XML B table from the given file descriptor and yield DICTs with all
+        the <key>value</key> elements of B table records
+        """
+        dom = xmd.parseString(text)
+        for n in dom.documentElement.childNodes:
+            if n.nodeType != xdom.Node.ELEMENT_NODE: continue
+            if "TableB" not in n.nodeName: continue
+            data = dict()
+            for x in n.childNodes:
+                if x.nodeType != xdom.Node.ELEMENT_NODE: continue
+                k, v = read_mapping(x)
+                data[k] = v
+            yield data
 
-def do_b_table(text, v, sv, lv):
-    out1 = open("B0000000000000%03d%03d.txt" % (v, sv), "w")
-    print "Writing %s..." % out1.name
-    out2 = open("B00%02d%02d.txt" % (v, sv), "w")
-    print "Writing %s..." % out2.name
-    try:
-        for line in make_xml_b_lines(text):
-            print >>out1, line
-            print >>out2, line
-    finally:
-        out1.close()
-        out2.close()
+    def parse(self, text):
+        self.entries = sorted(self.parse_xml(text), key=lambda x:x["FXY"])
 
-def read_d_table(text, elname="Exp_BUFRTableD_E"):
-    """
-    Read an XML D table from the given file descriptor and return a dict
-    mapping D codes to lists of B and D codes
-    """
-    dom = xmd.parseString(text)
-    res = dict()
-    for n in dom.documentElement.childNodes:
-        if n.nodeType != xdom.Node.ELEMENT_NODE: continue
-        if n.nodeName != elname: continue
-        # This is an odd way to encode a D table: each element maps a D code to
-        # one element of its expansion, instead of mapping a D code to a list
-        # of expanded codes
-        fxy1 = None
-        fxy2 = None
-        for x in n.childNodes:
-            if x.nodeType != xdom.Node.ELEMENT_NODE: continue
-            if x.nodeName == "FXY1": fxy1 = read_text(x).strip()
-            if x.nodeName == "FXY2": fxy2 = read_text(x).strip()
-        if fxy1 is not None and fxy2 is not None:
-            res.setdefault(fxy1, []).append(fxy2)
-    return res
+    def make_xml_b_lines(self):
+        """
+        Open info["fd_b"] as XML and build a BUFR table file with its contents,
+        yielding the formatted table lines
+        """
+        for data in self.entries:
+            el_name = data.get("ElementName_en", None)
+            if el_name is None: el_name = data["ElementName_E"]
+            if "CREX_Unit" not in data or "CREX_Scale" not in data or "CREX_DataWidth_Char" not in data:
+                yield " %-6.6s %-64.64s %-24.24s %3d %12d %3d" % (
+                    data["FXY"],
+                    el_name,
+                    normalise_bufr_unit(data["BUFR_Unit"]),
+                    int(data["BUFR_Scale"]),
+                    int(data["BUFR_ReferenceValue"]),
+                    int(data["BUFR_DataWidth_Bits"]))
+            else:
+                yield " %-6.6s %-64.64s %-24.24s %3d %12d %3d %-24.24s %2d %9d" % (
+                    data["FXY"],
+                    el_name,
+                    normalise_bufr_unit(data["BUFR_Unit"]),
+                    int(data["BUFR_Scale"]),
+                    int(data["BUFR_ReferenceValue"]),
+                    int(data["BUFR_DataWidth_Bits"]),
+                    normalise_crex_unit(data["CREX_Unit"]),
+                    int(data["CREX_Scale"]),
+                    int(data["CREX_DataWidth_Char"]))
 
-def make_xml_d_lines(d):
-    """
-    Yield the formatted table lines for D table entries in dict d
-    """
-    keys = d.keys()
-    keys.sort()
-    for k in keys:
-        vals = d[k]
-        if not vals: continue
-        yield " %-6.6s %2d %-6.6s" % (k, len(vals), vals[0])
-        for v in vals[1:]:
-            yield "           %-6.6s" % v
+    def write_files(self):
+        out1 = open("B0000000000000%03d%03d.txt" % (self.v, self.sv), "w")
+        print("Writing %s..." % out1.name)
+        out2 = open("B00%02d%02d.txt" % (self.v, self.sv), "w")
+        print("Writing %s..." % out2.name)
+        try:
+            for line in self.make_xml_b_lines():
+                print(line, file=out1)
+                print(line, file=out2)
+        finally:
+            out1.close()
+            out2.close()
 
-def do_bufr_d_table(text, v, sv, lv):
-    d = read_d_table(text, "Exp_BUFRTableD_E")
-    out = open("D0000000000000%03d%03d.txt" % (v, sv), "w")
-    print "Writing %s..." % out.name
-    try:
-        for line in make_xml_d_lines(d):
-            print >>out, line
-    finally:
-        out.close()
+class TableD(Table):
+    def parse(self, text):
+        entries_dict = self.parse_xml(text)
+        self.entries = sorted(x for x in entries_dict.iteritems() if x[1])
 
-def do_crex_d_table(text, v, sv, lv):
-    d = read_d_table(text, "Exp_CREXTableD_E")
-    out = open("D00%02d%02d.txt" % (v, sv), "w")
-    print "Writing %s..." % out.name
-    try:
-        for line in make_xml_d_lines(d):
-            print >>out, line
-    finally:
-        out.close()
+    def parse_xml(self, text):
+        """
+        Read an XML D table from the given file descriptor and return a dict
+        mapping D codes to lists of B and D codes
+        """
+        dom = xmd.parseString(text)
+        res = dict()
+        for n in dom.documentElement.childNodes:
+            if n.nodeType != xdom.Node.ELEMENT_NODE: continue
+            if "TableD" not in n.nodeName: continue
+            # This is an odd way to encode a D table: each element maps a D code to
+            # one element of its expansion, instead of mapping a D code to a list
+            # of expanded codes
+            fxy1 = None
+            fxy2 = None
+            for x in n.childNodes:
+                if x.nodeType != xdom.Node.ELEMENT_NODE: continue
+                if x.nodeName == "FXY1": fxy1 = read_text(x).strip()
+                if x.nodeName == "FXY2": fxy2 = read_text(x).strip()
+            if fxy1 is not None and fxy2 is not None:
+                res.setdefault(fxy1, []).append(fxy2)
+        return res
 
-def do_zip(infd):
-    """
-    Open the XML table file from inside a zip file
-    """
-    zf = zipfile.ZipFile(infd, "r")
-    def read_version(mo):
-        return int(mo.group("v")), int(mo.group("sv")), int(mo.group("lv"))
-    try:
-        zf.testzip()
-        for i in zf.infolist():
-            mo = re_fname_b.match(i.filename)
-            if mo is not None:
-                fd = zf.open(i, "r")
-                do_b_table(fd.read(), *read_version(mo))
-                fd.close()
-                continue
-            mo = re_fname_bufr_d.match(i.filename)
-            if mo is not None:
-                fd = zf.open(i, "r")
-                do_bufr_d_table(fd.read(), *read_version(mo))
-                fd.close()
-                continue
-            mo = re_fname_crex_d.match(i.filename)
-            if mo is not None:
-                fd = zf.open(i, "r")
-                do_crex_d_table(fd.read(), *read_version(mo))
-                fd.close()
-                continue
-    finally:
-        zf.close()
+    def output_lines(self):
+        """
+        Yield the formatted table lines for D table entries in dict d
+        """
+        for key, vals in self.entries:
+            yield " %-6.6s %2d %-6.6s" % (key, len(vals), vals[0])
+            for v in vals[1:]:
+                yield "           %-6.6s" % v
 
+class TableDBUFR(TableD):
+    def write_files(self):
+        out = open("D0000000000000%03d%03d.txt" % (self.v, self.sv), "w")
+        print("Writing %s..." % out.name)
+        try:
+            for line in self.output_lines():
+                print(line, file=out)
+        finally:
+            out.close()
+
+
+class TableDCREX(TableD):
+    def write_files(self):
+        out = open("D00%02d%02d.txt" % (self.v, self.sv), "w")
+        print("Writing %s..." % out.name)
+        try:
+            for line in self.output_lines():
+                print(line, file=out)
+        finally:
+            out.close()
+
+class Tables(object):
+    re_fname_b = re.compile(r"^BUFRCREX[^/]+/BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_TableB_(?:E|en).xml$")
+    re_fname_bufr_d = re.compile(r"BUFRCREX[^/]+/BUFR_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_TableD_(?:E|en).xml$")
+    re_fname_crex_d = re.compile(r"BUFRCREX[^/]+/CREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_TableD_(?:E|en).xml$")
+
+    def __init__(self):
+        self.table_b = None
+        self.table_d_bufr = None
+        self.table_d_crex = None
+
+    def read_zip(self, infd):
+        """
+        Read the XML table files from inside a zip file
+        """
+        zf = zipfile.ZipFile(infd, "r")
+        def read_version(mo):
+            return int(mo.group("v")), int(mo.group("sv")), int(mo.group("lv"))
+        try:
+            zf.testzip()
+            for i in zf.infolist():
+                mo = self.re_fname_b.match(i.filename)
+                if mo is not None:
+                    verbose("Processing BUFR/CREX B table {}".format(i.filename))
+                    fd = zf.open(i, "r")
+                    self.table_b = TableB(*read_version(mo), text=fd.read())
+                    fd.close()
+                    continue
+                mo = self.re_fname_bufr_d.match(i.filename)
+                if mo is not None:
+                    verbose("Processing BUFR D table {}".format(i.filename))
+                    fd = zf.open(i, "r")
+                    self.table_d_bufr = TableDBUFR(*read_version(mo), text=fd.read())
+                    fd.close()
+                    continue
+                mo = self.re_fname_crex_d.match(i.filename)
+                if mo is not None:
+                    verbose("Processing CREX D table {}".format(i.filename))
+                    fd = zf.open(i, "r")
+                    self.table_d_crex = TableDCREX(*read_version(mo), text=fd.read())
+                    fd.close()
+                    continue
+                verbose("Skipping {}".format(i.filename))
+        finally:
+            zf.close()
+
+    def write_files(self):
+        self.table_b.write_files()
+        self.table_d_bufr.write_files()
+        self.table_d_crex.write_files()
 
 if len(sys.argv) == 1:
+    tables = Tables()
     infd = urllib2.urlopen(DOWNLOAD_URL)
     try:
         # Download to a temp file: zipfile doesn't document it, but wants to
         # seek on its input
-        do_zip(wrap_in_tempfile(infd))
+        tables.read_zip(wrap_in_tempfile(infd))
     finally:
         infd.close()
+    tables.write_files()
 elif sys.argv[1].endswith(".zip"):
+    tables = Tables()
     infd = open(sys.argv[1])
     try:
-        do_zip(infd)
+        tables.read_zip(infd)
     finally:
         infd.close()
+    tables.write_files()
 else:
-    print >>sys.stderr, "Usage: %s [file.zip]" % sys.argv[0]
-    print >>sys.stderr
-    print >>sys.stderr, "Builds ECMWF-style BUFR/CREX table files from zipped WMO XML table information."
-    print >>sys.stderr, "Files are written in the current directory."
-    print >>sys.stderr
-    print >>sys.stderr, "If no zip file is given as argument, it is downloaded from:"
-    print >>sys.stderr, " ", DOWNLOAD_URL
+    print("Usage: %s [file.zip]" % sys.argv[0], file=sys.stderr)
+    print(file=sys.stderr)
+    print("Builds ECMWF-style BUFR/CREX table files from zipped WMO XML table information.", file=sys.stderr)
+    print("Files are written in the current directory.", file=sys.stderr)
+    print(file=sys.stderr)
+    print("If no zip file is given as argument, it is downloaded from:", file=sys.stderr)
+    print(" ", DOWNLOAD_URL, file=sys.stderr)
     sys.exit(1)
 
-print "Done. You can copy the table files to the table directory (see wrep --info for its location)."
+print("Done. You can copy the table files to the table directory (see wrep --info for its location).")
 sys.exit(0)
