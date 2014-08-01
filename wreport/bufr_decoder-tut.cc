@@ -1676,6 +1676,32 @@ void to::test<46>()
     test.run("bufr/atms2.bufr");
 }
 
+// BUFR data using table 17
+template<> template<>
+void to::test<47>()
+{
+    struct Tester : public MsgTester {
+        void test(const BufrBulletin& msg)
+        {
+#if 0
+            ensure_equals(msg.edition, 4);
+            ensure_equals(msg.type, 12);
+            ensure_equals(msg.subtype, 255);
+            ensure_equals(msg.localsubtype, 223);
+            ensure_equals(msg.subsets.size(), 1722);
+
+            const Subset& s = msg.subset(0);
+            ensure_equals(s.size(), 124u);
+
+            ensure_varcode_equals(s[0].code(), WR_VAR(0, 1, 33));
+            ensure_equals(s[0].enq<int>(), 254);
+#endif
+        }
+    } test;
+
+    test.run("bufr/table17.bufr");
+}
+
 }
 
 /* vim:set ts=4 sw=4: */
