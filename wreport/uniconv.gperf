@@ -44,14 +44,24 @@ struct uniconv { const char* tag; double mul; double add; };
 "C/10->K",			0.1,	273.15001f
 "C->C/10",			10,	0
 "C/10->C",			0.1,	0
+"A->YEAR",			1,	0
+"YEAR->A",			1,	0
 "YEARS->YEAR",			1,	0
 "YEAR->YEARS",			1,	0
+"MON->MONTH",			1,	0
+"MONTH->MON",			1,	0
 "MONTHS->MONTH",		1,	0
 "MONTH->MONTHS",		1,	0
+"D->DAY",			1,	0
+"DAY->D",			1,	0
 "DAYS->DAY",			1,	0
 "DAY->DAYS",			1,	0
+"H->HOUR",			1,	0
+"HOUR->H",			1,	0
 "HOURS->HOUR",			1,	0
 "HOUR->HOURS",			1,	0
+"MIN->MINUTE",			1,	0
+"MINUTE->MIN",			1,	0
 "MINUTES->MINUTE",		1,	0
 "MINUTE->MINUTES",		1,	0
 "SECONDS->SECOND",		1,	0
@@ -91,8 +101,8 @@ struct uniconv { const char* tag; double mul; double add; };
 "JM-2->J/M**2",			1,	0
 "cal/cm**2->J/M**2",		41868,	0
 "J/M**2->cal/cm**2",		0.000023885,	0
-"J/M**2->MJ/M**2",			0.000001, 0
-"MJ/M**2->J/M**2",			1000000, 0
+"J/M**2->MJ/M**2",		0.000001, 0
+"MJ/M**2->J/M**2",		1000000, 0
 "Bq/L->BQ L-1",			1,		0
 "BQ L-1->Bq/L",			1,		0
 "DOBSON->DU",			1,		0
@@ -101,6 +111,10 @@ struct uniconv { const char* tag; double mul; double add; };
 "NBAR->PA",			10000,		0
 "LOG(1/M**2)->LOG (M-2)",	1,		0
 "LOG (M-2)->LOG(1/M**2)",	1,		0
+"DEGREE->DEG",			1,		0
+"DEG->DEGREE",			1,		0
+"DEGREE TRUE->DEG",		1,		0
+"DEG->DEGREE TRUE",		1,		0
 "DEGREE TRUE->gsess",		1,		0
 "gsess->DEGREE TRUE",		1,		0
 "m/sec->M/S",  			1,		0
@@ -140,10 +154,10 @@ struct uniconv { const char* tag; double mul; double add; };
 "cal/s/cm**2->W/M**2",		41868,		0
 "cal/h/cm**2->W/M**2",		11.63,		0
 "Mj/m**2->J/M**2",		1000000,	0
-"W/m**2->W/M**2",			1,		0
-"W/M**2->W/m**2",			1,		0
-"RATIO->%",				100,		0
-"%->RATIO",				0.01,		0
+"W/m**2->W/M**2",		1,		0
+"W/M**2->W/m**2",		1,		0
+"RATIO->%",			100,		0
+"%->RATIO",			0.01,		0
 "ms/cm->S/M",			0.1,		0
 "S/M->ms/cm",			10,			0
 "mS/cm->S/M",			0.1,		0

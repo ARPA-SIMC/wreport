@@ -1,3 +1,11 @@
+wreport (2.13-1) UNRELEASED; urgency=medium
+
+  * New upstream version
+     - Added more unit conversions to deal with the changed unit names in new
+       BUFR tables
+
+ -- Enrico Zini <enrico@debian.org>  Mon, 04 Aug 2014 16:32:37 +0200
+
 wreport (2.12-1) unstable; urgency=low
 
   * New upstream version
