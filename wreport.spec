@@ -1,7 +1,7 @@
 Summary: Library for working with (coded) weather reports
 Name: wreport
-Version: 2.11
-Release: 4217%{dist}
+Version: 2.13
+Release: 4298%{dist}
 License: GPL2
 Group: Applications/Meteo
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
@@ -126,6 +126,14 @@ make install DESTDIR="%{buildroot}"
 %doc %{_docdir}/%{name}/examples/*
 
 %changelog
+* Tue Aug 05 2014 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 2.13-4298%{dist}
+- Updated wrep-importtable to deal with new zipfiles and XML files published by
+  WMO
+- Ship more tables (CREX table 17 is a copy of table 18 as a workaround, since
+  I could not find a parseable version of table 17)
+- Added more unit conversions to deal with the changed unit names in new BUFR
+  tables
+
 * Wed Nov 13 2013 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 2.10-4116%{dist}
 - Fixed linking bug.
 
