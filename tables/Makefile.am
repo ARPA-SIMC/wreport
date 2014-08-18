@@ -9,6 +9,7 @@ bufrbtables = B0000000000000012000.txt \
 	      B0000000000098013001.txt \
 	      B0000000000098013102.txt \
 	      B0000000000000014000.txt \
+	      B0000000000085014001.txt \
 	      B0000000000000016000.txt \
 	      B0000000000000017000.txt \
 	      B0000000000000018000.txt \
@@ -32,6 +33,7 @@ bufrdtables = D0000000000000012000.txt \
 	      D0000000000098013001.txt \
 	      D0000000000098013102.txt \
 	      D0000000000000014000.txt \
+	      D0000000000085014001.txt \
 	      D0000000000000016000.txt \
 	      D0000000000000017000.txt \
 	      D0000000000000018000.txt \
@@ -54,13 +56,17 @@ bufrdtables = D0000000000000012000.txt \
 # acquire a BUFR version of it, so for CREX I work around the issue by using a
 # copy of table 18 instead.
 generated_tables = \
-	      B001700.txt D001700.txt 
+	      B001700.txt D001700.txt B0000000000085014000.txt D0000000000085014000.txt
 
 table_DATA = $(crexbtables) $(crexdtables) $(bufrbtables) $(bufrdtables) $(generated_tables)
 
 B001700.txt: B001800.txt
 	cp $< $@
 D001700.txt: D001800.txt
+	cp $< $@
+B0000000000085014000.txt: B0000000000085014001.txt
+	cp $< $@
+D0000000000085014000.txt: D0000000000085014001.txt
 	cp $< $@
 
 CLEANFILES = $(generated_tables)

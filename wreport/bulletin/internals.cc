@@ -310,7 +310,12 @@ void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
         {
             Varinfo info = btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
             const Var& var = do_semantic_var(info);
-            count = var.enqi();
+            if (var.code() == WR_VAR(0, 31, 0))
+            {
+                count = var.isset() ? 0 : 1;
+            } else {
+                count = var.enqi();
+            }
             ++data_pos;
         }
         IFTRACE {
