@@ -1,3 +1,11 @@
+wreport (2.14-1) UNRELEASED; urgency=medium
+
+  * New upstream version
+     - Added support for one-bit delayed replicator B31000, a new test case
+       and the BUFR tables it requires.
+
+ -- Enrico Zini <enrico@debian.org>  Mon, 18 Aug 2014 17:37:21 +0200
+
 wreport (2.13-1) unstable; urgency=medium
 
   * New upstream version
