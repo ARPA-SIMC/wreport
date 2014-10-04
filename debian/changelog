@@ -3,6 +3,7 @@ wreport (2.14-1) unstable; urgency=medium
   * New upstream version
      - Added support for one-bit delayed replicator B31000, a new test case
        and the BUFR tables it requires.
+     - Use dh-autoreconf. Closes: #734685
 
  -- Enrico Zini <enrico@debian.org>  Sun, 05 Oct 2014 00:44:39 +0200
 
