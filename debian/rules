@@ -5,7 +5,7 @@ RELEASE_PACKAGE=wreport
 
 
 %:
-	dh --with autoreconf $@
+	dh $@ --with autoreconf
 
 override_dh_fixperms:
 	dh_fixperms
