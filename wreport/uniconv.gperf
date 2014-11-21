@@ -97,6 +97,8 @@ struct uniconv { const char* tag; double mul; double add; };
 "DEGREE2->DEGREE**2",		1,	0
 "KG/M**2->KGM-2",		1,	0
 "KGM-2->KG/M**2",		1,	0
+"KG/M**2->KG M-2",		1,	0
+"KG M-2->KG/M**2",		1,	0
 "J/M**2->JM-2",			1,	0
 "JM-2->J/M**2",			1,	0
 "cal/cm**2->J/M**2",		41868,	0
