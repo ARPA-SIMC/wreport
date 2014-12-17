@@ -19,6 +19,15 @@
  * Author: Enrico Zini <enrico@enricozini.com>
  */
 
+/*
+ * TODO:
+ *  - Future optimizations for dba_vartable can make use of string tables to
+ *    store varinfo descriptions and units instead of long fixed-length
+ *    records.
+ *     - The string table cannot grow dynamically or it will invalidate the
+ *       string pointers
+ */
+
 #include "config.h"
 
 #include <stdio.h>
