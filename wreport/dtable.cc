@@ -78,7 +78,7 @@ void DTable::load(const std::pair<std::string, std::string>& idfile)
 			if (last_count != nentries_check)
 				error_parse::throwf(file.c_str(), line_no, "advertised number of expansion items (%d) does not match the number of items found (%d)", nentries_check, last_count);
 
-			nentries_check = strtol(line + 8, 0, 10);
+			nentries_check = strtol(line + 7, 0, 10);
 			if (nentries_check < 1)
 				throw error_parse(file.c_str(), line_no, "less than one entry advertised in the expansion");
 
