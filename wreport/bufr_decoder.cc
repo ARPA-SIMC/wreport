@@ -324,7 +324,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
         TRACE("decode_b_data:read C04 information %x\n", val);
         switch (significance)
         {
-            case 1:
+	    case 1:
                 // Add attribute B33002=val
                 associated_field = new Var(btable->query(WR_VAR(0, 33, 2)), (int)val);
                 break;
@@ -345,6 +345,19 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
                 {
                     associated_field = new Var(btable->query(WR_VAR(0, 33, 50)));
                     if (val != 15)
+                       associated_field->seti(val);
+                }
+                break;
+            case 7:
+                // Add attribute B33040=val
+                associated_field = new Var(btable->query(WR_VAR(0, 33, 40)), (int)val);
+                break;
+	    case 8:
+                // Add attribute B33002=val
+                if (d.conf_add_undef_attrs || val != 3)
+                {
+                    associated_field = new Var(btable->query(WR_VAR(0, 33, 2)));
+                    if (val != 3)
                        associated_field->seti(val);
                 }
                 break;

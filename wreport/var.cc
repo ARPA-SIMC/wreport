@@ -381,8 +381,13 @@ const Var* Var::enqa_by_associated_field_significance(unsigned significance) con
 {
     switch (significance)
     {
-        case 1: return enqa(WR_VAR(0, 33, 2)); break;
-        case 2: return enqa(WR_VAR(0, 33, 3)); break;
+        case 1:
+        case 8:
+            return enqa(WR_VAR(0, 33, 2));
+	    break;
+        case 2:
+	    return enqa(WR_VAR(0, 33, 3));
+	    break;
 	case 3:
 	case 4:
 	case 5:
@@ -391,6 +396,7 @@ const Var* Var::enqa_by_associated_field_significance(unsigned significance) con
                     significance);
             break;
         case 6: return enqa(WR_VAR(0, 33, 50)); break;
+        case 7: return enqa(WR_VAR(0, 33, 40)); break;
         case 21: return enqa(WR_VAR(0, 33, 41)); break;
         case 63:
             /*
