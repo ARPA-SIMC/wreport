@@ -29,42 +29,8 @@ namespace wreport {
 
 namespace tabledir {
 struct Index;
-
-struct BufrTable
-{
-    int centre;
-    int subcentre;
-    int master_table;
-    int local_table;
-    std::string btable_pathname;
-    std::string dtable_pathname;
-
-    BufrTable() {}
-    BufrTable(int centre, int subcentre, int master_table, int local_table,
-              const std::string& btable_pathname,
-              const std::string& dtable_pathname)
-        : centre(centre), subcentre(subcentre), master_table(master_table),
-          local_table(local_table), btable_pathname(btable_pathname),
-          dtable_pathname(dtable_pathname) {}
-};
-
-struct CrexTable
-{
-    int master_table_number;
-    int edition;
-    int table;
-    std::string btable_pathname;
-    std::string dtable_pathname;
-
-    CrexTable() {}
-    CrexTable(int master_table_number, int edition, int table,
-              const std::string& btable_pathname,
-              const std::string& dtable_pathname)
-        : master_table_number(master_table_number), edition(edition),
-          table(table), btable_pathname(btable_pathname),
-          dtable_pathname(dtable_pathname) {}
-};
-
+struct BufrTable;
+struct CrexTable;
 }
 
 class Tabledir

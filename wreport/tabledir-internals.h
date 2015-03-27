@@ -33,6 +33,45 @@
 namespace wreport {
 namespace tabledir {
 
+struct Table
+{
+    std::string btable_id;
+    std::string btable_pathname;
+    std::string dtable_id;
+    std::string dtable_pathname;
+
+    Table(const std::string& dirname, const std::string& filename);
+};
+
+/// Information about a version of a BUFR table
+struct BufrTable : Table
+{
+    int centre;
+    int subcentre;
+    int master_table;
+    int local_table;
+
+    BufrTable(int centre, int subcentre, int master_table, int local_table,
+              const std::string& dirname, const std::string& filename)
+        : Table(dirname, filename),
+          centre(centre), subcentre(subcentre),
+          master_table(master_table), local_table(local_table) {}
+};
+
+/// Information about a version of a CREX table
+struct CrexTable : Table
+{
+    int master_table_number;
+    int edition;
+    int table;
+
+    CrexTable(int master_table_number, int edition, int table,
+              const std::string& dirname, const std::string& filename)
+        : Table(dirname, filename), master_table_number(master_table_number),
+          edition(edition), table(table) {}
+};
+
+
 /// Access a table directory
 struct DirReader
 {

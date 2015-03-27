@@ -39,9 +39,22 @@ struct tabledir_shar
 };
 TESTGRP(tabledir);
 
-// Test DirReader
+// Test Table, BufrTable, CrexTable
 template<> template<>
 void to::test<1>()
+{
+    using namespace wreport::tabledir;
+
+    Table t("/antani", "B12345.txt");
+    wassert(actual(t.btable_id) == "B12345");
+    wassert(actual(t.dtable_id) == "D12345");
+    wassert(actual(t.btable_pathname) == "/antani/B12345.txt");
+    wassert(actual(t.dtable_pathname) == "/antani/D12345.txt");
+}
+
+// Test DirReader
+template<> template<>
+void to::test<2>()
 {
     using namespace wreport::tabledir;
 
@@ -109,7 +122,7 @@ struct CrexQueryTester
 
 // Test BufrQuery
 template<> template<>
-void to::test<2>()
+void to::test<3>()
 {
     using namespace wreport::tabledir;
 
@@ -137,7 +150,7 @@ void to::test<2>()
 
 // Test CrexQuery
 template<> template<>
-void to::test<3>()
+void to::test<4>()
 {
     using namespace wreport::tabledir;
 
@@ -157,7 +170,7 @@ void to::test<3>()
 
 // Test Tabledir
 template<> template<>
-void to::test<4>()
+void to::test<5>()
 {
     // Get the default Tabledir
     Tabledir& td(Tabledir::get());

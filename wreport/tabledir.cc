@@ -41,6 +41,26 @@ using namespace std;
 namespace wreport {
 namespace tabledir {
 
+Table::Table(const std::string& dirname, const std::string& filename)
+{
+    // Build IDs to look up pre-built tables
+    size_t extpos = filename.rfind('.');
+    if (extpos == string::npos)
+    {
+        btable_id = filename;
+        dtable_id = filename;
+    } else {
+        btable_id = filename.substr(0, extpos);
+        dtable_id = btable_id;
+    }
+    btable_id[0] = 'B';
+    dtable_id[0] = 'D';
+
+    btable_pathname = dirname + "/B" + filename.substr(1);
+    dtable_pathname = dirname + "/D" + filename.substr(1);
+}
+
+
 DirReader::DirReader(const std::string& pathname)
     : pathname(pathname), fd(-1), dir(NULL), cur_entry(NULL), mtime(0)
 {
@@ -149,17 +169,12 @@ void Dir::refresh()
 
 void Dir::add_bufr_entry(int centre, int subcentre, int master_table, int local_table, const DirReader& reader)
 {
-    string btable_pathname = reader.pathname + "/B" + (reader.cur_entry->d_name + 1);
-    string dtable_pathname = reader.pathname + "/D" + (reader.cur_entry->d_name + 1);
-    bufr_tables.push_back(BufrTable(centre, subcentre, master_table, local_table,
-                btable_pathname, dtable_pathname));
+    bufr_tables.push_back(BufrTable(centre, subcentre, master_table, local_table, reader.pathname, reader.cur_entry->d_name));
 }
 
 void Dir::add_crex_entry(int master_table_number, int edition, int table, const DirReader& reader)
 {
-    string btable_pathname = reader.pathname + "/B" + (reader.cur_entry->d_name + 1);
-    string dtable_pathname = reader.pathname + "/D" + (reader.cur_entry->d_name + 1);
-    crex_tables.push_back(CrexTable(master_table_number, edition, table, btable_pathname, dtable_pathname));
+    crex_tables.push_back(CrexTable(master_table_number, edition, table, reader.pathname, reader.cur_entry->d_name));
 }
 
 
