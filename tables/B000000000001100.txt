@@ -41,6 +41,8 @@
  001041 ABSOLUTE PLATFORM VELOCITY - FIRST COMPONENT                     M/S                        5  -1073741824  31  
  001042 ABSOLUTE PLATFORM VELOCITY - SECOND COMPONENT                    M/S                        5  -1073741824  31  
  001043 ABSOLUTE PLATFORM VELOCITY - THIRD COMPONENT                     M/S                        5  -1073741824  31  
+ 001050 PLATFORM TRANSMITTER ID NUMBER                                   NUMERIC                    0            0  17  
+ 001051 PLATFORM TRANSMITTER ID NUMBER                                   CCITTIA5                   0            0  96  
  001060 AIRCRAFT REPORTING POINT(BEACON IDENTIFIER)                      CCITTIA5                   0            0  64  
  001063 ICAO LOCATION INDICATOR                                          CCITTIA5                   0            0  64  
  001064 RUNWAY DESIGNATOR                                                CCITTIA5                   0            0  32  
@@ -368,6 +370,13 @@
  015002 AIR MASS (SLANT PATH AT 22 KM)                                   NUMERIC                    2            0  10  
  015011 LOG 10 OF INTEGRATED ELECTRON DENSITY                            LOG(1/M**2)                3        14000  13  
  015015 MAXIMUM IMAGE SPECTRAL COMPONENT BEFORE NORMALIZATION            NUMERIC                    0            0  31  
+ 015031 ATMOSPHERIC PATH DELAY IN SATELLITE SIGNAL                       M                          4        10000  15 M                         4         5
+ 015032 ESTIMATED ERROR IN ATMOSPHERIC PATH DELAY                        M                          4            0  10 M                         4         4
+ 015033 DIFFERENCE IN PATH DELAYS FOR LIMB VIEWS AT EXTREMES OF SCAN     M                          5       -10000  15 M                         5         5
+ 015034 ESTIMATED ERROR IN PATH DELAY DIFFERENCE                         M                          5            0  14 M                         5         5
+ 015035 COMPONENT OF ZENITH PATH DELAY DUE TO WATER VAPOUR               M                          4            0  14 M                         4         5
+ 015036 ATMOSPHERIC REFRACTIVITY (SEE NOTE 5)                            N-UNITS                    3            0  19 N-UNITS                   3         6
+ 015037 BENDING ANGLE                                                    RADIANS                    8      -100000  23 RADIANS                   8         7
  019001 TYPE OF SYNOPTIC FEATURE                                         CODE TABLE  19001          0            0   6  
  019002 EFFECTIVE RADIUS OF FEATURE                                      M                         -2            0  12  
  019003 WIND SPEED THRESHOLD                                             M/S                        0            0   8  
@@ -640,3 +649,5 @@
  033035 MANUAL-AUTOMATIC QUALITY CONTROL                                 CODE TABLE  33035          0            0   4  
  033036 NOMINAL CONFIDENCE THRESHOLD                                     %                          0            0   7  
  033037 WIND CORRELATION ERROR                                           FLAG TABLE  33037          0            0  20
+ 033038 QUALITY FLAGS FOR GROUND-BASED GNSS DATA                         FLAG TABLE 33038           0            0  10
+ 033039 QUALITY FLAGS FOR RADIO OCCULTATION DATA                         FLAG TABLE 33039           0            0  16

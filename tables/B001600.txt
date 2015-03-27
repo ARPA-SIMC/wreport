@@ -241,7 +241,7 @@
  002167 Radiance computational method                                    CODE TABLE                 0            0   4 CODE TABLE                0         2
  002168 Hydrostatic pressure of lower end of cable (thermistor string)   PA                        -3            0  16 KPA                       0         5
  002169 Anemometer type                                                  CODE TABLE                 0            0   4 CODE TABLE                0         2
- 002171 Instrument serial number for water temperature profile measureme CCITTIA5                   0            0  64 CCITT IA5                 0         8
+ 002171 Instrument serial number for water temperature profile measureme CCITTIA5                   0            0  64 CHARACTER                 0         8
  002172 Product type for retrieved atmospheric gases                     CODE TABLE                 0            0   8 CODE TABLE                0         3
  002173 Square of the off-nadir angle                                    DEG2                       4            0  10 DEG2                      4         4
  002174 Mean across track pixel number                                   NUMERIC                    0            0   9 NUMERIC                   0         3
