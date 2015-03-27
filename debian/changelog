@@ -2,6 +2,8 @@ wreport (2.15-1) UNRELEASED; urgency=medium
 
   * New upstream version
      - Added BUFR/CREX tables version 23 
+     - Changed table selection algorithm to allow for smarter euristics
+     - If a table is not found but there is a suitable newer one, try using it
 
  -- Enrico Zini <enrico@enricozini.org>  Thu, 26 Mar 2015 11:07:39 +0100
 
