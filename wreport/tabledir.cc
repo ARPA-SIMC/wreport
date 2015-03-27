@@ -21,6 +21,9 @@
 #include "tabledir.h"
 #include "tabledir-internals.h"
 #include "error.h"
+#include "vartable.h"
+#include "dtable.h"
+#include "notes.h"
 #include "config.h"
 #include <map>
 #include <cstddef>
@@ -42,6 +45,7 @@ namespace wreport {
 namespace tabledir {
 
 Table::Table(const std::string& dirname, const std::string& filename)
+    : btable(0), dtable(0)
 {
     // Build IDs to look up pre-built tables
     size_t extpos = filename.rfind('.');
@@ -58,6 +62,14 @@ Table::Table(const std::string& dirname, const std::string& filename)
 
     btable_pathname = dirname + "/B" + filename.substr(1);
     dtable_pathname = dirname + "/D" + filename.substr(1);
+}
+
+void Table::load_if_needed()
+{
+    if (!btable)
+        btable = Vartable::get(make_pair(btable_id, btable_pathname));
+    if (!dtable)
+        dtable = DTable::get(make_pair(dtable_id, dtable_pathname));
 }
 
 
@@ -183,9 +195,9 @@ BufrQuery::BufrQuery(int centre, int subcentre, int master_table, int local_tabl
 {
 }
 
-void BufrQuery::search(const Dir& dir)
+void BufrQuery::search(Dir& dir)
 {
-    for (std::vector<BufrTable>::const_iterator i = dir.bufr_tables.begin(); i != dir.bufr_tables.end(); ++i)
+    for (std::vector<BufrTable>::iterator i = dir.bufr_tables.begin(); i != dir.bufr_tables.end(); ++i)
         if (is_better(*i))
             result = &*i;
 }
@@ -279,9 +291,9 @@ CrexQuery::CrexQuery(int master_table_number, int edition, int table)
 {
 }
 
-void CrexQuery::search(const Dir& dir)
+void CrexQuery::search(Dir& dir)
 {
-    for (std::vector<CrexTable>::const_iterator i = dir.crex_tables.begin(); i != dir.crex_tables.end(); ++i)
+    for (std::vector<CrexTable>::iterator i = dir.crex_tables.begin(); i != dir.crex_tables.end(); ++i)
         if (is_better(*i))
             result = &*i;
 }
@@ -364,11 +376,17 @@ struct Index
 
         // If it is the first time this combination is requested, look for the best match
         BufrQuery query(centre, subcentre, master_table, local_table);
-        for (vector<Dir>::const_iterator d = dirs.begin(); d != dirs.end(); ++d)
+        for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
             query.search(*d);
 
         if (query.result)
+        {
+            query.result->load_if_needed();
             bufr_cache[cache_key] = query.result;
+            notes::logf("Matched table %s for ce %d sc %d mt %d lt %d",
+                    query.result->btable_id.c_str(),
+                    centre, subcentre, master_table, local_table);
+        }
 
         return query.result;
     }
@@ -383,11 +401,17 @@ struct Index
 
         // If it is the first time this combination is requested, look for the best match
         CrexQuery query(master_table_number, edition, table);
-        for (vector<Dir>::const_iterator d = dirs.begin(); d != dirs.end(); ++d)
+        for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
             query.search(*d);
 
         if (query.result)
+        {
+            query.result->load_if_needed();
             crex_cache[cache_key] = query.result;
+            notes::logf("Matched table %s for mt %d ed %d ta %d",
+                    query.result->btable_id.c_str(),
+                    master_table_number, edition, table);
+        }
 
         return query.result;
     }

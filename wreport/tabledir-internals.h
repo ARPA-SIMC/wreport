@@ -31,16 +31,24 @@
 #include <dirent.h>
 
 namespace wreport {
+struct Vartable;
+struct DTable;
+
 namespace tabledir {
 
 struct Table
 {
+    const Vartable* btable;
     std::string btable_id;
     std::string btable_pathname;
+    const DTable* dtable;
     std::string dtable_id;
     std::string dtable_pathname;
 
     Table(const std::string& dirname, const std::string& filename);
+
+    /// Load btable and dtable if they have not been loaded yet
+    void load_if_needed();
 };
 
 /// Information about a version of a BUFR table
@@ -129,10 +137,10 @@ struct BufrQuery
     int subcentre;
     int master_table;
     int local_table;
-    const BufrTable* result;
+    BufrTable* result;
 
     BufrQuery(int centre, int subcentre, int master_table, int local_table);
-    void search(const Dir& dir);
+    void search(Dir& dir);
     bool is_better(const BufrTable& t);
 };
 
@@ -142,10 +150,10 @@ struct CrexQuery
     int master_table_number;
     int edition;
     int table;
-    const CrexTable* result;
+    CrexTable* result;
 
     CrexQuery(int master_table_number, int edition, int table);
-    void search(const Dir& dir);
+    void search(Dir& dir);
     bool is_better(const CrexTable& t);
 };
 

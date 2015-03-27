@@ -26,6 +26,8 @@
 #include <vector>
 
 namespace wreport {
+struct Vartable;
+struct DTable;
 
 namespace tabledir {
 struct Index;
