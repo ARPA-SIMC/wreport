@@ -27,6 +27,8 @@
 #include "bulletin/dds-printer.h"
 #include "bulletin/buffers.h"
 #include "bulletin/internals.h"
+#include "tabledir.h"
+#include "tabledir-internals.h"
 #include "notes.h"
 
 #include <cstddef>
@@ -106,60 +108,10 @@ void BufrBulletin::clear()
 
 void BufrBulletin::load_tables()
 {
-	char id[30];
-	int ce = centre;
-	int sc = subcentre;
-	int mt = master_table;
-	int lt = local_table;
-
-/* fprintf(stderr, "ce %d sc %d mt %d lt %d\n", ce, sc, mt, lt); */
-
-	vector<string> ids;
-	for (int i = 0; i < 3; ++i)
-	{
-		if (i == 1)
-		{
-			// Default to WMO tables if the first
-			// attempt with local tables failed
-			/* fprintf(stderr, "FALLBACK from %d %d %d %d to 0 %d 0 0\n", sc, ce, mt, lt, mt); */
-			ce = sc = lt = 0;
-		} else if (i == 2 && mt < 14) {
-			// Default to the latest WMO table that
-			// we have if the previous attempt has
-			// failed
-			/* fprintf(stderr, "FALLBACK from %d %d %d %d to 0 14 0 0\n", sc, ce, mt, lt); */
-			mt = 14;
-		}
-		switch (edition)
-		{
-			case 2:
-				sprintf(id, "B%05d%02d%02d", ce, mt, lt);
-				ids.push_back(id);
-			case 3:
-				sprintf(id, "B00000%03d%03d%02d%02d",
-						0, ce, mt, lt);
-				/* Some tables used by BUFR3 are
-				 * distributed using BUFR4 names
-				 */
-				ids.push_back(id);
-				sc = 0;
-			case 4:
-				sprintf(id, "B00%03d%04d%04d%03d%03d",
-						0, sc, ce, mt, lt);
-				ids.push_back(id);
-				break;
-			default:
-				error_consistency::throwf("BUFR edition number is %d but I can only load tables for 2, 3 or 4", edition);
-		}
-	}
-
-	btable = Vartable::get(Vartable::find_table(ids));
-	/* TRACE(" -> loaded B table %s\n", id); */
-
-	for (vector<string>::iterator i = ids.begin(); i != ids.end(); ++i)
-		(*i)[0] = 'D';
-	dtable = DTable::get(Vartable::find_table(ids));
-	/* TRACE(" -> loaded D table %s\n", id); */
+    Tabledir& tabledir(Tabledir::get());
+    const tabledir::BufrTable* t = tabledir.find_bufr(centre, subcentre, master_table, local_table);
+    btable = t->btable;
+    dtable = t->dtable;
 }
 
 bulletin::BufrInput& BufrBulletin::reset_raw_details(const std::string& buf)
@@ -206,17 +158,10 @@ void CrexBulletin::clear()
 
 void CrexBulletin::load_tables()
 {
-	char id[30];
-/* fprintf(stderr, "ce %d sc %d mt %d lt %d\n", ce, sc, mt, lt); */
-
-	sprintf(id, "B%02d%02d%02d", master_table_number, edition, table);
-
-	btable = Vartable::get(id);
-	/* TRACE(" -> loaded B table %s\n", id); */
-
-	id[0] = 'D';
-	dtable = DTable::get(id);
-	/* TRACE(" -> loaded D table %s\n", id); */
+    Tabledir& tabledir(Tabledir::get());
+    const tabledir::CrexTable* t = tabledir.find_crex(master_table_number, edition, table);
+    btable = t->btable;
+    dtable = t->dtable;
 }
 
 /*
