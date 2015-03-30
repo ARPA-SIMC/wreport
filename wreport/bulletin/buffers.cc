@@ -157,8 +157,9 @@ uint32_t BufrInput::get_bits(unsigned n)
     return result;
 }
 
-void BufrInput::debug_dump_next_bits(int count) const
+void BufrInput::debug_dump_next_bits(const char* desc, int count) const
 {
+    fputs(desc, stderr);
     size_t cursor = s4_cursor;
     int pbyte = this->pbyte;
     int pbyte_len = this->pbyte_len;
@@ -178,6 +179,7 @@ void BufrInput::debug_dump_next_bits(int count) const
         pbyte <<= 1;
         --pbyte_len;
     }
+    putc('\n', stderr);
 }
 
 void BufrInput::parse_error(const char* fmt, ...) const

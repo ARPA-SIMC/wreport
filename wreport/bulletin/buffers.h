@@ -177,7 +177,7 @@ public:
     uint32_t get_bits(unsigned n);
 
     /// Dump to stderr 'count' bits of 'buf', starting at the 'ofs-th' bit
-    void debug_dump_next_bits(int count) const;
+    void debug_dump_next_bits(const char* desc, int count) const;
 
     /// Throw an error_parse at the current decoding location
     void parse_error(const char* fmt, ...) const WREPORT_THROWF_ATTRS(2, 3);
