@@ -1,4 +1,4 @@
-wreport (2.15-1) UNRELEASED; urgency=medium
+wreport (2.15-1) unstable; urgency=medium
 
   * New upstream version
      - Added BUFR/CREX tables version 23 
@@ -6,7 +6,7 @@ wreport (2.15-1) UNRELEASED; urgency=medium
      - If a table is not found but there is a suitable newer one, try using it
      - Implemented decoding of associated fields in compresed BUFR messages
 
- -- Enrico Zini <enrico@enricozini.org>  Thu, 26 Mar 2015 11:07:39 +0100
+ -- Enrico Zini <enrico@enricozini.org>  Mon, 30 Mar 2015 15:32:49 +0200
 
 wreport (2.14-1) unstable; urgency=medium
 
