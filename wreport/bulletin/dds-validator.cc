@@ -68,6 +68,13 @@ void DDSValidator::do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
 void DDSValidator::do_var(Varinfo info)
 {
     const Var& var = get_var();
+
+    if (associated_field.bit_count)
+    {
+        const Var& var = get_var(current_var);
+        /*const Var* att =*/ var.enqa_by_associated_field_significance(associated_field.significance);
+    }
+
     check_fits(info, var);
 }
 
@@ -85,12 +92,6 @@ void DDSValidator::do_char_data(Varcode code)
         error_consistency::throwf("input variable %d%02d%03d differs from expected variable %d%02d%03d",
                 WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()),
                 WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
-}
-
-void DDSValidator::do_associated_field(unsigned bit_count, unsigned significance)
-{
-    const Var& var = get_var(current_var);
-    /*const Var* att =*/ var.enqa_by_associated_field_significance(significance);
 }
 
 }

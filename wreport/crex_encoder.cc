@@ -121,12 +121,6 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
     {
         throw error_unimplemented("do_char_data");
     }
-
-    virtual void do_associated_field(unsigned bit_count, unsigned significance)
-    {
-        // Do nothing: CREX does not have associated fields
-        //throw error_unimplemented("do_associated_field");
-    }
 };
 
 

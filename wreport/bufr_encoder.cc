@@ -76,16 +76,6 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
     }
     virtual ~DDSEncoder() {}
 
-    virtual void do_associated_field(unsigned bit_count, unsigned significance)
-    {
-        const Var& var = get_var(current_var);
-        const Var* att = var.enqa_by_associated_field_significance(significance);
-        if (att && att->isset())
-            ob.add_bits(att->enqi(), bit_count);
-        else
-            ob.append_missing(bit_count);
-    }
-
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
     {
         const Var& var = get_var(var_pos);
@@ -97,6 +87,17 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
     virtual void do_var(Varinfo info)
     {
         const Var& var = get_var();
+
+        // Deal with an associated field
+        if (associated_field.bit_count)
+        {
+            const Var* att = var.enqa_by_associated_field_significance(associated_field.significance);
+            if (att && att->isset())
+                ob.add_bits(att->enqi(), associated_field.bit_count);
+            else
+                ob.append_missing(associated_field.bit_count);
+        }
+
         ob.append_var(info, var);
     }
     virtual const Var& do_semantic_var(Varinfo info)

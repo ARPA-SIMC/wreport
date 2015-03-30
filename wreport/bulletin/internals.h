@@ -211,12 +211,6 @@ struct Visitor : public opcode::Visitor
     virtual void do_start_repetition(unsigned idx);
 
     /**
-     * Request processing of \a bit_count bits of associated field with the
-     * given \a significance
-     */
-    virtual void do_associated_field(unsigned bit_count, unsigned significance) = 0;
-
-    /**
      * Request processing, according to \a info, of the attribute \a attr_code
      * of the variable in position \a var_pos in the current subset.
      */
@@ -224,6 +218,9 @@ struct Visitor : public opcode::Visitor
 
     /**
      * Request processing, according to \a info, of a data variable.
+     *
+     * associated_field should be consulted to see if there are also associated
+     * fields that need processing.
      */
     virtual void do_var(Varinfo info) = 0;
 

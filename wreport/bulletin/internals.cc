@@ -243,8 +243,6 @@ void Visitor::b_variable(Varcode code)
         // Proper variable
         TRACE("b_variable variable %01d%02d%03d\n",
                 WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
-        if (associated_field.bit_count > 0)
-            do_associated_field(associated_field.bit_count, associated_field.significance);
         do_var(info);
         ++data_pos;
     }

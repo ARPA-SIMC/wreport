@@ -53,7 +53,6 @@ public:
     virtual void do_var(Varinfo info);
     virtual const Var& do_semantic_var(Varinfo info);
     virtual void do_char_data(Varcode code);
-    virtual void do_associated_field(unsigned bit_count, unsigned significance);
 };
 
 }

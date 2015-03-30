@@ -59,7 +59,6 @@ public:
     virtual const Var& do_semantic_var(Varinfo info);
     virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
     virtual void do_char_data(Varcode code);
-    void do_associated_field(unsigned bit_count, unsigned significance);
 
     virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
     virtual void d_group_begin(Varcode code);

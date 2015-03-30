@@ -212,10 +212,6 @@ struct CrexParser : public bulletin::Visitor
         return out->back();
     }
 
-    void do_associated_field(unsigned bit_count, unsigned significance)
-    {
-        // Just ignore for CREX
-    }
     void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
     {
         throw error_unimplemented("do_attr");

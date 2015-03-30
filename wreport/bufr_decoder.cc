@@ -312,23 +312,6 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     }
 
     /**
-     * Request processing of \a bit_count bits of associated field with the
-     * given \a significance
-     */
-    virtual void do_associated_field(unsigned bit_count, unsigned significance)
-    {
-        if (cur_associated_field)
-        {
-            delete cur_associated_field;
-            cur_associated_field = 0;
-        }
-        TRACE("decode_b_data:reading %d bits of C04 information\n", bit_count);
-        uint32_t val = in.get_bits(bit_count);
-        TRACE("decode_b_data:read C04 information %x\n", val);
-        cur_associated_field = associated_field.make_attribute(val).release();
-    }
-
-    /**
      * Request processing, according to \a info, of the attribute \a attr_code
      * of the variable in position \a var_pos in the current subset.
      */
@@ -351,6 +334,19 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
      */
     virtual void do_var(Varinfo info)
     {
+        if (associated_field.bit_count)
+        {
+            if (cur_associated_field)
+            {
+                delete cur_associated_field;
+                cur_associated_field = 0;
+            }
+            TRACE("decode_b_data:reading %d bits of C04 information\n", associated_field.bit_count);
+            uint32_t val = in.get_bits(associated_field.bit_count);
+            TRACE("decode_b_data:read C04 information %x\n", val);
+            cur_associated_field = associated_field.make_attribute(val).release();
+        }
+
         target->store_variable(decode_b_value(info));
         IFTRACE {
             TRACE(" do_var decoded: ");
@@ -473,6 +469,11 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
 
     virtual void do_var(Varinfo info)
     {
+        if (associated_field.bit_count)
+        {
+            error_unimplemented::throwf("Associated fields found in compressed message and it is not clear how they should be handled");
+        }
+
         DataSink target(d.out);
         decode_b_value(info, target);
     }
@@ -481,11 +482,6 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
     {
         AttrSink target(d.out, var_pos);
         decode_b_value(info, target);
-    }
-
-    virtual void do_associated_field(unsigned bit_count, unsigned significance)
-    {
-        error_unimplemented::throwf("Associated fields found in compressed message and it is not clear how they should be handled");
     }
 
     void do_char_data(Varcode code)

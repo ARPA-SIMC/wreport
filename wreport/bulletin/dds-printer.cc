@@ -86,22 +86,22 @@ void DDSPrinter::do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
 
 void DDSPrinter::do_var(Varinfo info)
 {
+    const Var& var = get_var();
+
+    if (associated_field.bit_count)
+    {
+        print_context(var.info(), current_var);
+
+        const Var* att = var.enqa_by_associated_field_significance(associated_field.significance);
+        if (att)
+            att->print(out);
+        else
+            fprintf(out, "associated field with significance %d is not present", associated_field.significance);
+    }
+
     print_context(info, current_var);
 
-    const Var& var = get_var();
     var.print(out);
-}
-
-void DDSPrinter::do_associated_field(unsigned bit_count, unsigned significance)
-{
-    const Var& var = get_var(current_var);
-    print_context(var.info(), current_var);
-
-    const Var* att = var.enqa_by_associated_field_significance(significance);
-    if (att)
-        att->print(out);
-    else
-        fprintf(out, "associated field with significance %d is not present", significance);
 }
 
 const Var& DDSPrinter::do_semantic_var(Varinfo info)
