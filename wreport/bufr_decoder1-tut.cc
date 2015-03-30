@@ -71,7 +71,70 @@ void to::test<1>()
     test.run("bufr/gts-buoy1.bufr");
 }
 
+template<> template<>
+void to::test<2>()
+{
+    struct Tester : public MsgTester {
+        void test(const BufrBulletin& msg)
+        {
+            ensure_equals(msg.edition, 4);
+            ensure_equals(msg.type, 0);
+            ensure_equals(msg.subtype, 1);
+            ensure_equals(msg.localsubtype, 0);
+            ensure_equals(msg.subsets.size(), 25);
+
+            /*
+            const Subset& s = msg.subset(0);
+            ensure_equals(s.size(), 35u);
+
+            ensure_varcode_equals(s[9].code(), WR_VAR(0, 5, 2));
+            ensure_equals(s[9].enqd(), 68.27);
+            ensure_varcode_equals(s[10].code(), WR_VAR(0, 6, 2));
+            ensure_equals(s[10].enqd(),  9.68);
+
+            ensure(s[0].enqa(WR_VAR(0, 33, 7)) != NULL);
+            ensure_equals(s[0].enqa(WR_VAR(0, 33, 7))->enqi(), 70);
+
+            ensure(s[1].enqa(WR_VAR(0, 33, 7)) != NULL);
+            ensure_equals(s[1].enqa(WR_VAR(0, 33, 7))->enqi(), 70);
+            */
+        }
+    } test;
+
+    test.run("bufr/synop-radinfo.bufr");
 }
 
-/* vim:set ts=4 sw=4: */
+template<> template<>
+void to::test<3>()
+{
+    struct Tester : public MsgTester {
+        void test(const BufrBulletin& msg)
+        {
+            ensure_equals(msg.edition, 4);
+            ensure_equals(msg.type, 0);
+            ensure_equals(msg.subtype, 1);
+            ensure_equals(msg.localsubtype, 0);
+            ensure_equals(msg.subsets.size(), 1);
 
+            /*
+            const Subset& s = msg.subset(0);
+            ensure_equals(s.size(), 35u);
+
+            ensure_varcode_equals(s[9].code(), WR_VAR(0, 5, 2));
+            ensure_equals(s[9].enqd(), 68.27);
+            ensure_varcode_equals(s[10].code(), WR_VAR(0, 6, 2));
+            ensure_equals(s[10].enqd(),  9.68);
+
+            ensure(s[0].enqa(WR_VAR(0, 33, 7)) != NULL);
+            ensure_equals(s[0].enqa(WR_VAR(0, 33, 7))->enqi(), 70);
+
+            ensure(s[1].enqa(WR_VAR(0, 33, 7)) != NULL);
+            ensure_equals(s[1].enqa(WR_VAR(0, 33, 7))->enqi(), 70);
+            */
+        }
+    } test;
+
+    test.run("bufr/synop-tchange.bufr");
+}
+
+}
