@@ -25,6 +25,7 @@
 #include "conv.h"
 #include "var.h"
 #include "compat.h"
+#include "internals.h"
 
 #include <cctype>
 #include <cstdio>
@@ -394,9 +395,14 @@ void BufrInput::decode_number(Var& dest, uint32_t base, unsigned diffbits)
     }
 }
 
-void BufrInput::decode_number(Varinfo info, unsigned subsets, CompressedVarSink& dest)
+void BufrInput::decode_number(Varinfo info, unsigned subsets, const AssociatedField& associated_field, CompressedVarSink& dest)
 {
     Var var(info);
+
+    if (associated_field.bit_count)
+    {
+        error_unimplemented::throwf("Associated fields found in compressed message and it is not clear how they should be handled");
+    }
 
     uint32_t base = get_bits(info->bit_len);
 

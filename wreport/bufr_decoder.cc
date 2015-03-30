@@ -441,7 +441,7 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         else if (info->is_binary())
             throw error_unimplemented("decode_b_binary TODO");
         else
-            in.decode_number(info, subset_count, dest);
+            in.decode_number(info, subset_count, associated_field, dest);
     }
 
     Var decode_semantic_b_value(Varinfo info)
@@ -469,11 +469,6 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
 
     virtual void do_var(Varinfo info)
     {
-        if (associated_field.bit_count)
-        {
-            error_unimplemented::throwf("Associated fields found in compressed message and it is not clear how they should be handled");
-        }
-
         DataSink target(d.out);
         decode_b_value(info, target);
     }
