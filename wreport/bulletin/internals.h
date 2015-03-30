@@ -25,6 +25,7 @@
 #include <wreport/varinfo.h>
 #include <wreport/opcode.h>
 #include <vector>
+#include <memory>
 
 namespace wreport {
 struct Var;
@@ -103,6 +104,46 @@ struct Bitmap
     unsigned next();
 };
 
+struct AssociatedField
+{
+    /// B table used to generate associated field attributes
+    const Vartable* btable;
+
+    /**
+     * If true, fields with a missing values will be returned as 0. If it is
+     * false, fields with missing values will be returned as undefined
+     * variables.
+     */
+    bool skip_missing;
+
+    /**
+     * Number of extra bits inserted by the current C04yyy modifier (0 for no
+     * C04yyy operator in use)
+     */
+    unsigned bit_count;
+
+    /// Significance of C04yyy field according to code table B31021
+    unsigned significance;
+
+    AssociatedField();
+    ~AssociatedField();
+
+    /**
+     * Resets the object. To be called at start of decoding, to discard all
+     * previous leftover context, if any.
+     */
+    void reset(const Vartable& btable);
+
+    /**
+     * Create a Var that can be used as an attribute for the currently defined
+     * associated field and the given value.
+     *
+     * A return value of nullptr means "no field to associate".
+     *
+     */
+    std::auto_ptr<Var> make_attribute(unsigned value) const;
+};
+
 /**
  * Abstract interface for classes that can be used as targets for the Bulletin
  * Data Descriptor Section interpreters.
@@ -118,6 +159,9 @@ struct Visitor : public opcode::Visitor
     /// Bitmap iteration
     Bitmap bitmap;
 
+    /// Current associated field state
+    AssociatedField associated_field;
+
     /// Current value of scale change from C modifier
     int c_scale_change;
 
@@ -132,15 +176,6 @@ struct Visitor : public opcode::Visitor
 
     /// Increase of scale, reference value and data width
     int c_scale_ref_width_increase;
-
-    /**
-     * Number of extra bits inserted by the current C04yyy modifier (0 for no
-     * C04yyy operator in use)
-     */
-    int c04_bits;
-
-    /// Meaning of C04yyy field according to code table B31021
-    int c04_meaning;
 
     /// Nonzero if a Data Present Bitmap is expected
     Varcode want_bitmap;

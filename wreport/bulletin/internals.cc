@@ -23,6 +23,7 @@
 #include "var.h"
 #include "subset.h"
 #include "bulletin.h"
+#include "notes.h"
 #include <cmath>
 
 // #define TRACE_INTERPRETER
@@ -35,6 +36,7 @@
 #define IFTRACE if (0)
 #endif
 
+using namespace std;
 
 namespace wreport {
 namespace bulletin {
@@ -97,6 +99,92 @@ bool Bitmap::eob() const { return iter == refs.rend(); }
 unsigned Bitmap::next() { unsigned res = *iter; ++iter; return res; }
 
 
+AssociatedField::AssociatedField() : btable(0), skip_missing(true), bit_count(0) {}
+AssociatedField::~AssociatedField() {}
+
+void AssociatedField::reset(const Vartable& btable)
+{
+    this->btable = &btable;
+    bit_count = 0;
+    significance = 63;
+}
+
+std::auto_ptr<Var> AssociatedField::make_attribute(unsigned value) const
+{
+    switch (significance)
+    {
+        case 1:
+            // Add attribute B33002=value
+            return auto_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 2)), (int)value));
+        case 2:
+            // Add attribute B33003=value
+            return auto_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 3)), (int)value));
+        case 3:
+        case 4:
+        case 5:
+            // Reserved: ignored
+            notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                    significance);
+            return auto_ptr<Var>();
+        case 6:
+            // Add attribute B33050=value
+            if (!skip_missing || value != 15)
+            {
+                auto_ptr<Var> res(new Var(btable->query(WR_VAR(0, 33, 50))));
+                if (value != 15)
+                   res->seti(value);
+                return res;
+            } else
+                return auto_ptr<Var>();
+        case 7:
+            // Add attribute B33040=value
+            return auto_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 40)), (int)value));
+        case 8:
+            // Add attribute B33002=value
+            if (!skip_missing || value != 3)
+            {
+                auto_ptr<Var> res(new Var(btable->query(WR_VAR(0, 33, 2))));
+                if (value != 3)
+                   res->seti(value);
+                return res;
+            } else
+                return auto_ptr<Var>();
+        case 21:
+            // Add attribute B33041=value
+            if (!skip_missing || value != 1)
+                return auto_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 41)), 0));
+            else
+                return auto_ptr<Var>();
+        case 63:
+            /*
+             * Ignore quality information if B31021 is missing.
+             * The Guide to FM94-BUFR says:
+             *   If the quality information has no meaning for some
+             *   of those following elements, but the field is
+             *   still there, there is at present no explicit way
+             *   to indicate "no meaning" within the currently
+             *   defined meanings. One must either redefine the
+             *   meaning of the associated field in its entirety
+             *   (by including 0 31 021 in the message with a data
+             *   value of 63 - "missing value") or remove the
+             *   associated field bits by the "cancel" operator: 2
+             *   04 000.
+             */
+            return auto_ptr<Var>();
+        default:
+            if (significance >= 9 and significance <= 20)
+                // Reserved: ignored
+                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                    significance);
+            else if (significance >= 22 and significance <= 62)
+                notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+                        significance);
+            else
+                error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
+            return auto_ptr<Var>();
+    }
+}
+
 
 Visitor::Visitor() : btable(0), current_subset(0) {}
 Visitor::~Visitor() {}
@@ -155,8 +243,8 @@ void Visitor::b_variable(Varcode code)
         // Proper variable
         TRACE("b_variable variable %01d%02d%03d\n",
                 WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
-        if (c04_bits > 0)
-            do_associated_field(c04_bits, c04_meaning);
+        if (associated_field.bit_count > 0)
+            do_associated_field(associated_field.bit_count, associated_field.significance);
         do_var(info);
         ++data_pos;
     }
@@ -191,7 +279,7 @@ void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
     // Add associated field
     TRACE("Set C04 bits to %d\n", WR_VAR_Y(code));
     // FIXME: nested C04 modifiers are not currently implemented
-    if (WR_VAR_Y(code) && c04_bits)
+    if (WR_VAR_Y(code) && associated_field.bit_count)
         throw error_unimplemented("nested C04 modifiers are not yet implemented");
     if (WR_VAR_Y(code) > 32)
         error_unimplemented::throwf("C04 modifier wants %d bits but only at most 32 are supported", WR_VAR_Y(code));
@@ -202,10 +290,10 @@ void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
 
         // Encode B31021
         const Var& var = do_semantic_var(info);
-        c04_meaning = var.enq(63);
+        associated_field.significance = var.enq(63);
         ++data_pos;
     }
-    c04_bits = WR_VAR_Y(code);
+    associated_field.bit_count = WR_VAR_Y(code);
 }
 
 void Visitor::c_char_data(Varcode code)
@@ -345,8 +433,7 @@ void Visitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
     c_string_len_override = 0;
     c_scale_ref_width_increase = 0;
     bitmap.reset();
-    c04_bits = 0;
-    c04_meaning = 63;
+    associated_field.reset(*btable);
     want_bitmap = 0;
     data_pos = 0;
 }

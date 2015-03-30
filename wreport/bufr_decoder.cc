@@ -241,7 +241,10 @@ struct BaseBufrDecoder : public bulletin::Visitor
     /// Input buffer
     bulletin::BufrInput& in;
 
-    BaseBufrDecoder(Decoder& d) : d(d), in(d.in) {}
+    BaseBufrDecoder(Decoder& d) : d(d), in(d.in)
+    {
+        associated_field.skip_missing = !d.conf_add_undef_attrs;
+    }
 
     /**
      * Decode a value that must always be the same acrosso all datasets.
@@ -270,14 +273,14 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     Subset* target;
 
     /// If set, it is the associated field for the next variable to be decoded
-    Var* associated_field;
+    Var* cur_associated_field;
 
     UncompressedBufrDecoder(Decoder& d)
-        : BaseBufrDecoder(d), target(0), associated_field(0) {}
+        : BaseBufrDecoder(d), target(0), cur_associated_field(0) {}
     ~UncompressedBufrDecoder()
     {
-        if (associated_field)
-            delete associated_field;
+        if (cur_associated_field)
+            delete cur_associated_field;
     }
 
     Var decode_b_value(Varinfo info)
@@ -301,10 +304,10 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     {
         BaseBufrDecoder::do_start_subset(subset_no, current_subset);
         target = &d.out.obtain_subset(subset_no);
-        if (associated_field)
+        if (cur_associated_field)
         {
-            delete associated_field;
-            associated_field = 0;
+            delete cur_associated_field;
+            cur_associated_field = 0;
         }
     }
 
@@ -314,85 +317,15 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
      */
     virtual void do_associated_field(unsigned bit_count, unsigned significance)
     {
-        if (associated_field)
+        if (cur_associated_field)
         {
-            delete associated_field;
-            associated_field = 0;
+            delete cur_associated_field;
+            cur_associated_field = 0;
         }
         TRACE("decode_b_data:reading %d bits of C04 information\n", bit_count);
         uint32_t val = in.get_bits(bit_count);
         TRACE("decode_b_data:read C04 information %x\n", val);
-        switch (significance)
-        {
-	    case 1:
-                // Add attribute B33002=val
-                associated_field = new Var(btable->query(WR_VAR(0, 33, 2)), (int)val);
-                break;
-            case 2:
-                // Add attribute B33003=val
-                associated_field = new Var(btable->query(WR_VAR(0, 33, 3)), (int)val);
-                break;
-	    case 3:
-	    case 4:
-	    case 5:
-                // Reserved: ignored
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
-                        significance);
-                break;
-            case 6:
-                // Add attribute B33050=val
-                if (d.conf_add_undef_attrs || val != 15)
-                {
-                    associated_field = new Var(btable->query(WR_VAR(0, 33, 50)));
-                    if (val != 15)
-                       associated_field->seti(val);
-                }
-                break;
-            case 7:
-                // Add attribute B33040=val
-                associated_field = new Var(btable->query(WR_VAR(0, 33, 40)), (int)val);
-                break;
-	    case 8:
-                // Add attribute B33002=val
-                if (d.conf_add_undef_attrs || val != 3)
-                {
-                    associated_field = new Var(btable->query(WR_VAR(0, 33, 2)));
-                    if (val != 3)
-                       associated_field->seti(val);
-                }
-                break;
-            case 21:
-                // Add attribute B33041=val
-                if (d.conf_add_undef_attrs || val != 1)
-                    associated_field = new Var(btable->query(WR_VAR(0, 33, 41)), 0);
-                break;
-            case 63:
-                /*
-                 * Ignore quality information if B31021 is missing.
-                 * The Guide to FM94-BUFR says:
-                 *   If the quality information has no meaning for some
-                 *   of those following elements, but the field is
-                 *   still there, there is at present no explicit way
-                 *   to indicate "no meaning" within the currently
-                 *   defined meanings. One must either redefine the
-                 *   meaning of the associated field in its entirety
-                 *   (by including 0 31 021 in the message with a data
-                 *   value of 63 - "missing value") or remove the
-                 *   associated field bits by the "cancel" operator: 2
-                 *   04 000.
-                 */
-                break;
-            default:
-		if (significance >= 9 and significance <= 20)
-			// Reserved: ignored
-			notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
-				c04_meaning);
-		else if (significance >= 22 and significance <= 62)
-			notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
-					c04_meaning);
-		else
-			error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", c04_meaning);
-        }
+        cur_associated_field = associated_field.make_attribute(val).release();
     }
 
     /**
@@ -423,14 +356,14 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
             TRACE(" do_var decoded: ");
             target->back().print(stderr);
         }
-        if (associated_field)
+        if (cur_associated_field)
         {
             IFTRACE {
                 TRACE(" do_var with associated field: ");
-                associated_field->print(stderr);
+                cur_associated_field->print(stderr);
             }
-            auto_ptr<Var> af(associated_field);
-            associated_field = 0;
+            auto_ptr<Var> af(cur_associated_field);
+            cur_associated_field = 0;
             target->back().seta(af);
         }
     }
