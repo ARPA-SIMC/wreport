@@ -110,6 +110,7 @@ tut_test_SOURCES = \
 	dtable-tut.cc \
 	bulletin-tut.cc \
 	bufr_decoder-tut.cc \
+	bufr_decoder1-tut.cc \
 	bufr_encoder-tut.cc \
 	crex_decoder-tut.cc \
 	bulletin/buffers-tut.cc \

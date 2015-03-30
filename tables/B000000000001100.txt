@@ -140,6 +140,8 @@
  002144 LIGHT SOURCE TYPE FOR BREWER SPECTROPHOTOMETER                   CODE TABLE   2144          0            0   4  
  002145 WAVE LENGTH SETTING FOR DOBSON INSTRUMENTS                       CODE TABLE   2145          0            0   4  
  002146 SOURCE CONDITIONS FOR DOBSON INSTRUMENTS                         CODE TABLE   2146          0            0   4  
+ 002148 DATA COLLECTION AND/OR LOCATION SYSTEM                           CODE TABLE 2148            0            0   5  
+ 002149 TYPE OF DATA BUOY                                                CODE TABLE 2149            0            0   6  
  002150 TOVS/ATOVS/HIRS INSTRUMENT CHANNEL NUMBER                        CODE TABLE   2150          0            0   6  
  002151 RADIOMETER IDENTIFIER                                            CODE TABLE   2151          0            0  11  
  002152 SATELLITE INSTRUMENT DATA USED IN PROCESSING                     FLAG TABLE   2152          0            0  31  
@@ -149,6 +151,9 @@
  002164 TRACER CORRELATION METHOD                                        CODE TABLE   2164          0            0   3
  002166 RADIANCE TYPE                                                    CODE TABLE   2166          0            0   4  
  002167 RADIANCE COMPUTATIONAL METHOD                                    CODE TABLE   2167          0            0   4
+ 002168 HYDROSTATIC PRESSURE OF LOWER END OF CABLE (THERMISTOR STRING)   PA                        -3            0  16  
+ 002169 ANEMOMETER TYPE                                                  CODE TABLE 2169            0            0   4  
+ 002190 LAGRANGIAN DRIFTER SUBMERGENCE (% TIME SUBMERGED)                %                          0            0   7  
  004001 YEAR                                                             YEAR                       0            0  12  
  004002 MONTH                                                            MONTH                      0            0   4  
  004003 DAY                                                              DAY                        0            0   6  
@@ -207,8 +212,13 @@
  007022 SOLAR ELEVATION                                                  DEGREE                     2        -9000  15  
  007024 SATELLITE ZENITH ANGLE                                           DEGREE                     2        -9000  15  
  007025 SOLAR ZENITH ANGLE                                               DEGREE                     2        -9000  15  
+ 007030 HEIGHT OF STATION GROUND ABOVE MEAN SEA LEVEL (SEE NOTE 3)       M                          1       - 4000  17  
+ 007031 HEIGHT OF BAROMETER ABOVE MEAN SEA LEVEL (SEE NOTE 4)            M                          1       - 4000  17  
+ 007032 HEIGHT OF SENSOR ABOVE LOCAL GROUND (OR DECK OF MARINE PLATFORM) M                          2            0  16  
+ 007033 HEIGHT OF SENSOR ABOVE WATER SURFACE (SEE NOTE 6)                M                          1            0  12  
  007061 DEPTH BELOW LAND SURFACE                                         M                          2            0  14  
  007062 DEPTH BELOW SEA/WATER SURFACE                                    M                          1            0  17  
+ 007070 DROGUE DEPTH                                                     M                          0            0  10  
  007190 HEIGHT INCREMENT                                                 M                          1        -1024  12  
  008001 VERTICAL SOUNDING SIGNIFICANCE                                   FLAG TABLE   8001          0            0   7  
  008002 VERTICAL SIGNIFICANCE (SURFACE OBSERVATIONS)                     CODE TABLE   8002          0            0   6  
@@ -235,6 +245,8 @@
  008053 DAY OF OCCURRENCE QUALIFIER                                      CODE TABLE   8053          0            0   2  
  008060 SAMPLE SCANNING MODE SIGNIFICANCE                                CODE TABLE   8060          0            0   4
  008070 TOVS/ATOVS PRODUCT QUALIFIER                                     CODE TABLE   8070          0            0   4
+ 008081 TYPE OF EQUIPMENT                                                CODE TABLE   8081          0            0   6  
+ 008082 (CBS) ARTIFICIAL CORRECTION OF SENSOR HEIGHT TO ANOTHER VALUE    CODE TABLE   8082          0            0   3  
  010001 HEIGHT OF LAND SURFACE                                           M                          0         -400  15  
  010002 HEIGHT                                                           M                         -1          -40  16  
  010003 GEOPOTENTIAL                                                     M**2/S**2                 -1         -400  17  
@@ -314,6 +326,8 @@
  012072 RADIANCE                                                         W/M**2*STER*M**(-1)        6            0  31  
  012075 SPECTRAL RADIANCE                                                W/M**2*STER*M**(-1)       -3            0  16
  012076 RADIANCE                                                         W/M**2*STER                3            0  16
+ 012101 TEMPERATURE/DRY-BULB TEMPERATURE                                 K                          2            0  16
+ 012103 DEW-POINT TEMPERATURE                                            K                          2            0  16
  013001 SPECIFIC HUMIDITY                                                KG/KG                      5            0  14  
  013002 MIXING RATIO                                                     KG/KG                      5            0  14  
  013003 RELATIVE HUMIDITY                                                %                          0            0   7  
@@ -480,6 +494,7 @@
  022043 SEA/WATER TEMPERATURE                                            K                          2            0  15  
  022044 SOUND VELOCITY                                                   M/S                        1            0  14  
  022050 STANDARD DEVIATION SEA SURFACE TEMPERATURE                       K                          2            0   8  
+ 022060 LAGRANGIAN DRIFTER DROGUE STATUS                                 CODE TABLE 22060           0            0   3  
  022061 STATE OF THE SEA                                                 CODE TABLE  22061          0            0   4  
  022062 SALINITY                                                         %.                         3            0  14  
  022063 TOTAL WATER DEPTH                                                M                          0            0  14  
@@ -575,6 +590,8 @@
  025019 A TO Z LAW FOR ATTENUATION EXPONENT                              NUMERIC                    2            0   7  
  025020 MEAN SPEED ESTIMATION                                            CODE TABLE  25020          0            0   2  
  025021 WIND COMPUTATION EHANCEMENT                                      FLAG TABLE  25021          0            0   8  
+ 025026 BATTERY VOLTAGE (LARGE RANGE)                                    V                          1            0  12  
+ 025028 OPERATOR OR MANUFACTURER DEFINED PARAMETER                       NUMERIC                    1       -16384  15  
  025030 RUNNING MEAN SEA-SURFACE TEMPERATURE USAGE                       CODE TABLE  25030          0            0   2  
  025032 WIND PROFILER MODE INFORMATION                                   CODE TABLE  25032          0            0   2  
  025033 WIND PROFILER SUBMODE INFORMATION                                CODE TABLE  25033          0            0   2  
@@ -608,12 +625,14 @@
  027001 LATITUDE(HIGH ACCURACY)                                          DEGREE                     5     -9000000  25  
  027002 LATITUDE(COARSE ACCURACY)                                        DEGREE                     2        -9000  15  
  027003 ALTERNATE LATITUDE                                               DEGREE                     2        -9000  15  
+ 027004 ALTERNATE LATITUDE (HIGH ACCURACY)                               DEGREE                     5     -9000000  25  
  027020 SATELLITE LOCATION COUNTER                                       NUMERIC                    0            0  16  
  027021 SATELLITE SUBLOCATION DIMENSION                                  NUMERIC                    0            0  16  
  027031 IN DIRECTION OF 0 DEGREES LONGITUDE, DISTANCE FROM THE EARTH'S C M                          2  -1073741824  31  
  028001 LONGITUDE(HIGH ACCURACY)                                         DEGREE                     5    -18000000  26  
  028002 LONGITUDE(COARSE ACCURACY)                                       DEGREE                     2       -18000  16  
  028003 ALTERNATE LONGITUDE                                              DEGREE                     2       -18000  16  
+ 028004 ALTERNATE LONGITUDE (HIGH ACCURACY)                              DEGREE                     5    -18000000  26  
  028031 IN DIRECTION OF 90 DEGREES EAST,DISTANCE FROM THE EARTH'S CENTRE M                          2  -1073741824  31  
  029001 PROJECTION TYPE                                                  CODE TABLE  29001          0            0   3  
  029002 CO-ORDINATE GRID TYPE                                            CODE TABLE  29002          0            0   3  
