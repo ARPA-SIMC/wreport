@@ -92,7 +92,7 @@ void DDSPrinter::do_var(Varinfo info)
     {
         print_context(var.info(), current_var);
 
-        const Var* att = var.enqa_by_associated_field_significance(associated_field.significance);
+        const Var* att = associated_field.get_attribute(var);
         if (att)
             att->print(out);
         else

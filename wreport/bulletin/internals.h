@@ -142,6 +142,12 @@ struct AssociatedField
      *
      */
     std::auto_ptr<Var> make_attribute(unsigned value) const;
+
+    /**
+     * Get the attribute of var corresponding to this associated field
+     * significance.
+     */
+    const Var* get_attribute(const Var& var) const;
 };
 
 /**

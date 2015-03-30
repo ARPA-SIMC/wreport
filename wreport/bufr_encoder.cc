@@ -91,7 +91,7 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
         // Deal with an associated field
         if (associated_field.bit_count)
         {
-            const Var* att = var.enqa_by_associated_field_significance(associated_field.significance);
+            const Var* att = associated_field.get_attribute(var);
             if (att && att->isset())
                 ob.add_bits(att->enqi(), associated_field.bit_count);
             else

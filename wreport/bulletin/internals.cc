@@ -185,6 +185,11 @@ std::auto_ptr<Var> AssociatedField::make_attribute(unsigned value) const
     }
 }
 
+const Var* AssociatedField::get_attribute(const Var& var) const
+{
+    return var.enqa_by_associated_field_significance(significance);
+}
+
 
 Visitor::Visitor() : btable(0), current_subset(0) {}
 Visitor::~Visitor() {}

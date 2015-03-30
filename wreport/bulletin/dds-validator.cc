@@ -72,7 +72,7 @@ void DDSValidator::do_var(Varinfo info)
     if (associated_field.bit_count)
     {
         const Var& var = get_var(current_var);
-        /*const Var* att =*/ var.enqa_by_associated_field_significance(associated_field.significance);
+        /*const Var* att =*/ associated_field.get_attribute(var);
     }
 
     check_fits(info, var);
