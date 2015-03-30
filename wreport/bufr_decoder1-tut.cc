@@ -177,9 +177,9 @@ void to::test<5>()
         void test(const BufrBulletin& msg)
         {
             ensure_equals(msg.edition, 4);
-            ensure_equals(msg.type, 0);
-            ensure_equals(msg.subtype, 1);
-            ensure_equals(msg.localsubtype, 0);
+            ensure_equals(msg.type, 2);
+            ensure_equals(msg.subtype, 10);
+            ensure_equals(msg.localsubtype, 1);
             ensure_equals(msg.subsets.size(), 1);
 
             /*

@@ -401,11 +401,29 @@ void BufrInput::decode_number(Varinfo info, unsigned subsets, const AssociatedFi
 {
     Var var(info);
 
-    if (associated_field.bit_count)
-    {
-        error_unimplemented::throwf("Associated fields found in compressed message and it is not clear how they should be handled");
-    }
+    // debug_dump_next_bits("DECODE NUMBER: ", 30);
 
+    /* I could not find any specification describing the behaviour of associated fields in compressed BUFRs.
+     *
+     * By empirical observation, I assume this behaviour:
+     *
+     *  - $ASSOCIATED_FIELD_BITS bits of base value for the associated field
+     *  - 6 bits specifying the number of bits used to encode the associated
+     *    field difference values
+     *  - base value for the actual variable (number of bits defined in table B)
+     *  - 6 difference bits for the actual variable
+     *
+     * Then, for each subset:
+     *  - the difference bits for the associated field
+     *  - the difference bits for the actual variable
+     */
+
+    /// Associated field base value
+    uint32_t af_base = associated_field.bit_count ? get_bits(associated_field.bit_count) : 0;
+    /// Number of bits used to encode the associated field differences
+    uint32_t af_diffbits = associated_field.bit_count ? get_bits(6) : 0;
+
+    // Data field base value
     uint32_t base = get_bits(info->bit_len);
 
     //TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, base);
@@ -431,7 +449,14 @@ void BufrInput::decode_number(Varinfo info, unsigned subsets, const AssociatedFi
 
     for (unsigned i = 0; i < subsets; ++i)
     {
+        auto_ptr<Var> af;
+        if (associated_field.bit_count)
+        {
+            uint32_t af_offset = get_bits(af_diffbits);
+            af = associated_field.make_attribute(af_base + af_offset);
+        }
         decode_number(var, base, diffbits);
+        if (af.get()) var.seta(af);
         dest(var, i);
     }
 }
