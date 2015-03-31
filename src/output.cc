@@ -21,6 +21,7 @@
 
 #include <wreport/bulletin.h>
 #include "options.h"
+#include <cstring>
 
 struct PrintContents : public BulletinFullHandler
 {
@@ -55,5 +56,45 @@ struct PrintDDS : public BulletinHeadHandler
     virtual void handle(const wreport::Bulletin& b)
     {
         b.print_datadesc(out);
+    }
+};
+
+struct PrintTables : public BulletinHeadHandler
+{
+    FILE* out;
+    bool header_printed;
+    PrintTables(FILE* out=stderr) : out(out), header_printed(false) {}
+
+    /// Dump the contents of the Data Descriptor Section a message
+    virtual void handle(const wreport::Bulletin& b)
+    {
+        if (const BufrBulletin* m = dynamic_cast<const BufrBulletin*>(&b))
+        {
+            if (!header_printed)
+            {
+                fprintf(out, "%-*s\tOffset\tCentre\tSubc.\tMaster\tLocal\n", strlen(b.fname), "Filename");
+                header_printed = true;
+            }
+            fprintf(out, "%s\t%zd\t%d\t%d\t%d\t%d\n",
+                    b.fname, b.offset,
+                    m->centre, m->subcentre,
+                    m->master_table, m->local_table);
+        }
+        else if (const CrexBulletin* m = dynamic_cast<const CrexBulletin*>(&b))
+        {
+            if (!header_printed)
+            {
+                fprintf(out, "Filename\tOffset\tMaster\tEdition\tTable\n");
+                header_printed = true;
+            }
+            fprintf(out, "%s\t%zd\t%d\t%d\t%d\n",
+                    b.fname, b.offset,
+                    m->master_table_number, m->edition, m->table);
+        }
+        else
+        {
+            fprintf(out, "%s\t%zd\tunknown message type\n",
+                    b.fname, b.offset);
+        }
     }
 };

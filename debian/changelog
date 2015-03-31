@@ -1,4 +1,4 @@
-wreport (2.15-1) unstable; urgency=medium
+wreport (2.15-1) UNRELEASED; urgency=medium
 
   * New upstream version
      - Added BUFR/CREX tables version 23 
@@ -7,6 +7,8 @@ wreport (2.15-1) unstable; urgency=medium
      - Implemented decoding of associated fields in compresed BUFR messages
      - Implemented wrep --unparsable, to extract unparsable bulletin from
        large files when one needs to file a bug report
+     - Implemented wrep --tables, to print table versions used by bulletins in
+       one or more files
 
  -- Enrico Zini <enrico@enricozini.org>  Mon, 30 Mar 2015 15:32:49 +0200
 

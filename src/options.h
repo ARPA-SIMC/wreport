@@ -37,6 +37,7 @@ enum Action {
     PRINT_VARS,
     INFO,
     UNPARSABLE,
+    TABLES,
     HELP,
 };
 
