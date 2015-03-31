@@ -5,6 +5,8 @@ wreport (2.15-1) unstable; urgency=medium
      - Changed table selection algorithm to allow for smarter euristics
      - If a table is not found but there is a suitable newer one, try using it
      - Implemented decoding of associated fields in compresed BUFR messages
+     - Implemented wrep --unparsable, to extract unparsable bulletin from
+       large files when one needs to file a bug report
 
  -- Enrico Zini <enrico@enricozini.org>  Mon, 30 Mar 2015 15:32:49 +0200
 
