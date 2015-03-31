@@ -1,7 +1,7 @@
 /*
  * options - wrep runtime configuration
  *
- * Copyright (C) 2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2011--2015  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include <wreport/varinfo.h>
 #include <vector>
+#include <memory>
 
 namespace wreport {
 struct Bulletin;
@@ -35,6 +36,7 @@ enum Action {
     DUMP_DDS,
     PRINT_VARS,
     INFO,
+    UNPARSABLE,
     HELP,
 };
 
@@ -61,16 +63,43 @@ struct Options
     void init_varcodes(const char* str);
 };
 
-// Interface for classes that process bulletins
-struct BulletinHandler
+struct RawHandler
 {
-    virtual ~BulletinHandler() {}
-    virtual void handle(const wreport::Bulletin&) = 0;
+    virtual ~RawHandler() {}
+    virtual void handle_raw_bufr(const std::string& data, const char* fname, long offset) = 0;
+    virtual void handle_raw_crex(const std::string& data, const char* fname, long offset) = 0;
     virtual void done() {}
 };
 
-// Signature for functions that read bulletins from a file
-typedef void (*bulletin_reader)(const Options&, const char*, BulletinHandler& handler, bool header_only);
+// Interface for classes that process bulletins, parsing only message headers
+struct BulletinHeadHandler : public RawHandler
+{
+    virtual ~BulletinHeadHandler() {}
 
+    /// Decode and handle the decoded bulletin
+    virtual void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset);
+
+    /// Decode and handle the decoded bulletin
+    virtual void handle_raw_crex(const std::string& raw_data, const char* fname, long offset);
+
+    virtual void handle(const wreport::Bulletin&) = 0;
+};
+
+// Interface for classes that process bulletins, parsing full messages
+struct BulletinFullHandler : public RawHandler
+{
+    virtual ~BulletinFullHandler() {}
+
+    /// Decode and handle the decoded bulletin
+    virtual void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset);
+
+    /// Decode and handle the decoded bulletin
+    virtual void handle_raw_crex(const std::string& raw_data, const char* fname, long offset);
+
+    virtual void handle(const wreport::Bulletin&) = 0;
+};
+
+// Signature for functions that read bulletins from a file
+typedef void (*bulletin_reader)(const Options&, const char*, RawHandler& handler);
 
 #endif

@@ -22,7 +22,7 @@
 #include <wreport/bulletin.h>
 #include "options.h"
 
-struct PrintContents : public BulletinHandler
+struct PrintContents : public BulletinFullHandler
 {
     FILE* out;
     PrintContents(FILE* out=stderr) : out(out) {}
@@ -34,7 +34,7 @@ struct PrintContents : public BulletinHandler
     }
 };
 
-struct PrintStructure : public BulletinHandler
+struct PrintStructure : public BulletinFullHandler
 {
     FILE* out;
     PrintStructure(FILE* out=stderr) : out(out) {}
@@ -46,7 +46,7 @@ struct PrintStructure : public BulletinHandler
     }
 };
 
-struct PrintDDS : public BulletinHandler
+struct PrintDDS : public BulletinHeadHandler
 {
     FILE* out;
     PrintDDS(FILE* out=stderr) : out(out) {}

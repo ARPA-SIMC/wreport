@@ -40,6 +40,7 @@ using namespace std;
 #include "input.cc"
 #include "output.cc"
 #include "iterate.cc"
+#include "unparsable.cc"
 
 void do_usage(FILE* out)
 {
@@ -62,6 +63,7 @@ void do_help(FILE* out)
         "  -p,--print=VARCODES for each input bulletin, print the given\n"
         "                      comma-separated list of varcodes (e.g.\n"
         "                      \"B01019,B05001,B06001\")\n"
+        "  -U,--unparsable     output a copy of the messages that cannot be parsed\n"
 #ifndef HAS_GETOPT_LONG
         "NOTE: long options are not supported on this system\n"
 #endif
@@ -74,14 +76,15 @@ int main(int argc, char* argv[])
     static struct option long_options[] =
     {
         /* These options set a flag. */
-        {"crex",      no_argument,       NULL, 'c'},
-        {"dump",      no_argument,       NULL, 'd'},
-        {"structure", no_argument,       NULL, 's'},
-        {"dds",       no_argument,       NULL, 'D'},
-        {"print",     required_argument, NULL, 'p'},
-        {"info",      no_argument,       NULL, 'i'},
-        {"verbose",   no_argument,       NULL, 'v'},
-        {"help",      no_argument,       NULL, 'h'},
+        {"crex",       no_argument,       NULL, 'c'},
+        {"dump",       no_argument,       NULL, 'd'},
+        {"structure",  no_argument,       NULL, 's'},
+        {"dds",        no_argument,       NULL, 'D'},
+        {"print",      required_argument, NULL, 'p'},
+        {"info",       no_argument,       NULL, 'i'},
+        {"verbose",    no_argument,       NULL, 'v'},
+        {"unparsable", no_argument,       NULL, 'U'},
+        {"help",       no_argument,       NULL, 'h'},
         {0, 0, 0, 0}
     };
 #endif
@@ -94,10 +97,10 @@ int main(int argc, char* argv[])
         int option_index = 0;
 
 #ifdef HAS_GETOPT_LONG
-        int c = getopt_long(argc, argv, "cvdsDihp:",
+        int c = getopt_long(argc, argv, "cvUdsDihp:",
                 long_options, &option_index);
 #else
-        int c = getopt(argc, argv, "cvdsDihp:");
+        int c = getopt(argc, argv, "cvUdsDihp:");
 #endif
 
         // Detect the end of the options
@@ -116,6 +119,7 @@ int main(int argc, char* argv[])
                 options.init_varcodes(optarg);
                 break;
             case 'i': options.action = INFO; break;
+            case 'U': options.action = UNPARSABLE; break;
             case 'h': options.action = HELP; break;
             default:
                 fprintf(stderr, "unknown option character %c (%d)\n", c, c);
@@ -129,8 +133,7 @@ int main(int argc, char* argv[])
         notes::set_target(cerr);
 
     // Choose the right handler for the action requested by the user
-    auto_ptr<BulletinHandler> handler;
-    bool header_only = false;
+    auto_ptr<RawHandler> handler;
     switch (options.action)
     {
         case HELP:
@@ -141,11 +144,9 @@ int main(int argc, char* argv[])
             return 0;
         case DUMP: handler.reset(new PrintContents(stdout)); break;
         case DUMP_STRUCTURE: handler.reset(new PrintStructure(stdout)); break;
-        case DUMP_DDS:
-            handler.reset(new PrintDDS(stdout));
-            header_only = true;
-            break;
+        case DUMP_DDS: handler.reset(new PrintDDS(stdout)); break;
         case PRINT_VARS: handler.reset(new PrintVars(options.varcodes)); break;
+        case UNPARSABLE: handler.reset(new CopyUnparsable(stdout, stderr)); break;
     }
 
     // Ensure we have some file to process
@@ -156,14 +157,14 @@ int main(int argc, char* argv[])
     }
 
     // Pick the reader we want
-    bulletin_reader reader = read_bufr;
-    if (options.crex) reader = read_crex;
+    bulletin_reader reader = read_bufr_raw;
+    if (options.crex) reader = read_crex_raw;
 
     try {
         while (optind < argc)
         {
             if (options.verbose) fprintf(stderr, "Reading from %s\n", argv[optind]);
-            reader(options, argv[optind++], *handler, header_only);
+            reader(options, argv[optind++], *handler);
         }
 
         handler->done();

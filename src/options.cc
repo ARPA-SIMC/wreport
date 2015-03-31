@@ -1,7 +1,7 @@
 /*
  * options - wrep runtime configuration
  *
- * Copyright (C) 2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2011--2015  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
  */
 
 #include "options.h"
+#include <wreport/bulletin.h>
 #include <cstring>
 
 using namespace wreport;
@@ -33,4 +34,56 @@ void Options::init_varcodes(const char* str)
         str = strchr(str, ',');
         if (str && *str) ++str;
     }
+}
+
+void BulletinHeadHandler::handle_raw_bufr(const std::string& raw_data, const char* fname, long offset)
+{
+    // Create a BUFR bulletin
+    std::auto_ptr<Bulletin> bulletin(BufrBulletin::create());
+
+    // Decode the raw data. fname and offset are optional and we pass
+    // them just to have nicer error messages
+    bulletin->decode_header(raw_data, fname, offset);
+
+    // Do something with the decoded information
+    handle(*bulletin);
+}
+
+void BulletinHeadHandler::handle_raw_crex(const std::string& raw_data, const char* fname, long offset)
+{
+    // Create a CREX bulletin
+    std::auto_ptr<Bulletin> bulletin(CrexBulletin::create());
+
+    // Decode the raw data. fname and offset are optional and we pass
+    // them just to have nicer error messages
+    bulletin->decode(raw_data, fname, offset);
+
+    // Do something with the decoded information
+    handle(*bulletin);
+}
+
+void BulletinFullHandler::handle_raw_bufr(const std::string& raw_data, const char* fname, long offset)
+{
+    // Create a BUFR bulletin
+    std::auto_ptr<Bulletin> bulletin(BufrBulletin::create());
+
+    // Decode the raw data. fname and offset are optional and we pass
+    // them just to have nicer error messages
+    bulletin->decode(raw_data, fname, offset);
+
+    // Do something with the decoded information
+    handle(*bulletin);
+}
+
+void BulletinFullHandler::handle_raw_crex(const std::string& raw_data, const char* fname, long offset)
+{
+    // Create a CREX bulletin
+    std::auto_ptr<Bulletin> bulletin(CrexBulletin::create());
+
+    // Decode the raw data. fname and offset are optional and we pass
+    // them just to have nicer error messages
+    bulletin->decode(raw_data, fname, offset);
+
+    // Do something with the decoded information
+    handle(*bulletin);
 }

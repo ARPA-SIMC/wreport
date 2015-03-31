@@ -19,7 +19,7 @@
  * Author: Enrico Zini <enrico@enricozini.com>
  */
 
-struct PrintVars : public BulletinHandler
+struct PrintVars : public BulletinFullHandler
 {
     FILE* out;
     const std::vector<wreport::Varcode>& codes;

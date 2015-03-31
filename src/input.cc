@@ -25,7 +25,7 @@
 using namespace wreport;
 
 // Read all BUFR messages from a file
-void read_bufr(const Options& opts, const char* fname, BulletinHandler& handler, bool header_only=false)
+void read_bufr_raw(const Options& opts, const char* fname, RawHandler& handler)
 {
     // Open the input file
     FILE* in = fopen(fname, "rb");
@@ -35,9 +35,6 @@ void read_bufr(const Options& opts, const char* fname, BulletinHandler& handler,
     // Use a generic try/catch block to ensure we always close the input file,
     // even in case of errors
     try {
-        // Create a BUFR bulletin
-        auto_ptr<Bulletin> bulletin(BufrBulletin::create());
-
         // String used to hold raw data read from the input file
         string raw_data;
 
@@ -50,19 +47,7 @@ void read_bufr(const Options& opts, const char* fname, BulletinHandler& handler,
         // fname and offset are optional and we pass them just to have nicer
         // error messages.
         while (BufrBulletin::read(in, raw_data, fname, &offset))
-        {
-            if (header_only)
-                // Decode the raw data. fname and offset are optional and we pass
-                // them just to have nicer error messages
-                bulletin->decode_header(raw_data, fname, offset);
-            else
-                // Decode the raw data. fname and offset are optional and we pass
-                // them just to have nicer error messages
-                bulletin->decode(raw_data, fname, offset);
-
-            // Do something with the decoded information
-            handler.handle(*bulletin);
-        }
+            handler.handle_raw_bufr(raw_data, fname, offset);
 
         // Cleanup
         fclose(in);
@@ -80,7 +65,7 @@ void read_bufr(const Options& opts, const char* fname, BulletinHandler& handler,
  *  - it uses a CrexBulletin instead of a BufrBulletin
  *  - it uses CrexBulletin::read instead of BufrBulletin::read
  */
-void read_crex(const Options& opts, const char* fname, BulletinHandler& handler, bool header_only=false)
+void read_crex_raw(const Options& opts, const char* fname, RawHandler& handler)
 {
     // Open the input file
     FILE* in = fopen(fname, "rt");
@@ -105,14 +90,7 @@ void read_crex(const Options& opts, const char* fname, BulletinHandler& handler,
         // fname and offset are optional and we pass them just to have nicer
         // error messages.
         while (CrexBulletin::read(in, raw_data, fname, &offset))
-        {
-            // Decode the raw data. fname and offset are optional and we pass
-            // them just to have nicer error messages
-            bulletin->decode(raw_data, fname, offset);
-
-            // Do something with the decoded information
-            handler.handle(*bulletin);
-        }
+            handler.handle_raw_crex(raw_data, fname, offset);
 
         // Cleanup
         fclose(in);
@@ -121,5 +99,3 @@ void read_crex(const Options& opts, const char* fname, BulletinHandler& handler,
         throw;
     }
 }
-
-
