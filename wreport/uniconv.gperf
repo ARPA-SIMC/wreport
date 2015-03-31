@@ -1,7 +1,7 @@
 /*
  * wreport/uniconv - Unit conversion for weather reports
  *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * Copyright (C) 2005--2015  ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,9 +161,11 @@ struct uniconv { const char* tag; double mul; double add; };
 "RATIO->%",			100,		0
 "%->RATIO",			0.01,		0
 "ms/cm->S/M",			0.1,		0
-"S/M->ms/cm",			10,			0
+"S/M->ms/cm",			10,		0
 "mS/cm->S/M",			0.1,		0
-"S/M->mS/cm",			10,			0
+"S/M->mS/cm",			10,		0
+"J M-2->J/M**2",		1,		0
+"J/M**2->J M-2",		1,		0
 %%
 
 bool convert_units_allowed(const char* from, const char* to)
