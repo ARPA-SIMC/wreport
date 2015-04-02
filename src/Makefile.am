@@ -4,7 +4,7 @@ AM_CPPFLAGS = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir)
 
 WREPLIBS =  ../wreport/libwreport.la $(WIBBLE_LIBS)
 
-dist_noinst_HEADERS = options.h info.cc input.cc output.cc iterate.cc makebuoy.cc
+dist_noinst_HEADERS = options.h info.cc input.cc output.cc iterate.cc makebuoy.cc unparsable.cc
 
 bin_PROGRAMS = wrep
 noinst_PROGRAMS = examples
