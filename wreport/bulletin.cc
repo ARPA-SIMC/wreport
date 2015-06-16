@@ -590,7 +590,7 @@ bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname, long* off
 	if (!seek_past_signature(fd, "CREX++", 6, fname))
 		return false;
 	buf += "CREX++";
-	if (offset) *offset = ftell(fd) - 4;
+	if (offset) *offset = ftell(fd) - 6;
 
 	/* Read until "\+\+(\r|\n)+7777" */
 	{
