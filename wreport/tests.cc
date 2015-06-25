@@ -21,12 +21,30 @@
 
 #include "tests.h"
 #include "wreport/var.h"
+#include <fnmatch.h>
 #include <sstream>
 
 using namespace std;
 
 namespace wreport {
 namespace tests {
+
+bool test_can_run(const std::string& group_name, const std::string& test_name)
+{
+    const char* filter = getenv("FILTER");
+    const char* except = getenv("EXCEPT");
+
+    if (!filter && !except) return true;
+
+    if (filter && fnmatch(filter, group_name.c_str(), 0) == FNM_NOMATCH)
+        return false;
+
+    if (!except || fnmatch(except, group_name.c_str(), 0) == FNM_NOMATCH)
+        return true;
+
+    return false;
+}
+
 
 #ifdef wassert
 namespace {
