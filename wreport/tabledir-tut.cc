@@ -178,11 +178,11 @@ void to::test<5>()
     const tabledir::BufrTable* bt;
     const tabledir::CrexTable* ct;
 
-    bt = td.find_bufr(0, 0, 15, 0);
+    bt = td.find_bufr(0, 0, 10, 0);
     wassert(actual(bt != 0).istrue());
     wassert(actual(bt->centre) == 0);
     wassert(actual(bt->subcentre) == 0);
-    wassert(actual(bt->master_table) == 16);
+    wassert(actual(bt->master_table) == 11);
     wassert(actual(bt->local_table) == 0);
 
     /// Find a CREX table
