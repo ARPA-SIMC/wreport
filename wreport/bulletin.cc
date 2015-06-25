@@ -76,9 +76,9 @@ BufrCodecOptions::BufrCodecOptions()
 {
 }
 
-std::auto_ptr<BufrCodecOptions> BufrCodecOptions::create()
+std::unique_ptr<BufrCodecOptions> BufrCodecOptions::create()
 {
-    return auto_ptr<BufrCodecOptions>(new BufrCodecOptions);
+    return unique_ptr<BufrCodecOptions>(new BufrCodecOptions);
 }
 
 BufrBulletin::BufrBulletin()
@@ -86,9 +86,9 @@ BufrBulletin::BufrBulletin()
 {
 }
 
-std::auto_ptr<BufrBulletin> BufrBulletin::create()
+std::unique_ptr<BufrBulletin> BufrBulletin::create()
 {
-    return auto_ptr<BufrBulletin>(new BufrBulletin);
+    return unique_ptr<BufrBulletin>(new BufrBulletin);
 }
 
 BufrBulletin::~BufrBulletin()
@@ -143,9 +143,9 @@ CrexBulletin::CrexBulletin()
 {
 }
 
-std::auto_ptr<CrexBulletin> CrexBulletin::create()
+std::unique_ptr<CrexBulletin> CrexBulletin::create()
 {
-    return auto_ptr<CrexBulletin>(new CrexBulletin);
+    return unique_ptr<CrexBulletin>(new CrexBulletin);
 }
 
 
@@ -654,9 +654,9 @@ void CrexBulletin::write(const std::string& buf, FILE* out, const char* fname)
 }
 
 #if 0
-std::auto_ptr<Bulletin> Bulletin::create(dballe::Encoding encoding)
+std::unique_ptr<Bulletin> Bulletin::create(dballe::Encoding encoding)
 {
-	std::auto_ptr<bufrex::Bulletin> res;
+	std::unique_ptr<bufrex::Bulletin> res;
 	switch (encoding)
 	{
 		case BUFR: res.reset(new BufrBulletin); break;

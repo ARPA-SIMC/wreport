@@ -449,14 +449,14 @@ void BufrInput::decode_number(Varinfo info, unsigned subsets, const AssociatedFi
 
     for (unsigned i = 0; i < subsets; ++i)
     {
-        auto_ptr<Var> af;
+        unique_ptr<Var> af;
         if (associated_field.bit_count)
         {
             uint32_t af_offset = get_bits(af_diffbits);
             af = associated_field.make_attribute(af_base + af_offset);
         }
         decode_number(var, base, diffbits);
-        if (af.get()) var.seta(af);
+        if (af.get()) var.seta(move(af));
         dest(var, i);
     }
 }

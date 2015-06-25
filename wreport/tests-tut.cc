@@ -52,8 +52,8 @@ void to::test<1>()
 
     Var tempundefa1(tempundef);
     Var tempundefa2(tempundef);
-    tempundefa1.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 75)));
-    tempundefa2.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 50)));
+    tempundefa1.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 75)));
+    tempundefa2.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 50)));
 
     wassert(actual(tempundef) != tempundefa1);
     wassert(actual(tempundef) != tempundefa2);
@@ -64,8 +64,8 @@ void to::test<1>()
 
     Var temp12a1(temp12);
     Var temp12a2(temp12);
-    temp12a1.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 75)));
-    temp12a2.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 50)));
+    temp12a1.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 75)));
+    temp12a2.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 50)));
 
     wassert(actual(temp12) != temp12a1);
     wassert(actual(temp12) != temp12a2);
@@ -76,8 +76,8 @@ void to::test<1>()
 
     Var tempa1(temp12);
     Var tempa2(temp12);
-    tempa1.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 1)));
-    tempa2.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  9)), 1)));
+    tempa1.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 1)));
+    tempa2.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  9)), 1)));
     wassert(actual(tempa1) == tempa1);
     wassert(actual(tempa1) != tempa2);
     wassert(actual(tempa2) != tempa1);

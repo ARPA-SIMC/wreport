@@ -431,10 +431,10 @@ const Var* Var::enqa_by_associated_field_significance(unsigned significance) con
 
 void Var::seta(const Var& attr)
 {
-	seta(auto_ptr<Var>(new Var(attr)));
+	seta(unique_ptr<Var>(new Var(attr)));
 }
 
-void Var::seta(auto_ptr<Var> attr)
+void Var::seta(unique_ptr<Var>&& attr)
 {
 	// Ensure that the attribute does not have attributes of its own
 	attr->clear_attrs();
@@ -454,9 +454,9 @@ void Var::seta(auto_ptr<Var> attr)
 		old_attrs->m_attrs = NULL;
 		delete old_attrs;
 	}
-	else
-		// Recursively proceed along the chain
-		m_attrs->seta(attr);
+    else
+        // Recursively proceed along the chain
+        m_attrs->seta(move(attr));
 }
 
 void Var::unseta(Varcode code)

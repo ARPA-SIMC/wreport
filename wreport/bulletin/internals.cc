@@ -109,52 +109,52 @@ void AssociatedField::reset(const Vartable& btable)
     significance = 63;
 }
 
-std::auto_ptr<Var> AssociatedField::make_attribute(unsigned value) const
+std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
 {
     switch (significance)
     {
         case 1:
             // Add attribute B33002=value
-            return auto_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 2)), (int)value));
+            return unique_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 2)), (int)value));
         case 2:
             // Add attribute B33003=value
-            return auto_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 3)), (int)value));
+            return unique_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 3)), (int)value));
         case 3:
         case 4:
         case 5:
             // Reserved: ignored
             notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
                     significance);
-            return auto_ptr<Var>();
+            return unique_ptr<Var>();
         case 6:
             // Add attribute B33050=value
             if (!skip_missing || value != 15)
             {
-                auto_ptr<Var> res(new Var(btable->query(WR_VAR(0, 33, 50))));
+                unique_ptr<Var> res(new Var(btable->query(WR_VAR(0, 33, 50))));
                 if (value != 15)
                    res->seti(value);
                 return res;
             } else
-                return auto_ptr<Var>();
+                return unique_ptr<Var>();
         case 7:
             // Add attribute B33040=value
-            return auto_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 40)), (int)value));
+            return unique_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 40)), (int)value));
         case 8:
             // Add attribute B33002=value
             if (!skip_missing || value != 3)
             {
-                auto_ptr<Var> res(new Var(btable->query(WR_VAR(0, 33, 2))));
+                unique_ptr<Var> res(new Var(btable->query(WR_VAR(0, 33, 2))));
                 if (value != 3)
                    res->seti(value);
                 return res;
             } else
-                return auto_ptr<Var>();
+                return unique_ptr<Var>();
         case 21:
             // Add attribute B33041=value
             if (!skip_missing || value != 1)
-                return auto_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 41)), 0));
+                return unique_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 41)), 0));
             else
-                return auto_ptr<Var>();
+                return unique_ptr<Var>();
         case 63:
             /*
              * Ignore quality information if B31021 is missing.
@@ -170,7 +170,7 @@ std::auto_ptr<Var> AssociatedField::make_attribute(unsigned value) const
              *   associated field bits by the "cancel" operator: 2
              *   04 000.
              */
-            return auto_ptr<Var>();
+            return unique_ptr<Var>();
         default:
             if (significance >= 9 and significance <= 20)
                 // Reserved: ignored
@@ -181,7 +181,7 @@ std::auto_ptr<Var> AssociatedField::make_attribute(unsigned value) const
                         significance);
             else
                 error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
-            return auto_ptr<Var>();
+            return unique_ptr<Var>();
     }
 }
 

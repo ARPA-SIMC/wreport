@@ -40,7 +40,7 @@ TESTGRP(bulletin);
 template<> template<>
 void to::test<1>()
 {
-    auto_ptr<BufrBulletin> b(BufrBulletin::create());
+    unique_ptr<BufrBulletin> b(BufrBulletin::create());
     try {
         b->obtain_subset(0);
         ensure(false);

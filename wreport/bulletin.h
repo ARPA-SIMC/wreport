@@ -254,7 +254,7 @@ struct BufrCodecOptions
      * reduce the likelyhook of breaking ABI, construction on stack is discouraged
      * in favour of an allocator function.
      */
-    static std::auto_ptr<BufrCodecOptions> create();
+    static std::unique_ptr<BufrCodecOptions> create();
 
 protected:
     BufrCodecOptions();
@@ -356,7 +356,7 @@ struct BufrBulletin : public Bulletin
      * To prevent breaking ABI if new members are added to bulletins, direct
      * construction is discouraged in favour of an allocator function
      */
-    static std::auto_ptr<BufrBulletin> create();
+    static std::unique_ptr<BufrBulletin> create();
 
 protected:
     BufrBulletin();
@@ -415,7 +415,7 @@ struct CrexBulletin : public Bulletin
      * To prevent breaking ABI if new members are added to bulletins, direct
      * construction is discouraged in favour of an allocator function
      */
-    static std::auto_ptr<CrexBulletin> create();
+    static std::unique_ptr<CrexBulletin> create();
 
 protected:
     CrexBulletin();

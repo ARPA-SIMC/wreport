@@ -26,7 +26,7 @@
 void do_makebuoy()
 {
     // Create a blank BUFR bulletin
-    auto_ptr<BufrBulletin> bulletin(BufrBulletin::create());
+    unique_ptr<BufrBulletin> bulletin(BufrBulletin::create());
 
 
     // * Fill up metadata

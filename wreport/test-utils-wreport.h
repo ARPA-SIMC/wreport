@@ -74,7 +74,7 @@ struct MsgTester
 		std::string raw1 = slurpfile(name);
 
         // Decode the original contents
-        std::auto_ptr<BULLETIN> msg1 = BULLETIN::create();
+        std::unique_ptr<BULLETIN> msg1 = BULLETIN::create();
         try {
             msg1->decode(raw1, name);
         } catch (wreport::error_parse& e) {
@@ -92,7 +92,7 @@ struct MsgTester
 		msg1->encode(raw);
 
         // Decode our encoder's output
-        std::auto_ptr<BULLETIN> msg2 = BULLETIN::create();
+        std::unique_ptr<BULLETIN> msg2 = BULLETIN::create();
         msg2->decode(raw, name);
 
         // Test the decoded version

@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
         notes::set_target(cerr);
 
     // Choose the right handler for the action requested by the user
-    auto_ptr<RawHandler> handler;
+    unique_ptr<RawHandler> handler;
     switch (options.action)
     {
         case HELP:

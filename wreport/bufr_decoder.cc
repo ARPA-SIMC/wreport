@@ -358,9 +358,9 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
                 TRACE(" do_var with associated field: ");
                 cur_associated_field->print(stderr);
             }
-            auto_ptr<Var> af(cur_associated_field);
+            unique_ptr<Var> af(cur_associated_field);
             cur_associated_field = 0;
-            target->back().seta(af);
+            target->back().seta(move(af));
         }
     }
 

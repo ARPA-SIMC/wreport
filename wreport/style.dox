@@ -17,7 +17,7 @@ proper resource handling also in case of errors.
 Memory management responsibilities are made obvious by the use of:
  - references and const pointers, which implicitly deny pointer ownership
    transfer;
- - std::auto_ptr to explictly mark ownership transfer (see wreport::Var::seta());
+ - std::unique_ptr to explictly mark ownership transfer (see wreport::Var::seta());
  - documentation for all other cases.
 
 The code is migrating from tab-indent to 4-spaces indent. To preserve useful

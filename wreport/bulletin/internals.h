@@ -141,7 +141,7 @@ struct AssociatedField
      * A return value of nullptr means "no field to associate".
      *
      */
-    std::auto_ptr<Var> make_attribute(unsigned value) const;
+    std::unique_ptr<Var> make_attribute(unsigned value) const;
 
     /**
      * Get the attribute of var corresponding to this associated field

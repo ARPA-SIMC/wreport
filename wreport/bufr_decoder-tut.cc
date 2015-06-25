@@ -1306,7 +1306,7 @@ void to::test<35>()
     std::string raw1 = tests::slurpfile("bufr/corrupted.bufr");
 
     // Decode the original contents
-    auto_ptr<BufrBulletin> msg1(BufrBulletin::create());
+    unique_ptr<BufrBulletin> msg1(BufrBulletin::create());
     try {
         msg1->decode(raw1, "bufr/corrupted.bufr");
     } catch (std::exception& e) {

@@ -131,8 +131,8 @@ void to::test<3>()
 	Var var(table->query(WR_VAR(0, 6, 1)));
 	var.seti(234);
 	
-	var.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 75)));
-	var.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33, 15)), 45)));
+	var.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 75)));
+	var.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33, 15)), 45)));
 
 	ensure(var.enqa(WR_VAR(0, 33, 7)) != NULL);
 	ensure_var_equals(*var.enqa(WR_VAR(0, 33, 7)), 75);
@@ -153,7 +153,7 @@ void to::test<3>()
 	ensure_var_equals(*var1.enqa(WR_VAR(0, 33, 15)), 45);
 
 	// Fiddle with the attribute and make sure dba_var_equals notices
-	var.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 10)));
+	var.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33,  7)), 10)));
 	ensure(var != var1);
 	ensure(var1 != var);
 }
@@ -205,7 +205,7 @@ void to::test<6>()
 	ensure(var.enqa(WR_VAR(0, 33, 7)) == NULL);
 
 	// Set an attr
-	var.seta(auto_ptr<Var>(new Var(table->query(WR_VAR(0, 33, 7)), 42)));
+	var.seta(unique_ptr<Var>(new Var(table->query(WR_VAR(0, 33, 7)), 42)));
 
 	// Query it back
 	ensure(var.enqa(WR_VAR(0, 33, 7)) != NULL);

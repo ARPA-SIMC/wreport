@@ -227,7 +227,7 @@ public:
 	 *   The attribute to add.  It will be used directly, and var will take care of
 	 *   its memory management.
 	 */
-	void seta(std::auto_ptr<Var> attr);
+	void seta(std::unique_ptr<Var>&& attr);
 
 	/// Remove the attribute with the given code
 	void unseta(Varcode code);

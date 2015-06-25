@@ -76,7 +76,7 @@ void read_crex_raw(const Options& opts, const char* fname, RawHandler& handler)
     // even in case of errors
     try {
         // Create a CREX bulletin
-        auto_ptr<Bulletin> bulletin(CrexBulletin::create());
+        unique_ptr<Bulletin> bulletin(CrexBulletin::create());
 
         // String used to hold raw data read from the input file
         string raw_data;

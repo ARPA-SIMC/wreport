@@ -72,7 +72,7 @@ void to::test<1>()
 		}
 	} test;
 
-    auto_ptr<BufrBulletin> pmsg(BufrBulletin::create());
+    unique_ptr<BufrBulletin> pmsg(BufrBulletin::create());
     BufrBulletin& msg = *pmsg;
     msg.clear();
 
@@ -119,7 +119,7 @@ void to::test<1>()
 	ensure(memfind(rmsg, "abcdefg       ", 14));
 
     // Decode the message and retest
-    auto_ptr<BufrBulletin> pmsg1(BufrBulletin::create());
+    unique_ptr<BufrBulletin> pmsg1(BufrBulletin::create());
     BufrBulletin& msg1 = *pmsg1;
     msg1.decode(rmsg);
     test.run("reencoded", msg1);
@@ -149,7 +149,7 @@ void to::test<2>()
 		}
 	} test;
 
-    auto_ptr<BufrBulletin> pmsg(BufrBulletin::create());
+    unique_ptr<BufrBulletin> pmsg(BufrBulletin::create());
     BufrBulletin& msg = *pmsg;
     msg.clear();
 
@@ -199,7 +199,7 @@ void to::test<2>()
 	ensure(memfind(rmsg, "abcdefg       ", 14));
 
     // Decode the message and retest
-    auto_ptr<BufrBulletin> pmsg1(BufrBulletin::create());
+    unique_ptr<BufrBulletin> pmsg1(BufrBulletin::create());
     BufrBulletin& msg1 = *pmsg1;
     msg1.decode(rmsg);
 
@@ -214,7 +214,7 @@ void to::test<2>()
 template<> template<>
 void to::test<3>()
 {
-    auto_ptr<BufrBulletin> pmsg(BufrBulletin::create());
+    unique_ptr<BufrBulletin> pmsg(BufrBulletin::create());
     BufrBulletin& msg = *pmsg;
 
 	// Initialise common message bits
