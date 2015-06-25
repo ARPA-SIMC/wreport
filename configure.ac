@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(wreport, [2.15], [enrico@enricozini.org])
+AC_INIT(wreport, [3.0], [enrico@enricozini.org])
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AM_CONFIG_HEADER(config.h)
@@ -31,6 +31,9 @@ dnl To use subdirs
 AC_PROG_MAKE_SET
 
 AC_LANG([C++])
+
+dnl Use c++11
+AX_CXX_COMPILE_STDCXX_11
 
 AC_ISC_POSIX
 AC_PROG_CC
@@ -72,28 +75,6 @@ then
 	then
 		AC_MSG_ERROR([please extract wreport/uniconv.cc from the distribution tarball])
 	fi
-fi
-
-dnl Check if std::vector has a std::vector::data method
-AC_CACHE_CHECK(whether the compiler has std::vector::data (),
-	ac_cv_cxx_have_vector_data,
-[AC_LANG_SAVE
- AC_LANG_CPLUSPLUS
- AC_TRY_COMPILE([#include <vector>
-using namespace std;
-],[vector<int> v; v.data(); return 0;],
- ac_cv_cxx_have_vector_data=yes, ac_cv_cxx_have_vector_data=no)
- AC_LANG_RESTORE
-])
-if test "$ac_cv_cxx_have_vector_data" = yes; then
- AC_DEFINE(HAVE_VECTOR_DATA,,[define if the compiler has the method
-std::vector::data ()])
-fi
-
-if test x$docdir = x
-then
-	docdir='${datadir}/doc/${PACKAGE_TARNAME}'
-	AC_SUBST(docdir)
 fi
 
 DEP_LIBS=""
@@ -153,7 +134,37 @@ AC_SUBST(tabledir)
 dnl def_tabledir=`echo "${sharedstatedir}/lib/$PACKAGE/tables"`
 dnl AC_DEFINE_UNQUOTED(TABLE_DIR, "$def_tabledir", "Default location for table files")
 
-LIBWREPORT_VERSION_INFO=`echo $VERSION | awk -F. '{ printf "%d:%d:%d", $1+$2, $3, $2 }'`
+dnl From libtool's documentation:
+dnl
+dnl This flag accepts an argument of the form `CURRENT[:REVISION[:AGE]]'.
+dnl
+dnl CURRENT
+dnl      The most recent interface number that this library implements.
+dnl 
+dnl REVISION
+dnl      The implementation number of the CURRENT interface.
+dnl 
+dnl AGE
+dnl      The difference between the newest and oldest interfaces that this
+dnl      library implements.  In other words, the library implements all the
+dnl      interface numbers in the range from number `CURRENT - AGE' to
+dnl      `CURRENT'.
+dnl
+dnl If two libraries have identical CURRENT and AGE numbers, then the
+dnl dynamic linker chooses the library with the greater REVISION number.
+dnl
+dnl  3. If the library source code has changed at all since the last
+dnl     update, then increment REVISION (`C:R:A' becomes `C:r+1:A').
+dnl
+dnl  4. If any interfaces have been added, removed, or changed since the
+dnl     last update, increment CURRENT, and set REVISION to 0.
+dnl
+dnl  5. If any interfaces have been added since the last public release,
+dnl     then increment AGE.
+dnl
+dnl  6. If any interfaces have been removed since the last public release,
+dnl     then set AGE to 0.
+LIBWREPORT_VERSION_INFO="3:0:0"
 AC_SUBST(LIBWREPORT_VERSION_INFO)
 
 dnl Give me warnings
