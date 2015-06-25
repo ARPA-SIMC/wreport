@@ -23,6 +23,7 @@
 #include "vartable.h"
 #include "dtable.h"
 #include "error.h"
+#include "notes.h"
 #include <stdio.h>
 
 using namespace std;
@@ -125,6 +126,22 @@ void Opcodes::visit(opcode::Visitor& e) const
                                         WR_VAR_Y(cur));
                         }
                         break;
+                    case 37:
+                        // Use defined data present bitmap
+                        switch (WR_VAR_Y(cur))
+                        {
+                            case 0: // Reuse last defined bitmap
+                                e.c_reuse_last_bitmap(true);
+                                break;
+                            case 255: // cancels reuse of the last defined bitmap
+                                e.c_reuse_last_bitmap(false);
+                                break;
+                            default:
+                                error_consistency::throwf("C modifier %d%02d%03d uses unsupported y=%03d",
+                                        WR_VAR_F(cur), WR_VAR_X(cur), WR_VAR_Y(cur), WR_VAR_Y(cur));
+                                break;
+                        }
+                        break;
                         /*
                     case 24:
                         // First order statistical values
@@ -137,7 +154,12 @@ void Opcodes::visit(opcode::Visitor& e) const
                                         WR_VAR_X(code),
                                         WR_VAR_Y(code));
                         break;
+                        */
                     default:
+                        notes::logf("ignoring unsupported C modifier %01d%02d%03d",
+                                    WR_VAR_F(cur), WR_VAR_X(cur), WR_VAR_Y(cur));
+                        break;
+                        /*
                         error_unimplemented::throwf("C modifier %d%02d%03d is not yet supported",
                                     WR_VAR_F(cur),
                                     WR_VAR_X(cur),
@@ -173,6 +195,7 @@ void Visitor::c_quality_information_bitmap(Varcode code) {}
 void Visitor::c_substituted_value_bitmap(Varcode code) {}
 void Visitor::c_substituted_value(Varcode code) {}
 void Visitor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
+void Visitor::c_reuse_last_bitmap(Varcode code) {}
 void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) {}
 void Visitor::d_group_begin(Varcode code) {}
 void Visitor::d_group_end(Varcode code) {}
@@ -285,9 +308,23 @@ void Printer::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits
     fprintf(out, " local descriptor %d%02d%03d %d bits long\n",
             WR_VAR_F(desc_code), WR_VAR_X(desc_code), WR_VAR_Y(desc_code), nbits);
 }
-
+void Printer::c_reuse_last_bitmap(Varcode code)
+{
+    print_lead(code);
+    switch (WR_VAR_Y(code))
+    {
+        case 0:
+            fprintf(out, " reuse last data present bitmap\n");
+            break;
+        case 255:
+            fprintf(out, " cancel reuse of last data present bitmap\n");
+            break;
+        default:
+            fprintf(out, " unknown B37%03d reuse of last data present bitmap code\n", WR_VAR_Y(code));
+            break;
+    }
 }
 
 }
 
-/* vim:set ts=4 sw=4: */
+}

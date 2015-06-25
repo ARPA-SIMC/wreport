@@ -507,7 +507,7 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
     if (ops.size() != 1)
         in.parse_error("there are %u descriptors after bitmap replicator instead of just one", ops.size());
     if (ops[0] != WR_VAR(0, 31, 31))
-        in.parse_error("bitmap element descriptor is %02d%02d%03d instead of B31031",
+        in.parse_error("bitmap element descriptor is %01d%02d%03d instead of B31031",
                 WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
 
     // Bitmap size is now in count

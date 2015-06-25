@@ -283,6 +283,14 @@ struct Visitor
     virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
 
     /**
+     * Reuse last defined data present bitmap
+     *
+     * y is the Y value in the C modifier, currently defined as 0 for reusing
+     * the last defined bitmap, and 255 to cancel reuse of the last bitmap.
+     */
+    virtual void c_reuse_last_bitmap(Varcode code);
+
+    /**
      * Notify a replicated section
      * 
      * @param code
@@ -376,6 +384,7 @@ public:
     virtual void c_substituted_value_bitmap(Varcode code);
     virtual void c_substituted_value(Varcode code);
     virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
+    virtual void c_reuse_last_bitmap(Varcode code);
     virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
     virtual void d_group_begin(Varcode code);
     virtual void d_group_end(Varcode code);
