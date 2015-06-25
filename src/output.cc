@@ -72,7 +72,7 @@ struct PrintTables : public BulletinHeadHandler
         {
             if (!header_printed)
             {
-                fprintf(out, "%-*s\tOffset\tCentre\tSubc.\tMaster\tLocal\n", strlen(b.fname), "Filename");
+                fprintf(out, "%-*s\tOffset\tCentre\tSubc.\tMaster\tLocal\n", (int)strlen(b.fname), "Filename");
                 header_printed = true;
             }
             fprintf(out, "%s\t%zd\t%d\t%d\t%d\t%d\n",
