@@ -242,23 +242,27 @@ int convert_degrees_to_octants(double from)
 {
   if (from < 0 || from > 360)
     error_domain::throwf("cannot handle  degrees (%f) values below 0.0 or above 360.0", from);
+  // 0 degrees = undefined direction (wind calm)
   if (from == 0)
     return 0;
-  if (from > 337.5 || from <= 22.5)
+  // North
+  else if (from > 337.5 || from <= 22.5)
     return 8;
-  if (from >  22.5 && from <=  67.5)
+  else if (from >  22.5 && from <=  67.5)
     return 1;
-  if (from >  67.5 && from <= 112.5)
+  else if (from >  67.5 && from <= 112.5)
     return 2;
-  if (from > 112.5 && from <= 157.5)
+  else if (from > 112.5 && from <= 157.5)
     return 3;
-  if (from > 157.5 && from <= 202.5)
+  else if (from > 157.5 && from <= 202.5)
     return 4;
-  if (from > 202.5 && from <= 247.5)
+  else if (from > 202.5 && from <= 247.5)
     return 5;
-  if (from > 247.5 && from <= 292.5)
+  else if (from > 247.5 && from <= 292.5)
     return 6;
-  if (from > 292.5 && from <= 337.5)
+  else // if (from > 292.5 && from <= 337.5)
+    // We really covered all steps, but gcc cannot detect it. I work around it
+    // by making this an else instead of an else if.
     return 7;
 }
 
