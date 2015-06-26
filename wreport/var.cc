@@ -180,49 +180,63 @@ bool Var::isset() const throw ()
 
 void Var::clear_attrs()
 {
-	if (m_attrs != NULL)
-		delete m_attrs;
-	m_attrs = 0;
+    delete m_attrs;
+    m_attrs = 0;
 }
 
-static inline void fail_if_undef(const Varinfo& info, const char* val, const char* err)
+static inline void fail_if_undef(const char* what, const Varinfo& info, const char* val)
 {
-    if (val == NULL)
-        error_notfound::throwf("%s: B%02d%03d (%s) is not defined",
-                err, WR_VAR_X(info->code), WR_VAR_Y(info->code), info->desc);
+    if (!val)
+        error_notfound::throwf("%s: %01d%02d%03d (%s) is not defined",
+                what, WR_VAR_FXY(info->code), info->desc);
+}
+
+// Ensure that we're working with a numeric value that is not undefined
+static inline void want_number(const char* what, Varinfo info, const char* val)
+{
+    if (!val)
+        error_notfound::throwf("%s: %01d%02d%03d (%s) is not defined",
+                what, WR_VAR_FXY(info->code), info->desc);
+    if (info->is_string())
+        error_type::throwf("%s: %01d%02d%03d (%s) is a string",
+                what, WR_VAR_FXY(info->code), info->desc);
+    if (info->is_binary())
+        error_type::throwf("%s: %01d%02d%03d (%s) is an opaque binary",
+                what, WR_VAR_FXY(info->code), info->desc);
 }
 
 // Ensure that we're working with a numeric value
-static inline void fail_if_string(const Varinfo& info, const char* err)
+static inline void want_number(const char* what, Varinfo info)
 {
     if (info->is_string())
-        error_type::throwf("%s: B%02d%03d (%s) is of type string",
-                err, WR_VAR_X(info->code), WR_VAR_Y(info->code), info->desc);
+        error_type::throwf("%s: %01d%02d%03d (%s) is a string",
+                what, WR_VAR_FXY(info->code), info->desc);
+    if (info->is_binary())
+        error_type::throwf("%s: %01d%02d%03d (%s) is an opaque binary",
+                what, WR_VAR_FXY(info->code), info->desc);
 }
 
 int Var::enqi() const
 {
-	fail_if_undef(m_info, m_value, "enqi");
-	fail_if_string(m_info, "enqi");
-	return strtol(m_value, 0, 10);
+    want_number("enqi", m_info, m_value);
+    return strtol(m_value, 0, 10);
 }
 
 double Var::enqd() const
 {
-    fail_if_undef(m_info, m_value, "enqd");
-    fail_if_string(m_info, "enqd");
+    want_number("enqd", m_info, m_value);
     return m_info->decode_decimal(strtol(m_value, 0, 10));
 }
 
 const char* Var::enqc() const
 {
-	fail_if_undef(m_info, m_value, "enqc");
-	return m_value;
+    fail_if_undef("enqc", m_info, m_value);
+    return m_value;
 }
 
 void Var::seti(int val)
 {
-	fail_if_string(m_info, "seti");
+    want_number("seti", m_info);
 
     /* Guard against overflows */
     if (val < m_info->imin || val > m_info->imax)
@@ -248,7 +262,7 @@ void Var::seti(int val)
 
 void Var::setd(double val)
 {
-	fail_if_string(m_info, "setd");
+    want_number("setd", m_info);
 
     /* Guard against NaNs */
     if (std::isnan(val))
