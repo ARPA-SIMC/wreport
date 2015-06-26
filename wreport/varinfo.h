@@ -142,7 +142,7 @@ struct _Varinfo
      */
     int scale;
 
-    /// Length in digits of the variable encoded as a positive decimal integer
+    /// Length in digits of the variable encoded as a decimal integer
     unsigned len;
 
     /**
