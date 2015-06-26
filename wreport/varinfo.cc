@@ -191,7 +191,7 @@ double _Varinfo::decode_binary(uint32_t ival) const
 {
     if (bit_len == 0)
         error_consistency::throwf("cannot decode %01d%02d%03d from binary, because the information needed is missing from the B table in use",
-                WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+                WR_VAR_FXY(code));
     if (bit_scale >= 0)
         return ((double)ival + bit_ref) / scales[bit_scale];
     else
@@ -212,7 +212,7 @@ unsigned _Varinfo::encode_binary(double fval) const
 {
     if (bit_len == 0)
         error_consistency::throwf("cannot encode %01d%02d%03d to binary, because the information needed is missing from the B table in use",
-                WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+                WR_VAR_FXY(code));
     double res;
     if (bit_scale > 0)
         res = rint((fval * scales[bit_scale]) - bit_ref);
@@ -222,7 +222,7 @@ unsigned _Varinfo::encode_binary(double fval) const
         res = rint(fval - bit_ref);
     if (res < 0)
         error_consistency::throwf("Cannot encode %01d%02d%03d %f to %d bits using scale %d and ref %d: encoding gives negative value %f",
-                WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code), fval, bit_len, bit_scale, bit_ref, res);
+                WR_VAR_FXY(code), fval, bit_len, bit_scale, bit_ref, res);
     return (unsigned)res;
 }
 

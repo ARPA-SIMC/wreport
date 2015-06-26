@@ -75,18 +75,23 @@ std::string varcode_format(Varcode code);
 		( ((str)[2] - '0')*100 + ((str)[3] - '0')*10 + ((str)[4] - '0') ) \
 ))
 
-/**
- * Get the F part of a WMO variable code.
- */
+/// Get the F part of a WMO variable code.
 #define WR_VAR_F(code) (((code) >> 14) & 0x3)
-/**
- * Get the X part of a WMO variable code.
- */
+
+/// Get the X part of a WMO variable code.
 #define WR_VAR_X(code) ((code) >> 8 & 0x3f)
-/**
- * Get the Y part of a WMO variable code.
- */
+
+/// Get the Y part of a WMO variable code.
 #define WR_VAR_Y(code) ((code) & 0xff)
+
+/**
+ * Expands to WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code).
+ *
+ * This is intended as a convenient shortcut to pass a broken down varcode to
+ * functions like printf, but not much more than that. Of course it evaluates
+ * its argument multiple times.
+ */
+#define WR_VAR_FXY(code) WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code)
 
 /**
  * Convert a FXXYYY string descriptor code into its short integer
