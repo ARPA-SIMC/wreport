@@ -1,12 +1,6 @@
 #ifndef WREPORT_VAR_H
 #define WREPORT_VAR_H
 
-/** @file
- * @ingroup core
- * Implement wreport::Var, an encapsulation of a measured variable.
- */
-
-
 #include <wreport/error.h>
 #include <wreport/varinfo.h>
 #include <cstdio>
@@ -18,13 +12,13 @@ struct lua_State;
 namespace wreport {
 
 /**
- * Holds a wreport variable
+ * A physical variable
  *
  * A wreport::Var contains:
- * \li a wreport::Varcode identifying what is measured.  See @ref vartable.h
- * \li a measured value, that can be an integer, double or string depending on
- *     the wreport::Varcode
- * \li zero or more attributes, in turn represented by wreport::Var structures
+ * \li a wreport::Varinfo describing the variable
+ * \li a value, that can be integer, floating point, string or opaque binary
+ *     data as specified by the Varinfo
+ * \li zero or more attributes, represented by other wreport::Var objects
  */
 class Var
 {
