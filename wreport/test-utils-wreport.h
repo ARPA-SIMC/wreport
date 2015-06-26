@@ -68,14 +68,14 @@ struct MsgTester
 		}
 	}
 
-	void run(const char* name)
-	{
-		// Read the whole contents of the test file
-		std::string raw1 = slurpfile(name);
+    void run(const char* name)
+    {
+        // Read the whole contents of the test file
+        std::string raw1 = wcallchecked(slurpfile(name));
 
         // Decode the original contents
         std::unique_ptr<BULLETIN> msg1 = BULLETIN::create();
-        try {
+        wrunchecked(try {
             msg1->decode(raw1, name);
         } catch (wreport::error_parse& e) {
             try {
@@ -84,16 +84,16 @@ struct MsgTester
                 std::cerr << "Dump interrupted: " << e.what();
             }
             throw;
-        }
+        });
         (*this)("orig", *msg1);
 
-		// Encode it again
-		std::string raw;
-		msg1->encode(raw);
+        // Encode it again
+        std::string raw;
+        wrunchecked(msg1->encode(raw));
 
         // Decode our encoder's output
         std::unique_ptr<BULLETIN> msg2 = BULLETIN::create();
-        msg2->decode(raw, name);
+        wrunchecked(msg2->decode(raw, name));
 
         // Test the decoded version
         (*this)("reencoded", *msg2);

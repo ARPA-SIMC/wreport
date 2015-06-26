@@ -214,9 +214,9 @@ int Var::enqi() const
 
 double Var::enqd() const
 {
-	fail_if_undef(m_info, m_value, "enqd");
-	fail_if_string(m_info, "enqd");
-	return m_info->decode_int(strtol(m_value, 0, 10));
+    fail_if_undef(m_info, m_value, "enqd");
+    fail_if_string(m_info, "enqd");
+    return m_info->decode_decimal(strtol(m_value, 0, 10));
 }
 
 const char* Var::enqc() const
@@ -282,9 +282,9 @@ void Var::setd(double val)
 		(m_value = new char[m_info->len + 2]) == NULL)
 		throw error_alloc("allocating space for Var value");
 
-	// FIXME: not thread safe
-	strcpy(m_value, itoa(m_info->encode_int(val), m_info->len + 1));
-	/*snprintf(var->value, var->info->len + 2, "%ld", (long)dba_var_encode_int(val, var->info));*/
+#warning FIXME: not thread safe
+    strcpy(m_value, itoa(m_info->encode_decimal(val), m_info->len + 1));
+    /*snprintf(var->value, var->info->len + 2, "%ld", (long)dba_var_encode_int(val, var->info));*/
 }
 
 void Var::setc(const char* val)
@@ -496,7 +496,7 @@ void Var::copy_val_only(const Var& src)
     } else {
         if (m_info->is_string())
         {
-            if (src.info()->alteration && src.info()->len > m_info->len)
+            if (src.info()->len > m_info->len)
                 setc_truncate(src.value());
             else
                 setc(src.value());
@@ -638,9 +638,10 @@ unsigned Var::diff(const Var& var) const
         }
         if (memcmp(m_value, var.m_value, m_info->len) != 0)
         {
-            notes::logf("[%d%02d%03d %s] values differ: first is \"%.*s\", second is \"%.*s\"\n",
-                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-                    m_info->len, m_value, m_info->len, var.m_value);
+            string dump1 = format();
+            string dump2 = var.format();
+            notes::logf("[%d%02d%03d %s] binary values differ: first is \"%s\", second is \"%s\"\n",
+                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc, dump1.c_str(), dump2.c_str());
             return 1;
         }
     } else if (m_info->is_string() || m_info->scale == 0) {

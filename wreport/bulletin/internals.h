@@ -26,6 +26,7 @@
 #include <wreport/opcode.h>
 #include <vector>
 #include <memory>
+#include <cmath>
 
 namespace wreport {
 struct Var;
@@ -33,6 +34,68 @@ struct Subset;
 struct Bulletin;
 
 namespace bulletin {
+
+/**
+ * Storage for non-B-table Varinfo entries used locally in a Bulletin
+ */
+struct LocalVartable
+{
+    struct Entry
+    {
+        _Varinfo varinfo;
+        Entry* next = nullptr;
+    };
+
+    Entry* first = nullptr;
+
+    LocalVartable() {}
+    LocalVartable(const LocalVartable&) = delete;
+    LocalVartable(LocalVartable&&) = delete;
+    ~LocalVartable()
+    {
+        while (first)
+        {
+            Entry* next = first->next;
+            delete first;
+            first = next;
+        }
+    }
+    LocalVartable operator=(const LocalVartable&) = delete;
+    LocalVartable operator=(LocalVartable&&) = delete;
+
+    // Create a single use varinfo to store the bitmap
+    _Varinfo* new_entry()
+    {
+        std::unique_ptr<Entry> entry(new Entry);
+        entry->next = first;
+        first = entry.release();
+        return &(first->varinfo);
+    }
+
+    // Create a varinfo to store the bitmap
+    Varinfo get_bitmap_entry(Varcode code, unsigned size)
+    {
+        auto res = new_entry();
+        res->set_string(code, "DATA PRESENT BITMAP", size);
+        return res;
+    }
+
+    // Create a varinfo to store character data
+    Varinfo get_chardata_entry(Varcode code, unsigned size)
+    {
+        auto res = new_entry();
+        res->set_string(code, "CHARACTER DATA", size);
+        return res;
+    }
+
+    // Create a varinfo to store a C06 unknown local descriptor
+    Varinfo get_unknown(Varcode code, unsigned bit_len)
+    {
+        auto res = new_entry();
+        res->set_binary(code, "UNKNOWN LOCAL DESCRIPTOR", bit_len);
+        return res;
+    }
+};
 
 /**
  * Associate a Data Present Bitmap to decoded variables in a subset

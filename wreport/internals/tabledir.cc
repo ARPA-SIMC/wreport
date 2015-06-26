@@ -1,40 +1,15 @@
-/*
- * wreport/tabledir - Access a BUFR/CREX table collection
- *
- * Copyright (C) 2015  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
 #include "tabledir.h"
-#include "tabledir-internals.h"
 #include "error.h"
 #include "vartable.h"
 #include "dtable.h"
 #include "notes.h"
+#include "fs.h"
 #include "config.h"
 #include <map>
 #include <cstddef>
-#include <cstdlib>
 #include <cstring>
 #include <cstdio>
 #include <cerrno>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 
 // Uncomment to trace approximate table matching
 // #define TRACE_MATCH
@@ -64,73 +39,22 @@ Table::Table(const std::string& dirname, const std::string& filename)
     dtable_pathname = dirname + "/D" + filename.substr(1);
 }
 
-void Table::load_if_needed()
+void BufrTable::load_if_needed()
 {
     if (!btable)
-        btable = Vartable::get(make_pair(btable_id, btable_pathname));
+        btable = Vartable::load_bufr(btable_pathname);
     if (!dtable)
-        dtable = DTable::get(make_pair(dtable_id, dtable_pathname));
+        dtable = DTable::load_bufr(dtable_pathname);
 }
 
-
-DirReader::DirReader(const std::string& pathname)
-    : pathname(pathname), fd(-1), dir(NULL), cur_entry(NULL), mtime(0)
+void CrexTable::load_if_needed()
 {
-    fd = open(pathname.c_str(), O_DIRECTORY | O_PATH);
-    if (fd == -1)
-    {
-       if (errno != ENOENT)
-           error_system::throwf("cannot open directory %s", pathname.c_str());
-       else
-           return;
-    }
-
-    struct stat st;
-    if (fstat(fd, &st) == -1)
-        error_system::throwf("stat failed on directory %s", pathname.c_str());
-    mtime = st.st_mtime;
+    if (!btable)
+        btable = Vartable::load_crex(btable_pathname);
+    if (!dtable)
+        dtable = DTable::load_crex(dtable_pathname);
 }
 
-DirReader::~DirReader()
-{
-    if (cur_entry != NULL)
-        free(cur_entry);
-    if (dir != NULL)
-        closedir(dir);
-    if (fd != -1)
-        close(fd);
-}
-
-void DirReader::start_reading()
-{
-    int fd1 = openat(fd, ".", O_DIRECTORY);
-    if (fd1 == -1)
-        error_system::throwf("cannot open directory %s", pathname.c_str());
-
-    dir = fdopendir(fd1);
-    if (dir == NULL)
-        error_system::throwf("opendir failed on directory %s", pathname.c_str());
-
-    long name_max = fpathconf(fd, _PC_NAME_MAX);
-    if (name_max == -1) // Limit not defined, or error: take a guess
-        name_max = 255;
-    size_t len = offsetof(dirent, d_name) + name_max + 1;
-    cur_entry = (struct dirent*)malloc(len);
-    if (cur_entry == NULL)
-        throw error_alloc("cannot allocate space for a dirent structure");
-}
-
-bool DirReader::next_file()
-{
-    struct dirent* result;
-    if (readdir_r(dir, cur_entry, &result) != 0)
-        error_system::throwf("readdir_r failed on directory %s", pathname.c_str());
-
-    if (result == NULL)
-        return false;
-
-    return true;
-}
 
 Dir::Dir(const std::string& pathname)
     : pathname(pathname), mtime(0)
@@ -145,48 +69,39 @@ Dir::~Dir()
 // Reread the directory contents if it has changed
 void Dir::refresh()
 {
-    DirReader reader(pathname);
+    fs::Directory reader(pathname);
     if (!reader.exists()) return;
-    if (mtime >= reader.mtime) return;
-    reader.start_reading();
-    while (reader.next_file())
+    struct stat st;
+    reader.stat(st);
+    if (mtime >= st.st_mtime) return;
+    for (auto& e: reader)
     {
-        switch (strlen(reader.cur_entry->d_name))
+        switch (strlen(e.d_name))
         {
             case 11: // B000203.txt
             {
                 int mtn, ed, ta;
-                if (sscanf(reader.cur_entry->d_name, "B%02d%02d%02d", &mtn, &ed, &ta) == 3)
-                    add_crex_entry(mtn, ed, ta, reader);
+                if (sscanf(e.d_name, "B%02d%02d%02d", &mtn, &ed, &ta) == 3)
+                    crex_tables.push_back(CrexTable(mtn, ed, ta, pathname, e.d_name));
                 break;
             }
             case 20: // B000000000001100.txt
             {
                 int ce, sc, mt, lt;
-                if (sscanf(reader.cur_entry->d_name, "B00000%03d%03d%02d%02d", &sc, &ce, &mt, &lt) == 4)
-                    add_bufr_entry(ce, sc, mt, lt, reader);
+                if (sscanf(e.d_name, "B00000%03d%03d%02d%02d", &sc, &ce, &mt, &lt) == 4)
+                    bufr_tables.push_back(BufrTable(ce, sc, mt, lt, pathname, e.d_name));
                 break;
             }
             case 24: // B0000000000085014000.txt
             {
                 int ce, sc, mt, lt, dummy;
-                if (sscanf(reader.cur_entry->d_name, "B00%03d%04d%04d%03d%03d", &dummy, &sc, &ce, &mt, &lt) == 5)
-                    add_bufr_entry(ce, sc, mt, lt, reader);
+                if (sscanf(e.d_name, "B00%03d%04d%04d%03d%03d", &dummy, &sc, &ce, &mt, &lt) == 5)
+                    bufr_tables.push_back(BufrTable(ce, sc, mt, lt, pathname, e.d_name));
                 break;
             }
         }
     }
-    mtime = reader.mtime;
-}
-
-void Dir::add_bufr_entry(int centre, int subcentre, int master_table, int local_table, const DirReader& reader)
-{
-    bufr_tables.push_back(BufrTable(centre, subcentre, master_table, local_table, reader.pathname, reader.cur_entry->d_name));
-}
-
-void Dir::add_crex_entry(int master_table_number, int edition, int table, const DirReader& reader)
-{
-    crex_tables.push_back(CrexTable(master_table_number, edition, table, reader.pathname, reader.cur_entry->d_name));
+    mtime = st.st_mtime;
 }
 
 
@@ -415,9 +330,31 @@ struct Index
 
         return query.result;
     }
-};
 
-}
+    const tabledir::BufrTable* find_bufr(const std::string& basename)
+    {
+        for (auto& d: dirs)
+            for (auto& t: d.bufr_tables)
+                if (t.btable_id == basename)
+                {
+                    t.load_if_needed();
+                    return &t;
+                }
+        return nullptr;
+    }
+
+    const tabledir::CrexTable* find_crex(const std::string& basename)
+    {
+        for (auto& d: dirs)
+            for (auto& t: d.crex_tables)
+                if (t.btable_id == basename)
+                {
+                    t.load_if_needed();
+                    return &t;
+                }
+        return nullptr;
+    }
+};
 
 
 Tabledir::Tabledir()
@@ -471,6 +408,18 @@ const tabledir::CrexTable* Tabledir::find_crex(int master_table_number, int edit
     return index->find_crex(master_table_number, edition, table);
 }
 
+const tabledir::BufrTable* Tabledir::find_bufr(const std::string& basename)
+{
+    if (!index) index = new tabledir::Index(dirs);
+    return index->find_bufr(basename);
+}
+
+const tabledir::CrexTable* Tabledir::find_crex(const std::string& basename)
+{
+    if (!index) index = new tabledir::Index(dirs);
+    return index->find_crex(basename);
+}
+
 Tabledir& Tabledir::get()
 {
     static Tabledir* default_tabledir = 0;
@@ -483,4 +432,5 @@ Tabledir& Tabledir::get()
 }
 
 
+}
 }

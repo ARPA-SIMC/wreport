@@ -22,7 +22,9 @@
 #include <config.h>
 
 #include "subset.h"
+#include "bulletin.h"
 #include "notes.h"
+#include "bulletin/internals.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -32,9 +34,9 @@ using namespace std;
 
 namespace wreport {
 
-Subset::Subset(const Vartable* btable) : btable(btable)
+Subset::Subset(Bulletin* bulletin) : bulletin(bulletin)
 {
-	if (!btable) throw error_consistency("B tables not loaded");
+    if (!bulletin->btable) throw error_consistency("B tables not loaded");
 }
 Subset::~Subset() {}
 
@@ -45,41 +47,39 @@ void Subset::store_variable(const Var& var)
 
 void Subset::store_variable(Varcode code, const Var& var)
 {
-	Varinfo info = btable->query(code);
-	push_back(Var(info, var));
+    Varinfo info = bulletin->btable->query(code);
+    push_back(Var(info, var));
 }
 
 void Subset::store_variable_i(Varcode code, int val)
 {
-	Varinfo info = btable->query(code);
-	push_back(Var(info, val));
+    Varinfo info = bulletin->btable->query(code);
+    push_back(Var(info, val));
 }
 
 void Subset::store_variable_d(Varcode code, double val)
 {
-	Varinfo info = btable->query(code);
-	push_back(Var(info, val));
+    Varinfo info = bulletin->btable->query(code);
+    push_back(Var(info, val));
 }
 
 void Subset::store_variable_c(Varcode code, const char* val)
 {
-	Varinfo info = btable->query(code);
-	push_back(Var(info, val));
+    Varinfo info = bulletin->btable->query(code);
+    push_back(Var(info, val));
 }
 
 void Subset::store_variable_undef(Varcode code)
 {
-	Varinfo info = btable->query(code);
-	push_back(Var(info));
+    Varinfo info = bulletin->btable->query(code);
+    push_back(Var(info));
 }
 
 void Subset::append_c_with_dpb(Varcode ccode, int count, const char* bitmap)
 {
-	/* Create a single use varinfo to store the bitmap */
-	MutableVarinfo info = MutableVarinfo::create_singleuse();
-	info->set_string(ccode, "DATA PRESENT BITMAP", count);
+    Varinfo info = bulletin->local_vartable->get_bitmap_entry(ccode, count);
 
-	/* Create the dba_var with the bitmap */
+	/* Create the Var with the bitmap */
 	Var var(info, bitmap);
 
 	/* Store the variable in the subset */
@@ -185,10 +185,10 @@ void Subset::print(FILE* out) const
 unsigned Subset::diff(const Subset& s2) const
 {
     // Compare btables
-    if (btable->id() != s2.btable->id())
+    if (bulletin->btable->pathname() != s2.bulletin->btable->pathname())
     {
         notes::logf("B tables differ (first is %s, second is %s)\n",
-                btable->id().c_str(), s2.btable->id().c_str());
+                bulletin->btable->pathname().c_str(), s2.bulletin->btable->pathname().c_str());
         return 1;
     }
 

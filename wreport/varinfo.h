@@ -1,28 +1,7 @@
-/*
- * wreport/varinfo - Variable information
- *
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #ifndef WREPORT_VARINFO_H
 #define WREPORT_VARINFO_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 namespace wreport {
@@ -139,234 +118,168 @@ typedef short unsigned int Alteration;
 
 
 /**
- * Holds the information about a DBALLE variable.
+ * Information about a variable.
  *
- * It never needs to be deallocated, as all the Varinfo returned by DB-ALLe
- * are pointers to memory-cached versions that are guaranteed to exist for all
- * the lifetime of the program.
+ * The normal value of a variable is considered expressed in unit
  */
 struct _Varinfo
 {
-	/** The variable code.  See @ref WR_VAR, WR_VAR_X, WR_VAR_Y. */
-	Varcode var;
-	/** The variable description. */
-	char desc[64];
-	/** The measurement unit of the variable. */
-	char unit[24];
-	/** The scale of the variable.  When the variable is represented as an
-	 * integer, it is multiplied by 10**scale */
-	int scale;
-	/** The reference value for the variable.  When the variable is represented
-	 * as an integer, and after scaling, it is added this value */
-	int ref;
-	/** The length in digits of the integer representation of this variable
-	 * (after scaling and changing reference value) */
-	unsigned len;
-	/** The reference value for bit-encoding.  When the variable is encoded in
-	 * a bit string, it is added this value */
-	int bit_ref;
-	/** The length in bits of the variable when encoded in a bit string (after
-	 * scaling and changing reference value) */
-	unsigned bit_len;
-	/// Variable flags (see VARINFO_FLAG_* constants)
-	unsigned flags;
-	/** Minimum unscaled value the field can have */
-	int imin;
-	/** Maximum unscaled value the field can have */
-	int imax;
-	/** Minimum scaled value the field can have */
-	double dmin;
-	/** Maximum scaled value the field can have */
-	double dmax;
-	/** C-table alteration that has been applied to this entry (deprecated) */
-	Alteration alteration;
-	/** Other altered versions of this Varinfo */
-	mutable struct _Varinfo* alterations;
-	/** The measurement unit of the variable when encoded in BUFR. */
-	char bufr_unit[24];
-	/** The scale of the variable when encoded in BUFR. */
-	int bufr_scale;
+    /// Variable code, as in WMO BUFR/CREX table B
+    Varcode var;
 
-	/// Reference count
-	mutable int _ref;
+    /// Freeform variable description
+    char desc[64];
 
-	_Varinfo();
-
-    /// Increment the reference count to this Data object
-    void do_ref() const { ++_ref; }
+    /// Measurement unit of the variable, using the units defined in WMO
+    /// BUFR/CREX table B
+    char unit[24];
 
     /**
-     * Decrement the reference count to this Data object, and return true
-     * if the reference count went down to 0
+     * Scale of the variable, defining its decimal precision.
+     *
+     * The value of the variable can be encoded as a decimal integer
+     * by computing value * exp10(scale).
      */
-    bool do_unref() const { return (--_ref) == 0; }
+    int scale;
 
-	/// Check if we are a string value
-	bool is_string() const
-	{
-		return (flags & VARINFO_FLAG_STRING) != 0;
-	}
-
-    /// Check if we are a binary value
-    bool is_binary() const
-    {
-        return (flags & VARINFO_FLAG_BINARY) != 0;
-    }
+    /// Length in digits of the variable encoded as a positive decimal integer
+    unsigned len;
 
     /**
-     * Encode a double value into an integer value using Varinfo decimal
-     * encoding informations (ref and scale)
+     * Scale of the variable when encoded as an unsigned binary value.
+     *
+     * The value of the variable can be encoded as an unsigned binary value by
+     * computing value * exp10(bit_scale) + bit_ref.
+     */
+    int bit_scale;
+
+    /**
+     * Binary reference value for the variable.
+     *
+     * The value of the variable can be encoded as an unsigned binary value by
+     * computing value * exp10(bit_scale) + bit_ref.
+     */
+    int bit_ref;
+
+    /// Length in bits of the variable when encoded as an unsigned binary value
+    unsigned bit_len;
+
+    /// Variable flags (see VARINFO_FLAG_* constants)
+    unsigned flags;
+
+    /// Minimum unscaled decimal integer value the field can have
+    int imin;
+
+    /// Minimum unscaled decimal integer value the field can have
+    int imax;
+
+    /// Minimum value the field can have
+    double dmin;
+
+    /// Maximum value the field can have
+    double dmax;
+
+    /// Check if this variable holds a string value
+    bool is_string() const { return (flags & VARINFO_FLAG_STRING) != 0; }
+
+    /// Check if this variable holds a raw binary value
+    bool is_binary() const { return (flags & VARINFO_FLAG_BINARY) != 0; }
+
+    /**
+     * Encode a double value into a decimal integer value using Varinfo decimal
+     * encoding informations (scale)
      *
      * @param fval
      *   Value to encode
      * @returns
      *   The double value encoded as an integer
      */
-    int encode_int(double fval) const throw ();
+    int encode_decimal(double fval) const;
 
     /**
-     * Encode a double value into an integer value using Varinfo binary encoding
-     * informations (bit_ref and bufr_scale)
+     * Encode a double value into a positive integer value using Varinfo binary
+     * encoding informations (bit_ref and bit_scale)
      *
      * @param fval
      *   Value to encode
      * @returns
-     *   The double value encoded as an integer
+     *   The double value encoded as an unsigned integer
      */
-    unsigned encode_bit_int(double fval) const;
+    uint32_t encode_binary(double fval) const;
 
-	/**
-	 * Decode a double value from integer value using Varinfo encoding
-	 * informations
-	 *
-	 * @param val
-	 *   Value to decode
-	 * @returns
-	 *   The decoded double value
-	 */
-	double decode_int(int val) const throw ();
+    /**
+     * Decode a double value from a decimal integer value using Varinfo
+     * decimal encoding informations (scale)
+     *
+     * @param val
+     *   Value to decode
+     * @returns
+     *   The decoded double value
+     */
+    double decode_decimal(int val) const;
 
-	/**
-	 * Decode a double value from integer value using Varinfo encoding
-	 * informations for BUFR
-	 *
-	 * @param val
-	 *   Value to decode
-	 * @returns
-	 *   The decoded double value
-	 */
-	double bufr_decode_int(uint32_t val) const throw ();
+    /**
+     * Decode a double value from a decimal integer value using Varinfo
+     * binary encoding informations (bit_ref and bit_scale)
+     *
+     * @param val
+     *   Value to decode
+     * @returns
+     *   The decoded double value
+     */
+    double decode_binary(uint32_t val) const;
 
-	/**
-	 * Set all fields to 0, except the reference count
-	 */
-	void reset();
+    /// Set all the base Varinfo fields, then call compute_range
+    void set_bufr(Varcode var,
+             const char* desc,
+             const char* unit,
+             int scale=0, unsigned len=0,
+             int bit_scale=0, int bit_ref=0, int bit_len=0,
+             int flags=0);
 
-	/**
-	 * Set the values all in one shot.
-	 *
-	 * It also calls compute_range
-	 */
-	void set(Varcode var, const char* desc, const char* unit, int scale = 0, int ref = 0, int len = 0, int bit_ref = 0, int bit_len = 0, int flags = 0, const char* bufr_unit = 0, int bufr_scale = 0);
+    /// Set all the base Varinfo fields, then call compute_range
+    void set_crex(Varcode var,
+             const char* desc,
+             const char* unit,
+             int scale=0, unsigned len=0,
+             int flags=0);
 
-	/**
-	 * Initialise the varinfo to represent a string variable
-	 *
-	 * @param var the variable code
-	 * @param desc the variable description
-	 * @param len the maximum string length
-	 */
-	void set_string(Varcode var, const char* desc, int len);
+    /**
+     * Set all the fields to represent a string variable.
+     *
+     * @param var the variable code
+     * @param desc the variable description
+     * @param len the maximum string length
+     */
+    void set_string(Varcode var, const char* desc, unsigned len);
 
-	/**
-	 * Compute the valid variable range and store it in the *min and *max
-	 * fields
-	 */
-	void compute_range();
+    /**
+     * Set all the fields to represent an opaque binary variable.
+     *
+     * @param var the variable code
+     * @param desc the variable description
+     * @param bit_len the variable length in bits
+     */
+    void set_binary(Varcode var, const char* desc, unsigned bit_len);
+
+    /**
+     * Compute the widest ranges for imin, imax, dmin and dmax that can fit any
+     * value that can be encoded both with (scale, len) and with (bit_scale,
+     * bit_ref, bit_len)
+     */
+    void compute_range();
 };
 
-class Varinfo;
 
-/// Smart pointer to handle/use varinfos
-class MutableVarinfo
-{
-protected:
-    /// Varinfo structure to which the pointer refers
-    _Varinfo* m_impl;
-
-public:
-    //@{
-    /// Create a smart pointer to the given variable information
-    MutableVarinfo(_Varinfo* impl) : m_impl(impl) { m_impl->do_ref(); }
-    MutableVarinfo(const MutableVarinfo& vi) : m_impl(vi.m_impl) { m_impl->do_ref(); }
-    //@}
-    ~MutableVarinfo() { if (m_impl->do_unref()) delete m_impl; }
-
-    //@{
-    /// Standard smart pointer methods
-    MutableVarinfo& operator=(const MutableVarinfo& vi)
-    {
-        vi.m_impl->do_ref();
-        if (m_impl->do_unref()) delete m_impl;
-        m_impl = vi.m_impl;
-        return *this;
-    }
-    _Varinfo* operator->() { return m_impl; }
-    _Varinfo& operator*() { return *m_impl; }
-    //@}
-
-    /// Access the underlying _Varinfo structure
-    _Varinfo* impl() const { return m_impl; }
-
-	/**
-	 * Create a single use varinfo structure.
-	 *
-	 * A single use varinfo structure is not memory managed by a vartable
-	 * and needs to be deallocated explicitly when it is not needed
-	 * anymore.
-	 *
-	 * The various fields of the resulting varinfo will be zeroed.
-	 */
-	static MutableVarinfo create_singleuse();
-
-    friend class wreport::Varinfo;
-};
-
-/// Smart pointer to handle/use varinfos
-class Varinfo
-{
-protected:
-    /// Varinfo structure to which the pointer refers
-    const _Varinfo* m_impl;
-
-public:
-    //@{
-    /// Create a smart pointer to the given variable information
-    Varinfo(const _Varinfo* impl) : m_impl(impl) { m_impl->do_ref(); }
-    Varinfo(const _Varinfo& impl) : m_impl(&impl) { m_impl->do_ref(); }
-    Varinfo(const Varinfo& vi) : m_impl(vi.m_impl) { m_impl->do_ref(); }
-    Varinfo(const MutableVarinfo& vi) : m_impl(vi.m_impl) { m_impl->do_ref(); }
-    //@}
-    ~Varinfo() { if (m_impl->do_unref()) delete m_impl; }
-
-    //@{
-    /// Standard smart pointer methods
-    const Varinfo& operator=(const Varinfo& vi)
-    {
-        vi.m_impl->do_ref();
-        if (m_impl->do_unref()) delete m_impl;
-        m_impl = vi.m_impl;
-        return *this;
-    }
-    const _Varinfo& operator*() const { return *m_impl; }
-    const _Varinfo* operator->() const { return m_impl; }
-    //@}
-
-    /// Access the underlying _Varinfo structure
-    const _Varinfo* impl() const { return m_impl; }
-};
+/**
+ * Varinfo reference.
+ *
+ * Since the actual structures are allocated inside the Vartable objects and
+ * never deallocated until the program quits, we do not need to track memory
+ * allocation and we can just refer to variable information with const
+ * pointers.
+ */
+typedef const _Varinfo* Varinfo;
 
 }
-
 #endif
-/* vim:set ts=4 sw=4: */

@@ -36,7 +36,7 @@ TESTGRP(tests);
 template<> template<>
 void to::test<1>()
 {
-    const Vartable* table = Vartable::get("B0000000000000014000");
+    const Vartable* table = Vartable::get_bufr("B0000000000000014000");
     Var tempundef(table->query(WR_VAR(0, 12, 101)));
     Var temp12(table->query(WR_VAR(0, 12, 101)), 12.5);
     Var temp13(table->query(WR_VAR(0, 12, 101)), 13.5);

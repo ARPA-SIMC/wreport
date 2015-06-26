@@ -29,18 +29,18 @@
 
 #include <wreport/var.h>
 #include <wreport/vartable.h>
-#include <wreport/dtable.h>
 #include <vector>
 
 namespace wreport {
+struct Bulletin;
 
 /**
  * Represent a BUFR/CREX data subset as a list of decoded variables
  */
 struct Subset : public std::vector<Var>
 {
-	/// dba_vartable used to lookup B table codes
-	const Vartable* btable;
+    // Bulletin owning this subset
+    Bulletin* bulletin;
 
 	/**
 	 * Create a new BUFR/CREX subset.
@@ -48,8 +48,21 @@ struct Subset : public std::vector<Var>
 	 * @param btable
 	 *   Reference to the B table to use to create variables.
 	 */
-	Subset(const Vartable* btable);
-	~Subset();
+    Subset(Bulletin* bulletin);
+    Subset(const Subset& subset) = default;
+    Subset(Subset&& subset)
+        : std::vector<Var>(move(subset)), bulletin(subset.bulletin)
+    {
+    }
+    ~Subset();
+    Subset& operator=(const Subset&) = default;
+    Subset& operator=(Subset&& s)
+    {
+        if (this == &s) return *this;
+        std::vector<Var>::operator=(s);
+        bulletin = s.bulletin;
+        return *this;
+    }
 
 	/// Store a decoded variable in the message, to be encoded later.
 	void store_variable(const Var& var);
@@ -77,7 +90,7 @@ struct Subset : public std::vector<Var>
 
 	/**
 	 * Store a new variable in the message, providing its value as a double
-	 *
+	 bulletin->*
 	 * @param code
 	 *   The Varcode of the variable to add.  See @ref vartable.h
 	 * @param val

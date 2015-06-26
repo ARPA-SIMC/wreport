@@ -243,8 +243,6 @@
  002198 SATELLITE CHANNEL BAND WIDTH                                     Hz                        -8            0  26 
  002199 INTEGRATED MEAN HUMIDITY COMPUTATIONAL METHOD                    CODE TABLE 2199            0            0   4 
  002200 LATITUDINAL RESOLUTION                                           DEGREE                     5           25    
- 002201 LONGITUDINAL RESOLUTION                                          DEGREE                     5           25    
- 002201 SIMULATED SATELLITE INSTRUMENT                                   FLAG TABLE 2201            0            0   4 
  002202 SIMULATED DATA PROCESSING TECHNIQUE USED                         FLAG TABLE 2202            0            0   4 
  002220 DATA PRODUCER                                                    CODE TABLE 2220            0            0   9 
  002221 SEGMENT SIZE AT NADIR IN X DIRECTION                             M                          0            0  18 

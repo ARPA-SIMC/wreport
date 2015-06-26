@@ -269,7 +269,6 @@
  004005 Minute                                                           MIN                        0            0   6 MIN                       0         2
  004006 Second                                                           S                          0            0   6 S                         0         2
  004007 Seconds within a minute (microsecond accuracy)                   S                          6            0  26 S                         6         8
- 004008 Seconds Within a Minute (high accuracy)                          S                          7            0  30
  004011 Time increment                                                   A                          0        -1024  11 A                         0         4
  004012 Time increment                                                   MON                        0        -1024  11 MON                       0         4
  004013 Time increment                                                   D                          0        -1024  11 D                         0         4
@@ -430,7 +429,7 @@
  008082 Modification of sensor height to another value                   CODE TABLE                 0            0   3 CODE TABLE                0         1
  008083 Nominal value indicator                                          FLAG TABLE                 0            0  15 FLAG TABLE                0         5
  008085 Beam identifier                                                  CODE TABLE                 0            0   3 CODE TABLE                0         1
- 008086 Vertical significance for NWP                                    FLAG TABLE                 0            0  12
+ 008086 Vertical significance for NWP                                    FLAG TABLE                 0            0  12 FLAG TABLE                0         4
  008090 Decimal scale of following significands                          NUMERIC                    0         -127   8 NUMERIC                   0         3
  010001 Height of land surface                                           M                          0         -400  15 M                         0         5
  010002 Height                                                           M                         -1          -40  16 M                        -1         5
@@ -1226,7 +1225,7 @@
  025028 Operator or manufacturer defined parameter                       NUMERIC                    1       -16384  15 NUMERIC                   1         5
  025029 Calibration method                                               FLAG TABLE                 0            0   6 FLAG TABLE                0         2
  025030 Running mean sea-surface temperature usage                       CODE TABLE                 0            0   2 CODE TABLE                0         1
- 025031 NWP-generated vertical profile thinning method                   CODE TABLE                 0            0   3
+ 025031 NWP-generated vertical profile thinning method                   CODE TABLE                 0            0   3 CODE TABLE                0         1
  025032 Wind profiler mode information                                   CODE TABLE                 0            0   2 CODE TABLE                0         1
  025033 Wind profiler submode information                                CODE TABLE                 0            0   2 CODE TABLE                0         1
  025034 Wind profiler quality control test results                       FLAG TABLE                 0            0   4 FLAG TABLE                0         2

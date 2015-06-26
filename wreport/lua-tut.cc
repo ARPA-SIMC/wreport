@@ -42,7 +42,7 @@ TESTGRP(lua);
 template<> template<>
 void to::test<1>()
 {
-	const Vartable* table = Vartable::get("B0000000000000014000");
+	const Vartable* table = Vartable::get_bufr("B0000000000000014000");
 	Var var(table->query(WR_VAR(0, 12, 101)), 12.3);
 
 	tests::Lua test(

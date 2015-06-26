@@ -30,6 +30,7 @@
 
 #include <wreport/var.h>
 #include <wreport/subset.h>
+#include <wreport/opcode.h>
 #include <vector>
 #include <memory>
 
@@ -41,6 +42,7 @@ namespace wreport {
 namespace bulletin {
 struct Visitor;
 struct BufrInput;
+struct LocalVartable;
 }
 
 struct DTable;
@@ -113,6 +115,10 @@ struct Bulletin
 
 	/** Decoded variables */
 	std::vector<Subset> subsets;
+
+    /// Storage for temporary Varinfos for bitmaps and character data
+    bulletin::LocalVartable* local_vartable;
+
 
 	Bulletin();
 	virtual ~Bulletin();

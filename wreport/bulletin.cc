@@ -23,12 +23,12 @@
 
 #include "error.h"
 #include "opcode.h"
+#include "dtable.h"
 #include "bulletin.h"
 #include "bulletin/dds-printer.h"
 #include "bulletin/buffers.h"
 #include "bulletin/internals.h"
-#include "tabledir.h"
-#include "tabledir-internals.h"
+#include "internals/tabledir.h"
 #include "notes.h"
 
 #include <cstddef>
@@ -41,8 +41,8 @@ using namespace std;
 
 namespace wreport {
 
-Bulletin::Bulletin() : fname(0), offset(0), btable(0), dtable(0) {}
-Bulletin::~Bulletin() {}
+Bulletin::Bulletin() : fname(0), offset(0), btable(0), dtable(0), local_vartable(new bulletin::LocalVartable) {}
+Bulletin::~Bulletin() { delete local_vartable; }
 
 void Bulletin::clear()
 {
@@ -58,9 +58,9 @@ void Bulletin::clear()
 
 Subset& Bulletin::obtain_subset(unsigned subsection)
 {
-	while (subsection >= subsets.size())
-		subsets.push_back(Subset(btable));
-	return subsets[subsection];
+    while (subsection >= subsets.size())
+        subsets.emplace_back(this);
+    return subsets[subsection];
 }
 
 const Subset& Bulletin::subset(unsigned subsection) const
@@ -108,8 +108,8 @@ void BufrBulletin::clear()
 
 void BufrBulletin::load_tables()
 {
-    Tabledir& tabledir(Tabledir::get());
-    const tabledir::BufrTable* t = tabledir.find_bufr(centre, subcentre, master_table, local_table);
+    auto tabledir = tabledir::Tabledir::get();
+    auto t = tabledir.find_bufr(centre, subcentre, master_table, local_table);
     btable = t->btable;
     dtable = t->dtable;
 }
@@ -158,8 +158,8 @@ void CrexBulletin::clear()
 
 void CrexBulletin::load_tables()
 {
-    Tabledir& tabledir(Tabledir::get());
-    const tabledir::CrexTable* t = tabledir.find_crex(master_table_number, edition, table);
+    auto tabledir = tabledir::Tabledir::get();
+    auto t = tabledir.find_crex(master_table_number, edition, table);
     btable = t->btable;
     dtable = t->dtable;
 }
@@ -207,8 +207,8 @@ void Bulletin::print(FILE* out) const
 		rep_year, rep_month, rep_day, rep_hour, rep_minute, rep_second,
 		subsets.size());
 	fprintf(out, " Tables: %s %s\n",
-		btable ? btable->id().c_str() : "(not loaded)",
-		dtable ? dtable->id().c_str() : "(not loaded)");
+		btable ? btable->pathname().c_str() : "(not loaded)",
+		dtable ? dtable->pathname().c_str() : "(not loaded)");
 	fprintf(out, " Data descriptors:\n");
 	for (vector<Varcode>::const_iterator i = datadesc.begin(); i != datadesc.end(); ++i)
 		fprintf(out, "  %d%02d%03d\n", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
@@ -233,8 +233,8 @@ void Bulletin::print_structured(FILE* out) const
             rep_year, rep_month, rep_day, rep_hour, rep_minute, rep_second,
             subsets.size());
     fprintf(out, " Tables: %s %s\n",
-            btable ? btable->id().c_str() : "(not loaded)",
-            dtable ? dtable->id().c_str() : "(not loaded)");
+            btable ? btable->pathname().c_str() : "(not loaded)",
+            dtable ? dtable->pathname().c_str() : "(not loaded)");
     fprintf(out, " Data descriptors:\n");
     for (vector<Varcode>::const_iterator i = datadesc.begin(); i != datadesc.end(); ++i)
         fprintf(out, "  %d%02d%03d\n", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
@@ -348,29 +348,29 @@ unsigned Bulletin::diff(const Bulletin& msg) const
     if (btable == NULL && msg.btable != NULL)
     {
         notes::logf("First message did not load B btables, second message has %s\n",
-                msg.btable->id().c_str());
+                msg.btable->pathname().c_str());
         ++diffs;
     } else if (btable != NULL && msg.btable == NULL) {
         notes::logf("Second message did not load B btables, first message has %s\n",
-                btable->id().c_str());
+                btable->pathname().c_str());
         ++diffs;
-    } else if (btable != NULL && msg.btable != NULL && btable->id() != msg.btable->id()) {
+    } else if (btable != NULL && msg.btable != NULL && btable->pathname() != msg.btable->pathname()) {
         notes::logf("B tables differ (first has %s, second has %s)\n",
-                btable->id().c_str(), msg.btable->id().c_str());
+                btable->pathname().c_str(), msg.btable->pathname().c_str());
         ++diffs;
     }
     if (dtable == NULL && msg.dtable != NULL)
     {
         notes::logf("First message did not load B dtable, second message has %s\n",
-                msg.dtable->id().c_str());
+                msg.dtable->pathname().c_str());
         ++diffs;
     } else if (dtable != NULL && msg.dtable == NULL) {
         notes::logf("Second message did not load B dtable, first message has %s\n",
-                dtable->id().c_str());
+                dtable->pathname().c_str());
         ++diffs;
-    } else if (dtable != NULL && msg.dtable != NULL && dtable->id() != msg.dtable->id()) {
+    } else if (dtable != NULL && msg.dtable != NULL && dtable->pathname() != msg.dtable->pathname()) {
         notes::logf("D tables differ (first has %s, second has %s)\n",
-                dtable->id().c_str(), msg.dtable->id().c_str());
+                dtable->pathname().c_str(), msg.dtable->pathname().c_str());
         ++diffs;
     }
 

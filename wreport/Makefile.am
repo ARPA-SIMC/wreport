@@ -24,8 +24,8 @@ nobase_dist_wreportinclude_HEADERS = \
 	opcode.h \
 	options.h \
 	subset.h \
-	tabledir.h \
-	tabledir-internals.h \
+	internals/fs.h \
+	internals/tabledir.h \
 	var.h \
 	varinfo.h \
 	vartable.h \
@@ -42,7 +42,8 @@ libwreport_la_SOURCES = \
 	notes.cc \
 	uniconv.cc \
 	conv.cc \
-	tabledir.cc \
+	internals/fs.cc \
+	internals/tabledir.cc \
 	varinfo.cc \
 	vartable.cc \
 	var.cc \
@@ -102,7 +103,8 @@ tut_test_SOURCES = \
 	error-tut.cc \
 	conv-tut.cc \
 	fast-tut.cc \
-	tabledir-tut.cc \
+	internals/fs-tut.cc \
+	internals/tabledir-tut.cc \
 	varinfo-tut.cc \
 	vartable-tut.cc \
 	var-tut.cc \

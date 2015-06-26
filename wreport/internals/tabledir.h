@@ -1,40 +1,15 @@
-/*
- * wreport/tabledir-internals - tabledir implementation internals.
- *
- * This header is NOT part of the wreport API, and it must only be included in
- * wreport .cc files. It exists so that unit testing can access and test
- * the internal implementation.
- *
- * Copyright (C) 2015  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
-#ifndef WREPORT_TABLEDIR_INTERNALS_H
-#define WREPORT_TABLEDIR_INTERNALS_H
+#ifndef WREPORT_TABLEDIR_H
+#define WREPORT_TABLEDIR_H
 
 #include <string>
-#include <ctime>
-#include <dirent.h>
+#include <vector>
 
 namespace wreport {
 struct Vartable;
 struct DTable;
 
 namespace tabledir {
+struct Index;
 
 struct Table
 {
@@ -46,9 +21,10 @@ struct Table
     std::string dtable_pathname;
 
     Table(const std::string& dirname, const std::string& filename);
+    virtual ~Table() {}
 
     /// Load btable and dtable if they have not been loaded yet
-    void load_if_needed();
+    virtual void load_if_needed() = 0;
 };
 
 /// Information about a version of a BUFR table
@@ -64,6 +40,8 @@ struct BufrTable : Table
         : Table(dirname, filename),
           centre(centre), subcentre(subcentre),
           master_table(master_table), local_table(local_table) {}
+
+    void load_if_needed() override;
 };
 
 /// Information about a version of a CREX table
@@ -77,37 +55,10 @@ struct CrexTable : Table
               const std::string& dirname, const std::string& filename)
         : Table(dirname, filename), master_table_number(master_table_number),
           edition(edition), table(table) {}
+
+    void load_if_needed() override;
 };
 
-
-/// Access a table directory
-struct DirReader
-{
-    const std::string& pathname;
-    int fd;
-    DIR* dir;
-    struct dirent* cur_entry;
-    time_t mtime;
-
-    DirReader(const std::string& pathname);
-    ~DirReader();
-
-    /// Check if the directory exists
-    bool exists() const { return fd != -1; }
-
-    /// Start reading files
-    void start_reading();
-
-    /**
-     * Move cur_entry to the next file.
-     *
-     * This needs to be called for the first file as well: the constructor will
-     * not call readdir to point cur_entry to the first file.
-     *
-     * Returns false when the end of the directory is reached.
-     */
-    bool next_file();
-};
 
 /// Indexed version of a table directory
 struct Dir
@@ -122,12 +73,6 @@ struct Dir
 
     /// Reread the directory contents if it has changed
     void refresh();
-
-    /// Add a BUFR table entry
-    void add_bufr_entry(int centre, int subcentre, int master_table, int local_table, const DirReader& reader);
-
-    /// Add a CREX table entry
-    void add_crex_entry(int master_table_number, int edition, int table, const DirReader& reader);
 };
 
 /// Query for a BUFR table
@@ -155,6 +100,41 @@ struct CrexQuery
     CrexQuery(int master_table_number, int edition, int table);
     void search(Dir& dir);
     bool is_better(const CrexTable& t);
+};
+
+class Tabledir
+{
+protected:
+    std::vector<std::string> dirs;
+    Index* index;
+
+public:
+    Tabledir();
+    ~Tabledir();
+
+    /**
+     * Add the default directories according to compile-time and environment
+     * variables.
+     */
+    void add_default_directories();
+
+    /// Add a table directory to this collection
+    void add_directory(const std::string& dir);
+
+    /// Find a BUFR table
+    const tabledir::BufrTable* find_bufr(int centre, int subcentre, int master_table, int local_table);
+
+    /// Find a CREX table
+    const tabledir::CrexTable* find_crex(int master_table_number, int edition, int table);
+
+    /// Find a BUFR table by file name
+    const tabledir::BufrTable* find_bufr(const std::string& basename);
+
+    /// Find a CREX table by file name
+    const tabledir::CrexTable* find_crex(const std::string& basename);
+
+    /// Get the default tabledir instance
+    static Tabledir& get();
 };
 
 }

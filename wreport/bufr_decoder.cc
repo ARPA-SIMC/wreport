@@ -390,8 +390,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
         // Add as C variable to the subset
 
         // Create a single use varinfo to store the bitmap
-        MutableVarinfo info(MutableVarinfo::create_singleuse());
-        info->set_string(code, "CHARACTER DATA", cdatalen);
+        Varinfo info = d.out.local_vartable->get_chardata_entry(code, cdatalen);
 
         // Store the character data
         Var cdata(info, buf);
@@ -540,8 +539,7 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
     buf[count] = 0;
 
     // Create a single use varinfo to store the bitmap
-    MutableVarinfo info(MutableVarinfo::create_singleuse());
-    info->set_string(code, "DATA PRESENT BITMAP", count);
+    Varinfo info = d.out.local_vartable->get_bitmap_entry(code, count);
 
     // Store the bitmap
     Var bmp(info, buf);

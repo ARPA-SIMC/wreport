@@ -20,42 +20,14 @@
 #include <test-utils-wreport.h>
 #include <wreport/opcode.h>
 #include <wreport/dtable.h>
+#include <wibble/string.h>
 
+using namespace wibble::tests;
+using namespace wibble;
 using namespace wreport;
+using namespace wreport::tests;
 using namespace std;
-
-namespace tut {
-
-struct opcode_shar
-{
-    opcode_shar()
-    {
-    }
-
-    ~opcode_shar()
-    {
-    }
-};
-TESTGRP(opcode);
-
-// Test simple access
-template<> template<>
-void to::test<1>()
-{
-    vector<Varcode> ch0_vec;
-    ch0_vec.push_back('A');
-    ch0_vec.push_back('n');
-    ch0_vec.push_back('t');
-
-    Opcodes ch0(ch0_vec);
-    ensure_equals(ch0.head(), 'A');
-    ensure_equals(ch0.next().head(), 'n');
-    ensure_equals(ch0.next().next().head(), 't');
-    ensure_equals(ch0.next().next().next().head(), 0);
-
-    ensure_equals(ch0[1], 'n');
-    ensure_equals(ch0[10], 0);
-}
+using namespace wibble;
 
 namespace {
 
@@ -83,26 +55,46 @@ struct VisitCounter : public opcode::Visitor
     void d_group_begin(Varcode code) { ++count_d; }
 };
 
+typedef test_group<> test_group;
+typedef test_group::Test Test;
+typedef test_group::Fixture Fixture;
+
+std::vector<Test> tests {
+    Test("simple", [](Fixture& f) {
+        // Test simple access
+        vector<Varcode> ch0_vec;
+        ch0_vec.push_back('A');
+        ch0_vec.push_back('n');
+        ch0_vec.push_back('t');
+
+        Opcodes ch0(ch0_vec);
+        ensure_equals(ch0.head(), 'A');
+        ensure_equals(ch0.next().head(), 'n');
+        ensure_equals(ch0.next().next().head(), 't');
+        ensure_equals(ch0.next().next().next().head(), 0);
+
+        ensure_equals(ch0[1], 'n');
+        ensure_equals(ch0[10], 0);
+    }),
+    Test("visitor", [](Fixture& f) {
+        // Test visitor
+        const char* testdatadir = getenv("WREPORT_TABLES");
+        if (!testdatadir) testdatadir = TABLE_DIR;
+        const DTable* table = DTable::load_bufr(str::joinpath(testdatadir, "D0000000000000014000.txt"));
+        Opcodes ops = table->query(WR_VAR(3, 0, 10));
+        ensure_equals(ops.size(), 4);
+
+        VisitCounter c;
+        ops.visit(c, *table);
+
+        ensure_equals(c.count_b, 4u);
+        ensure_equals(c.count_c, 0u);
+        ensure_equals(c.count_r_plain, 0u);
+        ensure_equals(c.count_r_delayed, 1u);
+        ensure_equals(c.count_d, 1u);
+    }),
+};
+
+test_group newtg("opcode", tests);
+
 }
-
-// Test visitor
-template<> template<>
-void to::test<2>()
-{
-    const DTable* table = DTable::get("D0000000000000014000");
-    Opcodes ops = table->query(WR_VAR(3, 0, 10));
-    ensure_equals(ops.size(), 4);
-
-    VisitCounter c;
-    ops.visit(c, *table);
-
-    ensure_equals(c.count_b, 4u);
-    ensure_equals(c.count_c, 0u);
-    ensure_equals(c.count_r_plain, 0u);
-    ensure_equals(c.count_r_delayed, 1u);
-    ensure_equals(c.count_d, 1u);
-}
-
-}
-
-// vim:set ts=4 sw=4:

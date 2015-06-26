@@ -47,9 +47,9 @@ void DDSValidator::check_fits(Varinfo info, const Var& var)
     else {
         unsigned encoded;
         if (is_crex)
-            encoded = info->encode_int(var.enqd());
+            encoded = info->encode_decimal(var.enqd());
         else
-            encoded = info->encode_bit_int(var.enqd());
+            encoded = info->encode_binary(var.enqd());
         if (!is_crex)
         {
             if (encoded >= (1u<<info->bit_len))

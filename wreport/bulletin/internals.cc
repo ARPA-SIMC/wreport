@@ -323,9 +323,7 @@ void Visitor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits
         }
         if (skip)
         {
-            MutableVarinfo info(MutableVarinfo::create_singleuse());
-            info->set(code, "UNKNOWN LOCAL DESCRIPTOR", "UNKNOWN", 0, 0,
-                    ceil(log10(exp2(WR_VAR_Y(code)))), 0, WR_VAR_Y(code), VARINFO_FLAG_BINARY);
+            Varinfo info = current_subset->bulletin->local_vartable->get_unknown(desc_code, WR_VAR_Y(code));
             do_var(info);
         }
         ++data_pos;

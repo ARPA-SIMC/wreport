@@ -358,11 +358,8 @@ void BufrInput::decode_number(Var& dest)
         // TRACE("datasec:decode_b_num:decoded as missing\n");
         dest.unset();
     } else {
-        double dval = info->bufr_decode_int(val);
+        double dval = info->decode_binary(val);
         // TRACE("datasec:decode_b_num:decoded as %f %s\n", dval, info->bufr_unit);
-        /* Convert to target unit */
-        dval = convert_units(info->bufr_unit, info->unit, dval);
-        // TRACE("datasec:decode_b_num:converted to %f %s\n", dval, info->unit);
         /* Create the new Var */
         dest.setd(dval);
     }
@@ -384,13 +381,9 @@ void BufrInput::decode_number(Var& dest, uint32_t base, unsigned diffbits)
     } else {
         /* Compute the value for this subset */
         uint32_t newval = base + diff;
-        double dval = info->bufr_decode_int(newval);
+        double dval = info->decode_binary(newval);
         TRACE("BufrInput:decode_number:decoded diffbits %u %u+%u=%u->%f %s\n",
                 diffbits, base, diff, newval, dval, info->bufr_unit);
-
-        /* Convert to target unit */
-        dval = convert_units(info->bufr_unit, info->unit, dval);
-        TRACE("BufrInput:decode_number:converted to %f %s\n", dval, info->unit);
 
         /* Create the new Var */
         dest.setd(dval);
@@ -742,7 +735,7 @@ void BufrOutput::append_var(Varinfo info, const Var& var)
     } else if (info->is_binary()) {
         append_binary((const unsigned char*)var.value(), info->bit_len);
     } else {
-        unsigned ival = info->encode_bit_int(var.enqd());
+        unsigned ival = info->encode_binary(var.enqd());
         add_bits(ival, info->bit_len);
     }
 }

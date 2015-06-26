@@ -1,35 +1,15 @@
-/*
- * wreport/varinfo - Variable information
- *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include "config.h"
-
-#include <strings.h>		/* bzero */
-#include <cstring>		/* strcmp */
-#include <math.h>		/* rint */
-#include <limits.h>		/* INT_MIN, INT_MAX */
 #include <iostream>
+#include <strings.h>
+#include <cstring>
+#include <cmath>
+#include <limits.h>
+#include <algorithm>
 #include <cstdio>
-
 #include "varinfo.h"
 #include "error.h"
+
+using namespace std;
 
 namespace wreport {
 
@@ -81,64 +61,59 @@ std::string varcode_format(Varcode code)
 	return buf;
 }
 
-_Varinfo::_Varinfo()
-	: _ref(0)
+void _Varinfo::set_bufr(Varcode code,
+                   const char* desc,
+                   const char* unit,
+                   int scale, unsigned len,
+                   int bit_scale, int bit_ref, int bit_len,
+                   int flags)
 {
+    this->var = code;
+    strncpy(this->desc, desc, 64);
+    strncpy(this->unit, unit, 24);
+    this->scale = scale;
+    this->len = len;
+    this->bit_scale = bit_scale;
+    this->bit_ref = bit_ref;
+    this->bit_len = bit_len;
+    this->flags = flags;
+    if (strcmp(unit, "CCITTIA5") == 0)
+        this->flags |= VARINFO_FLAG_STRING;
+    compute_range();
 }
 
-MutableVarinfo MutableVarinfo::create_singleuse()
+void _Varinfo::set_crex(Varcode code,
+                   const char* desc,
+                   const char* unit,
+                   int scale, unsigned len,
+                   int flags)
 {
-	MutableVarinfo res(new _Varinfo);
-	res->reset();
-	return res;
+    this->var = code;
+    strncpy(this->desc, desc, 64);
+    strncpy(this->unit, unit, 24);
+    this->scale = scale;
+    this->len = len;
+    this->bit_scale = 0;
+    this->bit_ref = 0;
+    this->bit_len = 0;
+    this->flags = flags;
+    if (strcmp(unit, "CHARACTER") == 0)
+        this->flags |= VARINFO_FLAG_STRING;
+    compute_range();
 }
 
-void _Varinfo::reset()
+void _Varinfo::set_string(Varcode code, const char* desc, unsigned len)
 {
-	var = 0;
-	bzero(desc, sizeof(desc));
-	bzero(unit, sizeof(unit));
-	scale = 0;
-	ref = 0;
-	len = 0;
-	bit_ref = 0;
-	bit_len = 0;
-	flags = 0;
-	imin = imax = 0;
-	dmin = dmax = 0.0;
-	alteration = 0;
-	alterations = 0;
-	bzero(bufr_unit, sizeof(bufr_unit));
-	bufr_scale = 0;
+    set_bufr(code, desc, "CCITTIA5", 0, len, 0, 0, len * 8);
 }
 
-void _Varinfo::set(Varcode var, const char* desc, const char* unit, int scale, int ref, int len, int bit_ref, int bit_len, int flags, const char* bufr_unit, int bufr_scale)
+void _Varinfo::set_binary(Varcode code, const char* desc, unsigned bit_len)
 {
-	this->var = var;
-	strncpy(this->desc, desc, 64);
-	strncpy(this->unit, unit, 24);
-	this->scale = scale;
-	this->ref = ref;
-	this->len = len;
-	this->bit_ref = bit_ref;
-	this->bit_len = bit_len;
-	this->flags = flags;
-	if (strcmp(unit, "CCITTIA5") == 0)
-		this->flags |= VARINFO_FLAG_STRING;
-	this->alteration = 0;
-	this->alterations = 0;
-	strncpy(this->bufr_unit, bufr_unit ? bufr_unit : unit, 24);
-	this->bufr_scale = bufr_scale;
-
-	compute_range();
+    unsigned len = ceil(bit_len * log10(2.0));
+    set_bufr(code, desc, "UNKNOWN", 0, len, 0, 0, bit_len, VARINFO_FLAG_BINARY);
 }
 
-void _Varinfo::set_string(Varcode var, const char* desc, int len)
-{
-	set(var, desc, "CCITTIA5", 0, 0, len, 0, len * 8);
-}
 
-/* Postprocess the data, filling in minval and maxval */
 void _Varinfo::compute_range()
 {
 	if (is_string())
@@ -150,9 +125,16 @@ void _Varinfo::compute_range()
 		{
 			imin = INT_MIN;
 			imax = INT_MAX;
-		} else {
-			int bufr_min = bit_ref;
-			int bufr_max = exp2(bit_len) + bit_ref;
+        } else if (bit_len == 0) {
+            // Ignore binary encoding if we do not have information for it
+
+            // We subtract 2 because 10^len-1 is the
+            // CREX missing value
+            imin =  -(intexp10(len) - 1.0);
+            imax = (intexp10(len) - 2.0);
+        } else {
+            int bit_min = bit_ref;
+            int bit_max = exp2(bit_len) + bit_ref;
 			// We subtract 2 because 2^bit_len-1 is the
 			// BUFR missing value.
 			// We cannot subtract 2 from the delayed replication
@@ -160,37 +142,19 @@ void _Varinfo::compute_range()
 			// subsets, and the delayed replication field is 8
 			// bits, so 255 is the missing value, and if we
 			// disallow it here we cannot import radars anymore.
-			if (WR_VAR_X(var) != 31)
-				bufr_max -= 2;
-			// We subtract 2 because 10^len-1 is the
-			// CREX missing value
-			int crex_min = -(intexp10(len) - 1.0);
-			int crex_max = (intexp10(len) - 2.0);
-			/*
-			 * If the unit is the same between BUFR and CREX, take
-			 * the most restrictive extremes.
-			 *
-			 * If the unit is different, take the most permissive
-			 * extremes, to make sure to fit values in both units
-			 */
-			if (strcmp(unit, bufr_unit) == 0)
-			{
-				imin = bufr_min > crex_min ? bufr_min : crex_min;
-				imax = bufr_max < crex_max ? bufr_max : crex_max;
-			} else {
-				imin = bufr_min < crex_min ? bufr_min : crex_min;
-				imax = bufr_max > crex_max ? bufr_max : crex_max;
-			}
-			/*
-			i->imin = i->bit_ref;
-			i->imax = exp2(i->bit_len) + i->bit_ref - 2;
-			*/
-			//i->imin = -(int)(exp10(i->len) - 1.0);
-			//i->imax = (int)(exp10(i->len) - 1.0);
-		}
-		dmin = decode_int(imin);
-		dmax = decode_int(imax);
-	}
+            if (WR_VAR_X(var) != 31)
+                bit_max -= 2;
+            // We subtract 2 because 10^len-1 is the
+            // CREX missing value
+            int dec_min = -(intexp10(len) - 1.0);
+            int dec_max = (intexp10(len) - 2.0);
+
+            imin = max(bit_min, dec_min);
+            imax = min(bit_max, dec_max);
+        }
+        dmin = decode_decimal(imin);
+        dmax = decode_decimal(imax);
+    }
 }
 
 static const double scales[] = {
@@ -213,53 +177,53 @@ static const double scales[] = {
 	10000000000000000.0,
 };
 
-/* Decode a double value from its integer representation and Varinfo encoding
- * informations */
-double _Varinfo::decode_int(int val) const throw ()
-{
-	if (scale > 0)
-		return (val - ref) / scales[scale];
-	else if (scale < 0)
-		return (val - ref) * scales[-scale];
-	else
-		return val - ref;
-}
-
-double _Varinfo::bufr_decode_int(uint32_t ival) const throw ()
-{
-    if (bufr_scale >= 0)
-        return ((double)ival + bit_ref) / scales[bufr_scale];
-    else
-        return ((double)ival + bit_ref) * scales[-bufr_scale];
-}
-
-/* Encode a double value from its integer representation and Varinfo encoding
- * informations */
-int _Varinfo::encode_int(double fval) const throw ()
+double _Varinfo::decode_decimal(int val) const
 {
     if (scale > 0)
-        return (int)rint((fval * scales[scale]) - ref);
+        return val / scales[scale];
     else if (scale < 0)
-        return (int)rint((fval / scales[-scale]) - ref);
+        return val * scales[-scale];
     else
-        return (int)rint(fval - ref);
+        return val;
 }
 
-unsigned _Varinfo::encode_bit_int(double fval) const
+double _Varinfo::decode_binary(uint32_t ival) const
 {
+    if (bit_len == 0)
+        error_consistency::throwf("cannot decode %01d%02d%03d from binary, because the information needed is missing from the B table in use",
+                WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var));
+    if (bit_scale >= 0)
+        return ((double)ival + bit_ref) / scales[bit_scale];
+    else
+        return ((double)ival + bit_ref) * scales[-bit_scale];
+}
+
+int _Varinfo::encode_decimal(double fval) const
+{
+    if (scale > 0)
+        return (int)rint(fval * scales[scale]);
+    else if (scale < 0)
+        return (int)rint(fval / scales[-scale]);
+    else
+        return (int)rint(fval);
+}
+
+unsigned _Varinfo::encode_binary(double fval) const
+{
+    if (bit_len == 0)
+        error_consistency::throwf("cannot encode %01d%02d%03d to binary, because the information needed is missing from the B table in use",
+                WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var));
     double res;
-    if (bufr_scale > 0)
-        res = rint((fval * scales[bufr_scale]) - bit_ref);
-    else if (bufr_scale < 0)
-        res = rint((fval / scales[-bufr_scale] - bit_ref));
+    if (bit_scale > 0)
+        res = rint((fval * scales[bit_scale]) - bit_ref);
+    else if (bit_scale < 0)
+        res = rint((fval / scales[-bit_scale] - bit_ref));
     else
         res = rint(fval - bit_ref);
     if (res < 0)
         error_consistency::throwf("Cannot encode %01d%02d%03d %f to %d bits using scale %d and ref %d: encoding gives negative value %f",
-                WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var), fval, bit_len, bufr_scale, bit_ref, res);
+                WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var), fval, bit_len, bit_scale, bit_ref, res);
     return (unsigned)res;
 }
 
 }
-
-/* vim:set ts=4 sw=4: */
