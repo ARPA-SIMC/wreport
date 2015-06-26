@@ -367,7 +367,7 @@ void Visitor::c_substituted_value(Varcode code)
     // Use the details of the corrisponding variable for decoding
     Varinfo info = (*current_subset)[target].info();
     // Encode the value
-    do_attr(info, target, info->var);
+    do_attr(info, target, info->code);
 }
 
 /* If using delayed replication and count is not -1, use count for the delayed

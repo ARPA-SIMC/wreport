@@ -125,7 +125,7 @@ typedef short unsigned int Alteration;
 struct _Varinfo
 {
     /// Variable code, as in WMO BUFR/CREX table B
-    Varcode var;
+    Varcode code;
 
     /// Freeform variable description
     char desc[64];
@@ -230,7 +230,7 @@ struct _Varinfo
     double decode_binary(uint32_t val) const;
 
     /// Set all the base Varinfo fields, then call compute_range
-    void set_bufr(Varcode var,
+    void set_bufr(Varcode code,
              const char* desc,
              const char* unit,
              int scale=0, unsigned len=0,
@@ -238,7 +238,7 @@ struct _Varinfo
              int flags=0);
 
     /// Set all the base Varinfo fields, then call compute_range
-    void set_crex(Varcode var,
+    void set_crex(Varcode code,
              const char* desc,
              const char* unit,
              int scale=0, unsigned len=0,
@@ -247,20 +247,20 @@ struct _Varinfo
     /**
      * Set all the fields to represent a string variable.
      *
-     * @param var the variable code
+     * @param code the variable code
      * @param desc the variable description
      * @param len the maximum string length
      */
-    void set_string(Varcode var, const char* desc, unsigned len);
+    void set_string(Varcode code, const char* desc, unsigned len);
 
     /**
      * Set all the fields to represent an opaque binary variable.
      *
-     * @param var the variable code
+     * @param code the variable code
      * @param desc the variable description
      * @param bit_len the variable length in bits
      */
-    void set_binary(Varcode var, const char* desc, unsigned bit_len);
+    void set_binary(Varcode code, const char* desc, unsigned bit_len);
 
     /**
      * Compute the widest ranges for imin, imax, dmin and dmax that can fit any

@@ -71,7 +71,7 @@ std::vector<Test> tests {
         // Test varinfo set
         _Varinfo info;
         info.set_string(WR_VAR(2, 20, 0), "test", 10);
-        wassert(actual(info.var) == WR_VAR(2, 20, 0));
+        wassert(actual(info.code) == WR_VAR(2, 20, 0));
         wassert(actual(string(info.desc)) == "test");
         wassert(actual(string(info.unit)) == "CCITTIA5");
         wassert(actual(info.len) == 10);

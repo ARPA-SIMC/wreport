@@ -68,7 +68,7 @@ void _Varinfo::set_bufr(Varcode code,
                    int bit_scale, int bit_ref, int bit_len,
                    int flags)
 {
-    this->var = code;
+    this->code = code;
     strncpy(this->desc, desc, 64);
     strncpy(this->unit, unit, 24);
     this->scale = scale;
@@ -88,7 +88,7 @@ void _Varinfo::set_crex(Varcode code,
                    int scale, unsigned len,
                    int flags)
 {
-    this->var = code;
+    this->code = code;
     strncpy(this->desc, desc, 64);
     strncpy(this->unit, unit, 24);
     this->scale = scale;
@@ -142,7 +142,7 @@ void _Varinfo::compute_range()
 			// subsets, and the delayed replication field is 8
 			// bits, so 255 is the missing value, and if we
 			// disallow it here we cannot import radars anymore.
-            if (WR_VAR_X(var) != 31)
+            if (WR_VAR_X(code) != 31)
                 bit_max -= 2;
             // We subtract 2 because 10^len-1 is the
             // CREX missing value
@@ -191,7 +191,7 @@ double _Varinfo::decode_binary(uint32_t ival) const
 {
     if (bit_len == 0)
         error_consistency::throwf("cannot decode %01d%02d%03d from binary, because the information needed is missing from the B table in use",
-                WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var));
+                WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
     if (bit_scale >= 0)
         return ((double)ival + bit_ref) / scales[bit_scale];
     else
@@ -212,7 +212,7 @@ unsigned _Varinfo::encode_binary(double fval) const
 {
     if (bit_len == 0)
         error_consistency::throwf("cannot encode %01d%02d%03d to binary, because the information needed is missing from the B table in use",
-                WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var));
+                WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
     double res;
     if (bit_scale > 0)
         res = rint((fval * scales[bit_scale]) - bit_ref);
@@ -222,7 +222,7 @@ unsigned _Varinfo::encode_binary(double fval) const
         res = rint(fval - bit_ref);
     if (res < 0)
         error_consistency::throwf("Cannot encode %01d%02d%03d %f to %d bits using scale %d and ref %d: encoding gives negative value %f",
-                WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var), fval, bit_len, bit_scale, bit_ref, res);
+                WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code), fval, bit_len, bit_scale, bit_ref, res);
     return (unsigned)res;
 }
 

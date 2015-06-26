@@ -1,25 +1,4 @@
 /*
- * wreport/vartable - Load variable information from on-disk tables
- *
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
-/*
  * TODO:
  *  - Future optimizations for dba_vartable can make use of string tables to
  *    store varinfo descriptions and units instead of long fixed-length
@@ -205,17 +184,17 @@ struct VartableBase : public Vartable
     _Varinfo* obtain(const std::string& pathname, unsigned line_no, Varcode code)
     {
         // Ensure that we are creating an ordered table
-        if (!entries.empty() && entries.back().varinfo.var >= code)
+        if (!entries.empty() && entries.back().varinfo.code >= code)
             throw error_parse(m_pathname.c_str(), line_no, "input file is not sorted");
 
         // Append a new entry;
         entries.emplace_back(VartableEntry());
         _Varinfo* entry = &entries.back().varinfo;
-        entry->var = code;
+        entry->code = code;
         return entry;
     }
 
-    const VartableEntry* query_entry(Varcode var) const
+    const VartableEntry* query_entry(Varcode code) const
     {
         int begin, end;
 
@@ -224,12 +203,12 @@ struct VartableBase : public Vartable
         while (end - begin > 1)
         {
             int cur = (end + begin) / 2;
-            if (entries[cur].varinfo.var > var)
+            if (entries[cur].varinfo.code > code)
                 end = cur;
             else
                 begin = cur;
         }
-        if (begin == -1 || entries[begin].varinfo.var != var)
+        if (begin == -1 || entries[begin].varinfo.code != code)
             return nullptr;
         else
             return &entries[begin];

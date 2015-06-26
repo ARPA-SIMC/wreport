@@ -60,7 +60,7 @@ std::vector<Test> tests {
         }
 
         Varinfo info = table->query(WR_VAR(0, 1, 6));
-        ensure_equals(info->var, WR_VAR(0, 1, 6));
+        ensure_equals(info->code, WR_VAR(0, 1, 6));
         ensure_equals(string(info->desc), string("AIRCRAFT FLIGHT NUMBER"));
         ensure_equals(string(info->unit), string("CHARACTER"));
         ensure_equals(info->scale, 0) ;
@@ -68,7 +68,7 @@ std::vector<Test> tests {
         ensure(info->is_string());
 
         info = table->query(WR_VAR(0, 2, 114));
-        ensure_equals(info->var, WR_VAR(0, 2, 114));
+        ensure_equals(info->code, WR_VAR(0, 2, 114));
         ensure_equals(strcmp(info->desc, "ANTENNA EFFECTIVE SURFACE AREA"), 0);
         ensure_equals(strcmp(info->unit, "M**2"), 0);
         ensure_equals(info->scale, 0) ;
@@ -76,7 +76,7 @@ std::vector<Test> tests {
         ensure(!info->is_string());
 
         info = table->query(WR_VAR(0, 2, 153));
-        ensure_equals(info->var, WR_VAR(0, 2, 153));
+        ensure_equals(info->code, WR_VAR(0, 2, 153));
         ensure_equals(strcmp(info->desc, "SATELLITE CHANNEL CENTRE FREQUENCY"), 0);
         ensure_equals(strcmp(info->unit, "Hz"), 0);
         ensure_equals(info->scale, -8) ;
@@ -94,7 +94,7 @@ std::vector<Test> tests {
         }
 
         Varinfo info = table->query(WR_VAR(0, 1, 6));
-        ensure_equals(info->var, WR_VAR(0, 1, 6));
+        ensure_equals(info->code, WR_VAR(0, 1, 6));
         ensure_equals(string(info->desc), string("AIRCRAFT FLIGHT NUMBER"));
         ensure_equals(string(info->unit), string("CCITTIA5"));
         ensure_equals(info->scale, 0) ;
@@ -103,7 +103,7 @@ std::vector<Test> tests {
         ensure(info->is_string());
 
         info = table->query(WR_VAR(0, 2, 114));
-        ensure_equals(info->var, WR_VAR(0, 2, 114));
+        ensure_equals(info->code, WR_VAR(0, 2, 114));
         ensure_equals(strcmp(info->desc, "ANTENNA EFFECTIVE SURFACE AREA"), 0);
         ensure_equals(strcmp(info->unit, "M**2"), 0);
         ensure_equals(info->scale, 0) ;
@@ -114,7 +114,7 @@ std::vector<Test> tests {
         ensure(!info->is_string());
 
         info = table->query(WR_VAR(0, 11, 35));
-        ensure_equals(info->var, WR_VAR(0, 11, 35));
+        ensure_equals(info->code, WR_VAR(0, 11, 35));
         ensure_equals(strcmp(info->desc, "VERTICAL GUST ACCELERATION"), 0);
         ensure_equals(strcmp(info->unit, "M/S**2"), 0);
         ensure_equals(info->scale, 2) ;
@@ -124,7 +124,7 @@ std::vector<Test> tests {
         ensure(!info->is_string());
 
         info = table->query(WR_VAR(0, 7, 31));
-        ensure_equals(info->var, WR_VAR(0, 7, 31));
+        ensure_equals(info->code, WR_VAR(0, 7, 31));
         ensure_equals(string(info->desc), string("HEIGHT OF BAROMETER ABOVE MEAN SEA LEVEL"));
         ensure_equals(string(info->unit), "M");
         ensure_equals(info->scale, 1) ;
@@ -144,7 +144,7 @@ std::vector<Test> tests {
         }
 
         Varinfo info = table->query(WR_VAR(0, 1, 6));
-        ensure_equals(info->var, WR_VAR(0, 1, 6));
+        ensure_equals(info->code, WR_VAR(0, 1, 6));
         ensure_equals(string(info->desc), string("AIRCRAFT FLIGHT NUMBER"));
         ensure_equals(string(info->unit), string("CCITTIA5"));
         ensure_equals(info->scale, 0) ;
@@ -153,7 +153,7 @@ std::vector<Test> tests {
         ensure(info->is_string());
 
         info = table->query(WR_VAR(0, 2, 114));
-        ensure_equals(info->var, WR_VAR(0, 2, 114));
+        ensure_equals(info->code, WR_VAR(0, 2, 114));
         ensure_equals(strcmp(info->desc, "ANTENNA EFFECTIVE SURFACE AREA"), 0);
         ensure_equals(strcmp(info->unit, "M**2"), 0);
         ensure_equals(info->scale, 0) ;
@@ -164,7 +164,7 @@ std::vector<Test> tests {
         ensure(!info->is_string());
 
         info = table->query(WR_VAR(0, 11, 35));
-        ensure_equals(info->var, WR_VAR(0, 11, 35));
+        ensure_equals(info->code, WR_VAR(0, 11, 35));
         ensure_equals(strcmp(info->desc, "VERTICAL GUST ACCELERATION"), 0);
         ensure_equals(strcmp(info->unit, "M/S**2"), 0);
         ensure_equals(info->scale, 2) ;
@@ -176,7 +176,7 @@ std::vector<Test> tests {
         table = Vartable::load_bufr(table_pathname("B0000000000000014000.txt"));
 
         info = table->query(WR_VAR(0, 15, 12));
-        ensure_equals(info->var, WR_VAR(0, 15, 12));
+        ensure_equals(info->code, WR_VAR(0, 15, 12));
         ensure_equals(strcmp(info->desc, "TOTAL ELECTRON COUNT PER SQUARE METER"), 0);
         ensure_equals(strcmp(info->unit, "1/M**2"), 0);
         ensure_equals(info->scale, -16) ;

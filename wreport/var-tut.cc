@@ -43,14 +43,14 @@ std::vector<Test> tests {
         {
             Var var(info);
             ensure_equals(var.code(), WR_VAR(0, 6, 1));
-            ensure_equals(var.info()->var, WR_VAR(0, 6, 1));
+            ensure_equals(var.info()->code, WR_VAR(0, 6, 1));
             ensure_equals(var.value(), (const char*)0);
         }
 
         {
             Var var(info, 123);
             ensure_equals(var.code(), WR_VAR(0, 6, 1));
-            ensure_equals(var.info()->var, WR_VAR(0, 6, 1));
+            ensure_equals(var.info()->code, WR_VAR(0, 6, 1));
             ensure(var.value() != 0);
             ensure_var_equals(var, 123);
             var.seti(-123);
@@ -60,7 +60,7 @@ std::vector<Test> tests {
         {
             Var var(info, 123.456);
             ensure_equals(var.code(), WR_VAR(0, 6, 1));
-            ensure_equals(var.info()->var, WR_VAR(0, 6, 1));
+            ensure_equals(var.info()->code, WR_VAR(0, 6, 1));
             ensure(var.value() != 0);
             ensure_var_equals(var, 123.456);
             var.setd(-123.456);
@@ -70,7 +70,7 @@ std::vector<Test> tests {
         {
             Var var(info, "123");
             ensure_equals(var.code(), WR_VAR(0, 6, 1));
-            ensure_equals(var.info()->var, WR_VAR(0, 6, 1));
+            ensure_equals(var.info()->code, WR_VAR(0, 6, 1));
             ensure(var.value() != 0);
             ensure_var_equals(var, "123");
         }

@@ -35,7 +35,7 @@ DDSPrinter::~DDSPrinter() {}
 
 void DDSPrinter::print_context(Varinfo info, unsigned var_pos)
 {
-    print_context(info->var, var_pos);
+    print_context(info->code, var_pos);
 }
 
 void DDSPrinter::print_context(Varcode code, unsigned var_pos)

@@ -1,24 +1,3 @@
-/*
- * wreport/var - Store a value and its informations
- *
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include "config.h"
 #include "notes.h"
 
@@ -165,7 +144,7 @@ bool Var::value_equals(const Var& var) const
 
 Varcode Var::code() const throw ()
 {
-	return m_info->var;
+    return m_info->code;
 }
 
 Varinfo Var::info() const throw ()
@@ -192,17 +171,17 @@ void Var::clear_attrs()
 
 static inline void fail_if_undef(const Varinfo& info, const char* val, const char* err)
 {
-	if (val == NULL)
-		error_notfound::throwf("%s: B%02d%03d (%s) is not defined",
-					err, WR_VAR_X(info->var), WR_VAR_Y(info->var), info->desc);
+    if (val == NULL)
+        error_notfound::throwf("%s: B%02d%03d (%s) is not defined",
+                err, WR_VAR_X(info->code), WR_VAR_Y(info->code), info->desc);
 }
 
 // Ensure that we're working with a numeric value
 static inline void fail_if_string(const Varinfo& info, const char* err)
 {
-	if (info->is_string())
-		error_type::throwf("%s: B%02d%03d (%s) is of type string",
-				err, WR_VAR_X(info->var), WR_VAR_Y(info->var), info->desc);
+    if (info->is_string())
+        error_type::throwf("%s: B%02d%03d (%s) is of type string",
+                err, WR_VAR_X(info->code), WR_VAR_Y(info->code), info->desc);
 }
 
 int Var::enqi() const
@@ -237,7 +216,7 @@ void Var::seti(int val)
             return;
         error_domain::throwf("Value %i is outside the range [%i,%i] for B%02d%03d (%s)",
                 val, m_info->imin, m_info->imax,
-                WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc);
+                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
     }
 
 	/* Set the value */
@@ -263,7 +242,7 @@ void Var::setd(double val)
             return;
         error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
                 val, m_info->dmin, m_info->dmax,
-                WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc);
+                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
     }
 
     /* Guard against overflows */
@@ -274,7 +253,7 @@ void Var::setd(double val)
             return;
         error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
                 val, m_info->dmin, m_info->dmax,
-                WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc);
+                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
     }
 
 	/* Set the value */
@@ -306,7 +285,7 @@ void Var::setc(const char* val)
         if (options::var_silent_domain_errors)
             return;
         error_domain::throwf("Value \"%s\" is too long for B%02d%03d (%s): maximum length is %d",
-                val, WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc, m_info->len);
+                val, WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc, m_info->len);
     }
 
 	strncpy(m_value, val, m_info->len + 1);
@@ -557,7 +536,7 @@ void Var::print_without_attrs(FILE* out) const
 {
 	// Print info
 	fprintf(out, "%d%02d%03d %-.64s(%s): ",
-			WR_VAR_F(m_info->var), WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var),
+			WR_VAR_F(m_info->code), WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code),
 			m_info->desc, m_info->unit);
 
 	// Print value
@@ -572,7 +551,7 @@ void Var::print_without_attrs(FILE* out) const
 void Var::print_without_attrs(std::ostream& out) const
 {
     // Print info
-    out << varcode_format(m_info->var) << " " << m_info->desc << "(" << m_info->unit << "): ";
+    out << varcode_format(m_info->code) << " " << m_info->desc << "(" << m_info->unit << "): ";
 
     // Print value
     out << format("(undef)") << endl;
@@ -607,8 +586,8 @@ unsigned Var::diff(const Var& var) const
     if (code() != var.code())
     {
         notes::logf("varcodes differ: first is %d%02d%03d'%s', second is %d%02d%03d'%s'\n",
-                WR_VAR_F(m_info->var), WR_VAR_X(m_info->var), WR_VAR_Y(m_info->var), m_info->desc,
-                WR_VAR_F(var.info()->var), WR_VAR_X(var.info()->var), WR_VAR_Y(var.info()->var), var.info()->desc);
+                WR_VAR_F(m_info->code), WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc,
+                WR_VAR_F(var.info()->code), WR_VAR_X(var.info()->code), WR_VAR_Y(var.info()->code), var.info()->desc);
         return 1;
     }
     if (m_value == NULL && var.value() == NULL)

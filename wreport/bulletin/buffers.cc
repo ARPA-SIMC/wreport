@@ -335,8 +335,8 @@ void BufrInput::decode_number(Var& dest)
     // Check if there are bits which are not 1 (that is, if the value is present)
     // In case of delayed replications, there is no missing value
     bool missing = false;
-    if (WR_VAR_X(info->var) == 31 && WR_VAR_F(info->var) == 0)
-        switch (WR_VAR_Y(info->var))
+    if (WR_VAR_X(info->code) == 31 && WR_VAR_F(info->code) == 0)
+        switch (WR_VAR_Y(info->code))
         {
             case 1:
             case 2:

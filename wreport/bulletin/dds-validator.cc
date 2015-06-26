@@ -35,10 +35,10 @@ DDSValidator::DDSValidator(const Bulletin& b)
 
 void DDSValidator::check_fits(Varinfo info, const Var& var)
 {
-    if (var.code() != info->var)
+    if (var.code() != info->code)
         error_consistency::throwf("input variable %d%02d%03d differs from expected variable %d%02d%03d",
                 WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()),
-                WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
+                WR_VAR_F(info->code), WR_VAR_X(info->code), WR_VAR_Y(info->code));
 
     if (var.value() == NULL)
         ;
