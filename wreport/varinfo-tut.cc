@@ -114,6 +114,17 @@ std::vector<Test> tests {
         wassert(actual(info.dmin) == -99.9);
         wassert(actual(info.dmax) == 99.8);
     }),
+    Test("set_binary", [](Fixture& f) {
+        // Test binary varinfos
+        _Varinfo info;
+        info.set_binary(WR_VAR(0, 0, 0), "TEST", 6);
+        wassert(actual(info.len) == 1);
+        wassert(actual(info.bit_len) == 6);
+        wassert(actual(info.imin) == 0);
+        wassert(actual(info.imax) == 0);
+        wassert(actual(info.dmin) == 0);
+        wassert(actual(info.dmax) == 0);
+    }),
 };
 
 test_group newtg("varinfo", tests);

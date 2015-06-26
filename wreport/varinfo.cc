@@ -109,18 +109,18 @@ void _Varinfo::set_string(Varcode code, const char* desc, unsigned len)
 
 void _Varinfo::set_binary(Varcode code, const char* desc, unsigned bit_len)
 {
-    unsigned len = ceil(bit_len * log10(2.0));
+    unsigned len = ceil(bit_len / 8.0);
     set_bufr(code, desc, "UNKNOWN", 0, len, 0, 0, bit_len, VARINFO_FLAG_BINARY);
 }
 
 
 void _Varinfo::compute_range()
 {
-	if (is_string())
-	{
-		imin = imax = 0;
-		dmin = dmax = 0.0;
-	} else {
+    if (is_string() || is_binary())
+    {
+        imin = imax = 0;
+        dmin = dmax = 0.0;
+    } else {
 		if (len >= 10)
 		{
 			imin = INT_MIN;
