@@ -1,53 +1,49 @@
-#include "config.h"
-#include "notes.h"
-
-#include <iostream>
-
-#include <stdio.h>
-#include <stdlib.h>		/* strtod, getenv */
-#include <string.h>		/* strncmp */
-#include <ctype.h>		/* isspace */
-#include <math.h>		/* rint */
-#include <assert.h>		/* assert */
-
 #include "var.h"
+#include "notes.h"
 #include "options.h"
 #include "vartable.h"
 #include "fast.h"
 #include "conv.h"
+#include "config.h"
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <cmath>
+#include <iostream>
 
 using namespace std;
 
 namespace wreport {
 
 Var::Var(Varinfo info)
-	: m_info(info), m_value(NULL), m_attrs(NULL)
+    : m_info(info), m_value(nullptr), m_attrs(nullptr)
 {
 }
 
 Var::Var(Varinfo info, int val)
-	: m_info(info), m_value(NULL), m_attrs(NULL)
+    : m_info(info), m_value(nullptr), m_attrs(nullptr)
 {
-	seti(val);
+    seti(val);
 }
 
 Var::Var(Varinfo info, double val)
-	: m_info(info), m_value(NULL), m_attrs(NULL)
+    : m_info(info), m_value(nullptr), m_attrs(nullptr)
 {
-	setd(val);
+    setd(val);
 }
 
 Var::Var(Varinfo info, const char* val)
-	: m_info(info), m_value(NULL), m_attrs(NULL)
+    : m_info(info), m_value(nullptr), m_attrs(nullptr)
 {
-	setc(val);
+    setc(val);
 }
 
 Var::Var(const Var& var)
-    : m_info(var.m_info), m_value(NULL), m_attrs(NULL)
+    : m_info(var.m_info), m_value(nullptr), m_attrs(nullptr)
 {
     /* Copy the value */
-    if (var.m_value != NULL)
+    if (var.m_value != nullptr)
     {
         if (var.m_info->is_binary())
             set_binary((const unsigned char*)var.m_value);
@@ -60,6 +56,15 @@ Var::Var(const Var& var)
         m_attrs = new Var(*var.m_attrs);
 }
 
+Var::Var(Var&& var)
+    : m_info(var.m_info), m_value(var.m_value), m_attrs(var.m_attrs)
+{
+    // Unset the source variable
+    var.m_value = nullptr;
+    var.m_attrs = nullptr;
+}
+
+#if 0
 Var::Var(const Var& var, bool with_attrs)
     : m_info(var.m_info), m_value(NULL), m_attrs(NULL)
 {
@@ -71,9 +76,10 @@ Var::Var(const Var& var, bool with_attrs)
     if (with_attrs && var.m_attrs)
         m_attrs = new Var(*var.m_attrs);
 }
+#endif
 
 Var::Var(Varinfo info, const Var& var)
-	: m_info(info), m_value(NULL), m_attrs(NULL)
+    : m_info(info), m_value(nullptr), m_attrs(nullptr)
 {
 	copy_val(var);
 }
@@ -86,48 +92,58 @@ Var& Var::operator=(const Var& var)
 	// Copy info
 	m_info = var.m_info;
 
-	// Copy value
-	if (m_value != NULL)
-	{
-		delete[] m_value;
-		m_value = NULL;
-	}
-	if (var.m_value != NULL)
-		setc(var.m_value);
+    // Copy value
+    if (m_value != nullptr)
+    {
+        delete[] m_value;
+        m_value = nullptr;
+    }
+    if (var.m_value != nullptr)
+        setc(var.m_value);
 
 	// Copy attributes
 	copy_attrs(var);
 	return *this;
 }
 
+Var& Var::operator=(Var&& var)
+{
+    if (&var == this) return *this;
+    delete[] m_value;
+    delete m_attrs;
+    m_value = var.m_value;
+    var.m_value = nullptr;
+    m_attrs = var.m_attrs;
+    var.m_attrs = nullptr;
+    return *this;
+}
 
 Var::~Var()
 {
-	if (m_value != NULL)
-		delete[] m_value;
-	if (m_attrs)
-		delete m_attrs;
+    delete[] m_value;
+    delete m_attrs;
 }
 
 bool Var::operator==(const Var& var) const
 {
-	// FIXME: fails if the code is the same but one has alterations
-	if (code() != var.code()) return false;
+    if (code() != var.code()) return false;
     if (!value_equals(var)) return false;
 
-	// Compare attrs
-	if (m_attrs == NULL && var.m_attrs == NULL) return true;
-	if (m_attrs == NULL || var.m_attrs == NULL) return false;
-	return *m_attrs == *var.m_attrs;
+    // Compare attrs
+    if (!m_attrs && !var.m_attrs) return true;
+    if (!m_attrs || !var.m_attrs) return false;
+    return *m_attrs == *var.m_attrs;
 }
 
 bool Var::value_equals(const Var& var) const
 {
-    if (m_value == NULL && var.m_value == NULL) return true;
-    if (m_value == NULL || var.m_value == NULL) return false;
+    if (!m_value && !var.m_value) return true;
+    if (!m_value || !var.m_value) return false;
 
     // Compare value
-    if (m_info->is_string() || m_info->scale == 0)
+    if (m_info->is_binary())
+        error_unimplemented::throwf("comparing opaque variable data is still not implemented");
+    else if (m_info->is_string() || m_info->scale == 0)
         return strcmp(m_value, var.m_value) == 0;
     else
     {
@@ -235,7 +251,7 @@ void Var::setd(double val)
 	fail_if_string(m_info, "setd");
 
     /* Guard against NaNs */
-    if (isnan(val))
+    if (std::isnan(val))
     {
         unset();
         if (options::var_silent_domain_errors)
@@ -491,18 +507,6 @@ void Var::copy_attrs(const Var& src)
 	clear_attrs();
 	if (src.m_attrs)
 		m_attrs = new Var(*src.m_attrs);
-}
-
-void Var::copy_attrs_if_defined(const Var& src)
-{
-    clear_attrs();
-    Var* last = this;
-    for (const Var* a = src.next_attr(); a; a = a->next_attr())
-    {
-        if (!a->isset()) continue;
-        last->m_attrs = new Var(*a, false);
-        last = last->m_attrs;
-    }
 }
 
 std::string Var::format(const char* ifundef) const

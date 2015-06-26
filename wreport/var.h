@@ -26,8 +26,18 @@ protected:
 	/// Metadata about the variable
 	Varinfo m_info;
 
-	/// Value of the variable
-	char* m_value;
+    /**
+     * Value of the variable
+     *
+     * For numeric values, it is the value encoded to an integer decimal string
+     * according to m_info.
+     *
+     * For string values, it is the 0-terminated string.
+     *
+     * For binary values, it is a raw buffer where the first m_info->bit_len
+     * bits are the binary value.
+     */
+    char* m_value;
 
 	/// Attribute list (ordered by Varcode)
 	Var* m_attrs;
@@ -45,28 +55,41 @@ public:
 	/// Create a new Var, with character value
 	Var(Varinfo info, const char* val);
 
+    /**
+     * Create a new Var with the value from another one.
+     *
+     * Conversions are applied if necessary, attributes are not copied.
+     *
+     * @param info
+     *   The wreport::Varinfo describing the variable to create
+     * @param var
+     *   The variable with the value to use
+     */
+    Var(Varinfo info, const Var& var);
+
 	/// Copy constructor
 	Var(const Var& var);
 
-    /// Copy constructor
-    Var(const Var& var, bool with_attrs);
+    /**
+     * Move constructor.
+     *
+     * After movement, \a var will still a valid variable, but it will be unset
+     * and without attributes.
+     */
+    Var(Var&& var);
 
-	/**
-	 * Create a new Var with the value from another one
-	 *
-	 * Conversions are applied if necessary
-	 *
-	 * @param info
-	 *   The wreport::Varinfo describing the variable to create
-	 * @param var
-	 *   The variable with the value to use
-	 */
-	Var(Varinfo info, const Var& var);
+    ~Var();
 
-	~Var();
-	
-	/// Assignment
-	Var& operator=(const Var& var);
+    /// Assignment
+    Var& operator=(const Var& var);
+
+    /**
+     * Move assignment
+     *
+     * After movement, \a var will still a valid variable, but it will be unset
+     * and without attributes.
+     */
+    Var& operator=(Var&& var);
 
 	/// Equality
 	bool operator==(const Var& var) const;
@@ -238,15 +261,6 @@ public:
 	 *   The variable with the attributes to copy.
 	 */
 	void copy_attrs(const Var& src);
-
-    /**
-     * Copy all the attributes from another variable, unless they are set to an
-     * undefined value
-     *
-     * @param src
-     *   The variable with the attributes to copy.
-     */
-    void copy_attrs_if_defined(const Var& src);
 
 	/**
 	 * Create a formatted string representation of the variable value
