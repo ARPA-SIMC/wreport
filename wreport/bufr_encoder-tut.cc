@@ -67,8 +67,8 @@ void to::test<1>()
 			ensure_varcode_equals(s[0].code(), WR_VAR(0, 0, 13));
 			ensure_equals(string(s[0].enqc()), "abcdefg");
 
-			/* Ensure that the decoded strings are zero-padded */
-			ensure(memcmp(s[0].value(), "abcdefg\0\0\0\0\0\0\0", 7+7) == 0);
+            // Ensure that the decoded strings are zero-padded
+            ensure(memcmp(s[0].enqc(), "abcdefg\0\0\0\0\0\0\0", 7+7) == 0);
 		}
 	} test;
 
@@ -144,8 +144,8 @@ void to::test<2>()
 			ensure_varcode_equals(s[0].code(), WR_VAR(0, 0, 13));
 			ensure_equals(string(s[0].enqc()), "abcdefg");
 
-			/* Ensure that the decoded strings are zero-padded */
-			ensure(memcmp(s[0].value(), "abcdefg\0\0\0\0\0\0\0", 7+7) == 0);
+            // Ensure that the decoded strings are zero-padded
+            ensure(memcmp(s[0].enqc(), "abcdefg\0\0\0\0\0\0\0", 7+7) == 0);
 		}
 	} test;
 

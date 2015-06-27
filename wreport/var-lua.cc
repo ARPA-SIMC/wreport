@@ -34,12 +34,12 @@ Var* Var::lua_check(lua_State* L, int idx)
 
 static int dbalua_var_enqi(lua_State *L)
 {
-	Var* var = Var::lua_check(L, 1);
-	try {
-		if (var->value() != NULL)
-			lua_pushinteger(L, var->enqi());
-		else
-			lua_pushnil(L);
+    Var* var = Var::lua_check(L, 1);
+    try {
+        if (var->isset())
+            lua_pushinteger(L, var->enqi());
+        else
+            lua_pushnil(L);
 	} catch (std::exception& e) {
 		lua_pushstring(L, e.what());
 		lua_error(L);
@@ -49,12 +49,12 @@ static int dbalua_var_enqi(lua_State *L)
 
 static int dbalua_var_enqd(lua_State *L)
 {
-	Var* var = Var::lua_check(L, 1);
-	try {
-		if (var->value() != NULL)
-			lua_pushnumber(L, var->enqd());
-		else
-			lua_pushnil(L);
+    Var* var = Var::lua_check(L, 1);
+    try {
+        if (var->isset())
+            lua_pushnumber(L, var->enqd());
+        else
+            lua_pushnil(L);
 	} catch (std::exception& e) {
 		lua_pushstring(L, e.what());
 		lua_error(L);
@@ -64,13 +64,12 @@ static int dbalua_var_enqd(lua_State *L)
 
 static int dbalua_var_enqc(lua_State *L)
 {
-	Var* var = Var::lua_check(L, 1);
-	try {
-		const char* res = var->value();
-		if (res != NULL)
-			lua_pushstring(L, res);
-		else
-			lua_pushnil(L);
+    Var* var = Var::lua_check(L, 1);
+    try {
+        if (var->isset())
+            lua_pushstring(L, var->enqc());
+        else
+            lua_pushnil(L);
 	} catch (std::exception& e) {
 		lua_pushstring(L, e.what());
 		lua_error(L);
@@ -90,23 +89,10 @@ static int dbalua_var_code(lua_State *L)
 
 static int dbalua_var_tostring(lua_State *L)
 {
-	Var* var = Var::lua_check(L, 1);
-	try {
-		const char* res = var->value();
-		if (res == NULL)
-			lua_pushstring(L, "(undef)");
-		else {
-			Varinfo info = var->info();
-			if (info->is_string() || info->scale == 0)
-				lua_pushstring(L, res);
-			else
-			{
-				double val = var->enqd();
-				char buf[25];
-				snprintf(buf, 25, "%.*f", info->scale > 0 ? info->scale : 0, val);
-				lua_pushstring(L, buf);
-			}
-		}
+    Var* var = Var::lua_check(L, 1);
+    try {
+        std::string formatted = var->format("(undef)");
+        lua_pushlstring(L, formatted.data(), formatted.size());
 	} catch (std::exception& e) {
 		lua_pushstring(L, e.what());
 		lua_error(L);

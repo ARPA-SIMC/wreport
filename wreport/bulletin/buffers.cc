@@ -674,7 +674,7 @@ void BufrOutput::add_bits(uint32_t val, int n)
 
 void BufrOutput::append_string(const Var& var, unsigned len_bits)
 {
-    append_string(var.value(), len_bits);
+    append_string(var.enqc(), len_bits);
 }
 
 void BufrOutput::append_string(const char* val, unsigned len_bits)
@@ -727,13 +727,13 @@ void BufrOutput::append_binary(const unsigned char* val, unsigned len_bits)
 
 void BufrOutput::append_var(Varinfo info, const Var& var)
 {
-    if (var.value() == NULL)
+    if (!var.isset())
     {
         append_missing(info->bit_len);
     } else if (info->is_string()) {
-        append_string(var.value(), info->bit_len);
+        append_string(var.enqc(), info->bit_len);
     } else if (info->is_binary()) {
-        append_binary((const unsigned char*)var.value(), info->bit_len);
+        append_binary((const unsigned char*)var.enqc(), info->bit_len);
     } else {
         unsigned ival = info->encode_binary(var.enqd());
         add_bits(ival, info->bit_len);
@@ -941,7 +941,7 @@ void CrexOutput::append_missing(Varinfo info)
 
 void CrexOutput::append_var(Varinfo info, const Var& var)
 {
-    if (var.value() == NULL)
+    if (!var.isset())
         return append_missing(info);
 
     int len = info->len;
@@ -949,7 +949,7 @@ void CrexOutput::append_var(Varinfo info, const Var& var)
     encode_check_digit();
 
     if (info->is_string()) {
-        raw_appendf("%-*.*s", len, len, var.value());
+        raw_appendf("%-*.*s", len, len, var.enqc());
         // TRACE("encode_b string len: %d val %-*.*s\n", len, len, len, var.value());
     } else {
         int val = var.enqi();

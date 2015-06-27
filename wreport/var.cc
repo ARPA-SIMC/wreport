@@ -168,11 +168,6 @@ Varinfo Var::info() const throw ()
 	return m_info;
 }
 
-const char* Var::value() const throw ()
-{
-	return m_value;
-}
-
 bool Var::isset() const throw ()
 {
 	return m_value != NULL;
@@ -238,23 +233,22 @@ void Var::seti(int val)
 {
     want_number("seti", m_info);
 
-    /* Guard against overflows */
+    // Guard against overflows
     if (val < m_info->imin || val > m_info->imax)
     {
         unset();
         if (options::var_silent_domain_errors)
             return;
-        error_domain::throwf("Value %i is outside the range [%i,%i] for B%02d%03d (%s)",
-                val, m_info->imin, m_info->imax,
-                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
+        error_domain::throwf("Value %i is outside the range [%i,%i] for %01d%02d%03d (%s)",
+                val, m_info->imin, m_info->imax, WR_VAR_FXY(m_info->code), m_info->desc);
     }
 
-	/* Set the value */
-	if (m_value == NULL &&
-		(m_value = new char[m_info->len + 2]) == NULL)
-		throw error_alloc("allocating space for Var value");
+    // Ensure that we have a buffer allocated
+    if (!m_value && !(m_value = new char[m_info->len + 2]))
+        throw error_alloc("allocating space for Var value");
 
-	// FIXME: not thread safe
+    // Set the value
+	// FIXME: not thread safe, and why are we not just telling itoa to write on m_value??
 	/* We add 1 to the length to cope with the '-' sign */
 	strcpy(m_value, itoa(val, m_info->len + 1));
 	/*snprintf(var->value, var->info->len + 2, "%d", val);*/
@@ -499,16 +493,16 @@ void Var::copy_val(const Var& src)
 
 void Var::copy_val_only(const Var& src)
 {
-    if (src.value() == NULL)
+    if (src.m_value == NULL)
     {
         unset();
     } else {
         if (m_info->is_string())
         {
             if (src.info()->len > m_info->len)
-                setc_truncate(src.value());
+                setc_truncate(src.m_value);
             else
-                setc(src.value());
+                setc(src.m_value);
         } else {
             /* Convert and set the new value */
             setd(convert_units(src.info()->unit, m_info->unit, src.enqd()));
@@ -608,7 +602,7 @@ unsigned Var::diff(const Var& var) const
                 WR_VAR_F(var.info()->code), WR_VAR_X(var.info()->code), WR_VAR_Y(var.info()->code), var.info()->desc);
         return 1;
     }
-    if (m_value == NULL && var.value() == NULL)
+    if (m_value == NULL && var.m_value == NULL)
         return 0;
     if (m_value == NULL)
     {

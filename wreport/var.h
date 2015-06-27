@@ -109,9 +109,6 @@ public:
 	/// Get informations about the variable
 	Varinfo info() const throw ();
 
-	/// Retrieve the internal string representation of the value for a variable.
-	const char* value() const throw ();
-
 	/// @returns true if the variable is defined, else false
 	bool isset() const throw ();
 

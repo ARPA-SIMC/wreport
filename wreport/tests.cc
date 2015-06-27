@@ -54,12 +54,12 @@ void compare_values(WIBBLE_TEST_LOCPRM, const Var& avar, const Var& evar, const 
     {
         std::stringstream ss;
         ss << name << " values differ: ";
-        if (!evar.value())
+        if (!evar.isset())
             ss << "expected undefined";
         else
             ss << "expected is " << evar.format();
         ss << " but actual ";
-        if (!avar.value())
+        if (!avar.isset())
             ss << "is undefined";
         else
             ss << "is " << avar.format();

@@ -83,7 +83,7 @@ void Bitmap::init(const Var& bitmap, const Subset& subset, unsigned anchor)
             --s_cur;
         }
 
-        if (bitmap.value()[b_cur] == '+')
+        if (bitmap.enqc()[b_cur] == '+')
             refs.push_back(s_cur);
 
         if (b_cur == 0)

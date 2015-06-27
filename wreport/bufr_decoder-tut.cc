@@ -20,6 +20,7 @@
 #include <test-utils-wreport.h>
 
 using namespace wreport;
+using namespace wibble::tests;
 using namespace std;
 
 namespace tut {
@@ -163,7 +164,7 @@ void to::test<4>()
 			ensure_varcode_equals(s[42].code(), WR_VAR(0, 20, 13));
 			ensure_equals(s[42].enqd(), 920.0);
 			ensure_varcode_equals(s[46].code(), WR_VAR(0, 20, 13));
-			ensure(s[46].value() == NULL);
+            wassert(actual(s[46].isset()).isfalse());
 
 			ensure(s[0].enqa(WR_VAR(0, 33, 7)) != NULL);
 			ensure_equals(s[0].enqa(WR_VAR(0, 33, 7))->enqi(), 70);
@@ -202,9 +203,9 @@ void to::test<5>()
 			ensure_varcode_equals(s[37].code(), WR_VAR(0, 20, 12));
 			ensure_equals(s[37].enqd(),  5.0);
 			ensure_varcode_equals(s[41].code(), WR_VAR(0, 20, 12));
-			ensure(s[41].value() == NULL);
-			ensure_varcode_equals(s[45].code(), WR_VAR(0, 20, 12));
-			ensure(s[45].value() == NULL);
+            wassert(actual(s[41].isset()).isfalse());
+            ensure_varcode_equals(s[45].code(), WR_VAR(0, 20, 12));
+            wassert(actual(s[45].isset()).isfalse());
 
 			ensure(s[0].enqa(WR_VAR(0, 33, 7)) != NULL);
 			ensure_equals(s[0].enqa(WR_VAR(0, 33, 7))->enqi(), 70);

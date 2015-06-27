@@ -136,16 +136,14 @@ struct DDSEncoder : public bulletin::ConstBaseVisitor
             error_consistency::throwf("repeated sequence for bitmap encoding contains more than just B31031");
 
         for (unsigned i = 0; i < var.info()->len; ++i)
-            ob.add_bits(var.value()[i] == '+' ? 0 : 1, 1);
+            ob.add_bits(var.enqc()[i] == '+' ? 0 : 1, 1);
 
         return var;
     }
     virtual void do_char_data(Varcode code)
     {
         const Var& var = get_var();
-        const char* val = var.value();
-        if (val == NULL)
-            val = "";
+        const char* val = var.enq("");
         ob.append_string(val, WR_VAR_Y(code) * 8);
     }
 };

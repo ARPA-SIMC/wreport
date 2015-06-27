@@ -40,7 +40,7 @@ void DDSValidator::check_fits(Varinfo info, const Var& var)
                 WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()),
                 WR_VAR_F(info->code), WR_VAR_X(info->code), WR_VAR_Y(info->code));
 
-    if (var.value() == NULL)
+    if (!var.isset())
         ;
     else if (info->is_string())
         ;

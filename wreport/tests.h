@@ -255,13 +255,6 @@ static inline void _ensure_var_equals(const wibble::tests::Location& loc, const 
 	inner_ensure_equals(std::string(var.enqc()), val);
 }
 
-#define ensure_var_undef(x) wreport::tests::_ensure_var_undef(wibble::tests::Location(__FILE__, __LINE__, #x " is undef"), (x))
-#define inner_ensure_var_undef(x) wreport::tests::_ensure_var_undef(wibble::tests::Location(loc, __FILE__, __LINE__, #x " is undef"), (x))
-static inline void _ensure_var_undef(const wibble::tests::Location& loc, const Var& var)
-{
-	inner_ensure_equals(var.value(), (const char*)0);
-}
-
 /// RAII-style override of an environment variable
 class LocalEnv
 {

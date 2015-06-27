@@ -42,16 +42,16 @@ std::vector<Test> tests {
 
         {
             Var var(info);
-            ensure_equals(var.code(), WR_VAR(0, 6, 1));
-            ensure_equals(var.info()->code, WR_VAR(0, 6, 1));
-            ensure_equals(var.value(), (const char*)0);
+            wassert(actual(var.code()) == WR_VAR(0, 6, 1));
+            wassert(actual(var.info()->code) == WR_VAR(0, 6, 1));
+            wassert(actual(var.isset()).isfalse());
         }
 
         {
             Var var(info, 123);
-            ensure_equals(var.code(), WR_VAR(0, 6, 1));
-            ensure_equals(var.info()->code, WR_VAR(0, 6, 1));
-            ensure(var.value() != 0);
+            wassert(actual(var.code()) == WR_VAR(0, 6, 1));
+            wassert(actual(var.info()->code) == WR_VAR(0, 6, 1));
+            wassert(actual(var.isset()).istrue());
             ensure_var_equals(var, 123);
             var.seti(-123);
             ensure_var_equals(var, -123);
@@ -59,9 +59,9 @@ std::vector<Test> tests {
 
         {
             Var var(info, 123.456);
-            ensure_equals(var.code(), WR_VAR(0, 6, 1));
-            ensure_equals(var.info()->code, WR_VAR(0, 6, 1));
-            ensure(var.value() != 0);
+            wassert(actual(var.code()) == WR_VAR(0, 6, 1));
+            wassert(actual(var.info()->code) == WR_VAR(0, 6, 1));
+            wassert(actual(var.isset()).istrue());
             ensure_var_equals(var, 123.456);
             var.setd(-123.456);
             ensure_var_equals(var, -123.456);
@@ -69,9 +69,9 @@ std::vector<Test> tests {
 
         {
             Var var(info, "123");
-            ensure_equals(var.code(), WR_VAR(0, 6, 1));
-            ensure_equals(var.info()->code, WR_VAR(0, 6, 1));
-            ensure(var.value() != 0);
+            wassert(actual(var.code()) == WR_VAR(0, 6, 1));
+            wassert(actual(var.info()->code) == WR_VAR(0, 6, 1));
+            wassert(actual(var.isset()).istrue());
             ensure_var_equals(var, "123");
         }
 
@@ -151,14 +151,14 @@ std::vector<Test> tests {
             var.setd(logf(0));
             ensure(false);
         } catch (error_domain& e) {
-            ensure(var.value() == NULL);
+            wassert(actual(var.isset()).isfalse());
         }
 
         try {
             var.setd(logf(0)/logf(0));
             ensure(false);
         } catch (error_domain& e) {
-            ensure(var.value() == NULL);
+            wassert(actual(var.isset()).isfalse());
         }
     }),
     Test("ranges", [](Fixture& f) {
