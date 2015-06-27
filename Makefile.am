@@ -15,4 +15,4 @@ if WIBBLE
 pkgconfig_DATA += libwreport-test.pc
 endif
 
-EXTRA_DIST = libwreport.pc.in libwreport-test.pc.in run-local runtest wreport.spec TODO-threads INSTALL
+EXTRA_DIST = libwreport.pc.in libwreport-test.pc.in run-local run-bench testenv wreport.spec TODO-threads INSTALL

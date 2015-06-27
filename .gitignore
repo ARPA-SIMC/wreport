@@ -33,6 +33,7 @@ Makefile
 /wreport/btable.dox
 /wreport/uniconv.cc
 /wreport/tut_test
+/wreport/benchmark
 /debian/files
 /debian/*.debhelper.log
 /debian/*.substvars

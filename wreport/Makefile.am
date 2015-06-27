@@ -29,7 +29,8 @@ nobase_dist_wreportinclude_HEADERS = \
 	var.h \
 	varinfo.h \
 	vartable.h \
-	utils/lua.h
+	utils/lua.h \
+	benchmark.h
 if WIBBLE
 nobase_dist_wreportinclude_HEADERS += tests.h
 endif
@@ -58,7 +59,8 @@ libwreport_la_SOURCES = \
 	bufr_decoder.cc \
 	bufr_encoder.cc \
 	crex_decoder.cc \
-	crex_encoder.cc
+	crex_encoder.cc \
+	benchmark.cc
 libwreport_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@
 if LUA
 libwreport_la_SOURCES += utils/lua.cc var-lua.cc
@@ -85,7 +87,7 @@ EXTRA_DIST = compat.h uniconv.gperf uniconv.cc main.dox style.dox features.dox e
 if DO_TESTS
 
 check_PROGRAMS = tut_test
-TESTS_ENVIRONMENT = $(top_srcdir)/runtest
+TESTS_ENVIRONMENT = $(top_srcdir)/testenv
 #TESTS = $(check_PROGRAMS)
 
 check-local:
@@ -132,6 +134,21 @@ tut_test_SOURCES += \
 	test-utils-lua.cc
 tut_test_LDADD += $(LUA_LIBS)
 endif
+
+#
+# Benchmark
+#
+
+EXTRA_PROGRAMS = benchmark
+
+dist_noinst_HEADERS += \
+	benchmark.h
+
+benchmark_SOURCES = \
+	var-bench.cc \
+	benchmark-main.cc
+benchmark_LDADD = \
+	libwreport.la
 
 
 endif
