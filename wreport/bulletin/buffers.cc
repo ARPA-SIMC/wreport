@@ -730,13 +730,21 @@ void BufrOutput::append_var(Varinfo info, const Var& var)
     if (!var.isset())
     {
         append_missing(info->bit_len);
-    } else if (info->is_string()) {
-        append_string(var.enqc(), info->bit_len);
-    } else if (info->is_binary()) {
-        append_binary((const unsigned char*)var.enqc(), info->bit_len);
-    } else {
-        unsigned ival = info->encode_binary(var.enqd());
-        add_bits(ival, info->bit_len);
+        return;
+    }
+    switch (info->type)
+    {
+        case Vartype::String:
+            append_string(var.enqc(), info->bit_len);
+            break;
+        case Vartype::Binary:
+            append_binary((const unsigned char*)var.enqc(), info->bit_len);
+            break;
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            unsigned ival = info->encode_binary(var.enqd());
+            add_bits(ival, info->bit_len);
+            break;
     }
 }
 
@@ -948,18 +956,26 @@ void CrexOutput::append_var(Varinfo info, const Var& var)
     raw_append(" ", 1);
     encode_check_digit();
 
-    if (info->is_string()) {
-        raw_appendf("%-*.*s", len, len, var.enqc());
-        // TRACE("encode_b string len: %d val %-*.*s\n", len, len, len, var.value());
-    } else {
-        int val = var.enqi();
+    switch (info->type)
+    {
+        case Vartype::String:
+            raw_appendf("%-*.*s", len, len, var.enqc());
+            // TRACE("encode_b string len: %d val %-*.*s\n", len, len, len, var.value());
+            break;
+        case Vartype::Binary:
+            throw error_unimplemented("cannot encode a binary variable into a CREX message");
+        case Vartype::Integer:
+        case Vartype::Decimal: {
+            int val = var.enqi();
 
-        /* FIXME: here goes handling of active C table modifiers */
+            /* FIXME: here goes handling of active C table modifiers */
 
-        if (val < 0) ++len;
+            if (val < 0) ++len;
 
-        raw_appendf("%0*d", len, val);
-        // TRACE("encode_b num len: %d val %0*d\n", len, len, val);
+            raw_appendf("%0*d", len, val);
+            // TRACE("encode_b num len: %d val %0*d\n", len, len, val);
+            break;
+        }
     }
 }
 

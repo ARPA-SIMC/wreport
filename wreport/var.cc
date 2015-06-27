@@ -42,18 +42,8 @@ Var::Var(Varinfo info, const char* val)
 Var::Var(const Var& var)
     : m_info(var.m_info), m_value(nullptr), m_attrs(nullptr)
 {
-    /* Copy the value */
-    if (var.m_value != nullptr)
-    {
-        if (var.m_info->is_binary())
-            set_binary((const unsigned char*)var.m_value);
-        else
-            setc(var.m_value);
-    }
-
-    /* Copy the attributes */
-    if (var.m_attrs)
-        m_attrs = new Var(*var.m_attrs);
+    // We are initialized as unset: copy the value normally
+    copy_val(var);
 }
 
 Var::Var(Var&& var)
@@ -141,20 +131,25 @@ bool Var::value_equals(const Var& var) const
     if (!m_value || !var.m_value) return false;
 
     // Compare value
-    if (m_info->is_binary())
-        error_unimplemented::throwf("comparing opaque variable data is still not implemented");
-    else if (m_info->is_string() || m_info->scale == 0)
-        return strcmp(m_value, var.m_value) == 0;
-    else
+    switch (m_info->type)
     {
-        // In FC12 [g++ (GCC) 4.4.4 20100630 (Red Hat 4.4.4-10)], for obscure
-        // reasons we cannot compare the two enqd()s directly: the test fails
-        // even if they have the same values.  Assigning them to doubles first
-        // works. WTH?
-        double a = enqd();
-        double b = var.enqd();
-        return a == b;
-            //(enqd() == var.enqd())
+        case Vartype::Binary:
+            error_unimplemented::throwf("comparing opaque variable data is still not implemented");
+            break;
+        case Vartype::String:
+            return strcmp(m_value, var.m_value) == 0;
+        case Vartype::Integer:
+        case Vartype::Decimal:
+        {
+            // In FC12 [g++ (GCC) 4.4.4 20100630 (Red Hat 4.4.4-10)], for obscure
+            // reasons we cannot compare the two enqd()s directly: the test fails
+            // even if they have the same values.  Assigning them to doubles first
+            // works. WTH?
+            double a = enqd();
+            double b = var.enqd();
+            return a == b;
+                //(enqd() == var.enqd())
+        }
     }
 }
 
@@ -179,6 +174,7 @@ void Var::clear_attrs()
     m_attrs = 0;
 }
 
+#if 0
 static inline void fail_if_undef(const char* what, const Varinfo& info, const char* val)
 {
     if (!val)
@@ -210,84 +206,135 @@ static inline void want_number(const char* what, Varinfo info)
         error_type::throwf("%s: %01d%02d%03d (%s) is an opaque binary",
                 what, WR_VAR_FXY(info->code), info->desc);
 }
+#endif
 
 int Var::enqi() const
 {
-    want_number("enqi", m_info, m_value);
-    return strtol(m_value, 0, 10);
+    if (!m_value)
+        error_notfound::throwf("enqi: %01d%02d%03d (%s) is not defined",
+                WR_VAR_FXY(m_info->code), m_info->desc);
+    switch (m_info->type)
+    {
+        case Vartype::String:
+            error_type::throwf("enqi: %01d%02d%03d (%s) is a string",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::Binary:
+            error_type::throwf("enqi: %01d%02d%03d (%s) is an opaque binary",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            return strtol(m_value, 0, 10);
+    }
 }
 
 double Var::enqd() const
 {
-    want_number("enqd", m_info, m_value);
-    return m_info->decode_decimal(strtol(m_value, 0, 10));
+    if (!m_value)
+        error_notfound::throwf("enqd: %01d%02d%03d (%s) is not defined",
+                WR_VAR_FXY(m_info->code), m_info->desc);
+    switch (m_info->type)
+    {
+        case Vartype::String:
+            error_type::throwf("enqd: %01d%02d%03d (%s) is a string",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::Binary:
+            error_type::throwf("enqd: %01d%02d%03d (%s) is an opaque binary",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            return m_info->decode_decimal(strtol(m_value, 0, 10));
+    }
 }
 
 const char* Var::enqc() const
 {
-    fail_if_undef("enqc", m_info, m_value);
+    if (!m_value)
+        error_notfound::throwf("enqc: %01d%02d%03d (%s) is not defined",
+                WR_VAR_FXY(m_info->code), m_info->desc);
     return m_value;
 }
 
 void Var::seti(int val)
 {
-    want_number("seti", m_info);
-
-    // Guard against overflows
-    if (val < m_info->imin || val > m_info->imax)
+    switch (m_info->type)
     {
-        unset();
-        if (options::var_silent_domain_errors)
-            return;
-        error_domain::throwf("Value %i is outside the range [%i,%i] for %01d%02d%03d (%s)",
-                val, m_info->imin, m_info->imax, WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::String:
+            error_type::throwf("seti: %01d%02d%03d (%s) is a string",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::Binary:
+            error_type::throwf("seti: %01d%02d%03d (%s) is an opaque binary",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            // Guard against overflows
+            if (val < m_info->imin || val > m_info->imax)
+            {
+                unset();
+                if (options::var_silent_domain_errors)
+                    return;
+                error_domain::throwf("Value %i is outside the range [%i,%i] for %01d%02d%03d (%s)",
+                        val, m_info->imin, m_info->imax, WR_VAR_FXY(m_info->code), m_info->desc);
+            }
+
+            // Ensure that we have a buffer allocated
+            if (!m_value && !(m_value = new char[m_info->len + 2]))
+                throw error_alloc("allocating space for Var value");
+
+            // Set the value
+#warning FIXME: not thread safe
+            // FIXME: not thread safe, and why are we not just telling itoa to write on m_value??
+            /* We add 1 to the length to cope with the '-' sign */
+            strcpy(m_value, itoa(val, m_info->len + 1));
+            /*snprintf(var->value, var->info->len + 2, "%d", val);*/
+            break;
     }
-
-    // Ensure that we have a buffer allocated
-    if (!m_value && !(m_value = new char[m_info->len + 2]))
-        throw error_alloc("allocating space for Var value");
-
-    // Set the value
-	// FIXME: not thread safe, and why are we not just telling itoa to write on m_value??
-	/* We add 1 to the length to cope with the '-' sign */
-	strcpy(m_value, itoa(val, m_info->len + 1));
-	/*snprintf(var->value, var->info->len + 2, "%d", val);*/
 }
 
 void Var::setd(double val)
 {
-    want_number("setd", m_info);
-
-    /* Guard against NaNs */
-    if (std::isnan(val))
+    switch (m_info->type)
     {
-        unset();
-        if (options::var_silent_domain_errors)
-            return;
-        error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
-                val, m_info->dmin, m_info->dmax,
-                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
-    }
+        case Vartype::String:
+            error_type::throwf("seti: %01d%02d%03d (%s) is a string",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::Binary:
+            error_type::throwf("seti: %01d%02d%03d (%s) is an opaque binary",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            /* Guard against NaNs */
+            if (std::isnan(val))
+            {
+                unset();
+                if (options::var_silent_domain_errors)
+                    return;
+                error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
+                        val, m_info->dmin, m_info->dmax,
+                        WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
+            }
 
-    /* Guard against overflows */
-    if (val < m_info->dmin || val > m_info->dmax)
-    {
-        unset();
-        if (options::var_silent_domain_errors)
-            return;
-        error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
-                val, m_info->dmin, m_info->dmax,
-                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
-    }
+            /* Guard against overflows */
+            if (val < m_info->dmin || val > m_info->dmax)
+            {
+                unset();
+                if (options::var_silent_domain_errors)
+                    return;
+                error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
+                        val, m_info->dmin, m_info->dmax,
+                        WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
+            }
 
-	/* Set the value */
-	if (m_value == NULL && 
-		(m_value = new char[m_info->len + 2]) == NULL)
-		throw error_alloc("allocating space for Var value");
+            /* Set the value */
+            if (m_value == NULL && 
+                (m_value = new char[m_info->len + 2]) == NULL)
+                throw error_alloc("allocating space for Var value");
 
 #warning FIXME: not thread safe
-    strcpy(m_value, itoa(m_info->encode_decimal(val), m_info->len + 1));
-    /*snprintf(var->value, var->info->len + 2, "%ld", (long)dba_var_encode_int(val, var->info));*/
+            // FIXME: not thread safe, and why are we not just telling itoa to write on m_value??
+            strcpy(m_value, itoa(m_info->encode_decimal(val), m_info->len + 1));
+            /*snprintf(var->value, var->info->len + 2, "%ld", (long)dba_var_encode_int(val, var->info));*/
+            break;
+    }
 }
 
 void Var::setc(const char* val)
@@ -297,12 +344,12 @@ void Var::setc(const char* val)
 		(m_value = new char[m_info->len + 2]) == NULL)
 		throw error_alloc("allocating space for Var value");
 
-	/* Guard against overflows */
-	unsigned len = strlen(val);
-	/* Tweak the length to account for the extra leading '-' allowed for
-	 * negative numeric values */
-	if (!m_info->is_string() && val[0] == '-')
-		--len;
+    /* Guard against overflows */
+    unsigned len = strlen(val);
+    /* Tweak the length to account for the extra leading '-' allowed for
+     * negative numeric values */
+    if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
+        --len;
     if (len > m_info->len)
     {
         unset();
@@ -336,7 +383,7 @@ void Var::setc_truncate(const char* val)
     unsigned len = strlen(val);
     /* Tweak the length to account for the extra leading '-' allowed for
      * negative numeric values */
-    if (!m_info->is_string() && val[0] == '-')
+    if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
         --len;
     strncpy(m_value, val, m_info->len);
     m_value[m_info->len] = 0;
@@ -353,17 +400,19 @@ void Var::set_from_formatted(const char* val)
         return;
     }
 
-    Varinfo i = info();
-
-    // If we're a string, it's easy
-    if (i->is_string())
+    switch (m_info->type)
     {
-        setc(val);
-        return;
+        case Vartype::String:
+        case Vartype::Binary:
+            // If we're a string, it's easy
+            setc(val);
+            return;
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            // Else use strtod
+            setd(strtod(val, NULL));
+            return;
     }
-
-    // Else use strtod
-    setd(strtod(val, NULL));
 }
 
 void Var::unset()
@@ -496,17 +545,22 @@ void Var::copy_val_only(const Var& src)
     if (src.m_value == NULL)
     {
         unset();
-    } else {
-        if (m_info->is_string())
-        {
+        return;
+    }
+    switch (m_info->type)
+    {
+        case Vartype::String:
+        case Vartype::Binary:
             if (src.info()->len > m_info->len)
                 setc_truncate(src.m_value);
             else
                 setc(src.m_value);
-        } else {
+            break;
+        case Vartype::Integer:
+        case Vartype::Decimal:
             /* Convert and set the new value */
             setd(convert_units(src.info()->unit, m_info->unit, src.enqd()));
-        }
+            break;
     }
 }
 
@@ -521,25 +575,27 @@ std::string Var::format(const char* ifundef) const
 {
     if (m_value == NULL)
         return ifundef;
-    else if (info()->is_binary())
+    switch (m_info->type)
     {
-        string res;
-        for (unsigned i = 0; i < info()->len; ++i)
-        {
-            char buf[4];
-            snprintf(buf, 4, "%X", ((const unsigned char*)m_value)[i]);
-            res += buf;
+        case Vartype::Binary: {
+            string res;
+            for (unsigned i = 0; i < info()->len; ++i)
+            {
+                char buf[4];
+                snprintf(buf, 4, "%X", ((const unsigned char*)m_value)[i]);
+                res += buf;
+            }
+            return res;
         }
-        return res;
-    }
-    else if (info()->is_string())
-        return m_value;
-    else
-    {
-        Varinfo i = info();
-        char buf[30];
-        snprintf(buf, 20, "%.*f", i->scale > 0 ? i->scale : 0, enqd());
-        return buf;
+        case Vartype::String:
+            return m_value;
+        case Vartype::Integer:
+        case Vartype::Decimal: {
+            Varinfo i = info();
+            char buf[30];
+            snprintf(buf, 20, "%.*f", i->scale > 0 ? i->scale : 0, enqd());
+            return buf;
+        }
     }
 }
 
@@ -551,13 +607,26 @@ void Var::print_without_attrs(FILE* out) const
 			WR_VAR_F(m_info->code), WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code),
 			m_info->desc, m_info->unit);
 
-	// Print value
-	if (m_value == NULL)
-		fprintf(out, "(undef)\n");
-	else if (m_info->is_string() || m_info->scale == 0)
-		fprintf(out, "%s\n", m_value);
-	else
-		fprintf(out, "%.*f\n", m_info->scale > 0 ? m_info->scale : 0, enqd());
+    // Print value
+    if (m_value == NULL)
+    {
+        fprintf(out, "(undef)\n");
+        return;
+    }
+    switch (m_info->type)
+    {
+        case Vartype::Binary:
+#warning TODO: implement this
+            fprintf(out, "(printing binary values not yet implemented)\n");
+            break;
+        case Vartype::String:
+        case Vartype::Integer:
+            fprintf(out, "%s\n", m_value);
+            break;
+        case Vartype::Decimal:
+            fprintf(out, "%.*f\n", m_info->scale > 0 ? m_info->scale : 0, enqd());
+            break;
+    }
 }
 
 void Var::print_without_attrs(std::ostream& out) const
@@ -618,42 +687,45 @@ unsigned Var::diff(const Var& var) const
                 m_value);
         return 1;
     }
-    if (m_info->is_binary())
+    switch (m_info->type)
     {
-        if (m_info->bit_len != var.info()->bit_len)
-        {
-            notes::logf("[%d%02d%03d %s] binary values differ: first is %u bits, second is %u bits\n",
-                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-                    m_info->bit_len, var.info()->bit_len);
-            return 1;
-        }
-        if (memcmp(m_value, var.m_value, m_info->len) != 0)
-        {
-            string dump1 = format();
-            string dump2 = var.format();
-            notes::logf("[%d%02d%03d %s] binary values differ: first is \"%s\", second is \"%s\"\n",
-                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc, dump1.c_str(), dump2.c_str());
-            return 1;
-        }
-    } else if (m_info->is_string() || m_info->scale == 0) {
-        if (strcmp(m_value, var.m_value) != 0)
-        {
-            notes::logf("[%d%02d%03d %s] values differ: first is \"%s\", second is \"%s\"\n",
-                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-                    m_value, var.m_value);
-            return 1;
-        }
-    }
-    else
-    {
-        double val1 = enqd(), val2 = var.enqd();
-        if (val1 != val2)
-        {
-            notes::logf("[%d%02d%03d %s] values differ: first is %f, second is %f\n",
-                    WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-                    val1, val2);
-            return 1;
-        }
+        case Vartype::Binary:
+            if (m_info->bit_len != var.info()->bit_len)
+            {
+                notes::logf("[%d%02d%03d %s] binary values differ: first is %u bits, second is %u bits\n",
+                        WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                        m_info->bit_len, var.info()->bit_len);
+                return 1;
+            }
+            if (memcmp(m_value, var.m_value, m_info->len) != 0)
+            {
+                string dump1 = format();
+                string dump2 = var.format();
+                notes::logf("[%d%02d%03d %s] binary values differ: first is \"%s\", second is \"%s\"\n",
+                        WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc, dump1.c_str(), dump2.c_str());
+                return 1;
+            }
+            break;
+        case Vartype::String:
+            if (strcmp(m_value, var.m_value) != 0)
+            {
+                notes::logf("[%d%02d%03d %s] values differ: first is \"%s\", second is \"%s\"\n",
+                        WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                        m_value, var.m_value);
+                return 1;
+            }
+            break;
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            double val1 = enqd(), val2 = var.enqd();
+            if (val1 != val2)
+            {
+                notes::logf("[%d%02d%03d %s] values differ: first is %f, second is %f\n",
+                        WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                        val1, val2);
+                return 1;
+            }
+            break;
     }
 
     if ((m_attrs != 0) != (var.m_attrs != 0))

@@ -42,19 +42,27 @@ void DDSValidator::check_fits(Varinfo info, const Var& var)
 
     if (!var.isset())
         ;
-    else if (info->is_string())
-        ;
-    else {
-        unsigned encoded;
-        if (is_crex)
-            encoded = info->encode_decimal(var.enqd());
-        else
-            encoded = info->encode_binary(var.enqd());
-        if (!is_crex)
+    else switch (info->type)
+    {
+        case Vartype::String:
+            break;
+        case Vartype::Binary:
+            throw error_unimplemented("check_fits for binary variables");
+        case Vartype::Integer:
+        case Vartype::Decimal:
         {
-            if (encoded >= (1u<<info->bit_len))
-                error_consistency::throwf("value %f (%u) does not fit in %d bits", var.enqd(), encoded, info->bit_len);
+            unsigned encoded;
+            if (is_crex)
+                encoded = info->encode_decimal(var.enqd());
+            else
+                encoded = info->encode_binary(var.enqd());
+            if (!is_crex)
+            {
+                if (encoded >= (1u<<info->bit_len))
+                    error_consistency::throwf("value %f (%u) does not fit in %d bits", var.enqd(), encoded, info->bit_len);
+            }
         }
+        break;
     }
 }
 

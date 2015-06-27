@@ -113,13 +113,18 @@ Varcode descriptor_code(const char* desc);
  */
 typedef short unsigned int Alteration;
 
-/**
- * Varinfo flags
- * @{
- */
-#define VARINFO_FLAG_STRING 0x01  ///< Mark string variables
-#define VARINFO_FLAG_BINARY 0x02  ///< Mark literal binary variables
-/**@}*/
+/// Variable type
+enum class Vartype : unsigned
+{
+    // Integer value
+    Integer,
+    // Floating point value
+    Decimal,
+    // String value
+    String,
+    // Opaque binary value
+    Binary,
+};
 
 
 /**
@@ -131,6 +136,9 @@ struct _Varinfo
 {
     /// Variable code, as in WMO BUFR/CREX table B
     Varcode code;
+
+    /// Type of the value stored in the variable
+    Vartype type;
 
     /// Freeform variable description
     char desc[64];
@@ -151,26 +159,15 @@ struct _Varinfo
     unsigned len;
 
     /**
-     * Scale of the variable when encoded as an unsigned binary value.
-     *
-     * The value of the variable can be encoded as an unsigned binary value by
-     * computing value * exp10(bit_scale) + bit_ref.
-     */
-    int bit_scale;
-
-    /**
      * Binary reference value for the variable.
      *
      * The value of the variable can be encoded as an unsigned binary value by
-     * computing value * exp10(bit_scale) + bit_ref.
+     * computing value * exp10(scale) + bit_ref.
      */
     int bit_ref;
 
     /// Length in bits of the variable when encoded as an unsigned binary value
     unsigned bit_len;
-
-    /// Variable flags (see VARINFO_FLAG_* constants)
-    unsigned flags;
 
     /// Minimum unscaled decimal integer value the field can have
     int imin;
@@ -183,12 +180,6 @@ struct _Varinfo
 
     /// Maximum value the field can have
     double dmax;
-
-    /// Check if this variable holds a string value
-    bool is_string() const { return (flags & VARINFO_FLAG_STRING) != 0; }
-
-    /// Check if this variable holds a raw binary value
-    bool is_binary() const { return (flags & VARINFO_FLAG_BINARY) != 0; }
 
     /**
      * Encode a double value into a decimal integer value using Varinfo decimal
@@ -203,7 +194,7 @@ struct _Varinfo
 
     /**
      * Encode a double value into a positive integer value using Varinfo binary
-     * encoding informations (bit_ref and bit_scale)
+     * encoding informations (bit_ref and scale)
      *
      * @param fval
      *   Value to encode
@@ -225,7 +216,7 @@ struct _Varinfo
 
     /**
      * Decode a double value from a decimal integer value using Varinfo
-     * binary encoding informations (bit_ref and bit_scale)
+     * binary encoding informations (bit_ref and scale)
      *
      * @param val
      *   Value to decode
@@ -239,15 +230,13 @@ struct _Varinfo
              const char* desc,
              const char* unit,
              int scale=0, unsigned len=0,
-             int bit_scale=0, int bit_ref=0, int bit_len=0,
-             int flags=0);
+             int bit_ref=0, int bit_len=0);
 
     /// Set all the base Varinfo fields, then call compute_range
     void set_crex(Varcode code,
              const char* desc,
              const char* unit,
-             int scale=0, unsigned len=0,
-             int flags=0);
+             int scale=0, unsigned len=0);
 
     /**
      * Set all the fields to represent a string variable.
@@ -269,7 +258,7 @@ struct _Varinfo
 
     /**
      * Compute the widest ranges for imin, imax, dmin and dmax that can fit any
-     * value that can be encoded both with (scale, len) and with (bit_scale,
+     * value that can be encoded both with (scale, len) and with (scale,
      * bit_ref, bit_len)
      */
     void compute_range();

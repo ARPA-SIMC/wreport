@@ -118,13 +118,21 @@ struct VartableEntry
 
         // Apply the alterations
         varinfo.bit_len = new_bit_len;
-        if (varinfo.is_string())
-            varinfo.len = varinfo.bit_len / 8;
-        else
-            varinfo.len = countdigits(1 << varinfo.bit_len);
+        switch (varinfo.type)
+        {
+            case Vartype::Integer:
+            case Vartype::Decimal:
+                varinfo.len = countdigits(1 << varinfo.bit_len);
+                break;
+            case Vartype::String:
+                varinfo.len = varinfo.bit_len / 8;
+                break;
+            case Vartype::Binary:
+                varinfo.len = ceil(varinfo.bit_len / 8);
+                break;
+        }
 
         varinfo.scale = new_scale;
-        varinfo.bit_scale = new_scale;
 
 #if 0
         fprintf(stderr, "After alteration(w:%d,s:%d): bl %d len %d scale %d\n",
@@ -143,7 +151,7 @@ struct VartableEntry
      */
     const VartableEntry* get_alteration(int new_scale, unsigned new_bit_len) const
     {
-        if (varinfo.scale == new_scale && varinfo.bit_scale == new_scale && varinfo.bit_len == new_bit_len)
+        if (varinfo.scale == new_scale && varinfo.bit_len == new_bit_len)
             return this;
         if (alterations == nullptr)
             return nullptr;
@@ -291,19 +299,21 @@ struct BufrVartable : public VartableBase
                 entry->unit[i] = 0;
 
             entry->scale = getnumber(line+98);
-            entry->bit_scale = getnumber(line+98);
             entry->bit_ref = getnumber(line+102);
             entry->bit_len = getnumber(line+115);
 
             // Set the is_string flag based on the unit
             if (strcmp(entry->unit, "CCITTIA5") == 0)
             {
-                entry->flags = VARINFO_FLAG_STRING;
+                entry->type = Vartype::String;
                 entry->len = entry->bit_len / 8;
             }
             else
             {
-                entry->flags = 0;
+                if (entry->scale)
+                    entry->type = Vartype::Decimal;
+                else
+                    entry->type = Vartype::Integer;
 
                 // Compute the decimal length as the maximum number of digits
                 // needed to encode 2**bit_len
@@ -374,15 +384,16 @@ struct CrexVartable : public VartableBase
             // Ignore the BUFR part: since it can have a different measurement
             // unit, we cannot really use that information. It will just mean
             // that values loaded using CREX tables cannot be encoded in binary
-            entry->bit_scale = 0;
             entry->bit_ref = 0;
             entry->bit_len = 0;
 
             // Set the is_string flag based on the unit
             if (strcmp(entry->unit, "CHARACTER") == 0)
-                entry->flags = VARINFO_FLAG_STRING;
+                entry->type = Vartype::String;
+            else if (entry->scale)
+                entry->type = Vartype::Decimal;
             else
-                entry->flags = 0;
+                entry->type = Vartype::Integer;
 
             // Postprocess the data, filling in minval and maxval
             entry->compute_range();

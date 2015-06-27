@@ -65,7 +65,7 @@ std::vector<Test> tests {
         ensure_equals(string(info->unit), string("CHARACTER"));
         ensure_equals(info->scale, 0) ;
         ensure_equals(info->len, 8);
-        ensure(info->is_string());
+        wassert(actual(info->type) == Vartype::String);
 
         info = table->query(WR_VAR(0, 2, 114));
         ensure_equals(info->code, WR_VAR(0, 2, 114));
@@ -73,7 +73,7 @@ std::vector<Test> tests {
         ensure_equals(strcmp(info->unit, "M**2"), 0);
         ensure_equals(info->scale, 0) ;
         ensure_equals(info->len, 5);
-        ensure(!info->is_string());
+        wassert(actual(info->type) == Vartype::Integer);
 
         info = table->query(WR_VAR(0, 2, 153));
         ensure_equals(info->code, WR_VAR(0, 2, 153));
@@ -81,7 +81,7 @@ std::vector<Test> tests {
         ensure_equals(strcmp(info->unit, "Hz"), 0);
         ensure_equals(info->scale, -8) ;
         ensure_equals(info->len, 8);
-        ensure(!info->is_string());
+        wassert(actual(info->type) == Vartype::Decimal);
     }),
     Test("bufr", [](Fixture& f) {
         // Test querying BUFR tables
@@ -100,7 +100,7 @@ std::vector<Test> tests {
         ensure_equals(info->scale, 0) ;
         ensure_equals(info->len, 8);
         ensure_equals(info->bit_len, 64);
-        ensure(info->is_string());
+        wassert(actual(info->type) == Vartype::String);
 
         info = table->query(WR_VAR(0, 2, 114));
         ensure_equals(info->code, WR_VAR(0, 2, 114));
@@ -111,7 +111,7 @@ std::vector<Test> tests {
         ensure_equals(info->bit_len, 15);
         ensure_equals(info->imin, 0);
         ensure_equals(info->imax, 32766);
-        ensure(!info->is_string());
+        wassert(actual(info->type) == Vartype::Integer);
 
         info = table->query(WR_VAR(0, 11, 35));
         ensure_equals(info->code, WR_VAR(0, 11, 35));
@@ -121,7 +121,7 @@ std::vector<Test> tests {
         ensure_equals(info->bit_ref, -8192);
         ensure_equals(info->bit_len, 14);
         ensure_equals(info->len, 5);
-        ensure(!info->is_string());
+        wassert(actual(info->type) == Vartype::Decimal);
 
         info = table->query(WR_VAR(0, 7, 31));
         ensure_equals(info->code, WR_VAR(0, 7, 31));
@@ -131,7 +131,7 @@ std::vector<Test> tests {
         ensure_equals(info->bit_ref, -4000);
         ensure_equals(info->bit_len, 17);
         ensure_equals(info->len, 6);
-        ensure(!info->is_string());
+        wassert(actual(info->type) == Vartype::Decimal);
     }),
     Test("bufr4", [](Fixture& f) {
         // Test reading BUFR edition 4 tables
@@ -150,7 +150,7 @@ std::vector<Test> tests {
         ensure_equals(info->scale, 0) ;
         ensure_equals(info->len, 8);
         ensure_equals(info->bit_len, 64);
-        ensure(info->is_string());
+        wassert(actual(info->type) == Vartype::String);
 
         info = table->query(WR_VAR(0, 2, 114));
         ensure_equals(info->code, WR_VAR(0, 2, 114));
@@ -161,7 +161,7 @@ std::vector<Test> tests {
         ensure_equals(info->bit_len, 15);
         ensure_equals(info->imin, 0);
         ensure_equals(info->imax, 32766);
-        ensure(!info->is_string());
+        wassert(actual(info->type) == Vartype::Integer);
 
         info = table->query(WR_VAR(0, 11, 35));
         ensure_equals(info->code, WR_VAR(0, 11, 35));
@@ -171,7 +171,7 @@ std::vector<Test> tests {
         ensure_equals(info->bit_ref, -8192);
         ensure_equals(info->bit_len, 14);
         ensure_equals(info->len, 5);
-        ensure(!info->is_string());
+        wassert(actual(info->type) == Vartype::Decimal);
 
         table = Vartable::load_bufr(table_pathname("B0000000000000014000.txt"));
 
@@ -183,7 +183,7 @@ std::vector<Test> tests {
         ensure_equals(info->bit_ref, 0);
         ensure_equals(info->bit_len, 6);
         ensure_equals(info->len, 2);
-        ensure(!info->is_string());
+        wassert(actual(info->type) == Vartype::Decimal);
     }),
     Test("wmo", [](Fixture& f) {
         // Test reading WMO standard tables

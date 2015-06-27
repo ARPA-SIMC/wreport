@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include <test-utils-wreport.h>
 #include <wreport/varinfo.h>
 #include <cstring>
@@ -83,11 +64,11 @@ std::vector<Test> tests {
         info.set_bufr(WR_VAR(0, 15, 194),        // Var
               "[SIM] O3 Concentration", // Desc
               "KG/M**3",            // Unit
-              10, 5, 10, 0, 17);     // Scale, len, bit_scale, bit_ref, bit_len
+              10, 5, 0, 17);     // Scale, len, bit_ref, bit_len
         info.compute_range();
         wassert(actual(info.dmin) == 0);
         wassert(actual(info.dmax) == 9.9998e-06);
-        wassert(actual(info.is_string()).isfalse());
+        wassert(actual(info.type) == Vartype::Decimal);
     }),
     Test("encode_doubles", [](Fixture& f) {
         // Test encoding doubles to ints
@@ -95,12 +76,11 @@ std::vector<Test> tests {
         info.set_bufr(WR_VAR(0, 6, 2),      // Var
               "LONGITUDE (COARSE ACCURACY)",// Desc
               "DEGREE",         // Unit
-              2, 5, 2, -18000, 16);     // Scale, len, bit_scale, bit_ref, bit_len
-        info.bit_scale = 2;
+              2, 5, -18000, 16);     // Scale, len, bit_ref, bit_len
         info.compute_range();
         wassert(actual(info.dmin) == -180);
         wassert(actual(info.dmax) == 475.34);
-        wassert(actual(info.is_string()).isfalse());
+        wassert(actual(info.type) == Vartype::Decimal);
         // ensure_equals(info->decode_int(16755), -12.45);
         wassert(actual(info.decode_binary(16755)) == -12.45);
     }),

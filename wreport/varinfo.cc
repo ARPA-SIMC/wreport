@@ -65,95 +65,117 @@ void _Varinfo::set_bufr(Varcode code,
                    const char* desc,
                    const char* unit,
                    int scale, unsigned len,
-                   int bit_scale, int bit_ref, int bit_len,
-                   int flags)
+                   int bit_ref, int bit_len)
 {
     this->code = code;
     strncpy(this->desc, desc, 64);
     strncpy(this->unit, unit, 24);
     this->scale = scale;
     this->len = len;
-    this->bit_scale = bit_scale;
     this->bit_ref = bit_ref;
     this->bit_len = bit_len;
-    this->flags = flags;
     if (strcmp(unit, "CCITTIA5") == 0)
-        this->flags |= VARINFO_FLAG_STRING;
+        this->type = Vartype::String;
+    else if (scale == 0)
+        this->type = Vartype::Integer;
+    else
+        this->type = Vartype::Decimal;
     compute_range();
 }
 
 void _Varinfo::set_crex(Varcode code,
                    const char* desc,
                    const char* unit,
-                   int scale, unsigned len,
-                   int flags)
+                   int scale, unsigned len)
 {
     this->code = code;
     strncpy(this->desc, desc, 64);
     strncpy(this->unit, unit, 24);
     this->scale = scale;
     this->len = len;
-    this->bit_scale = 0;
     this->bit_ref = 0;
     this->bit_len = 0;
-    this->flags = flags;
     if (strcmp(unit, "CHARACTER") == 0)
-        this->flags |= VARINFO_FLAG_STRING;
+        this->type = Vartype::String;
+    else if (scale == 0)
+        this->type = Vartype::Integer;
+    else
+        this->type = Vartype::Decimal;
     compute_range();
 }
 
 void _Varinfo::set_string(Varcode code, const char* desc, unsigned len)
 {
-    set_bufr(code, desc, "CCITTIA5", 0, len, 0, 0, len * 8);
+    this->code = code;
+    strncpy(this->desc, desc, 64);
+    strncpy(this->unit, "CCITTIA5", 24);
+    this->scale = 0;
+    this->len = len;
+    this->bit_ref = 0;
+    this->bit_len = len * 8;
+    this->type = Vartype::String;
+    compute_range();
 }
 
 void _Varinfo::set_binary(Varcode code, const char* desc, unsigned bit_len)
 {
-    unsigned len = ceil(bit_len / 8.0);
-    set_bufr(code, desc, "UNKNOWN", 0, len, 0, 0, bit_len, VARINFO_FLAG_BINARY);
+    this->code = code;
+    strncpy(this->desc, desc, 64);
+    strncpy(this->unit, "UNKNOWN", 24);
+    this->scale = 0;
+    this->len = ceil(bit_len / 8.0);
+    this->bit_ref = 0;
+    this->bit_len = bit_len;
+    this->type = Vartype::Binary;
+    compute_range();
 }
 
 
 void _Varinfo::compute_range()
 {
-    if (is_string() || is_binary())
+    switch (type)
     {
-        imin = imax = 0;
-        dmin = dmax = 0.0;
-    } else {
-		if (len >= 10)
-		{
-			imin = INT_MIN;
-			imax = INT_MAX;
-        } else if (bit_len == 0) {
-            // Ignore binary encoding if we do not have information for it
+        case Vartype::String:
+        case Vartype::Binary:
+            imin = imax = 0;
+            dmin = dmax = 0.0;
+            break;
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            if (len >= 10)
+            {
+                imin = INT_MIN;
+                imax = INT_MAX;
+            } else if (bit_len == 0) {
+                // Ignore binary encoding if we do not have information for it
 
-            // We subtract 2 because 10^len-1 is the
-            // CREX missing value
-            imin =  -(intexp10(len) - 1.0);
-            imax = (intexp10(len) - 2.0);
-        } else {
-            int bit_min = bit_ref;
-            int bit_max = exp2(bit_len) + bit_ref;
-			// We subtract 2 because 2^bit_len-1 is the
-			// BUFR missing value.
-			// We cannot subtract 2 from the delayed replication
-			// factors because RADAR BUFR messages have 255
-			// subsets, and the delayed replication field is 8
-			// bits, so 255 is the missing value, and if we
-			// disallow it here we cannot import radars anymore.
-            if (WR_VAR_X(code) != 31)
-                bit_max -= 2;
-            // We subtract 2 because 10^len-1 is the
-            // CREX missing value
-            int dec_min = -(intexp10(len) - 1.0);
-            int dec_max = (intexp10(len) - 2.0);
+                // We subtract 2 because 10^len-1 is the
+                // CREX missing value
+                imin =  -(intexp10(len) - 1.0);
+                imax = (intexp10(len) - 2.0);
+            } else {
+                int bit_min = bit_ref;
+                int bit_max = exp2(bit_len) + bit_ref;
+                // We subtract 2 because 2^bit_len-1 is the
+                // BUFR missing value.
+                // We cannot subtract 2 from the delayed replication
+                // factors because RADAR BUFR messages have 255
+                // subsets, and the delayed replication field is 8
+                // bits, so 255 is the missing value, and if we
+                // disallow it here we cannot import radars anymore.
+                if (WR_VAR_X(code) != 31)
+                    bit_max -= 2;
+                // We subtract 2 because 10^len-1 is the
+                // CREX missing value
+                int dec_min = -(intexp10(len) - 1.0);
+                int dec_max = (intexp10(len) - 2.0);
 
-            imin = max(bit_min, dec_min);
-            imax = min(bit_max, dec_max);
-        }
-        dmin = decode_decimal(imin);
-        dmax = decode_decimal(imax);
+                imin = max(bit_min, dec_min);
+                imax = min(bit_max, dec_max);
+            }
+            dmin = decode_decimal(imin);
+            dmax = decode_decimal(imax);
+            break;
     }
 }
 
@@ -192,10 +214,10 @@ double _Varinfo::decode_binary(uint32_t ival) const
     if (bit_len == 0)
         error_consistency::throwf("cannot decode %01d%02d%03d from binary, because the information needed is missing from the B table in use",
                 WR_VAR_FXY(code));
-    if (bit_scale >= 0)
-        return ((double)ival + bit_ref) / scales[bit_scale];
+    if (scale >= 0)
+        return ((double)ival + bit_ref) / scales[scale];
     else
-        return ((double)ival + bit_ref) * scales[-bit_scale];
+        return ((double)ival + bit_ref) * scales[-scale];
 }
 
 int _Varinfo::encode_decimal(double fval) const
@@ -214,15 +236,15 @@ unsigned _Varinfo::encode_binary(double fval) const
         error_consistency::throwf("cannot encode %01d%02d%03d to binary, because the information needed is missing from the B table in use",
                 WR_VAR_FXY(code));
     double res;
-    if (bit_scale > 0)
-        res = rint((fval * scales[bit_scale]) - bit_ref);
-    else if (bit_scale < 0)
-        res = rint((fval / scales[-bit_scale] - bit_ref));
+    if (scale > 0)
+        res = rint((fval * scales[scale]) - bit_ref);
+    else if (scale < 0)
+        res = rint((fval / scales[-scale] - bit_ref));
     else
         res = rint(fval - bit_ref);
     if (res < 0)
         error_consistency::throwf("Cannot encode %01d%02d%03d %f to %d bits using scale %d and ref %d: encoding gives negative value %f",
-                WR_VAR_FXY(code), fval, bit_len, bit_scale, bit_ref, res);
+                WR_VAR_FXY(code), fval, bit_len, scale, bit_ref, res);
     return (unsigned)res;
 }
 

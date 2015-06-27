@@ -286,12 +286,19 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     Var decode_b_value(Varinfo info)
     {
         Var var(info);
-        if (info->is_string())
-            in.decode_string(var);
-        else if (info->is_binary())
-            in.decode_binary(var);
-        else
-            in.decode_number(var);
+        switch (info->type)
+        {
+            case Vartype::String:
+                in.decode_string(var);
+                break;
+            case Vartype::Binary:
+                in.decode_binary(var);
+                break;
+            case Vartype::Integer:
+            case Vartype::Decimal:
+                in.decode_number(var);
+                break;
+        }
         return var;
     }
 
@@ -435,23 +442,35 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
 
     void decode_b_value(Varinfo info, bulletin::CompressedVarSink& dest)
     {
-        if (info->is_string())
-            in.decode_string(info, subset_count, dest);
-        else if (info->is_binary())
-            throw error_unimplemented("decode_b_binary TODO");
-        else
-            in.decode_number(info, subset_count, associated_field, dest);
+        switch (info->type)
+        {
+            case Vartype::String:
+                in.decode_string(info, subset_count, dest);
+                break;
+            case Vartype::Binary:
+                throw error_unimplemented("decode_b_binary TODO");
+            case Vartype::Integer:
+            case Vartype::Decimal:
+                in.decode_number(info, subset_count, associated_field, dest);
+                break;
+        }
     }
 
     Var decode_semantic_b_value(Varinfo info)
     {
         Var var(info);
-        if (info->is_string())
-            in.decode_string(var, subset_count);
-        else if (info->is_binary())
-            throw error_unimplemented("decode_b_binary TODO");
-        else
-            in.decode_number(var, subset_count);
+        switch (info->type)
+        {
+            case Vartype::String:
+                in.decode_string(var, subset_count);
+                break;
+            case Vartype::Binary:
+                throw error_unimplemented("decode_b_binary TODO");
+            case Vartype::Integer:
+            case Vartype::Decimal:
+                in.decode_number(var, subset_count);
+                break;
+        }
         return var;
     }
 

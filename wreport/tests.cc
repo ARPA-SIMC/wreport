@@ -27,6 +27,17 @@
 using namespace std;
 
 namespace wreport {
+std::ostream& operator<<(std::ostream& o, Vartype type)
+{
+    switch (type)
+    {
+        case Vartype::String: return o << "string";
+        case Vartype::Binary: return o << "binary";
+        case Vartype::Integer: return o << "integer";
+        case Vartype::Decimal: return o << "decimal";
+    }
+}
+
 namespace tests {
 
 bool test_can_run(const std::string& group_name, const std::string& test_name)

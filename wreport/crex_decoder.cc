@@ -188,12 +188,12 @@ struct CrexParser : public bulletin::Visitor
         // Parse value from the data section
         const char* d_start;
         const char* d_end;
-        in.parse_value(info->len, !info->is_string(), &d_start, &d_end);
+        in.parse_value(info->len, info->type != Vartype::String, &d_start, &d_end);
 
         /* If the variable is not missing, set its value */
         if (*d_start != '/')
         {
-            if (info->is_string())
+            if (info->type == Vartype::String)
             {
                 const int len = d_end - d_start;
                 string buf(d_start, len);

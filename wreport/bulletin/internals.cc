@@ -209,7 +209,7 @@ Varinfo Visitor::get_varinfo(Varcode code)
     }
 
     int bit_len = peek->bit_len;
-    if (peek->is_string() && c_string_len_override)
+    if (peek->type == Vartype::String && c_string_len_override)
     {
         TRACE("get_varinfo:overriding string to %d bytes\n", c_string_len_override);
         bit_len = c_string_len_override * 8;

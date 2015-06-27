@@ -39,6 +39,8 @@
     } }()
 
 namespace wreport {
+std::ostream& operator<<(std::ostream& o, Vartype type);
+
 namespace tests {
 
 /**
