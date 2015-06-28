@@ -36,6 +36,7 @@ std::ostream& operator<<(std::ostream& o, Vartype type)
         case Vartype::Integer: return o << "integer";
         case Vartype::Decimal: return o << "decimal";
     }
+    return o << "unknown";
 }
 
 namespace tests {

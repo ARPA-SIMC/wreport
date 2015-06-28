@@ -150,6 +150,7 @@ bool Var::value_equals(const Var& var) const
                 //(enqd() == var.enqd())
         }
     }
+    error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
 
 bool Var::isset() const throw ()
@@ -180,6 +181,7 @@ int Var::enqi() const
         case Vartype::Decimal:
             return strtol(m_value, 0, 10);
     }
+    error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
 
 double Var::enqd() const
@@ -199,6 +201,7 @@ double Var::enqd() const
         case Vartype::Decimal:
             return m_info->decode_decimal(strtol(m_value, 0, 10));
     }
+    error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
 
 const char* Var::enqc() const
@@ -502,9 +505,8 @@ std::string Var::format(const char* ifundef) const
             snprintf(buf, 20, "%.*f", i->scale > 0 ? i->scale : 0, enqd());
             return buf;
         }
-        default:
-            error_consistency::throwf("unknown variable type %d", (int)m_info->type);
     }
+    error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
 
 
