@@ -94,11 +94,8 @@ public:
      */
     Var& operator=(Var&& var);
 
-	/// Equality
-	bool operator==(const Var& var) const;
-
-	/// Equality
-	bool operator!=(const Var& var) const { return !operator==(var); }
+    bool operator==(const Var& var) const;
+    bool operator!=(const Var& var) const { return !operator==(var); }
 
     /**
      * Test if the values are the same, regardless of variable codes or
@@ -151,6 +148,9 @@ public:
     /// Set the value from a string or opaque binary value
     void setc(const char* val);
 
+    /// Set from a value formatted with the format() method
+    void setf(const char* val);
+
     /**
      * Set the value from a string value, truncating it if it is too long.
      *
@@ -158,9 +158,6 @@ public:
      * truncation.
      */
     void setc_truncate(const char* val);
-
-    /// Set from a value formatted with the format() method
-    void set_from_formatted(const char* val);
 
     /**
      * Set the value from another variable, performing conversions if

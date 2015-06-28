@@ -199,7 +199,7 @@ std::vector<Test> tests {
             Var var(info);
             string f = var.format("");
             Var var1(info);
-            var1.set_from_formatted(f.c_str());
+            var1.setf(f.c_str());
             ensure(var == var1);
         }
 
@@ -209,7 +209,7 @@ std::vector<Test> tests {
             Var var(info, "antani");
             string f = var.format("");
             Var var1(info);
-            var1.set_from_formatted(f.c_str());
+            var1.setf(f.c_str());
             ensure(var == var1);
         }
 
@@ -219,7 +219,7 @@ std::vector<Test> tests {
             Var var(info, 123);
             string f = var.format("");
             Var var1(info);
-            var1.set_from_formatted(f.c_str());
+            var1.setf(f.c_str());
             ensure(var == var1);
         }
 
@@ -229,7 +229,7 @@ std::vector<Test> tests {
             Var var(info, 12.345);
             string f = var.format("");
             Var var1(info);
-            var1.set_from_formatted(f.c_str());
+            var1.setf(f.c_str());
             ensure(var == var1);
         }
     }),

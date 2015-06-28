@@ -382,7 +382,7 @@ void Var::setc_truncate(const char* val)
     }
 }
 
-void Var::set_from_formatted(const char* val)
+void Var::setf(const char* val)
 {
     // NULL or empty string, unset()
     if (val == NULL || val[0] == 0)
