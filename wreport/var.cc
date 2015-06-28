@@ -487,6 +487,17 @@ void Var::copy_val_only(const Var& src)
     switch (m_info->type)
     {
         case Vartype::String:
+            if (src.info()->len < m_info->len)
+            {
+                allocate();
+                // Fill only the first src.info()->len bytes, and 0-pad the
+                // rest
+                memcpy(m_value, src.m_value, src.info()->len);
+                for (unsigned i = src.info()->len; i < m_info->len; ++i)
+                    m_value[i] = 0;
+            } else
+                setc(src.m_value);
+            break;
         case Vartype::Binary:
             if (src.info()->len > m_info->len)
                 setc_truncate(src.m_value);
@@ -495,7 +506,7 @@ void Var::copy_val_only(const Var& src)
             break;
         case Vartype::Integer:
         case Vartype::Decimal:
-            /* Convert and set the new value */
+            /// Convert and set the new value
             setd(convert_units(src.info()->unit, m_info->unit, src.enqd()));
             break;
     }
