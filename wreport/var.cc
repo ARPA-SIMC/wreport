@@ -134,8 +134,7 @@ bool Var::value_equals(const Var& var) const
     switch (m_info->type)
     {
         case Vartype::Binary:
-            error_unimplemented::throwf("comparing opaque variable data is still not implemented");
-            break;
+            return memcmp(m_value, var.m_value, m_info->len) == 0;
         case Vartype::String:
             return strcmp(m_value, var.m_value) == 0;
         case Vartype::Integer:
@@ -153,16 +152,6 @@ bool Var::value_equals(const Var& var) const
     }
 }
 
-Varcode Var::code() const throw ()
-{
-    return m_info->code;
-}
-
-Varinfo Var::info() const throw ()
-{
-	return m_info;
-}
-
 bool Var::isset() const throw ()
 {
 	return m_value != NULL;
@@ -173,40 +162,6 @@ void Var::clear_attrs()
     delete m_attrs;
     m_attrs = 0;
 }
-
-#if 0
-static inline void fail_if_undef(const char* what, const Varinfo& info, const char* val)
-{
-    if (!val)
-        error_notfound::throwf("%s: %01d%02d%03d (%s) is not defined",
-                what, WR_VAR_FXY(info->code), info->desc);
-}
-
-// Ensure that we're working with a numeric value that is not undefined
-static inline void want_number(const char* what, Varinfo info, const char* val)
-{
-    if (!val)
-        error_notfound::throwf("%s: %01d%02d%03d (%s) is not defined",
-                what, WR_VAR_FXY(info->code), info->desc);
-    if (info->is_string())
-        error_type::throwf("%s: %01d%02d%03d (%s) is a string",
-                what, WR_VAR_FXY(info->code), info->desc);
-    if (info->is_binary())
-        error_type::throwf("%s: %01d%02d%03d (%s) is an opaque binary",
-                what, WR_VAR_FXY(info->code), info->desc);
-}
-
-// Ensure that we're working with a numeric value
-static inline void want_number(const char* what, Varinfo info)
-{
-    if (info->is_string())
-        error_type::throwf("%s: %01d%02d%03d (%s) is a string",
-                what, WR_VAR_FXY(info->code), info->desc);
-    if (info->is_binary())
-        error_type::throwf("%s: %01d%02d%03d (%s) is an opaque binary",
-                what, WR_VAR_FXY(info->code), info->desc);
-}
-#endif
 
 int Var::enqi() const
 {
@@ -339,37 +294,40 @@ void Var::setd(double val)
 
 void Var::setc(const char* val)
 {
-	/* Set the value */
-	if (m_value == NULL &&
-		(m_value = new char[m_info->len + 2]) == NULL)
-		throw error_alloc("allocating space for Var value");
-
-    /* Guard against overflows */
-    unsigned len = strlen(val);
-    /* Tweak the length to account for the extra leading '-' allowed for
-     * negative numeric values */
-    if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
-        --len;
-    if (len > m_info->len)
-    {
-        unset();
-        if (options::var_silent_domain_errors)
-            return;
-        error_domain::throwf("Value \"%s\" is too long for B%02d%03d (%s): maximum length is %d",
-                val, WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc, m_info->len);
-    }
-
-	strncpy(m_value, val, m_info->len + 1);
-	m_value[m_info->len + 1] = 0;
-}
-
-void Var::set_binary(const unsigned char* val)
-{
-    /* Set the value */
+    // Allocate storage for the value
     if (m_value == NULL &&
-        (m_value = new char[m_info->len + 2]) == NULL)
+            (m_value = new char[m_info->len + 2]) == NULL)
         throw error_alloc("allocating space for Var value");
-    memcpy(m_value, val, m_info->len);
+
+    switch (m_info->type)
+    {
+        case Vartype::String:
+        case Vartype::Integer:
+        case Vartype::Decimal: {
+            // Guard against overflows
+            unsigned len = strlen(val);
+            /* Tweak the length to account for the extra leading '-' allowed for
+            * negative numeric values */
+            if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
+                --len;
+            if (len > m_info->len)
+            {
+                unset();
+                if (options::var_silent_domain_errors)
+                    return;
+                error_domain::throwf("Value \"%s\" is too long for B%02d%03d (%s): maximum length is %d",
+                        val, WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc, m_info->len);
+            }
+            strncpy(m_value, val, m_info->len + 1);
+            m_value[m_info->len + 1] = 0;
+            break;
+        }
+        case Vartype::Binary:
+            memcpy(m_value, val, m_info->len);
+            if (m_info->bit_len % 8)
+                m_value[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
+            break;
+    }
 }
 
 void Var::setc_truncate(const char* val)
@@ -582,7 +540,7 @@ std::string Var::format(const char* ifundef) const
             for (unsigned i = 0; i < info()->len; ++i)
             {
                 char buf[4];
-                snprintf(buf, 4, "%X", ((const unsigned char*)m_value)[i]);
+                snprintf(buf, 4, "%02X", ((const unsigned char*)m_value)[i]);
                 res += buf;
             }
             return res;
@@ -596,6 +554,8 @@ std::string Var::format(const char* ifundef) const
             snprintf(buf, 20, "%.*f", i->scale > 0 ? i->scale : 0, enqd());
             return buf;
         }
+        default:
+            error_consistency::throwf("unknown variable type %d", (int)m_info->type);
     }
 }
 

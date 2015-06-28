@@ -1,27 +1,9 @@
-/*
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include <test-utils-wreport.h>
 #include <wreport/var.h>
 #include <wreport/vartable.h>
 #include <wreport/options.h>
-#include <math.h>
+#include <cmath>
+#include <cstring>
 
 using namespace wibble::tests;
 using namespace wreport;
@@ -306,16 +288,22 @@ std::vector<Test> tests {
         }
     }),
     Test("binary", [](Fixture& f) {
+        // Test binary values
         _Varinfo info06; info06.set_binary(WR_VAR(0, 0, 0), "TEST BINARY 06 bits", 6);
+        wassert(actual(info06.len) == 1);
         _Varinfo info16; info16.set_binary(WR_VAR(0, 0, 0), "TEST BINARY 16 bits", 16);
         _Varinfo info18; info18.set_binary(WR_VAR(0, 0, 0), "TEST BINARY 18 bits", 18);
 
+        // Bit buffers are zero-padded
         Var var06a(&info06, "\xaf\x5f");
-        wassert(actual(var06a.format()) == "A");
-        Var var16a(&info06, "\xaf\x5f");
-        wassert(actual(var16a.format()) == "A");
-        Var var18a(&info06, "\xaf\x5f");
-        wassert(actual(var18a.format()) == "A");
+        wassert(actual(var06a.format()) == "2F");
+        Var var16a(&info16, "\xaf\x5f");
+        wassert(actual(var16a.format()) == "AF5F");
+        Var var18a(&info18, "\xaf\x5f\xff");
+        wassert(actual(var18a.format()) == "AF5F03");
+
+        var06a.setc("\xff");
+        wassert(actual(memcmp(var06a.enqc(), "\x3f", 1) == 0).istrue());
     }),
 
 #if 0

@@ -321,7 +321,7 @@ void BufrInput::decode_binary(Var& dest)
     /* Store the variable that we found */
     // Set the variable value
     if (!missing)
-        dest.set_binary(buf);
+        dest.setc((char*)buf);
 }
 
 void BufrInput::decode_number(Var& dest)

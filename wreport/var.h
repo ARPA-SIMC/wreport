@@ -35,7 +35,7 @@ protected:
      * For string values, it is the 0-terminated string.
      *
      * For binary values, it is a raw buffer where the first m_info->bit_len
-     * bits are the binary value.
+     * bits are the binary value, and the rest is set to 0.
      */
     char* m_value;
 
@@ -103,11 +103,11 @@ public:
      */
     bool value_equals(const Var& var) const;
 
-	/// Retrieve the Varcode for a variable
-	Varcode code() const throw ();
+    /// Retrieve the Varcode for a variable
+    Varcode code() const throw () { return m_info->code; }
 
-	/// Get informations about the variable
-	Varinfo info() const throw ();
+    /// Get informations about the variable
+    Varinfo info() const throw () { return m_info; }
 
 	/// @returns true if the variable is defined, else false
 	bool isset() const throw ();
@@ -145,16 +145,8 @@ public:
 	/// Set the value from a double value
 	void setd(double val);
 
-	/// Set the value from a string value
-	void setc(const char* val);
-
-    /**
-     * Set the raw, binary value from a string value.
-     *
-     * This is similar to setc(), but it always copies as many bytes as the
-     * variable is long, including null bytes.
-     */
-    void set_binary(const unsigned char* val);
+    /// Set the value from a string or opaque binary value
+    void setc(const char* val);
 
     /**
      * Set the value from a string value, truncating \a val if it is too long
