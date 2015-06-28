@@ -42,6 +42,9 @@ protected:
 	/// Attribute list (ordered by Varcode)
 	Var* m_attrs;
 
+    /// Make sure that m_value is allocated. It does nothing if it already is.
+    void allocate();
+
 public:
 	/// Create a new Var, with undefined value
 	Var(Varinfo info);

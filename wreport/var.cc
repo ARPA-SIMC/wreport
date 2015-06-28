@@ -212,6 +212,12 @@ const char* Var::enqc() const
     return m_value;
 }
 
+void Var::allocate()
+{
+    if (!m_value && !(m_value = new char[m_info->len + 2]))
+        throw error_alloc("allocating space for Var value");
+}
+
 void Var::seti(int val)
 {
     switch (m_info->type)
@@ -235,8 +241,7 @@ void Var::seti(int val)
             }
 
             // Ensure that we have a buffer allocated
-            if (!m_value && !(m_value = new char[m_info->len + 2]))
-                throw error_alloc("allocating space for Var value");
+            allocate();
 
             // Set the value
 #warning FIXME: not thread safe
@@ -282,10 +287,8 @@ void Var::setd(double val)
                         WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
             }
 
-            /* Set the value */
-            if (m_value == NULL && 
-                (m_value = new char[m_info->len + 2]) == NULL)
-                throw error_alloc("allocating space for Var value");
+            // Ensure that we have a buffer allocated
+            allocate();
 
 #warning FIXME: not thread safe
             // FIXME: not thread safe, and why are we not just telling itoa to write on m_value??
@@ -298,9 +301,7 @@ void Var::setd(double val)
 void Var::setc(const char* val)
 {
     // Allocate storage for the value
-    if (m_value == NULL &&
-            (m_value = new char[m_info->len + 2]) == NULL)
-        throw error_alloc("allocating space for Var value");
+    allocate();
 
     switch (m_info->type)
     {
