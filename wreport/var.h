@@ -162,6 +162,18 @@ public:
     /// Set from a value formatted with the format() method
     void set_from_formatted(const char* val);
 
+    /**
+     * Set the value from another variable, performing conversions if
+     * needed. The attributes of \a src will be ignored.
+     */
+    void setval(const Var& src);
+
+    /**
+     * Replace all attributes in this variable with all the attributes from \a
+     * src
+     */
+    void setattrs(const Var& src);
+
 	/**
 	 * Shortcuts (use with care, as the semanthics are slightly different
 	 * depending on the type)
@@ -171,7 +183,7 @@ public:
 	void set(double val) { setd(val); }
 	void set(const char* val) { setc(val); }
 	void set(const std::string& val) { setc(val.c_str()); }
-	void set(const Var& var) { copy_val(var); }
+	void set(const Var& var) { setval(var); setattrs(var); }
 	/// @}
 
 	/// Unset the value
@@ -223,30 +235,6 @@ public:
 	 * 	// Do something with a
 	 */
 	const Var* next_attr() const;
-
-	/**
-	 * Set the value from another variable, performing conversions if
-	 * needed.
-	 *
-	 * The attributes of \a src will also be copied
-	 */
-	void copy_val(const Var& src);
-
-    /**
-     * Set the value from another variable, performing conversions if
-     * needed.
-     *
-     * The attributes of \a src will NOT be copied
-     */
-    void copy_val_only(const Var& src);
-
-	/**
-	 * Copy all the attributes from another variable
-	 *
-	 * @param src
-	 *   The variable with the attributes to copy.
-	 */
-	void copy_attrs(const Var& src);
 
 	/**
 	 * Create a formatted string representation of the variable value

@@ -42,8 +42,14 @@ Var::Var(Varinfo info, const char* val)
 Var::Var(const Var& var)
     : m_info(var.m_info), m_value(nullptr), m_attrs(nullptr)
 {
-    // We are initialized as unset: copy the value normally
-    copy_val(var);
+    // We are initialized as unset
+    if (var.m_value)
+    {
+        // We share the same varinfo, so we can just copy m_value as it is
+        allocate();
+        memcpy(m_value, var.m_value, m_info->len + 2);
+    }
+    setattrs(var);
 }
 
 Var::Var(Var&& var)
@@ -71,7 +77,8 @@ Var::Var(const Var& var, bool with_attrs)
 Var::Var(Varinfo info, const Var& var)
     : m_info(info), m_value(nullptr), m_attrs(nullptr)
 {
-	copy_val(var);
+    setval(var);
+    setattrs(var);
 }
 
 Var& Var::operator=(const Var& var)
@@ -88,12 +95,12 @@ Var& Var::operator=(const Var& var)
     {
         allocate();
         // Since we share the Varinfo, we can just copy the buffer
-        memcpy(m_value, var.m_value, m_info->len);
+        memcpy(m_value, var.m_value, m_info->len + 1);
     }
 
-	// Copy attributes
-	copy_attrs(var);
-	return *this;
+    // Copy attributes
+    setattrs(var);
+    return *this;
 }
 
 Var& Var::operator=(Var&& var)
@@ -471,15 +478,9 @@ const Var* Var::next_attr() const
 	return m_attrs;
 }
 
-void Var::copy_val(const Var& src)
+void Var::setval(const Var& src)
 {
-    copy_val_only(src);
-    copy_attrs(src);
-}
-
-void Var::copy_val_only(const Var& src)
-{
-    if (src.m_value == NULL)
+    if (!src.m_value)
     {
         unset();
         return;
@@ -492,17 +493,21 @@ void Var::copy_val_only(const Var& src)
                 allocate();
                 // Fill only the first src.info()->len bytes, and 0-pad the
                 // rest
-                memcpy(m_value, src.m_value, src.info()->len);
+                memcpy(m_value, src.m_value, src.info()->len + 2);
                 for (unsigned i = src.info()->len; i < m_info->len; ++i)
                     m_value[i] = 0;
             } else
-                setc(src.m_value);
+                setc_truncate(src.m_value);
             break;
         case Vartype::Binary:
-            if (src.info()->len > m_info->len)
-                setc_truncate(src.m_value);
+            if (src.info()->len < m_info->len)
+            {
+                memcpy(m_value, src.m_value, src.m_info->len);
+                for (unsigned i = src.m_info->len; i < m_info->len; ++i)
+                    m_value[i] = 0;
+            }
             else
-                setc(src.m_value);
+                setc_truncate(src.m_value);
             break;
         case Vartype::Integer:
         case Vartype::Decimal:
@@ -512,7 +517,7 @@ void Var::copy_val_only(const Var& src)
     }
 }
 
-void Var::copy_attrs(const Var& src)
+void Var::setattrs(const Var& src)
 {
 	clear_attrs();
 	if (src.m_attrs)
