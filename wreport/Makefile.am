@@ -146,6 +146,7 @@ dist_noinst_HEADERS += \
 
 benchmark_SOURCES = \
 	var-bench.cc \
+	bulletin-bench.cc \
 	benchmark-main.cc
 benchmark_LDADD = \
 	libwreport.la
