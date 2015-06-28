@@ -60,20 +60,6 @@ Var::Var(Var&& var)
     var.m_attrs = nullptr;
 }
 
-#if 0
-Var::Var(const Var& var, bool with_attrs)
-    : m_info(var.m_info), m_value(NULL), m_attrs(NULL)
-{
-    /* Copy the value */
-    if (var.m_value != NULL)
-        setc(var.m_value);
-
-    /* Copy the attributes */
-    if (with_attrs && var.m_attrs)
-        m_attrs = new Var(*var.m_attrs);
-}
-#endif
-
 Var::Var(Varinfo info, const Var& var)
     : m_info(info), m_value(nullptr), m_attrs(nullptr)
 {
