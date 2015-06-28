@@ -152,7 +152,7 @@ public:
     void setc(const char* val);
 
     /**
-     * Set the value from a string value, truncating \a val if it is too long
+     * Set the value from a string value, truncating it if it is too long.
      *
      * If a value is truncated, the last character is set to '>' to mark the
      * truncation.

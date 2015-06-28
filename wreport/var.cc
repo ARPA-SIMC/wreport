@@ -83,13 +83,13 @@ Var& Var::operator=(const Var& var)
 	m_info = var.m_info;
 
     // Copy value
-    if (m_value != nullptr)
+    unset();
+    if (var.m_value)
     {
-        delete[] m_value;
-        m_value = nullptr;
+        allocate();
+        // Since we share the Varinfo, we can just copy the buffer
+        memcpy(m_value, var.m_value, m_info->len);
     }
-    if (var.m_value != nullptr)
-        setc(var.m_value);
 
 	// Copy attributes
 	copy_attrs(var);
@@ -387,30 +387,35 @@ void Var::set_from_formatted(const char* val)
     switch (m_info->type)
     {
         case Vartype::String:
-        case Vartype::Binary:
-            // If we're a string, it's easy
+            // If we're a string, the formatted value is just the string itself
             setc(val);
-            return;
+            break;
+        case Vartype::Binary:
+            // If we are a binary, we need to convert from hex to binary first
+#warning TODO: implement this
+            throw error_unimplemented("hex to binary not yet implemented");
+            break;
         case Vartype::Integer:
         case Vartype::Decimal:
-            // Else use strtod
+            // For numeric values, the formatted value is just the stringified
+            // result of enqd, and we can just parse it with strtod
             setd(strtod(val, NULL));
-            return;
+            break;
     }
 }
 
 void Var::unset()
 {
-	if (m_value != NULL) delete[] m_value;
-	m_value = NULL;
+    delete[] m_value;
+    m_value = nullptr;
 }
 
 const Var* Var::enqa(Varcode code) const
 {
-	for (const Var* cur = m_attrs; cur != NULL && cur->code() <= code; cur = cur->m_attrs)
-		if (cur->code() == code)
-			return cur;
-	return NULL;
+    for (const Var* cur = m_attrs; cur && cur->code() <= code; cur = cur->m_attrs)
+        if (cur->code() == code)
+            return cur;
+    return nullptr;
 }
 
 void Var::seta(const Var& attr)
@@ -420,24 +425,24 @@ void Var::seta(const Var& attr)
 
 void Var::seta(unique_ptr<Var>&& attr)
 {
-	// Ensure that the attribute does not have attributes of its own
-	attr->clear_attrs();
+    // Ensure that the attribute does not have attributes of its own
+    attr->clear_attrs();
 
-	if (m_attrs == NULL || m_attrs->code() > attr->code())
-	{
-		// Append / insert
-		attr->m_attrs = m_attrs;
-		m_attrs = attr.release();
-	}
-	else if (m_attrs->code() == attr->code())
-	{
-		// Replace existing
-		attr->m_attrs = m_attrs->m_attrs;
-		Var* old_attrs = m_attrs;
-		m_attrs = attr.release();
-		old_attrs->m_attrs = NULL;
-		delete old_attrs;
-	}
+    if (!m_attrs || m_attrs->code() > attr->code())
+    {
+        // Append / insert
+        attr->m_attrs = m_attrs;
+        m_attrs = attr.release();
+    }
+    else if (m_attrs->code() == attr->code())
+    {
+        // Replace existing
+        attr->m_attrs = m_attrs->m_attrs;
+        Var* old_attrs = m_attrs;
+        m_attrs = attr.release();
+        old_attrs->m_attrs = nullptr;
+        delete old_attrs;
+    }
     else
         // Recursively proceed along the chain
         m_attrs->seta(move(attr));
@@ -445,20 +450,20 @@ void Var::seta(unique_ptr<Var>&& attr)
 
 void Var::unseta(Varcode code)
 {
-	if (m_attrs == NULL || m_attrs->code() > code)
-		// Past the end, nothing to do
-		return;
-	else if (m_attrs->code() == code)
-	{
-		// Got the right item, unlink and delete it
-		Var* old_attrs = m_attrs;
-		m_attrs = m_attrs->m_attrs;
-		old_attrs->m_attrs = NULL;
-		delete old_attrs;
-	}
-	else
-		// Recursively proceed along the chain
-		m_attrs->unseta(code);
+    if (!m_attrs || m_attrs->code() > code)
+        // Past the end, nothing to do
+        return;
+    else if (m_attrs->code() == code)
+    {
+        // Got the right item, unlink and delete it
+        Var* old_attrs = m_attrs;
+        m_attrs = m_attrs->m_attrs;
+        old_attrs->m_attrs = nullptr;
+        delete old_attrs;
+    }
+    else
+        // Recursively proceed along the chain
+        m_attrs->unseta(code);
 }
 
 const Var* Var::next_attr() const
