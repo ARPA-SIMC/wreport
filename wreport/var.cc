@@ -336,21 +336,43 @@ void Var::setc(const char* val)
 
 void Var::setc_truncate(const char* val)
 {
-    /* Set the value */
-    if (m_value == NULL &&
-            (m_value = new char[m_info->len + 2]) == NULL)
-        throw error_alloc("allocating space for Var value");
+    switch (m_info->type)
+    {
+        case Vartype::Integer:
+            error_type::throwf("setc_truncate: %01d%02d%03d (%s) is an integer",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::Decimal:
+            error_type::throwf("setc_truncate: %01d%02d%03d (%s) is a decimal",
+                    WR_VAR_FXY(m_info->code), m_info->desc);
+        case Vartype::String:
+        {
+            // Allocate space for the value
+            allocate();
 
-    /* Guard against overflows */
-    unsigned len = strlen(val);
-    /* Tweak the length to account for the extra leading '-' allowed for
-     * negative numeric values */
-    if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
-        --len;
-    strncpy(m_value, val, m_info->len);
-    m_value[m_info->len] = 0;
-    if (len > m_info->len)
-        m_value[m_info->len - 1] = '>';
+            /* Guard against overflows */
+            unsigned len = strlen(val);
+            /* Tweak the length to account for the extra leading '-' allowed for
+            * negative numeric values */
+            if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
+                --len;
+            strncpy(m_value, val, m_info->len);
+            m_value[m_info->len] = 0;
+            if (len > m_info->len)
+                m_value[m_info->len - 1] = '>';
+            break;
+        }
+        case Vartype::Binary:
+        {
+            // Allocate space for the value
+            allocate();
+
+            // Copy binary data normally
+            memcpy(m_value, val, m_info->len);
+            if (m_info->bit_len % 8)
+                m_value[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
+            break;
+        }
+    }
 }
 
 void Var::set_from_formatted(const char* val)
