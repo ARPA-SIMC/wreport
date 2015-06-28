@@ -187,7 +187,58 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
 
 const Var* AssociatedField::get_attribute(const Var& var) const
 {
-    return var.enqa_by_associated_field_significance(significance);
+    /*
+     * Query variable attribute according to significance given in CODE TABLE
+     * 031021
+     */
+    switch (significance)
+    {
+        case 1:
+        case 8:
+            return var.enqa(WR_VAR(0, 33, 2));
+            break;
+        case 2:
+            return var.enqa(WR_VAR(0, 33, 3));
+            break;
+        case 3:
+        case 4:
+        case 5:
+            // Reserved: ignored
+            notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                    significance);
+            break;
+        case 6: return var.enqa(WR_VAR(0, 33, 50)); break;
+        case 7: return var.enqa(WR_VAR(0, 33, 40)); break;
+        case 21: return var.enqa(WR_VAR(0, 33, 41)); break;
+        case 63:
+            /*
+             * Ignore quality information if B31021 is missing.
+             * The Guide to FM94-BUFR says:
+             *   If the quality information has no meaning for some
+             *   of those following elements, but the field is
+             *   still there, there is at present no explicit way
+             *   to indicate "no meaning" within the currently
+             *   defined meanings. One must either redefine the
+             *   meaning of the associated field in its entirety
+             *   (by including 0 31 021 in the message with a data
+             *   value of 63 - "missing value") or remove the
+             *   associated field bits by the "cancel" operator: 2
+             *   04 000.
+             */
+            break;
+        default:
+            if (significance >= 9 and significance <= 20)
+                // Reserved: ignored
+                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                    significance);
+            else if (significance >= 22 and significance <= 62)
+                notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+                        significance);
+            else
+                error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
+            break;
+    }
+    return 0;
 }
 
 
