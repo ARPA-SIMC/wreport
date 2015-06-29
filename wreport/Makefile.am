@@ -15,7 +15,6 @@ nobase_dist_wreportinclude_HEADERS = \
 	dtable.h \
 	error.h \
 	notes.h \
-	fast.h \
 	bulletin.h \
 	bulletin/buffers.h \
 	bulletin/internals.h \
@@ -104,7 +103,6 @@ tut_test_SOURCES = \
 	options-tut.cc \
 	error-tut.cc \
 	conv-tut.cc \
-	fast-tut.cc \
 	internals/fs-tut.cc \
 	internals/tabledir-tut.cc \
 	varinfo-tut.cc \

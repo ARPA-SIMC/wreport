@@ -1,5 +1,4 @@
 Work needed to make wreport thread-safe
- - var: itoa uses a static buffer
  - notes: uses static infrastructure
  - vartable: use static infrastructure- 
  - dtable: use static infrastructure- 

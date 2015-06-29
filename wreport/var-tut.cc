@@ -305,7 +305,21 @@ std::vector<Test> tests {
         var06a.setc("\xff");
         wassert(actual(memcmp(var06a.enqc(), "\x3f", 1) == 0).istrue());
     }),
-
+    Test("seti", [](Fixture& f) {
+        _Varinfo vi;
+        vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 0, 10, 0, 32);
+        Var var(&vi);
+        var.seti(0); wassert(actual(var.enqc()) == "0");
+        var.seti(1); wassert(actual(var.enqc()) == "1");
+        var.seti(100); wassert(actual(var.enqc()) == "100");
+        var.seti(1000); wassert(actual(var.enqc()) == "1000");
+        var.seti(1234567890); wassert(actual(var.enqc()) == "1234567890");
+        var.seti(45); wassert(actual(var.enqc()) == "45");
+        var.seti(-1); wassert(actual(var.enqc()) == "-1");
+        var.seti(-10800); wassert(actual(var.enqc()) == "-10800");
+        var.seti(-11000000); wassert(actual(var.enqc()) == "-11000000");
+        var.seti(-2147483647); wassert(actual(var.enqc()) == "-2147483647");
+    }),
 #if 0
 // FIXME: this rounding bias doesn't seem to be fixable at this stage
 // Test geopotential conversions

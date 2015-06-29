@@ -2,7 +2,6 @@
 #include "notes.h"
 #include "options.h"
 #include "vartable.h"
-#include "fast.h"
 #include "conv.h"
 #include "config.h"
 #include <cstdio>
@@ -14,36 +13,99 @@
 
 using namespace std;
 
+namespace {
+
+// Compute the number of digits of a 32bit unsigned integer
+// From http://stackoverflow.com/questions/1489830/efficient-way-to-determine-number-of-digits-in-an-integer
+unsigned count_digits(uint32_t x)
+{
+    if (x >= 10000) {
+        if (x >= 10000000) {
+            if (x >= 100000000) {
+                if (x >= 1000000000)
+                    return 10;
+                return 9;
+            }
+            return 8;
+        }
+        if (x >= 100000) {
+            if (x >= 1000000)
+                return 7;
+            return 6;
+        }
+        return 5;
+    }
+    if (x >= 100) {
+        if (x >= 1000)
+            return 4;
+        return 3;
+    }
+    if (x >= 10)
+        return 2;
+    return 1;
+}
+
+// Adapted from http://tia.mat.br/blog/html/2014/06/23/integer_to_string_conversion.html
+size_t uint32_to_str(uint32_t value, unsigned value_digits, char *dst)
+{
+    static const char digits[201] =
+        "0001020304050607080910111213141516171819"
+        "2021222324252627282930313233343536373839"
+        "4041424344454647484950515253545556575859"
+        "6061626364656667686970717273747576777879"
+        "8081828384858687888990919293949596979899";
+    size_t const length = value_digits;
+    size_t next = length - 1;
+    while (value >= 100) {
+        auto const i = (value % 100) * 2;
+        value /= 100;
+        dst[next] = digits[i + 1];
+        dst[next - 1] = digits[i];
+        next -= 2;
+    }
+    // Handle last 1-2 digits
+    if (value < 10) {
+        dst[next] = '0' + uint32_t(value);
+    } else {
+        auto i = uint32_t(value) * 2;
+        dst[next] = digits[i + 1];
+        dst[next - 1] = digits[i];
+    }
+    return length;
+}
+
+}
+
 namespace wreport {
 
 Var::Var(Varinfo info)
-    : m_info(info), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
 {
 }
 
 Var::Var(Varinfo info, int val)
-    : m_info(info), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
 {
     seti(val);
 }
 
 Var::Var(Varinfo info, double val)
-    : m_info(info), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
 {
     setd(val);
 }
 
 Var::Var(Varinfo info, const char* val)
-    : m_info(info), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
 {
     setc(val);
 }
 
 Var::Var(const Var& var)
-    : m_info(var.m_info), m_value(nullptr), m_attrs(nullptr)
+    : m_info(var.m_info), m_isset(var.m_isset), m_value(nullptr), m_attrs(nullptr)
 {
     // We are initialized as unset
-    if (var.m_value)
+    if (m_isset)
     {
         // We share the same varinfo, so we can just copy m_value as it is
         allocate();
@@ -53,15 +115,16 @@ Var::Var(const Var& var)
 }
 
 Var::Var(Var&& var)
-    : m_info(var.m_info), m_value(var.m_value), m_attrs(var.m_attrs)
+    : m_info(var.m_info), m_isset(var.m_isset), m_value(var.m_value), m_attrs(var.m_attrs)
 {
     // Unset the source variable
+    var.m_isset = false;
     var.m_value = nullptr;
     var.m_attrs = nullptr;
 }
 
 Var::Var(Varinfo info, const Var& var)
-    : m_info(info), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
 {
     setval(var);
     setattrs(var);
@@ -76,8 +139,8 @@ Var& Var::operator=(const Var& var)
 	m_info = var.m_info;
 
     // Copy value
-    unset();
-    if (var.m_value)
+    m_isset = var.m_isset;
+    if (m_isset)
     {
         allocate();
         // Since we share the Varinfo, we can just copy the buffer
@@ -94,6 +157,8 @@ Var& Var::operator=(Var&& var)
     if (&var == this) return *this;
     delete[] m_value;
     delete m_attrs;
+    m_isset = var.m_isset;
+    var.m_isset = false;
     m_value = var.m_value;
     var.m_value = nullptr;
     m_attrs = var.m_attrs;
@@ -120,8 +185,8 @@ bool Var::operator==(const Var& var) const
 
 bool Var::value_equals(const Var& var) const
 {
-    if (!m_value && !var.m_value) return true;
-    if (!m_value || !var.m_value) return false;
+    if (!m_isset && !var.m_isset) return true;
+    if (!m_isset || !var.m_isset) return false;
 
     // Compare value
     switch (m_info->type)
@@ -146,11 +211,6 @@ bool Var::value_equals(const Var& var) const
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
 
-bool Var::isset() const throw ()
-{
-	return m_value != NULL;
-}
-
 void Var::clear_attrs()
 {
     delete m_attrs;
@@ -159,7 +219,7 @@ void Var::clear_attrs()
 
 int Var::enqi() const
 {
-    if (!m_value)
+    if (!m_isset)
         error_notfound::throwf("enqi: %01d%02d%03d (%s) is not defined",
                 WR_VAR_FXY(m_info->code), m_info->desc);
     switch (m_info->type)
@@ -179,7 +239,7 @@ int Var::enqi() const
 
 double Var::enqd() const
 {
-    if (!m_value)
+    if (!m_isset)
         error_notfound::throwf("enqd: %01d%02d%03d (%s) is not defined",
                 WR_VAR_FXY(m_info->code), m_info->desc);
     switch (m_info->type)
@@ -199,7 +259,7 @@ double Var::enqd() const
 
 const char* Var::enqc() const
 {
-    if (!m_value)
+    if (!m_isset)
         error_notfound::throwf("enqc: %01d%02d%03d (%s) is not defined",
                 WR_VAR_FXY(m_info->code), m_info->desc);
     return m_value;
@@ -237,10 +297,26 @@ void Var::seti(int val)
             allocate();
 
             // Set the value
-#warning FIXME: not thread safe
-            // FIXME: not thread safe, and why are we not just telling itoa to write on m_value??
-            /* We add 1 to the length to cope with the '-' sign */
-            strcpy(m_value, itoa(val, m_info->len + 1));
+            if (val < 0)
+            {
+                uint32_t dec = -val;
+                unsigned digits = count_digits(dec);
+                if (digits > m_info->len)
+                    error_consistency::throwf("Value %d to be encoded in %01d%02d%03d does not fit in %d digits",
+                            val, WR_VAR_FXY(m_info->code), m_info->len);
+                m_value[0] = '-';
+                uint32_to_str(dec, digits, m_value + 1);
+                m_value[digits + 1] = 0;
+            } else {
+                uint32_t dec = val;
+                unsigned digits = count_digits(dec);
+                if (digits > m_info->len)
+                    error_consistency::throwf("Value %d to be encoded in %01d%02d%03d does not fit in %d digits",
+                            val, WR_VAR_FXY(m_info->code), m_info->len);
+                uint32_to_str(dec, digits, m_value);
+                m_value[digits] = 0;
+            }
+            m_isset = true;
             /*snprintf(var->value, var->info->len + 2, "%d", val);*/
             break;
     }
@@ -283,9 +359,28 @@ void Var::setd(double val)
             // Ensure that we have a buffer allocated
             allocate();
 
-#warning FIXME: not thread safe
-            // FIXME: not thread safe, and why are we not just telling itoa to write on m_value??
-            strcpy(m_value, itoa(m_info->encode_decimal(val), m_info->len + 1));
+            // Set the value
+            int sdec = m_info->encode_decimal(val);
+            if (sdec < 0)
+            {
+                uint32_t dec = -sdec;
+                unsigned digits = count_digits(dec);
+                if (digits > m_info->len)
+                    error_consistency::throwf("Value %g gets encoded in %01d%02d%03d as %d, which does not fit in %d digits",
+                            val, WR_VAR_FXY(m_info->code), sdec, m_info->len);
+                m_value[0] = '-';
+                uint32_to_str(dec, digits, m_value + 1);
+                m_value[digits + 1] = 0;
+            } else {
+                uint32_t dec = sdec;
+                unsigned digits = count_digits(dec);
+                if (digits > m_info->len)
+                    error_consistency::throwf("Value %g gets encoded in %01d%02d%03d as %d, which does not fit in %d digits",
+                            val, WR_VAR_FXY(m_info->code), sdec, m_info->len);
+                uint32_to_str(dec, digits, m_value);
+                m_value[digits] = 0;
+            }
+            m_isset = true;
             /*snprintf(var->value, var->info->len + 2, "%ld", (long)dba_var_encode_int(val, var->info));*/
             break;
     }
@@ -317,12 +412,14 @@ void Var::setc(const char* val)
             }
             strncpy(m_value, val, m_info->len + 1);
             m_value[m_info->len + 1] = 0;
+            m_isset = true;
             break;
         }
         case Vartype::Binary:
             memcpy(m_value, val, m_info->len);
             if (m_info->bit_len % 8)
                 m_value[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
+            m_isset = true;
             break;
     }
 }
@@ -352,6 +449,7 @@ void Var::setc_truncate(const char* val)
             m_value[m_info->len] = 0;
             if (len > m_info->len)
                 m_value[m_info->len - 1] = '>';
+            m_isset = true;
             break;
         }
         case Vartype::Binary:
@@ -363,6 +461,7 @@ void Var::setc_truncate(const char* val)
             memcpy(m_value, val, m_info->len);
             if (m_info->bit_len % 8)
                 m_value[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
+            m_isset = true;
             break;
         }
     }
@@ -399,8 +498,7 @@ void Var::setf(const char* val)
 
 void Var::unset()
 {
-    delete[] m_value;
-    m_value = nullptr;
+    m_isset = false;
 }
 
 const Var* Var::enqa(Varcode code) const
@@ -466,7 +564,7 @@ const Var* Var::next_attr() const
 
 void Var::setval(const Var& src)
 {
-    if (!src.m_value)
+    if (!src.isset())
     {
         unset();
         return;
@@ -482,15 +580,18 @@ void Var::setval(const Var& src)
                 memcpy(m_value, src.m_value, src.info()->len + 2);
                 for (unsigned i = src.info()->len; i < m_info->len; ++i)
                     m_value[i] = 0;
+                m_isset = true;
             } else
                 setc_truncate(src.m_value);
             break;
         case Vartype::Binary:
             if (src.info()->len < m_info->len)
             {
+                allocate();
                 memcpy(m_value, src.m_value, src.m_info->len);
                 for (unsigned i = src.m_info->len; i < m_info->len; ++i)
                     m_value[i] = 0;
+                m_isset = true;
             }
             else
                 setc_truncate(src.m_value);
@@ -512,7 +613,7 @@ void Var::setattrs(const Var& src)
 
 std::string Var::format(const char* ifundef) const
 {
-    if (m_value == NULL)
+    if (!isset())
         return ifundef;
     switch (m_info->type)
     {
@@ -548,7 +649,7 @@ void Var::print_without_attrs(FILE* out) const
 			m_info->desc, m_info->unit);
 
     // Print value
-    if (m_value == NULL)
+    if (!isset())
     {
         fprintf(out, "(undef)\n");
         return;
@@ -611,16 +712,16 @@ unsigned Var::diff(const Var& var) const
                 WR_VAR_F(var.info()->code), WR_VAR_X(var.info()->code), WR_VAR_Y(var.info()->code), var.info()->desc);
         return 1;
     }
-    if (m_value == NULL && var.m_value == NULL)
+    if (!isset() && !var.isset())
         return 0;
-    if (m_value == NULL)
+    if (!isset())
     {
         notes::logf("[%d%02d%03d %s] first value is NULL, second value is %s\n",
                 WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
                 var.m_value);
         return 1;
     }
-    if (var.m_value == NULL)
+    if (!var.isset())
     {
         notes::logf("[%d%02d%03d %s] first value is %s, second value is NULL\n",
                 WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
@@ -730,5 +831,3 @@ unsigned Var::diff(const Var& var) const
 }
 
 }
-
-/* vim:set ts=4 sw=4: */

@@ -26,6 +26,9 @@ protected:
 	/// Metadata about the variable
 	Varinfo m_info;
 
+    /// True if the variable is set, false otherwise
+    bool m_isset;
+
     /**
      * Value of the variable
      *
@@ -109,8 +112,9 @@ public:
     /// Get informations about the variable
     Varinfo info() const throw () { return m_info; }
 
-	/// @returns true if the variable is defined, else false
-	bool isset() const throw ();
+    /// @returns true if the variable is defined, else false
+    bool isset() const throw () { return m_isset; }
+
 
 	/// Get the value as an integer
 	int enqi() const;
