@@ -133,6 +133,18 @@ struct VartableEntry
         }
 
         varinfo.scale = new_scale;
+        switch (varinfo.type)
+        {
+            case Vartype::String:
+            case Vartype::Binary:
+                break;
+            case Vartype::Integer:
+                if (varinfo.scale) varinfo.type = Vartype::Decimal;
+                break;
+            case Vartype::Decimal:
+                if (!varinfo.scale) varinfo.type = Vartype::Integer;
+                break;
+        }
 
 #if 0
         fprintf(stderr, "After alteration(w:%d,s:%d): bl %d len %d scale %d\n",

@@ -314,4 +314,3 @@ template<> inline std::string Var::enq() const { return enqc(); }
 }
 
 #endif
-/* vim:set ts=4 sw=4: */

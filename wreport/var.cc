@@ -74,6 +74,15 @@ size_t uint32_to_str(uint32_t value, unsigned value_digits, char *dst)
     return length;
 }
 
+// From http://stackoverflow.com/questions/16826422/c-most-efficient-way-to-convert-string-to-int-faster-than-atoi
+unsigned str_to_unsigned(const char *str)
+{
+    unsigned val = 0;
+    while (*str)
+        val = val * 10 + (*str++ - '0');
+    return val;
+}
+
 }
 
 namespace wreport {
@@ -232,7 +241,10 @@ int Var::enqi() const
                     WR_VAR_FXY(m_info->code), m_info->desc);
         case Vartype::Integer:
         case Vartype::Decimal:
-            return strtol(m_value, 0, 10);
+            if (m_value[0] == '-')
+                return -str_to_unsigned(m_value + 1);
+            else
+                return str_to_unsigned(m_value);
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
@@ -251,8 +263,19 @@ double Var::enqd() const
             error_type::throwf("enqd: %01d%02d%03d (%s) is an opaque binary",
                     WR_VAR_FXY(m_info->code), m_info->desc);
         case Vartype::Integer:
+            if (m_value[0] == '-')
+                return -str_to_unsigned(m_value + 1);
+            else
+                return str_to_unsigned(m_value);
         case Vartype::Decimal:
-            return m_info->decode_decimal(strtol(m_value, 0, 10));
+        {
+            int dec;
+            if (m_value[0] == '-')
+                dec = -str_to_unsigned(m_value + 1);
+            else
+                dec = str_to_unsigned(m_value);
+            return m_info->decode_decimal(dec);
+        }
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
@@ -333,6 +356,8 @@ void Var::setd(double val)
             error_type::throwf("seti: %01d%02d%03d (%s) is an opaque binary",
                     WR_VAR_FXY(m_info->code), m_info->desc);
         case Vartype::Integer:
+            // TODO: shortcut without encode_decimal instead of falling into
+            // the Decimal case
         case Vartype::Decimal:
             /* Guard against NaNs */
             if (std::isnan(val))
