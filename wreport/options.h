@@ -1,30 +1,20 @@
-/*
- * wreport/options - Library configuration
- *
- * Copyright (C) 2012  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #ifndef WREPORT_OPTIONS_H
 #define WREPORT_OPTIONS_H
 
 /** @file
- * @ingroup core
- * Implement wreport::Var, an encapsulation of a measured variable.
+ *
+ * Configuration variables to control configurable aspects of wreport's
+ * behaviour.
+ *
+ * Variables are global and thread_local. They are global because they are
+ * consulted in performance-critical code like Var::seti, and they are
+ * thread_local so that a thread that changes its own configuration does not
+ * affect the others.
+ *
+ * LocalOverride can be used to perform configuration changes for the duration
+ * of a scope. Note that if while the override is active you pass control to an
+ * unrelated part of the code which also uses wreport, the behaviour of that
+ * code is also changed.
  */
 
 namespace wreport {
@@ -36,8 +26,23 @@ namespace options {
  * If true, domain errors on variable assignments are silent, and the target
  * variable gets set to undefined. If false (default), error_domain is raised.
  */
-extern bool var_silent_domain_errors;
+extern thread_local bool var_silent_domain_errors;
 
+/**
+ * Temporarily override a variable while this object is in scope.
+ *
+ * Note that if the variable is global, then the override is temporally limited
+ * to the scope, but it is seen by all the functions that reference the
+ * variable functions.
+ *
+ * Example:
+ * \code
+ * {
+ *     auto o = options::local_override(options::var_silent_domain_errors, true);
+ *     var.setd(value)
+ * }
+ * \endcode
+ */
 template<typename T>
 struct LocalOverride
 {
@@ -55,8 +60,12 @@ struct LocalOverride
     }
 };
 
+template<typename T> static inline LocalOverride<T> local_override(T& param, const T& new_value)
+{
+    return LocalOverride<T>(param, new_value);
+}
+
 }
 }
 
 #endif
-/* vim:set ts=4 sw=4: */

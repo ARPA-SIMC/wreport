@@ -274,7 +274,7 @@ std::vector<Test> tests {
         // If we set var_silent_domain_errors, the var becomes unset without an
         // error being raised
         {
-            options::LocalOverride<bool> o(options::var_silent_domain_errors, true);
+            auto o = options::local_override(options::var_silent_domain_errors, true);
             var.seti(200);
             ensure(!var.isset());
         }
