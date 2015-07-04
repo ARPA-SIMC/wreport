@@ -147,7 +147,7 @@ struct DTableBase : public DTable
                     "missing D table expansion for variable %d%02d%03d in file %s",
                     WR_VAR_F(var), WR_VAR_X(var), WR_VAR_Y(var), m_pathname.c_str());
         else
-            return Opcodes(varcodes, entries[begin].begin, entries[begin].end);
+            return Opcodes(varcodes.data() + entries[begin].begin, varcodes.data() + entries[begin].end);
     }
 };
 

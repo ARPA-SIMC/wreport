@@ -1,8 +1,10 @@
 #include <wreport/opcode.h>
 
 namespace wreport {
-namespace bulletin {
+struct Vartable;
+struct DTable;
 
+namespace bulletin {
 struct Visitor;
 
 struct Interpreter
