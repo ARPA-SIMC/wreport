@@ -66,11 +66,11 @@ namespace wreport {
 
 namespace {
 
-struct DDSEncoder : public bulletin::ConstBaseVisitor
+struct DDSEncoder : public bulletin::ConstBaseParser
 {
     bulletin::BufrOutput& ob;
 
-    DDSEncoder(const Bulletin& b, bulletin::BufrOutput& ob) : ConstBaseVisitor(b), ob(ob)
+    DDSEncoder(const Bulletin& b, bulletin::BufrOutput& ob) : ConstBaseParser(b), ob(ob)
     {
         btable = b.btable;
     }

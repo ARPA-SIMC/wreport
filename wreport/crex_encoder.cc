@@ -30,17 +30,17 @@ namespace wreport {
 
 namespace {
 
-struct DDSEncoder : public bulletin::ConstBaseVisitor
+struct DDSEncoder : public bulletin::ConstBaseParser
 {
     bulletin::CrexOutput& ob;
 
-    DDSEncoder(const Bulletin& b, bulletin::CrexOutput& ob) : ConstBaseVisitor(b), ob(ob) {}
+    DDSEncoder(const Bulletin& b, bulletin::CrexOutput& ob) : ConstBaseParser(b), ob(ob) {}
     virtual ~DDSEncoder() {}
 
     void do_start_subset(unsigned subset_no, const Subset& current_subset)
     {
         TRACE("start_subset %u\n", subset_no);
-        bulletin::ConstBaseVisitor::do_start_subset(subset_no, current_subset);
+        bulletin::ConstBaseParser::do_start_subset(subset_no, current_subset);
 
         /* Encode the subsection terminator */
         if (subset_no > 0)

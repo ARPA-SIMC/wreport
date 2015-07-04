@@ -41,6 +41,7 @@ namespace wreport {
 
 namespace bulletin {
 struct Visitor;
+struct Parser;
 struct BufrInput;
 struct LocalVartable;
 }
@@ -194,7 +195,7 @@ struct Bulletin
      * Run the Data Descriptor Section interpreter, sending commands to \a
      * executor
      */
-    void visit(bulletin::Visitor& out) const;
+    void visit(bulletin::Parser& out) const;
 
 	/**
 	 * Dump the contents of this bulletin

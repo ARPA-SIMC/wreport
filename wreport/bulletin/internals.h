@@ -217,7 +217,7 @@ struct AssociatedField
  * Abstract interface for classes that can be used as targets for the Bulletin
  * Data Descriptor Section interpreters.
  */
-struct Visitor : public opcode::Visitor
+struct Parser : public opcode::Visitor
 {
     /// B table used to resolve variable information
     const Vartable* btable;
@@ -258,8 +258,8 @@ struct Visitor : public opcode::Visitor
     unsigned data_pos;
 
 
-    Visitor();
-    virtual ~Visitor();
+    Parser();
+    virtual ~Parser();
 
     /**
      * Return the Varinfo describing the variable \a code, possibly altered
@@ -346,11 +346,11 @@ struct Visitor : public opcode::Visitor
 };
 
 /**
- * Common bulletin::Visitor base for visitors that modify the bulletin.
+ * Common bulletin::Parser base for visitors that modify the bulletin.
  *
  * This assumes a fully decoded bulletin.
  */
-struct BaseVisitor : public Visitor
+struct BaseParser : public Parser
 {
     /// Bulletin being visited
     Bulletin& bulletin;
@@ -360,7 +360,7 @@ struct BaseVisitor : public Visitor
     unsigned current_var;
 
     /// Create visitor for the given bulletin
-    BaseVisitor(Bulletin& bulletin);
+    BaseParser(Bulletin& bulletin);
 
     /// Get the next variable
     Var& get_var();
@@ -372,11 +372,11 @@ struct BaseVisitor : public Visitor
 };
 
 /**
- * Common bulletin::Visitor base for visitors that do not modify the bulletin.
+ * Common bulletin::Parser base for visitors that do not modify the bulletin.
  *
  * This assumes a fully decoded bulletin.
  */
-struct ConstBaseVisitor : public Visitor
+struct ConstBaseParser : public Parser
 {
     /// Bulletin being visited
     const Bulletin& bulletin;
@@ -386,7 +386,7 @@ struct ConstBaseVisitor : public Visitor
     unsigned current_var;
 
     /// Create visitor for the given bulletin
-    ConstBaseVisitor(const Bulletin& bulletin);
+    ConstBaseParser(const Bulletin& bulletin);
 
     /// Get the next variable
     const Var& get_var();

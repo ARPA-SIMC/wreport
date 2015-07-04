@@ -233,7 +233,7 @@ struct Decoder
 };
 
 /// Common functions to both decoders
-struct BaseBufrDecoder : public bulletin::Visitor
+struct BaseBufrDecoder : public bulletin::Parser
 {
     /// Decoder object with configuration information
     Decoder& d;

@@ -185,7 +185,7 @@ void Bulletin::visit_datadesc(opcode::Visitor& e) const
     Opcodes(datadesc).visit(e, *dtable);
 }
 
-void Bulletin::visit(bulletin::Visitor& out) const
+void Bulletin::visit(bulletin::Parser& out) const
 {
     out.btable = btable;
     out.dtable = dtable;

@@ -33,7 +33,7 @@ namespace bulletin {
 /**
  * bulletin::Visitor that prints the bulletin contents and its structure
  */
-class DDSPrinter : public ConstBaseVisitor
+class DDSPrinter : public ConstBaseParser
 {
     std::vector<Varcode> stack;
     FILE* out;

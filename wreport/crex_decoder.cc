@@ -165,7 +165,7 @@ struct Decoder
     void decode_data();
 };
 
-struct CrexParser : public bulletin::Visitor
+struct CrexParser : public bulletin::Parser
 {
     CrexInput& in;
     Subset* out;

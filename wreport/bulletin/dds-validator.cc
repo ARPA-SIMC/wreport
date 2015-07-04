@@ -28,7 +28,7 @@ namespace wreport {
 namespace bulletin {
 
 DDSValidator::DDSValidator(const Bulletin& b)
-    : ConstBaseVisitor(b)
+    : ConstBaseParser(b)
 {
     is_crex = dynamic_cast<const CrexBulletin*>(&b) != NULL;
 }

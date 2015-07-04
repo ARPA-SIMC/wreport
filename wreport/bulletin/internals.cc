@@ -242,10 +242,10 @@ const Var* AssociatedField::get_attribute(const Var& var) const
 }
 
 
-Visitor::Visitor() : btable(0), current_subset(0) {}
-Visitor::~Visitor() {}
+Parser::Parser() : btable(0), current_subset(0) {}
+Parser::~Parser() {}
 
-Varinfo Visitor::get_varinfo(Varcode code)
+Varinfo Parser::get_varinfo(Varcode code)
 {
     Varinfo peek = btable->query(code);
 
@@ -284,7 +284,7 @@ Varinfo Visitor::get_varinfo(Varcode code)
     return btable->query_altered(code, scale, bit_len);
 }
 
-void Visitor::b_variable(Varcode code)
+void Parser::b_variable(Varcode code)
 {
     Varinfo info = get_varinfo(code);
     // Choose which value we should encode
@@ -305,30 +305,30 @@ void Visitor::b_variable(Varcode code)
 }
 
 
-void Visitor::c_modifier(Varcode code)
+void Parser::c_modifier(Varcode code)
 {
     TRACE("C DATA %01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
-void Visitor::c_change_data_width(Varcode code, int change)
+void Parser::c_change_data_width(Varcode code, int change)
 {
     TRACE("Set width change from %d to %d\n", c_width_change, change);
     c_width_change = change;
 }
 
-void Visitor::c_change_data_scale(Varcode code, int change)
+void Parser::c_change_data_scale(Varcode code, int change)
 {
     TRACE("Set scale change from %d to %d\n", c_scale_change, change);
     c_scale_change = change;
 }
 
-void Visitor::c_increase_scale_ref_width(Varcode code, int change)
+void Parser::c_increase_scale_ref_width(Varcode code, int change)
 {
     TRACE("Increase scale, reference value and data width by %d\n", change);
     c_scale_ref_width_increase = change;
 }
 
-void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
+void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
 {
     // Add associated field
     TRACE("Set C04 bits to %d\n", WR_VAR_Y(code));
@@ -350,12 +350,12 @@ void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
     associated_field.bit_count = WR_VAR_Y(code);
 }
 
-void Visitor::c_char_data(Varcode code)
+void Parser::c_char_data(Varcode code)
 {
     do_char_data(code);
 }
 
-void Visitor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
+void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
 {
     // Length of next local descriptor
     if (WR_VAR_Y(code))
@@ -381,7 +381,7 @@ void Visitor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits
     }
 }
 
-void Visitor::c_char_data_override(Varcode code, unsigned new_length)
+void Parser::c_char_data_override(Varcode code, unsigned new_length)
 {
     IFTRACE {
         if (new_length)
@@ -392,7 +392,7 @@ void Visitor::c_char_data_override(Varcode code, unsigned new_length)
     c_string_len_override = new_length;
 }
 
-void Visitor::c_quality_information_bitmap(Varcode code)
+void Parser::c_quality_information_bitmap(Varcode code)
 {
     // Quality information
     if (WR_VAR_Y(code) != 0)
@@ -403,12 +403,12 @@ void Visitor::c_quality_information_bitmap(Varcode code)
     want_bitmap = code;
 }
 
-void Visitor::c_substituted_value_bitmap(Varcode code)
+void Parser::c_substituted_value_bitmap(Varcode code)
 {
     want_bitmap = code;
 }
 
-void Visitor::c_substituted_value(Varcode code)
+void Parser::c_substituted_value(Varcode code)
 {
     if (bitmap.bitmap == NULL)
         error_consistency::throwf("found C23255 with no active bitmap");
@@ -424,7 +424,7 @@ void Visitor::c_substituted_value(Varcode code)
 /* If using delayed replication and count is not -1, use count for the delayed
  * replication factor; else, look for a delayed replication factor among the
  * input variables */
-void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     // unsigned group = WR_VAR_X(code);
     unsigned count = WR_VAR_Y(code);
@@ -474,7 +474,7 @@ void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
     }
 }
 
-void Visitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
+void Parser::do_start_subset(unsigned subset_no, const Subset& current_subset)
 {
     TRACE("visit: start encoding subset %u\n", subset_no);
 
@@ -490,25 +490,25 @@ void Visitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
     data_pos = 0;
 }
 
-void Visitor::do_start_repetition(unsigned idx) {}
+void Parser::do_start_repetition(unsigned idx) {}
 
 
 
-BaseVisitor::BaseVisitor(Bulletin& bulletin)
+BaseParser::BaseParser(Bulletin& bulletin)
     : bulletin(bulletin), current_subset_no(0)
 {
     btable = bulletin.btable;
     dtable = bulletin.dtable;
 }
 
-Var& BaseVisitor::get_var()
+Var& BaseParser::get_var()
 {
     Var& res = get_var(current_var);
     ++current_var;
     return res;
 }
 
-Var& BaseVisitor::get_var(unsigned var_pos) const
+Var& BaseParser::get_var(unsigned var_pos) const
 {
     unsigned max_var = current_subset->size();
     if (var_pos >= max_var)
@@ -517,9 +517,9 @@ Var& BaseVisitor::get_var(unsigned var_pos) const
     return bulletin.subsets[current_subset_no][var_pos];
 }
 
-void BaseVisitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
+void BaseParser::do_start_subset(unsigned subset_no, const Subset& current_subset)
 {
-    Visitor::do_start_subset(subset_no, current_subset);
+    Parser::do_start_subset(subset_no, current_subset);
     if (subset_no >= bulletin.subsets.size())
         error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
     this->current_subset = &(bulletin.subsets[subset_no]);
@@ -527,7 +527,7 @@ void BaseVisitor::do_start_subset(unsigned subset_no, const Subset& current_subs
     current_var = 0;
 }
 
-const Var& BaseVisitor::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+const Var& BaseParser::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
@@ -537,21 +537,21 @@ const Var& BaseVisitor::do_bitmap(Varcode code, Varcode rep_code, Varcode delaye
 }
 
 
-ConstBaseVisitor::ConstBaseVisitor(const Bulletin& bulletin)
+ConstBaseParser::ConstBaseParser(const Bulletin& bulletin)
     : bulletin(bulletin), current_subset_no(0)
 {
     btable = bulletin.btable;
     dtable = bulletin.dtable;
 }
 
-const Var& ConstBaseVisitor::get_var()
+const Var& ConstBaseParser::get_var()
 {
     const Var& res = get_var(current_var);
     ++current_var;
     return res;
 }
 
-const Var& ConstBaseVisitor::get_var(unsigned var_pos) const
+const Var& ConstBaseParser::get_var(unsigned var_pos) const
 {
     unsigned max_var = current_subset->size();
     if (var_pos >= max_var)
@@ -560,16 +560,16 @@ const Var& ConstBaseVisitor::get_var(unsigned var_pos) const
     return (*current_subset)[var_pos];
 }
 
-void ConstBaseVisitor::do_start_subset(unsigned subset_no, const Subset& current_subset)
+void ConstBaseParser::do_start_subset(unsigned subset_no, const Subset& current_subset)
 {
-    Visitor::do_start_subset(subset_no, current_subset);
+    Parser::do_start_subset(subset_no, current_subset);
     if (subset_no >= bulletin.subsets.size())
         error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
     current_subset_no = subset_no;
     current_var = 0;
 }
 
-const Var& ConstBaseVisitor::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+const Var& ConstBaseParser::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
