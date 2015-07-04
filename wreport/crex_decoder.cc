@@ -243,7 +243,8 @@ void Decoder::decode_data()
 
         parser.out = &current_subset;
         parser.do_start_subset(i, current_subset);
-        Opcodes(out.datadesc).visit(parser);
+        Interpreter interpreter(*parser.dtable, out.datadesc, parser);
+        interpreter.run();
 
         in.skip_spaces();
         in.check_eof("end of data section");

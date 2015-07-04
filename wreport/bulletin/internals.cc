@@ -243,6 +243,7 @@ const Var* AssociatedField::get_attribute(const Var& var) const
 
 
 Parser::Parser() : btable(0), current_subset(0) {}
+Parser::Parser(const DTable& dtable) : Visitor(dtable), btable(0), current_subset(0) {}
 Parser::~Parser() {}
 
 Varinfo Parser::get_varinfo(Varcode code)
@@ -469,7 +470,8 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
         for (unsigned i = 0; i < count; ++i)
         {
             do_start_repetition(i);
-            ops.visit(*this);
+            Interpreter interpreter(*dtable, ops, *this);
+            interpreter.run();
         }
     }
 }

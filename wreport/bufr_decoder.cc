@@ -241,7 +241,7 @@ struct BaseBufrDecoder : public bulletin::Parser
     /// Input buffer
     bulletin::BufrInput& in;
 
-    BaseBufrDecoder(Decoder& d) : d(d), in(d.in)
+    BaseBufrDecoder(Decoder& d) : bulletin::Parser(*d.out.dtable), d(d), in(d.in)
     {
         associated_field.skip_missing = !d.conf_add_undef_attrs;
     }

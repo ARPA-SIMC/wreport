@@ -24,6 +24,7 @@
 
 #include <wreport/varinfo.h>
 #include <wreport/opcode.h>
+#include <wreport/bulletin/interpreter.h>
 #include <vector>
 #include <memory>
 #include <cmath>
@@ -217,7 +218,7 @@ struct AssociatedField
  * Abstract interface for classes that can be used as targets for the Bulletin
  * Data Descriptor Section interpreters.
  */
-struct Parser : public opcode::Visitor
+struct Parser : public bulletin::Visitor
 {
     /// B table used to resolve variable information
     const Vartable* btable;
@@ -259,6 +260,7 @@ struct Parser : public opcode::Visitor
 
 
     Parser();
+    Parser(const DTable& dtable);
     virtual ~Parser();
 
     /**
@@ -328,7 +330,7 @@ struct Parser : public opcode::Visitor
     virtual void do_char_data(Varcode code) = 0;
 
     //@{
-    /// opcode::Visitor methods implementation
+    /// bulletin::Visitor methods implementation
     virtual void b_variable(Varcode code);
     virtual void c_modifier(Varcode code);
     virtual void c_change_data_width(Varcode code, int change);

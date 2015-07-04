@@ -16,6 +16,7 @@ nobase_dist_wreportinclude_HEADERS = \
 	error.h \
 	notes.h \
 	bulletin.h \
+	bulletin/interpreter.h \
 	bulletin/buffers.h \
 	bulletin/internals.h \
 	bulletin/dds-validator.h \
@@ -51,6 +52,7 @@ libwreport_la_SOURCES = \
 	dtable.cc \
 	subset.cc \
 	bulletin.cc \
+	bulletin/interpreter.cc \
 	bulletin/buffers.cc \
 	bulletin/internals.cc \
 	bulletin/dds-validator.cc \
@@ -115,6 +117,7 @@ tut_test_SOURCES = \
 	bufr_decoder1-tut.cc \
 	bufr_encoder-tut.cc \
 	crex_decoder-tut.cc \
+	bulletin/interpreter-tut.cc \
 	bulletin/buffers-tut.cc \
 	bulletin/internals-tut.cc \
 	bulletin/dds-validator-tut.cc \

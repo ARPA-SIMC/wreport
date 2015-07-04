@@ -189,7 +189,7 @@ struct Bulletin
      * Walk the structure of the data descriptor section sending events to an
      * opcode::Explorer
      */
-    void visit_datadesc(opcode::Visitor& e) const;
+    void visit_datadesc(bulletin::Visitor& e) const;
 
     /**
      * Run the Data Descriptor Section interpreter, sending commands to \a
