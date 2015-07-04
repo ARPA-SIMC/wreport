@@ -1,24 +1,3 @@
-/*
- * wreport/notes - Collect notes about unusual processing
- *
- * Copyright (C) 2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include "notes.h"
 
 #include <cstdio>
@@ -38,12 +17,7 @@ struct null_streambuf : public std::streambuf
     int overflow(int c) { return c; }
 };
 
-#if __xlC__
-#warning Use in a multithreaded environment is not currently supported in xlC. Patches welcome.
-ostream* target = 0;
-#else
-__thread ostream* target = 0;
-#endif
+thread_local ostream* target = 0;
 null_streambuf* null_sb = 0;
 ostream* null_stream = 0;
 
@@ -88,7 +62,5 @@ void logf(const char* fmt, ...)
     free( c );
 }
 
-} // namespace notes
-} // namespace wreport
-
-/* vim:set ts=4 sw=4: */
+}
+}
