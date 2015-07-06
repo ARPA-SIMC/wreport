@@ -241,14 +241,14 @@ struct Parser : public bulletin::DDSInterpreter
 
     //@{
     /// bulletin::Visitor methods implementation
-    virtual void b_variable(Varcode code);
-    virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
-    virtual void c_char_data(Varcode code);
-    virtual void c_quality_information_bitmap(Varcode code);
-    virtual void c_substituted_value_bitmap(Varcode code);
-    virtual void c_substituted_value(Varcode code);
-    virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
-    virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
+    void b_variable(Varcode code) override;
+    void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
+    void c_char_data(Varcode code) override;
+    void c_quality_information_bitmap(Varcode code) override;
+    void c_substituted_value_bitmap(Varcode code) override;
+    void c_substituted_value(Varcode code) override;
+    void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
+    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
     //@}
 };
 
