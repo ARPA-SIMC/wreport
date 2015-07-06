@@ -179,7 +179,7 @@ void CrexBulletin::encode(std::string& buf) const
 
 void Bulletin::visit_datadesc(bulletin::Visitor& e)
 {
-    bulletin::Interpreter interpreter(tables, datadesc, e);
+    bulletin::DDSInterpreter interpreter(tables, datadesc, e);
     interpreter.run();
 }
 
@@ -192,7 +192,7 @@ void Bulletin::visit(bulletin::Parser& out)
     {
         /* Encode the data of this subset */
         out.do_start_subset(i, subsets[i]);
-        bulletin::Interpreter interpreter(tables, datadesc, out);
+        bulletin::DDSInterpreter interpreter(tables, datadesc, out);
         interpreter.run();
     }
 }
@@ -262,7 +262,7 @@ void Bulletin::print_datadesc(FILE* out, unsigned indent) const
     printer.out = out;
     printer.indent = indent;
 
-    bulletin::Interpreter interpreter(tables, datadesc, printer);
+    bulletin::DDSInterpreter interpreter(tables, datadesc, printer);
     interpreter.run();
 }
 

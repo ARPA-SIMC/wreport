@@ -2,6 +2,7 @@
 #define WREPORT_BULLETIN_INTERPETER_H
 
 #include <wreport/opcode.h>
+#include <memory>
 
 namespace wreport {
 struct Vartable;
@@ -11,18 +12,32 @@ struct Tables;
 namespace bulletin {
 struct Visitor;
 
-struct Interpreter
+struct DDSInterpreter
 {
     const Tables& tables;
     Opcodes opcodes;
     Visitor& visitor;
 
-    Interpreter(const Tables& tables, Opcodes opcodes, Visitor& visitor)
+    DDSInterpreter(const Tables& tables, const Opcodes& opcodes, Visitor& visitor)
         : tables(tables), opcodes(opcodes), visitor(visitor)
     {
     }
+    DDSInterpreter(DDSInterpreter& parent, const Opcodes& opcodes)
+        : tables(parent.tables), opcodes(opcodes), visitor(parent.visitor)
+    {
+    }
+    DDSInterpreter(const DDSInterpreter&) = delete;
+    ~DDSInterpreter()
+    {
+    }
+    DDSInterpreter& operator=(const DDSInterpreter&) = delete;
 
     void run();
+
+    std::unique_ptr<DDSInterpreter> sub(const Opcodes& opcodes)
+    {
+        return std::unique_ptr<DDSInterpreter>(new DDSInterpreter(*this, opcodes));
+    }
 };
 
 /**

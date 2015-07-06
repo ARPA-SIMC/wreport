@@ -469,7 +469,7 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
         for (unsigned i = 0; i < count; ++i)
         {
             do_start_repetition(i);
-            Interpreter interpreter(*tables, ops, *this);
+            DDSInterpreter interpreter(*tables, ops, *this);
             interpreter.run();
         }
     }

@@ -8,7 +8,7 @@
 namespace wreport {
 namespace bulletin {
 
-void Interpreter::run()
+void DDSInterpreter::run()
 {
     for (unsigned i = 0; i < opcodes.size(); ++i)
     {
@@ -133,8 +133,8 @@ void Interpreter::run()
             case 3:
             {
                 visitor.d_group_begin(cur);
-                Interpreter interpreter(tables, tables.dtable->query(cur), visitor);
-                interpreter.run();
+                auto interpreter = sub(tables.dtable->query(cur));
+                interpreter->run();
                 visitor.d_group_end(cur);
                 break;
             }
@@ -210,7 +210,7 @@ void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
         fprintf(out, " (delayed %d%02d%03d) times\n",
                 WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code));
     indent += indent_step;
-    Interpreter interpreter(*tables, ops, *this);
+    DDSInterpreter interpreter(*tables, ops, *this);
     interpreter.run();
     indent -= indent_step;
 }

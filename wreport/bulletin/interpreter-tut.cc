@@ -31,7 +31,7 @@ struct VisitCounter : public bulletin::Visitor
             ++count_r_delayed;
         else
             ++count_r_plain;
-        bulletin::Interpreter interpreter(*tables, ops, *this);
+        bulletin::DDSInterpreter interpreter(*tables, ops, *this);
         interpreter.run();
     }
     void d_group_begin(Varcode code) { ++count_d; }
@@ -53,7 +53,7 @@ std::vector<Test> tests {
         ensure_equals(ops.size(), 4);
 
         VisitCounter c(tables);
-        bulletin::Interpreter interpreter(tables, ops, c);
+        bulletin::DDSInterpreter interpreter(tables, ops, c);
         interpreter.run();
 
         ensure_equals(c.count_b, 4u);

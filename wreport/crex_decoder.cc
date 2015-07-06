@@ -241,7 +241,7 @@ void Decoder::decode_data()
 
         parser.out = &current_subset;
         parser.do_start_subset(i, current_subset);
-        Interpreter interpreter(*parser.tables, out.datadesc, parser);
+        DDSInterpreter interpreter(*parser.tables, out.datadesc, parser);
         interpreter.run();
 
         in.skip_spaces();
