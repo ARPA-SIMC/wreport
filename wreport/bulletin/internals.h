@@ -207,15 +207,6 @@ struct Parser : public bulletin::DDSInterpreter
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
 
     /**
-     * Notify the beginning of one instance of an R group
-     *
-     * @param idx
-     *  The repetition sequence number (0 at the first iteration, 1 at the
-     *  second, and so on)
-     */
-    virtual void do_start_repetition(unsigned idx);
-
-    /**
      * Request processing, according to \a info, of the attribute \a attr_code
      * of the variable in position \a var_pos in the current subset.
      */

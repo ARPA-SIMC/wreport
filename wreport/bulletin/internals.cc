@@ -468,7 +468,6 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
         // encode_data_section on it `count' times
         for (unsigned i = 0; i < count; ++i)
         {
-            do_start_repetition(i);
             opcode_stack.push(ops);
             run();
             opcode_stack.pop();
@@ -491,9 +490,6 @@ void Parser::do_start_subset(unsigned subset_no, const Subset& current_subset)
     want_bitmap = 0;
     data_pos = 0;
 }
-
-void Parser::do_start_repetition(unsigned idx) {}
-
 
 
 BaseParser::BaseParser(Bulletin& bulletin)
