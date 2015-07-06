@@ -179,6 +179,7 @@ struct Bulletin
      */
     virtual void encode(std::string& buf) = 0;
 
+#if 0
     /**
      * Walk the structure of the data descriptor section sending events to an
      * opcode::Explorer
@@ -190,6 +191,7 @@ struct Bulletin
      * executor
      */
     void visit(bulletin::Parser& out);
+#endif
 
     /// Dump the contents of this bulletin
     void print(FILE* out);

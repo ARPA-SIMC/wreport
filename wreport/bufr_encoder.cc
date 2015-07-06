@@ -329,7 +329,13 @@ void Encoder::encode_sec4()
     out.append_byte(0);
 
     DDSEncoder e(in, out);
-    in.visit(e);
+    // Encode all the subsets
+    for (unsigned i = 0; i < in.subsets.size(); ++i)
+    {
+        /* Encode the data of this subset */
+        e.do_start_subset(i, in.subsets[i]);
+        e.run();
+    }
 
     /* Write all the bits and pad the data section to reach an even length */
     out.flush();

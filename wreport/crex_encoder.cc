@@ -181,7 +181,12 @@ struct Encoder
         sec2_start = out.buf.size();
 
         DDSEncoder e(in, out);
-        in.visit(e);
+        // Encode all subsets
+        for (unsigned i = 0; i < in.subsets.size(); ++i)
+        {
+            e.do_start_subset(i, in.subsets[i]);
+            e.run();
+        }
         out.raw_append("++\r\r\n", 5);
 
         TRACE("SEC2 encoded as [[[%s]]]", out.buf.substr(sec2_start).c_str());

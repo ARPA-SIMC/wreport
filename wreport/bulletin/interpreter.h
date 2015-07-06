@@ -13,48 +13,30 @@ struct Tables;
 namespace bulletin {
 struct Visitor;
 
+/**
+ * Interpreter for data descriptor sections.
+ *
+ * By default, the interpreter goes through all the motions without doing
+ * anything. To provide actual functionality, subclass the interpreter and
+ * override the various virtual methods.
+ */
 struct DDSInterpreter
 {
     const Tables& tables;
     std::stack<Opcodes> opcode_stack;
-    Visitor& visitor;
 
-    DDSInterpreter(const Tables& tables, const Opcodes& opcodes, Visitor& visitor)
-        : tables(tables), visitor(visitor)
+    DDSInterpreter(const Tables& tables, const Opcodes& opcodes)
+        : tables(tables)
     {
         opcode_stack.push(opcodes);
     }
     DDSInterpreter(const DDSInterpreter&) = delete;
-    ~DDSInterpreter()
+    virtual ~DDSInterpreter()
     {
     }
     DDSInterpreter& operator=(const DDSInterpreter&) = delete;
 
     void run();
-};
-
-/**
- * Visitor-style interface for scanning the contents of a data descriptor
- * section.
- *
- * This supports scanning the DDS without looking at the data, so it cannot be
- * used for encoding/decoding, as it cannot access the data that controls
- * decoding such as delayed replicator factors or data descriptor bitmaps.
- *
- * All interface methods have a default implementations that do nothing, so you
- * can override only what you need.
- */
-struct Visitor
-{
-    /**
-     * D table to use to expand D groups.
-     *
-     * This must be provided by the caller
-     */
-    const Tables& tables;
-
-    Visitor(const Tables& tables);
-    virtual ~Visitor();
 
     /**
      * Notify of a B variable entry
@@ -210,11 +192,12 @@ struct Visitor
     virtual void c_increase_scale_ref_width(Varcode code, int change);
 };
 
+
 /**
  * opcode::Visitor that pretty-prints the opcodes using indentation to show
  * structure
  */
-class Printer : public Visitor
+class Printer : public DDSInterpreter
 {
 protected:
     /**
@@ -244,7 +227,8 @@ public:
     /// How many spaces in an indentation level
     unsigned indent_step;
 
-    Printer(const Tables& tables);
+    Printer(const Tables& tables, const Opcodes& opcodes);
+
     virtual void b_variable(Varcode code);
     virtual void c_modifier(Varcode code);
     virtual void c_change_data_width(Varcode code, int change);

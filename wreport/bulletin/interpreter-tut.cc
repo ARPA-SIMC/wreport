@@ -12,7 +12,7 @@ using namespace wibble;
 
 namespace {
 
-struct VisitCounter : public bulletin::Visitor
+struct VisitCounter : public bulletin::DDSInterpreter
 {
     unsigned count_b;
     unsigned count_r_plain;
@@ -20,8 +20,8 @@ struct VisitCounter : public bulletin::Visitor
     unsigned count_c;
     unsigned count_d;
 
-    VisitCounter(const Tables& tables)
-        : bulletin::Visitor(tables), count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
+    VisitCounter(const Tables& tables, const Opcodes& opcodes)
+        : bulletin::DDSInterpreter(tables, opcodes), count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
 
     void b_variable(Varcode code) { ++count_b; }
     void c_modifier(Varcode code) { ++count_c; }
@@ -31,8 +31,9 @@ struct VisitCounter : public bulletin::Visitor
             ++count_r_delayed;
         else
             ++count_r_plain;
-        bulletin::DDSInterpreter interpreter(tables, ops, *this);
-        interpreter.run();
+        opcode_stack.push(ops);
+        run();
+        opcode_stack.pop();
     }
     void d_group_begin(Varcode code) { ++count_d; }
 };
@@ -52,9 +53,8 @@ std::vector<Test> tests {
         Opcodes ops = tables.dtable->query(WR_VAR(3, 0, 10));
         ensure_equals(ops.size(), 4);
 
-        VisitCounter c(tables);
-        bulletin::DDSInterpreter interpreter(tables, ops, c);
-        interpreter.run();
+        VisitCounter c(tables, ops);
+        c.run();
 
         ensure_equals(c.count_b, 4u);
         ensure_equals(c.count_c, 0u);

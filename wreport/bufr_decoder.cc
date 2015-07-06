@@ -241,7 +241,7 @@ struct BaseBufrDecoder : public bulletin::Parser
     /// Input buffer
     bulletin::BufrInput& in;
 
-    BaseBufrDecoder(Decoder& d) : bulletin::Parser(d.out.tables), d(d), in(d.in)
+    BaseBufrDecoder(Decoder& d) : bulletin::Parser(d.out.tables, d.out.datadesc), d(d), in(d.in)
     {
         associated_field.skip_missing = !d.conf_add_undef_attrs;
     }
@@ -592,12 +592,16 @@ void Decoder::decode_data()
     {
         CompressedBufrDecoder dec(*this);
         dec.do_start_subset(0, out.subsets[0]);
-        // Visit only once
-        out.visit_datadesc(dec);
+        // Run only once
+        dec.run();
     } else {
+        // Run once per subset
         UncompressedBufrDecoder dec(*this);
-        // Visit all subsets
-        out.visit(dec);
+        for (unsigned i = 0; i < out.subsets.size(); ++i)
+        {
+            dec.do_start_subset(i, out.subsets[i]);
+            dec.run();
+        }
     }
 
     IFTRACE {

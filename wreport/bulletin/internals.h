@@ -156,7 +156,7 @@ struct AssociatedField
  * Abstract interface for classes that can be used as targets for the Bulletin
  * Data Descriptor Section interpreters.
  */
-struct Parser : public bulletin::Visitor
+struct Parser : public bulletin::DDSInterpreter
 {
     /// Current subset (used to refer to past variables)
     const Subset* current_subset;
@@ -194,7 +194,7 @@ struct Parser : public bulletin::Visitor
     unsigned data_pos;
 
 
-    Parser(Tables& tables);
+    Parser(const Tables& tables, const Opcodes& opcodes);
     virtual ~Parser();
 
     /**

@@ -177,7 +177,8 @@ void CrexBulletin::encode(std::string& buf) const
 }
 */
 
-void Bulletin::visit_datadesc(bulletin::Visitor& e)
+#if 0
+void Bulletin::visit_datadesc(bulletin::DDSInterpreter& e)
 {
     bulletin::DDSInterpreter interpreter(tables, datadesc, e);
     interpreter.run();
@@ -194,6 +195,7 @@ void Bulletin::visit(bulletin::Parser& out)
         interpreter.run();
     }
 }
+#endif
 
 void Bulletin::print(FILE* out)
 {
@@ -237,7 +239,12 @@ void Bulletin::print_structured(FILE* out)
     print_details(out);
     fprintf(out, " Variables:\n");
     bulletin::DDSPrinter printer(*this, out);
-    visit(printer);
+    // Print all the subsets
+    for (unsigned i = 0; i < subsets.size(); ++i)
+    {
+        printer.do_start_subset(i, subsets[i]);
+        printer.run();
+    }
 }
 
 void Bulletin::print_details(FILE* out) const {}
@@ -256,12 +263,10 @@ void CrexBulletin::print_details(FILE* out) const
 
 void Bulletin::print_datadesc(FILE* out, unsigned indent) const
 {
-    bulletin::Printer printer(tables);
+    bulletin::Printer printer(tables, datadesc);
     printer.out = out;
     printer.indent = indent;
-
-    bulletin::DDSInterpreter interpreter(tables, datadesc, printer);
-    interpreter.run();
+    printer.run();
 }
 
 unsigned Bulletin::diff(const Bulletin& msg) const

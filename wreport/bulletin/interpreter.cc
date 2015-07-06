@@ -16,7 +16,7 @@ void DDSInterpreter::run()
         Varcode cur = opcodes[i];
         switch (WR_VAR_F(cur))
         {
-            case 0: visitor.b_variable(cur); break;
+            case 0: b_variable(cur); break;
             case 1: {
                 Varcode rep_code = 0;
                 Varcode next_code = opcodes[i+1];
@@ -31,21 +31,21 @@ void DDSInterpreter::run()
                     }
                 }
                 Opcodes ops = opcodes.sub(i + 1, WR_VAR_X(cur));
-                visitor.r_replication(cur, rep_code, ops);
+                r_replication(cur, rep_code, ops);
                 i += WR_VAR_X(cur);
                 break;
             }
             case 2:
                 // Generic notification
-                visitor.c_modifier(cur);
+                c_modifier(cur);
                 // Specific notification
                 switch (WR_VAR_X(cur))
                 {
                     case 1:
-                        visitor.c_change_data_width(cur, WR_VAR_Y(cur) ? WR_VAR_Y(cur) - 128 : 0);
+                        c_change_data_width(cur, WR_VAR_Y(cur) ? WR_VAR_Y(cur) - 128 : 0);
                         break;
                     case 2:
-                        visitor.c_change_data_scale(cur, WR_VAR_Y(cur) ? WR_VAR_Y(cur) - 128 : 0);
+                        c_change_data_scale(cur, WR_VAR_Y(cur) ? WR_VAR_Y(cur) - 128 : 0);
                         break;
                     case 4: {
                         Varcode sig_code = 0;
@@ -54,34 +54,34 @@ void DDSInterpreter::run()
                             sig_code = opcodes[i + 1];
                             ++i;
                         }
-                        visitor.c_associated_field(cur, sig_code, WR_VAR_Y(cur));
+                        c_associated_field(cur, sig_code, WR_VAR_Y(cur));
                         break;
                     }
                     case 5:
-                        visitor.c_char_data(cur);
+                        c_char_data(cur);
                         break;
                     case 6:
-                        visitor.c_local_descriptor(cur, opcodes[i + 1], WR_VAR_Y(cur));
+                        c_local_descriptor(cur, opcodes[i + 1], WR_VAR_Y(cur));
                         ++i;
                         break;
                     case 7:
-                        visitor.c_increase_scale_ref_width(cur, WR_VAR_Y(cur));
+                        c_increase_scale_ref_width(cur, WR_VAR_Y(cur));
                         break;
                     case 8:
-                        visitor.c_char_data_override(cur, WR_VAR_Y(cur));
+                        c_char_data_override(cur, WR_VAR_Y(cur));
                         break;
                     case 22:
-                        visitor.c_quality_information_bitmap(cur);
+                        c_quality_information_bitmap(cur);
                         break;
                     case 23:
                         // Substituted values
                         switch (WR_VAR_Y(cur))
                         {
                             case 0:
-                                visitor.c_substituted_value_bitmap(cur);
+                                c_substituted_value_bitmap(cur);
                                 break;
                             case 255:
-                                visitor.c_substituted_value(cur);
+                                c_substituted_value(cur);
                                 break;
                             default:
                                 error_consistency::throwf("C modifier %d%02d%03d not yet supported",
@@ -95,10 +95,10 @@ void DDSInterpreter::run()
                         switch (WR_VAR_Y(cur))
                         {
                             case 0: // Reuse last defined bitmap
-                                visitor.c_reuse_last_bitmap(true);
+                                c_reuse_last_bitmap(true);
                                 break;
                             case 255: // cancels reuse of the last defined bitmap
-                                visitor.c_reuse_last_bitmap(false);
+                                c_reuse_last_bitmap(false);
                                 break;
                             default:
                                 error_consistency::throwf("C modifier %d%02d%03d uses unsupported y=%03d",
@@ -133,11 +133,11 @@ void DDSInterpreter::run()
                 break;
             case 3:
             {
-                visitor.d_group_begin(cur);
+                d_group_begin(cur);
                 opcode_stack.push(tables.dtable->query(cur));
                 run();
                 opcode_stack.pop();
-                visitor.d_group_end(cur);
+                d_group_end(cur);
                 break;
             }
             default:
@@ -148,28 +148,26 @@ void DDSInterpreter::run()
 }
 
 
-Visitor::Visitor(const Tables& tables) : tables(tables) {}
-Visitor::~Visitor() {}
-void Visitor::b_variable(Varcode code) {}
-void Visitor::c_modifier(Varcode code) {}
-void Visitor::c_change_data_width(Varcode code, int change) {}
-void Visitor::c_change_data_scale(Varcode code, int change) {}
-void Visitor::c_increase_scale_ref_width(Varcode code, int change) {}
-void Visitor::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
-void Visitor::c_char_data(Varcode code) {}
-void Visitor::c_char_data_override(Varcode code, unsigned new_length) {}
-void Visitor::c_quality_information_bitmap(Varcode code) {}
-void Visitor::c_substituted_value_bitmap(Varcode code) {}
-void Visitor::c_substituted_value(Varcode code) {}
-void Visitor::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
-void Visitor::c_reuse_last_bitmap(Varcode code) {}
-void Visitor::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) {}
-void Visitor::d_group_begin(Varcode code) {}
-void Visitor::d_group_end(Varcode code) {}
+void DDSInterpreter::b_variable(Varcode code) {}
+void DDSInterpreter::c_modifier(Varcode code) {}
+void DDSInterpreter::c_change_data_width(Varcode code, int change) {}
+void DDSInterpreter::c_change_data_scale(Varcode code, int change) {}
+void DDSInterpreter::c_increase_scale_ref_width(Varcode code, int change) {}
+void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
+void DDSInterpreter::c_char_data(Varcode code) {}
+void DDSInterpreter::c_char_data_override(Varcode code, unsigned new_length) {}
+void DDSInterpreter::c_quality_information_bitmap(Varcode code) {}
+void DDSInterpreter::c_substituted_value_bitmap(Varcode code) {}
+void DDSInterpreter::c_substituted_value(Varcode code) {}
+void DDSInterpreter::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
+void DDSInterpreter::c_reuse_last_bitmap(Varcode code) {}
+void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) {}
+void DDSInterpreter::d_group_begin(Varcode code) {}
+void DDSInterpreter::d_group_end(Varcode code) {}
 
 
-Printer::Printer(const Tables& tables)
-    : Visitor(tables), out(stdout), indent(0), indent_step(2)
+Printer::Printer(const Tables& tables, const Opcodes& opcodes)
+    : DDSInterpreter(tables, opcodes), out(stdout), indent(0), indent_step(2)
 {
 }
 
@@ -212,8 +210,9 @@ void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
         fprintf(out, " (delayed %d%02d%03d) times\n",
                 WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code));
     indent += indent_step;
-    DDSInterpreter interpreter(tables, ops, *this);
-    interpreter.run();
+    opcode_stack.push(ops);
+    run();
+    opcode_stack.pop();
     indent -= indent_step;
 }
 

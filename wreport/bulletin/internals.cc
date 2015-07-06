@@ -242,7 +242,7 @@ const Var* AssociatedField::get_attribute(const Var& var) const
 }
 
 
-Parser::Parser(Tables& tables) : Visitor(tables), current_subset(0) {}
+Parser::Parser(const Tables& tables, const Opcodes& opcodes) : DDSInterpreter(tables, opcodes), current_subset(0) {}
 Parser::~Parser() {}
 
 Varinfo Parser::get_varinfo(Varcode code)
@@ -469,8 +469,9 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
         for (unsigned i = 0; i < count; ++i)
         {
             do_start_repetition(i);
-            DDSInterpreter interpreter(tables, ops, *this);
-            interpreter.run();
+            opcode_stack.push(ops);
+            run();
+            opcode_stack.pop();
         }
     }
 }
@@ -496,7 +497,7 @@ void Parser::do_start_repetition(unsigned idx) {}
 
 
 BaseParser::BaseParser(Bulletin& bulletin)
-    : Parser(bulletin.tables), bulletin(bulletin), current_subset_no(0)
+    : Parser(bulletin.tables, bulletin.datadesc), bulletin(bulletin), current_subset_no(0)
 {
 }
 
