@@ -57,6 +57,14 @@ std::vector<Test> tests {
             ensure_var_equals(var, "123");
         }
 
+        {
+            Var var(info, string("123"));
+            wassert(actual(var.code()) == WR_VAR(0, 6, 1));
+            wassert(actual(var.info()->code) == WR_VAR(0, 6, 1));
+            wassert(actual(var.isset()).istrue());
+            ensure_var_equals(var, "123");
+        }
+
 #if 0
         {
             Var var(WR_VAR(0, 6, 1));

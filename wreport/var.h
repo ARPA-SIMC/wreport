@@ -61,6 +61,9 @@ public:
 	/// Create a new Var, with character value
 	Var(Varinfo info, const char* val);
 
+    /// Create a new Var, with character value
+    Var(Varinfo info, const std::string& val);
+
     /**
      * Create a new Var with the value from another one.
      *
@@ -151,6 +154,9 @@ public:
 
     /// Set the value from a string or opaque binary value
     void setc(const char* val);
+
+    /// Set the value from a string or opaque binary value
+    void sets(const std::string& val);
 
     /// Set from a value formatted with the format() method
     void setf(const char* val);

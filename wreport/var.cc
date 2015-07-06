@@ -110,6 +110,12 @@ Var::Var(Varinfo info, const char* val)
     setc(val);
 }
 
+Var::Var(Varinfo info, const std::string& val)
+    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
+{
+    sets(val);
+}
+
 Var::Var(const Var& var)
     : m_info(var.m_info), m_isset(var.m_isset), m_value(nullptr), m_attrs(nullptr)
 {
@@ -489,6 +495,52 @@ void Var::setc_truncate(const char* val)
             m_isset = true;
             break;
         }
+    }
+}
+
+void Var::sets(const std::string& val)
+{
+    // Allocate storage for the value
+    allocate();
+
+    switch (m_info->type)
+    {
+        case Vartype::String:
+        case Vartype::Integer:
+        case Vartype::Decimal: {
+            // Guard against overflows
+            size_t len = val.size();
+            /* Tweak the length to account for the extra leading '-' allowed for
+             * negative numeric values */
+            if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
+                --len;
+            if (len > m_info->len)
+            {
+                unset();
+                if (options::var_silent_domain_errors)
+                    return;
+                error_domain::throwf("Value \"%s\" is too long for B%02d%03d (%s): maximum length is %d",
+                        val.c_str(), WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc, m_info->len);
+            }
+            strncpy(m_value, val.c_str(), m_info->len + 1);
+            m_value[m_info->len + 1] = 0;
+            m_isset = true;
+            break;
+        }
+        case Vartype::Binary:
+            if (val.size() < m_info->len)
+            {
+                // If val is too short, copy it and zero pad the rest
+                memcpy(m_value, val.data(), val.size());
+                for (unsigned i = val.size(); i < m_info->len; ++i)
+                    m_value[i] = 0;
+            } else {
+                memcpy(m_value, val.data(), m_info->len);
+                if (m_info->bit_len % 8)
+                    m_value[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
+            }
+            m_isset = true;
+            break;
     }
 }
 
