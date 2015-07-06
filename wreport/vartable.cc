@@ -257,11 +257,26 @@ struct VartableBase : public Vartable
         if (!start)
             error_notfound::throwf(
                     "variable %d%02d%03d not found in table %s",
-                    WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code), m_pathname.c_str());
+                    WR_VAR_FXY(code), m_pathname.c_str());
 
         // Look for an existing alteration
         const VartableEntry* alt = start->get_alteration(new_scale, new_bit_len);
         if (alt) return &(alt->varinfo);
+
+        switch (start->varinfo.type)
+        {
+            case Vartype::Integer:
+            case Vartype::Decimal:
+                if (new_scale < -16 || new_scale > 16)
+                    error_consistency::throwf("cannot alter variable %d%02d%03d with a new scale of %d", WR_VAR_FXY(code), new_scale);
+                if (new_bit_len > 32)
+                    error_consistency::throwf("cannot alter variable %d%02d%03d with a new bit_len of %u", WR_VAR_FXY(code), new_bit_len);
+                break;
+            case Vartype::String:
+            case Vartype::Binary:
+                break;
+        }
+
 
         // Not found: we need to create it, duplicating the original varinfo
         unique_ptr<VartableEntry> newvi(new VartableEntry(*start, new_scale, new_bit_len));
