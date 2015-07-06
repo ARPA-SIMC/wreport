@@ -12,7 +12,10 @@ Tables::Tables()
 }
 
 Tables::Tables(Tables&& o)
-    : btable(o.btable), dtable(o.dtable), local_vartable(move(o.local_vartable))
+    : btable(o.btable), dtable(o.dtable),
+      bitmap_table(move(o.bitmap_table)),
+      chardata_table(move(o.chardata_table)),
+      unknown_table(move(o.unknown_table))
 {
 }
 
@@ -25,7 +28,9 @@ Tables& Tables::operator=(Tables&& o)
     if (this == &o) return *this;
     btable = o.btable;
     dtable = o.dtable;
-    local_vartable = move(o.local_vartable);
+    bitmap_table = move(o.bitmap_table);
+    chardata_table = move(o.chardata_table);
+    unknown_table = move(o.unknown_table);
     return *this;
 }
 
@@ -38,7 +43,9 @@ void Tables::clear()
 {
     btable = 0;
     dtable = 0;
-    local_vartable.clear();
+    bitmap_table.clear();
+    chardata_table.clear();
+    unknown_table.clear();
 }
 
 void Tables::load_bufr(int centre, int subcentre, int master_table, int local_table)
@@ -55,12 +62,6 @@ void Tables::load_crex(int master_table_number, int edition, int table)
     auto t = tabledir.find_crex(master_table_number, edition, table);
     btable = t->btable;
     dtable = t->dtable;
-}
-
-_Varinfo* Tables::new_entry()
-{
-    local_vartable.emplace_front();
-    return &local_vartable.front();
 }
 
 Varinfo Tables::get_bitmap(Varcode code, const std::string& bitmap) const
@@ -97,11 +98,21 @@ Varinfo Tables::get_chardata(Varcode code, const std::string& chardata) const
     return &vi;
 }
 
-Varinfo Tables::get_unknown(Varcode code, unsigned bit_len)
+Varinfo Tables::get_unknown(Varcode code, unsigned bit_len) const
 {
-    auto res = new_entry();
-    res->set_binary(code, "UNKNOWN LOCAL DESCRIPTOR", bit_len);
-    return res;
+    auto res = unknown_table.find(bit_len);
+    if (res != unknown_table.end())
+    {
+        if (res->second.code != code)
+            error_consistency::throwf("Unknown binary data %u bits long has been requested with varcode %01d%02d%03d but it already exists as %01d%02d%03d",
+                    bit_len, WR_VAR_FXY(code), WR_VAR_FXY(res->second.code));
+        return &(res->second);
+    }
+
+    auto new_entry = unknown_table.emplace(make_pair(bit_len, _Varinfo()));
+    _Varinfo& vi = new_entry.first->second;
+    vi.set_binary(code, "UNKNOWN LOCAL DESCRIPTOR", bit_len);
+    return &vi;
 }
 
 }
