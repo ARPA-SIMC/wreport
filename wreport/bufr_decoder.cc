@@ -322,7 +322,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
      * Request processing, according to \a info, of the attribute \a attr_code
      * of the variable in position \a var_pos in the current subset.
      */
-    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override
     {
         Var var = decode_b_value(info);
         TRACE(" do_attr adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
@@ -339,7 +339,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     /**
      * Request processing, according to \a info, of a data variable.
      */
-    virtual void do_var(Varinfo info)
+    void do_var(Varinfo info) override
     {
         if (associated_field.bit_count)
         {
@@ -371,7 +371,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
         }
     }
 
-    virtual const Var& add_to_all(const Var& var)
+    const Var& add_to_all(const Var& var) override
     {
         target->store_variable(var);
         return current_subset->back();
@@ -382,7 +382,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
      */
     void do_char_data(Varcode code)
     {
-        int cdatalen = WR_VAR_Y(code);
+        unsigned cdatalen = WR_VAR_Y(code);
         string buf;
         buf.resize(cdatalen);
         TRACE("decode_c_data:character data %d long\n", cdatalen);
