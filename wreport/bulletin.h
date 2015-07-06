@@ -38,15 +38,39 @@
  * Main namespace
  */
 namespace wreport {
+struct DTable;
 
 namespace bulletin {
 struct Visitor;
 struct Parser;
 struct BufrInput;
 struct LocalVartable;
-}
 
-struct DTable;
+struct Tables
+{
+    /// vartable used to lookup B table codes
+    const Vartable* btable;
+    /// dtable used to lookup D table codes
+    const DTable* dtable;
+    /// Storage for temporary Varinfos for bitmaps and character data
+    bulletin::LocalVartable* local_vartable;
+
+    Tables();
+    Tables(const Tables&) = delete;
+    Tables(Tables&&);
+    ~Tables();
+
+    Tables& operator=(const Tables&) = delete;
+    Tables& operator=(Tables&&);
+
+    bool loaded() const;
+
+    void clear();
+    void load_bufr(int centre, int subcentre, int master_table, int local_table);
+    void load_crex(int master_table_number, int edition, int table);
+};
+
+}
 
 /**
  * Storage for the decoded data of a BUFR or CREX message.
@@ -106,19 +130,13 @@ struct Bulletin
 	int rep_second;	/**< Second */
 	/** @} */
 
-	/** vartable used to lookup B table codes */
-	const Vartable* btable;
-	/** dtable used to lookup D table codes */
-	const DTable* dtable;
+    bulletin::Tables tables;
 
 	/** Parsed data descriptor section */
 	std::vector<Varcode> datadesc;
 
 	/** Decoded variables */
 	std::vector<Subset> subsets;
-
-    /// Storage for temporary Varinfos for bitmaps and character data
-    bulletin::LocalVartable* local_vartable;
 
 
 	Bulletin();

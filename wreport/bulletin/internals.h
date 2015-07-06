@@ -52,7 +52,11 @@ struct LocalVartable
     LocalVartable() {}
     LocalVartable(const LocalVartable&) = delete;
     LocalVartable(LocalVartable&&) = delete;
-    ~LocalVartable()
+    ~LocalVartable() { clear(); }
+    LocalVartable operator=(const LocalVartable&) = delete;
+    LocalVartable operator=(LocalVartable&&) = delete;
+
+    void clear()
     {
         while (first)
         {
@@ -61,8 +65,6 @@ struct LocalVartable
             first = next;
         }
     }
-    LocalVartable operator=(const LocalVartable&) = delete;
-    LocalVartable operator=(LocalVartable&&) = delete;
 
     // Create a single use varinfo to store the bitmap
     _Varinfo* new_entry()

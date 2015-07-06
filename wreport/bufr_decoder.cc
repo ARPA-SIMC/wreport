@@ -241,7 +241,7 @@ struct BaseBufrDecoder : public bulletin::Parser
     /// Input buffer
     bulletin::BufrInput& in;
 
-    BaseBufrDecoder(Decoder& d) : bulletin::Parser(*d.out.dtable), d(d), in(d.in)
+    BaseBufrDecoder(Decoder& d) : bulletin::Parser(*d.out.tables.dtable), d(d), in(d.in)
     {
         associated_field.skip_missing = !d.conf_add_undef_attrs;
     }
@@ -397,7 +397,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
         // Add as C variable to the subset
 
         // Create a single use varinfo to store the bitmap
-        Varinfo info = d.out.local_vartable->get_chardata_entry(code, cdatalen);
+        Varinfo info = d.out.tables.local_vartable->get_chardata_entry(code, cdatalen);
 
         // Store the character data
         Var cdata(info, buf);
@@ -437,7 +437,7 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
     CompressedBufrDecoder(Decoder& d)
         : BaseBufrDecoder(d), subset_count(d.out.subsets.size())
     {
-        btable = d.out.btable;
+        btable = d.out.tables.btable;
     }
 
     void decode_b_value(Varinfo info, bulletin::CompressedVarSink& dest)
@@ -558,7 +558,7 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
     buf[count] = 0;
 
     // Create a single use varinfo to store the bitmap
-    Varinfo info = d.out.local_vartable->get_bitmap_entry(code, count);
+    Varinfo info = d.out.tables.local_vartable->get_bitmap_entry(code, count);
 
     // Store the bitmap
     Var bmp(info, buf);

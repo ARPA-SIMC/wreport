@@ -45,7 +45,7 @@ void to::test<1>()
         b->obtain_subset(0);
         ensure(false);
     } catch (error_consistency& e) {
-        ensure_contains(e.what(), "B tables not loaded");
+        ensure_contains(e.what(), "BUFR/CREX tables not loaded");
     }
 	// b.subsets[0].store_variable_undef(WR_VAR(0, 1, 1));
 #if 0

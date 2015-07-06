@@ -232,8 +232,8 @@ void Decoder::decode_data()
     in.mark_section_start(2);
 
     CrexParser parser(in);
-    parser.btable = out.btable;
-    parser.dtable = out.dtable;
+    parser.btable = out.tables.btable;
+    parser.dtable = out.tables.dtable;
 
     // Scan the various subsections
     for (unsigned i = 0; ; ++i)

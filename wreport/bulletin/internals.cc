@@ -375,7 +375,7 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
         }
         if (skip)
         {
-            Varinfo info = current_subset->bulletin->local_vartable->get_unknown(desc_code, WR_VAR_Y(code));
+            Varinfo info = current_subset->bulletin->tables.local_vartable->get_unknown(desc_code, WR_VAR_Y(code));
             do_var(info);
         }
         ++data_pos;
@@ -499,8 +499,8 @@ void Parser::do_start_repetition(unsigned idx) {}
 BaseParser::BaseParser(Bulletin& bulletin)
     : bulletin(bulletin), current_subset_no(0)
 {
-    btable = bulletin.btable;
-    dtable = bulletin.dtable;
+    btable = bulletin.tables.btable;
+    dtable = bulletin.tables.dtable;
 }
 
 Var& BaseParser::get_var()
@@ -542,8 +542,8 @@ const Var& BaseParser::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed
 ConstBaseParser::ConstBaseParser(const Bulletin& bulletin)
     : bulletin(bulletin), current_subset_no(0)
 {
-    btable = bulletin.btable;
-    dtable = bulletin.dtable;
+    btable = bulletin.tables.btable;
+    dtable = bulletin.tables.dtable;
 }
 
 const Var& ConstBaseParser::get_var()

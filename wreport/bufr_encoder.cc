@@ -72,7 +72,7 @@ struct DDSEncoder : public bulletin::ConstBaseParser
 
     DDSEncoder(const Bulletin& b, bulletin::BufrOutput& ob) : ConstBaseParser(b), ob(ob)
     {
-        btable = b.btable;
+        btable = b.tables.btable;
     }
     virtual ~DDSEncoder() {}
 
