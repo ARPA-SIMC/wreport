@@ -21,6 +21,8 @@ struct Tables
     const DTable* dtable;
     /// Storage for temporary Varinfos for bitmaps
     mutable std::map<std::string, _Varinfo> bitmap_table;
+    /// Storage for temporary Varinfos for arbitrary character data
+    mutable std::map<std::string, _Varinfo> chardata_table;
     /// Storage for temporary Varinfos for bitmaps and character data
     std::forward_list<_Varinfo> local_vartable;
 
@@ -42,10 +44,10 @@ struct Tables
     _Varinfo* new_entry();
 
     // Create a varinfo to store the bitmap
-    Varinfo get_bitmap(Varcode code, const std::string& size) const;
+    Varinfo get_bitmap(Varcode code, const std::string& bitmap) const;
 
     // Create a varinfo to store character data
-    Varinfo get_chardata_entry(Varcode code, unsigned size);
+    Varinfo get_chardata(Varcode code, const std::string& chardata) const;
 
     // Create a varinfo to store a C06 unknown local descriptor
     Varinfo get_unknown(Varcode code, unsigned bit_len);

@@ -80,11 +80,21 @@ Varinfo Tables::get_bitmap(Varcode code, const std::string& bitmap) const
     return &vi;
 }
 
-Varinfo Tables::get_chardata_entry(Varcode code, unsigned size)
+Varinfo Tables::get_chardata(Varcode code, const std::string& chardata) const
 {
-    auto res = new_entry();
-    res->set_string(code, "CHARACTER DATA", size);
-    return res;
+    auto res = chardata_table.find(chardata);
+    if (res != chardata_table.end())
+    {
+        if (res->second.code != code)
+            error_consistency::throwf("Character data '%s' has been requested with varcode %01d%02d%03d but it already exists as %01d%02d%03d",
+                    chardata.c_str(), WR_VAR_FXY(code), WR_VAR_FXY(res->second.code));
+        return &(res->second);
+    }
+
+    auto new_entry = chardata_table.emplace(make_pair(chardata, _Varinfo()));
+    _Varinfo& vi = new_entry.first->second;
+    vi.set_string(code, "CHARACTER DATA", chardata.size());
+    return &vi;
 }
 
 Varinfo Tables::get_unknown(Varcode code, unsigned bit_len)

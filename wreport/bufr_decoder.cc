@@ -383,27 +383,26 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     void do_char_data(Varcode code)
     {
         int cdatalen = WR_VAR_Y(code);
-        char buf[cdatalen + 1];
+        string buf;
+        buf.resize(cdatalen);
         TRACE("decode_c_data:character data %d long\n", cdatalen);
-        int i;
-        for (i = 0; i < cdatalen; ++i)
+        for (unsigned i = 0; i < cdatalen; ++i)
         {
             uint32_t bitval = in.get_bits(8);
             TRACE("decode_c_data:decoded character %d %c\n", (int)bitval, (char)bitval);
             buf[i] = bitval;
         }
-        buf[i] = 0;
 
         // Add as C variable to the subset
 
         // Create a single use varinfo to store the bitmap
-        Varinfo info = tables->get_chardata_entry(code, cdatalen);
+        Varinfo info = tables->get_chardata(code, buf);
 
         // Store the character data
         Var cdata(info, buf);
         add_to_all(cdata);
 
-        TRACE("decode_c_data:decoded string %s\n", buf);
+        TRACE("decode_c_data:decoded string %s\n", buf.c_str());
     }
 };
 
