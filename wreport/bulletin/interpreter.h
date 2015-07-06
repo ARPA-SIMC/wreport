@@ -3,6 +3,7 @@
 
 #include <wreport/opcode.h>
 #include <memory>
+#include <stack>
 
 namespace wreport {
 struct Vartable;
@@ -15,16 +16,13 @@ struct Visitor;
 struct DDSInterpreter
 {
     const Tables& tables;
-    Opcodes opcodes;
+    std::stack<Opcodes> opcode_stack;
     Visitor& visitor;
 
     DDSInterpreter(const Tables& tables, const Opcodes& opcodes, Visitor& visitor)
-        : tables(tables), opcodes(opcodes), visitor(visitor)
+        : tables(tables), visitor(visitor)
     {
-    }
-    DDSInterpreter(DDSInterpreter& parent, const Opcodes& opcodes)
-        : tables(parent.tables), opcodes(opcodes), visitor(parent.visitor)
-    {
+        opcode_stack.push(opcodes);
     }
     DDSInterpreter(const DDSInterpreter&) = delete;
     ~DDSInterpreter()
@@ -33,11 +31,6 @@ struct DDSInterpreter
     DDSInterpreter& operator=(const DDSInterpreter&) = delete;
 
     void run();
-
-    std::unique_ptr<DDSInterpreter> sub(const Opcodes& opcodes)
-    {
-        return std::unique_ptr<DDSInterpreter>(new DDSInterpreter(*this, opcodes));
-    }
 };
 
 /**

@@ -10,6 +10,7 @@ namespace bulletin {
 
 void DDSInterpreter::run()
 {
+    auto& opcodes = opcode_stack.top();
     for (unsigned i = 0; i < opcodes.size(); ++i)
     {
         Varcode cur = opcodes[i];
@@ -133,8 +134,9 @@ void DDSInterpreter::run()
             case 3:
             {
                 visitor.d_group_begin(cur);
-                auto interpreter = sub(tables.dtable->query(cur));
-                interpreter->run();
+                opcode_stack.push(tables.dtable->query(cur));
+                run();
+                opcode_stack.pop();
                 visitor.d_group_end(cur);
                 break;
             }
