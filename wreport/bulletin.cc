@@ -258,9 +258,8 @@ void CrexBulletin::print_details(FILE* out) const
 
 void Bulletin::print_datadesc(FILE* out, unsigned indent)
 {
-    bulletin::Printer printer;
+    bulletin::Printer printer(tables);
     printer.out = out;
-    printer.tables = &tables;
     printer.indent = indent;
 
     bulletin::Interpreter interpreter(tables, datadesc, printer);

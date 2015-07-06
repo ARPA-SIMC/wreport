@@ -146,8 +146,7 @@ void Interpreter::run()
 }
 
 
-Visitor::Visitor() : tables(nullptr) {}
-Visitor::Visitor(Tables& tables) : tables(&tables) {}
+Visitor::Visitor(const Tables& tables) : tables(&tables) {}
 Visitor::~Visitor() {}
 void Visitor::b_variable(Varcode code) {}
 void Visitor::c_modifier(Varcode code) {}
@@ -167,8 +166,8 @@ void Visitor::d_group_begin(Varcode code) {}
 void Visitor::d_group_end(Varcode code) {}
 
 
-Printer::Printer()
-    : out(stdout), btable(0), indent(0), indent_step(2)
+Printer::Printer(const Tables& tables)
+    : Visitor(tables), out(stdout), btable(0), indent(0), indent_step(2)
 {
 }
 

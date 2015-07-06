@@ -43,10 +43,9 @@ struct Visitor
      *
      * This must be provided by the caller
      */
-    Tables* tables;
+    const Tables* tables;
 
-    Visitor();
-    Visitor(Tables& tables);
+    Visitor(const Tables& tables);
     virtual ~Visitor();
 
     /**
@@ -245,7 +244,7 @@ public:
     /// How many spaces in an indentation level
     unsigned indent_step;
 
-    Printer();
+    Printer(const Tables& tables);
     virtual void b_variable(Varcode code);
     virtual void c_modifier(Varcode code);
     virtual void c_change_data_width(Varcode code, int change);

@@ -39,8 +39,8 @@ struct Tables;
  */
 struct Subset : public std::vector<Var>
 {
-    // Bulletin owning this subset
-    Tables* tables;
+    // Tables used for creating variables in this subset
+    const Tables* tables;
 
     /**
      * Create a new BUFR/CREX subset.
@@ -48,7 +48,7 @@ struct Subset : public std::vector<Var>
      * @param btable
      *   Reference to the B table to use to create variables.
      */
-    Subset(Tables& tables);
+    Subset(const Tables& tables);
     Subset(const Subset& subset) = default;
     Subset(Subset&& subset)
         : std::vector<Var>(move(subset)), tables(subset.tables)

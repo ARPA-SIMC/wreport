@@ -33,7 +33,7 @@ using namespace std;
 
 namespace wreport {
 
-Subset::Subset(Tables& tables) : tables(&tables)
+Subset::Subset(const Tables& tables) : tables(&tables)
 {
     if (!tables.loaded()) throw error_consistency("BUFR/CREX tables not loaded");
 }

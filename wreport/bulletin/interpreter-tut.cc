@@ -20,8 +20,8 @@ struct VisitCounter : public bulletin::Visitor
     unsigned count_c;
     unsigned count_d;
 
-    VisitCounter()
-        : count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
+    VisitCounter(const Tables& tables)
+        : bulletin::Visitor(tables), count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
 
     void b_variable(Varcode code) { ++count_b; }
     void c_modifier(Varcode code) { ++count_c; }
@@ -52,7 +52,7 @@ std::vector<Test> tests {
         Opcodes ops = tables.dtable->query(WR_VAR(3, 0, 10));
         ensure_equals(ops.size(), 4);
 
-        VisitCounter c;
+        VisitCounter c(tables);
         bulletin::Interpreter interpreter(tables, ops, c);
         interpreter.run();
 
