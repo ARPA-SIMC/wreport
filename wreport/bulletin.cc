@@ -177,26 +177,6 @@ void CrexBulletin::encode(std::string& buf) const
 }
 */
 
-#if 0
-void Bulletin::visit_datadesc(bulletin::DDSInterpreter& e)
-{
-    bulletin::DDSInterpreter interpreter(tables, datadesc, e);
-    interpreter.run();
-}
-
-void Bulletin::visit(bulletin::Parser& out)
-{
-    /* Run all the subsets, uncompressed */
-    for (unsigned i = 0; i < subsets.size(); ++i)
-    {
-        /* Encode the data of this subset */
-        out.do_start_subset(i, subsets[i]);
-        bulletin::DDSInterpreter interpreter(tables, datadesc, out);
-        interpreter.run();
-    }
-}
-#endif
-
 void Bulletin::print(FILE* out)
 {
 	fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
@@ -238,10 +218,10 @@ void Bulletin::print_structured(FILE* out)
         fprintf(out, "  %d%02d%03d\n", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
     print_details(out);
     fprintf(out, " Variables:\n");
-    bulletin::DDSPrinter printer(*this, out);
     // Print all the subsets
     for (unsigned i = 0; i < subsets.size(); ++i)
     {
+        bulletin::DDSPrinter printer(*this, out);
         printer.do_start_subset(i, subsets[i]);
         printer.run();
     }

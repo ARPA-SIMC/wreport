@@ -328,11 +328,11 @@ void Encoder::encode_sec4()
     out.add_bits(0, 24);
     out.append_byte(0);
 
-    DDSEncoder e(in, out);
     // Encode all the subsets
     for (unsigned i = 0; i < in.subsets.size(); ++i)
     {
-        /* Encode the data of this subset */
+        // Encode the data of this subset
+        DDSEncoder e(in, out);
         e.do_start_subset(i, in.subsets[i]);
         e.run();
     }

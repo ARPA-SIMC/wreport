@@ -180,10 +180,10 @@ struct Encoder
         /* Encode section 2 */
         sec2_start = out.buf.size();
 
-        DDSEncoder e(in, out);
         // Encode all subsets
         for (unsigned i = 0; i < in.subsets.size(); ++i)
         {
+            DDSEncoder e(in, out);
             e.do_start_subset(i, in.subsets[i]);
             e.run();
         }

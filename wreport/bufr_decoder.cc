@@ -596,9 +596,9 @@ void Decoder::decode_data()
         dec.run();
     } else {
         // Run once per subset
-        UncompressedBufrDecoder dec(*this);
         for (unsigned i = 0; i < out.subsets.size(); ++i)
         {
+            UncompressedBufrDecoder dec(*this);
             dec.do_start_subset(i, out.subsets[i]);
             dec.run();
         }
