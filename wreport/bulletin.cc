@@ -185,8 +185,6 @@ void Bulletin::visit_datadesc(bulletin::Visitor& e)
 
 void Bulletin::visit(bulletin::Parser& out)
 {
-    out.tables = &tables;
-
     /* Run all the subsets, uncompressed */
     for (unsigned i = 0; i < subsets.size(); ++i)
     {

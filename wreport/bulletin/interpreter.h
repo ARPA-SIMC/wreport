@@ -51,7 +51,7 @@ struct Visitor
      *
      * This must be provided by the caller
      */
-    const Tables* tables;
+    const Tables& tables;
 
     Visitor(const Tables& tables);
     virtual ~Visitor();
@@ -232,14 +232,6 @@ public:
      * It defaults to stdout, but it can be set to any FILE* stream
      */
     FILE* out;
-
-    /**
-     * Table used to get variable descriptions (optional).
-     *
-     * It defaults to NULL, but if it is set, the output will contain
-     * descriptions of B variable entries
-     */
-    const Vartable* btable;
 
     /**
      * Current indent level

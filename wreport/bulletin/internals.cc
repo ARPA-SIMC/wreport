@@ -247,7 +247,7 @@ Parser::~Parser() {}
 
 Varinfo Parser::get_varinfo(Varcode code)
 {
-    Varinfo peek = tables->btable->query(code);
+    Varinfo peek = tables.btable->query(code);
 
     if (!c_scale_change && !c_width_change && !c_string_len_override && !c_scale_ref_width_increase)
         return peek;
@@ -281,7 +281,7 @@ Varinfo Parser::get_varinfo(Varcode code)
     }
 
     TRACE("get_info:requesting alteration scale:%d, bit_len:%d\n", scale, bit_len);
-    return tables->btable->query_altered(code, scale, bit_len);
+    return tables.btable->query_altered(code, scale, bit_len);
 }
 
 void Parser::b_variable(Varcode code)
@@ -340,7 +340,7 @@ void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
     if (WR_VAR_Y(code))
     {
         // Get encoding informations for this associated_field_significance
-        Varinfo info = tables->btable->query(WR_VAR(0, 31, 21));
+        Varinfo info = tables.btable->query(WR_VAR(0, 31, 21));
 
         // Encode B31021
         const Var& var = do_semantic_var(info);
@@ -361,7 +361,7 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
     if (WR_VAR_Y(code))
     {
         bool skip = true;
-        if (tables->btable->contains(desc_code))
+        if (tables.btable->contains(desc_code))
         {
             Varinfo info = get_varinfo(desc_code);
             if (info->bit_len == WR_VAR_Y(code))
@@ -374,7 +374,7 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
         }
         if (skip)
         {
-            Varinfo info = tables->get_unknown(desc_code, WR_VAR_Y(code));
+            Varinfo info = tables.get_unknown(desc_code, WR_VAR_Y(code));
             do_var(info);
         }
         ++data_pos;
@@ -448,7 +448,7 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
     } else {
         if (count == 0)
         {
-            Varinfo info = tables->btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
+            Varinfo info = tables.btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
             const Var& var = do_semantic_var(info);
             if (var.code() == WR_VAR(0, 31, 0))
             {
@@ -469,7 +469,7 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
         for (unsigned i = 0; i < count; ++i)
         {
             do_start_repetition(i);
-            DDSInterpreter interpreter(*tables, ops, *this);
+            DDSInterpreter interpreter(tables, ops, *this);
             interpreter.run();
         }
     }
@@ -486,7 +486,7 @@ void Parser::do_start_subset(unsigned subset_no, const Subset& current_subset)
     c_string_len_override = 0;
     c_scale_ref_width_increase = 0;
     bitmap.reset();
-    associated_field.reset(*tables->btable);
+    associated_field.reset(*tables.btable);
     want_bitmap = 0;
     data_pos = 0;
 }

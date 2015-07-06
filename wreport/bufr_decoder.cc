@@ -396,7 +396,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
         // Add as C variable to the subset
 
         // Create a single use varinfo to store the bitmap
-        Varinfo info = tables->get_chardata(code, buf);
+        Varinfo info = tables.get_chardata(code, buf);
 
         // Store the character data
         Var cdata(info, buf);
@@ -512,7 +512,7 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
     if (count == 0)
     {
         // Fetch the repetition count
-        Varinfo rep_info = tables->btable->query(delayed_code);
+        Varinfo rep_info = tables.btable->query(delayed_code);
         Var rep_count = decode_semantic_b_value(rep_info);
         count = rep_count.enqi();
     }
@@ -556,7 +556,7 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
     }
 
     // Create a single use varinfo to store the bitmap
-    Varinfo info = tables->get_bitmap(code, buf);
+    Varinfo info = tables.get_bitmap(code, buf);
 
     // Store the bitmap
     Var bmp(info, buf);

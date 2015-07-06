@@ -31,7 +31,7 @@ struct VisitCounter : public bulletin::Visitor
             ++count_r_delayed;
         else
             ++count_r_plain;
-        bulletin::DDSInterpreter interpreter(*tables, ops, *this);
+        bulletin::DDSInterpreter interpreter(tables, ops, *this);
         interpreter.run();
     }
     void d_group_begin(Varcode code) { ++count_d; }

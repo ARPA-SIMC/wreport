@@ -116,7 +116,7 @@ const Var& DDSPrinter::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed
     const Var& res = BaseParser::do_bitmap(code, rep_code, delayed_code, ops);
     if (delayed_code)
     {
-        Varinfo info = tables->btable->query(delayed_code);
+        Varinfo info = tables.btable->query(delayed_code);
         print_context(info, 0);
         Var var(info, (int)res.info()->len);
         var.print(out);

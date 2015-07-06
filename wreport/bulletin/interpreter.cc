@@ -148,7 +148,7 @@ void DDSInterpreter::run()
 }
 
 
-Visitor::Visitor(const Tables& tables) : tables(&tables) {}
+Visitor::Visitor(const Tables& tables) : tables(tables) {}
 Visitor::~Visitor() {}
 void Visitor::b_variable(Varcode code) {}
 void Visitor::c_modifier(Varcode code) {}
@@ -169,7 +169,7 @@ void Visitor::d_group_end(Varcode code) {}
 
 
 Printer::Printer(const Tables& tables)
-    : Visitor(tables), out(stdout), btable(0), indent(0), indent_step(2)
+    : Visitor(tables), out(stdout), indent(0), indent_step(2)
 {
 }
 
@@ -182,14 +182,14 @@ void Printer::print_lead(Varcode code)
 void Printer::b_variable(Varcode code)
 {
     print_lead(code);
-    if (btable)
+    if (tables.btable)
     {
-        if (btable->contains(code))
+        if (tables.btable->contains(code))
         {
-            Varinfo info = btable->query(code);
+            Varinfo info = tables.btable->query(code);
             fprintf(out, " %s[%s]", info->desc, info->unit);
         } else
-            fprintf(out, " (missing in B table %s)", btable->pathname().c_str());
+            fprintf(out, " (missing in B table %s)", tables.btable->pathname().c_str());
     }
     putc('\n', out);
 }
@@ -212,7 +212,7 @@ void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
         fprintf(out, " (delayed %d%02d%03d) times\n",
                 WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code));
     indent += indent_step;
-    DDSInterpreter interpreter(*tables, ops, *this);
+    DDSInterpreter interpreter(tables, ops, *this);
     interpreter.run();
     indent -= indent_step;
 }

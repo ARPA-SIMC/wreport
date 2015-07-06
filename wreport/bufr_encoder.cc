@@ -121,7 +121,7 @@ struct DDSEncoder : public bulletin::BaseParser
 
         if (count == 0)
         {
-            Varinfo info = tables->btable->query(delayed_code);
+            Varinfo info = tables.btable->query(delayed_code);
             count = var.info()->len;
             ob.add_bits(count, info->bit_len);
         }
