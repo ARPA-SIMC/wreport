@@ -170,7 +170,7 @@ struct CrexParser : public bulletin::Parser
     CrexInput& in;
     Subset* out;
 
-    CrexParser(CrexInput& in) : in(in) {}
+    CrexParser(Tables& tables, CrexInput& in) : bulletin::Parser(tables), in(in) {}
 
     /// Notify the start of a subset
     //virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
@@ -231,9 +231,7 @@ void Decoder::decode_data()
     /* Decode crex section 2 (data section) */
     in.mark_section_start(2);
 
-    CrexParser parser(in);
-    parser.btable = out.tables.btable;
-    parser.dtable = out.tables.dtable;
+    CrexParser parser(out.tables, in);
 
     // Scan the various subsections
     for (unsigned i = 0; ; ++i)
@@ -243,7 +241,7 @@ void Decoder::decode_data()
 
         parser.out = &current_subset;
         parser.do_start_subset(i, current_subset);
-        Interpreter interpreter(*parser.dtable, out.datadesc, parser);
+        Interpreter interpreter(*parser.tables, out.datadesc, parser);
         interpreter.run();
 
         in.skip_spaces();

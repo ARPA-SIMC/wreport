@@ -36,7 +36,7 @@ struct PrintVars : public BulletinFullHandler
     }
 
     /// Dump the contents of a message
-    virtual void handle(const wreport::Bulletin& b)
+    void handle(wreport::Bulletin& b) override
     {
         for (size_t sset = 0; sset < b.subsets.size(); ++sset)
         {

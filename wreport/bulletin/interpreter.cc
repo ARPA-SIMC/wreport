@@ -3,6 +3,7 @@
 #include "wreport/notes.h"
 #include "wreport/dtable.h"
 #include "wreport/vartable.h"
+#include "wreport/tables.h"
 
 namespace wreport {
 namespace bulletin {
@@ -132,7 +133,7 @@ void Interpreter::run()
             case 3:
             {
                 visitor.d_group_begin(cur);
-                Interpreter interpreter(dtable, dtable.query(cur), visitor);
+                Interpreter interpreter(tables, tables.dtable->query(cur), visitor);
                 interpreter.run();
                 visitor.d_group_end(cur);
                 break;
@@ -145,8 +146,8 @@ void Interpreter::run()
 }
 
 
-Visitor::Visitor() : dtable(0) {}
-Visitor::Visitor(const DTable& dtable) : dtable(&dtable) {}
+Visitor::Visitor() : tables(nullptr) {}
+Visitor::Visitor(Tables& tables) : tables(&tables) {}
 Visitor::~Visitor() {}
 void Visitor::b_variable(Varcode code) {}
 void Visitor::c_modifier(Varcode code) {}
@@ -210,7 +211,7 @@ void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
         fprintf(out, " (delayed %d%02d%03d) times\n",
                 WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code));
     indent += indent_step;
-    Interpreter interpreter(*dtable, ops, *this);
+    Interpreter interpreter(*tables, ops, *this);
     interpreter.run();
     indent -= indent_step;
 }

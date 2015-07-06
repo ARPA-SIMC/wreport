@@ -242,13 +242,13 @@ const Var* AssociatedField::get_attribute(const Var& var) const
 }
 
 
-Parser::Parser() : btable(0), current_subset(0) {}
-Parser::Parser(const DTable& dtable) : Visitor(dtable), btable(0), current_subset(0) {}
+Parser::Parser() : Visitor(), current_subset(0) {}
+Parser::Parser(Tables& tables) : Visitor(tables), current_subset(0) {}
 Parser::~Parser() {}
 
 Varinfo Parser::get_varinfo(Varcode code)
 {
-    Varinfo peek = btable->query(code);
+    Varinfo peek = tables->btable->query(code);
 
     if (!c_scale_change && !c_width_change && !c_string_len_override && !c_scale_ref_width_increase)
         return peek;
@@ -282,7 +282,7 @@ Varinfo Parser::get_varinfo(Varcode code)
     }
 
     TRACE("get_info:requesting alteration scale:%d, bit_len:%d\n", scale, bit_len);
-    return btable->query_altered(code, scale, bit_len);
+    return tables->btable->query_altered(code, scale, bit_len);
 }
 
 void Parser::b_variable(Varcode code)
@@ -341,7 +341,7 @@ void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
     if (WR_VAR_Y(code))
     {
         // Get encoding informations for this associated_field_significance
-        Varinfo info = btable->query(WR_VAR(0, 31, 21));
+        Varinfo info = tables->btable->query(WR_VAR(0, 31, 21));
 
         // Encode B31021
         const Var& var = do_semantic_var(info);
@@ -362,7 +362,7 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
     if (WR_VAR_Y(code))
     {
         bool skip = true;
-        if (btable->contains(desc_code))
+        if (tables->btable->contains(desc_code))
         {
             Varinfo info = get_varinfo(desc_code);
             if (info->bit_len == WR_VAR_Y(code))
@@ -375,7 +375,7 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
         }
         if (skip)
         {
-            Varinfo info = current_subset->bulletin->tables.local_vartable->get_unknown(desc_code, WR_VAR_Y(code));
+            Varinfo info = tables->get_unknown(desc_code, WR_VAR_Y(code));
             do_var(info);
         }
         ++data_pos;
@@ -449,7 +449,7 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
     } else {
         if (count == 0)
         {
-            Varinfo info = btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
+            Varinfo info = tables->btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
             const Var& var = do_semantic_var(info);
             if (var.code() == WR_VAR(0, 31, 0))
             {
@@ -470,7 +470,7 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
         for (unsigned i = 0; i < count; ++i)
         {
             do_start_repetition(i);
-            Interpreter interpreter(*dtable, ops, *this);
+            Interpreter interpreter(*tables, ops, *this);
             interpreter.run();
         }
     }
@@ -487,7 +487,7 @@ void Parser::do_start_subset(unsigned subset_no, const Subset& current_subset)
     c_string_len_override = 0;
     c_scale_ref_width_increase = 0;
     bitmap.reset();
-    associated_field.reset(*btable);
+    associated_field.reset(*tables->btable);
     want_bitmap = 0;
     data_pos = 0;
 }
@@ -497,10 +497,8 @@ void Parser::do_start_repetition(unsigned idx) {}
 
 
 BaseParser::BaseParser(Bulletin& bulletin)
-    : bulletin(bulletin), current_subset_no(0)
+    : Parser(bulletin.tables), bulletin(bulletin), current_subset_no(0)
 {
-    btable = bulletin.tables.btable;
-    dtable = bulletin.tables.dtable;
 }
 
 Var& BaseParser::get_var()
@@ -530,48 +528,6 @@ void BaseParser::do_start_subset(unsigned subset_no, const Subset& current_subse
 }
 
 const Var& BaseParser::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
-{
-    const Var& var = get_var();
-    if (WR_VAR_F(var.code()) != 2)
-        error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
-                current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-    return var;
-}
-
-
-ConstBaseParser::ConstBaseParser(const Bulletin& bulletin)
-    : bulletin(bulletin), current_subset_no(0)
-{
-    btable = bulletin.tables.btable;
-    dtable = bulletin.tables.dtable;
-}
-
-const Var& ConstBaseParser::get_var()
-{
-    const Var& res = get_var(current_var);
-    ++current_var;
-    return res;
-}
-
-const Var& ConstBaseParser::get_var(unsigned var_pos) const
-{
-    unsigned max_var = current_subset->size();
-    if (var_pos >= max_var)
-        error_consistency::throwf("requested variable #%u out of a maximum of %u in subset %u",
-                var_pos, max_var, current_subset_no);
-    return (*current_subset)[var_pos];
-}
-
-void ConstBaseParser::do_start_subset(unsigned subset_no, const Subset& current_subset)
-{
-    Parser::do_start_subset(subset_no, current_subset);
-    if (subset_no >= bulletin.subsets.size())
-        error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
-    current_subset_no = subset_no;
-    current_var = 0;
-}
-
-const Var& ConstBaseParser::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)

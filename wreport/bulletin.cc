@@ -28,7 +28,6 @@
 #include "bulletin/dds-printer.h"
 #include "bulletin/buffers.h"
 #include "bulletin/internals.h"
-#include "internals/tabledir.h"
 #include "notes.h"
 
 #include <cstddef>
@@ -43,59 +42,6 @@ namespace wreport {
 
 namespace bulletin {
 
-Tables::Tables()
-    : btable(0), dtable(0), local_vartable(new bulletin::LocalVartable)
-{
-}
-
-Tables::Tables(Tables&& o)
-    : btable(o.btable), dtable(o.dtable), local_vartable(o.local_vartable)
-{
-    o.local_vartable = nullptr;
-}
-
-Tables::~Tables()
-{
-    delete local_vartable;
-}
-
-Tables& Tables::operator=(Tables&& o)
-{
-    if (this == &o) return *this;
-    btable = o.btable;
-    dtable = o.dtable;
-    local_vartable = o.local_vartable;
-    o.local_vartable = nullptr;
-    return *this;
-}
-
-bool Tables::loaded() const
-{
-    return btable && dtable;
-}
-
-void Tables::clear()
-{
-    btable = 0;
-    dtable = 0;
-    local_vartable->clear();
-}
-
-void Tables::load_bufr(int centre, int subcentre, int master_table, int local_table)
-{
-    auto tabledir = tabledir::Tabledir::get();
-    auto t = tabledir.find_bufr(centre, subcentre, master_table, local_table);
-    btable = t->btable;
-    dtable = t->dtable;
-}
-
-void Tables::load_crex(int master_table_number, int edition, int table)
-{
-    auto tabledir = tabledir::Tabledir::get();
-    auto t = tabledir.find_crex(master_table_number, edition, table);
-    btable = t->btable;
-    dtable = t->dtable;
-}
 
 }
 
@@ -116,7 +62,7 @@ void Bulletin::clear()
 Subset& Bulletin::obtain_subset(unsigned subsection)
 {
     while (subsection >= subsets.size())
-        subsets.emplace_back(this);
+        subsets.emplace_back(tables);
     return subsets[subsection];
 }
 
@@ -231,28 +177,27 @@ void CrexBulletin::encode(std::string& buf) const
 }
 */
 
-void Bulletin::visit_datadesc(bulletin::Visitor& e) const
+void Bulletin::visit_datadesc(bulletin::Visitor& e)
 {
-    bulletin::Interpreter interpreter(*tables.dtable, datadesc, e);
+    bulletin::Interpreter interpreter(tables, datadesc, e);
     interpreter.run();
 }
 
-void Bulletin::visit(bulletin::Parser& out) const
+void Bulletin::visit(bulletin::Parser& out)
 {
-    out.btable = tables.btable;
-    out.dtable = tables.dtable;
+    out.tables = &tables;
 
     /* Run all the subsets, uncompressed */
     for (unsigned i = 0; i < subsets.size(); ++i)
     {
         /* Encode the data of this subset */
         out.do_start_subset(i, subsets[i]);
-        bulletin::Interpreter interpreter(*tables.dtable, datadesc, out);
+        bulletin::Interpreter interpreter(tables, datadesc, out);
         interpreter.run();
     }
 }
 
-void Bulletin::print(FILE* out) const
+void Bulletin::print(FILE* out)
 {
 	fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
 		encoding_name(), edition,
@@ -278,7 +223,7 @@ void Bulletin::print(FILE* out) const
 	}
 }
 
-void Bulletin::print_structured(FILE* out) const
+void Bulletin::print_structured(FILE* out)
 {
     fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
             encoding_name(), edition,
@@ -311,15 +256,14 @@ void CrexBulletin::print_details(FILE* out) const
 	fprintf(out, " CREX details: T%02d%02d%02d cd%d\n", master_table_number, edition, table, (int)has_check_digit);
 }
 
-void Bulletin::print_datadesc(FILE* out, unsigned indent) const
+void Bulletin::print_datadesc(FILE* out, unsigned indent)
 {
     bulletin::Printer printer;
     printer.out = out;
-    printer.btable = tables.btable;
-    printer.dtable = tables.dtable;
+    printer.tables = &tables;
     printer.indent = indent;
 
-    bulletin::Interpreter interpreter(*tables.dtable, datadesc, printer);
+    bulletin::Interpreter interpreter(tables, datadesc, printer);
     interpreter.run();
 }
 

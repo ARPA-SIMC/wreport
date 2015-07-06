@@ -66,13 +66,12 @@ namespace wreport {
 
 namespace {
 
-struct DDSEncoder : public bulletin::ConstBaseParser
+struct DDSEncoder : public bulletin::BaseParser
 {
     bulletin::BufrOutput& ob;
 
-    DDSEncoder(const Bulletin& b, bulletin::BufrOutput& ob) : ConstBaseParser(b), ob(ob)
+    DDSEncoder(Bulletin& b, bulletin::BufrOutput& ob) : BaseParser(b), ob(ob)
     {
-        btable = b.tables.btable;
     }
     virtual ~DDSEncoder() {}
 
@@ -122,7 +121,7 @@ struct DDSEncoder : public bulletin::ConstBaseParser
 
         if (count == 0)
         {
-            Varinfo info = btable->query(delayed_code);
+            Varinfo info = tables->btable->query(delayed_code);
             count = var.info()->len;
             ob.add_bits(count, info->bit_len);
         }
@@ -152,7 +151,7 @@ struct DDSEncoder : public bulletin::ConstBaseParser
 struct Encoder
 {
     /* Input message data */
-    const BufrBulletin& in;
+    BufrBulletin& in;
     /// Output buffer
     bulletin::BufrOutput out;
 
@@ -162,7 +161,7 @@ struct Encoder
     /// Offset of the start of BUFR sections
     int sec[6];
 
-    Encoder(const BufrBulletin& in, std::string& out)
+    Encoder(BufrBulletin& in, std::string& out)
         : in(in), out(out)
     {
         for (int i = 0; i < 6; ++i)
@@ -396,7 +395,7 @@ void Encoder::run()
 
 } // Unnamed namespace
 
-void BufrBulletin::encode(std::string& out) const
+void BufrBulletin::encode(std::string& out)
 {
     Encoder e(*this, out);
     e.run();

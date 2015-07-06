@@ -22,9 +22,8 @@
 #include <config.h>
 
 #include "subset.h"
-#include "bulletin.h"
+#include "tables.h"
 #include "notes.h"
-#include "bulletin/internals.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -34,9 +33,9 @@ using namespace std;
 
 namespace wreport {
 
-Subset::Subset(Bulletin* bulletin) : bulletin(bulletin)
+Subset::Subset(Tables& tables) : tables(&tables)
 {
-    if (!bulletin->tables.loaded()) throw error_consistency("BUFR/CREX tables not loaded");
+    if (!tables.loaded()) throw error_consistency("BUFR/CREX tables not loaded");
 }
 Subset::~Subset() {}
 
@@ -47,37 +46,37 @@ void Subset::store_variable(const Var& var)
 
 void Subset::store_variable(Varcode code, const Var& var)
 {
-    Varinfo info = bulletin->tables.btable->query(code);
+    Varinfo info = tables->btable->query(code);
     push_back(Var(info, var));
 }
 
 void Subset::store_variable_i(Varcode code, int val)
 {
-    Varinfo info = bulletin->tables.btable->query(code);
+    Varinfo info = tables->btable->query(code);
     push_back(Var(info, val));
 }
 
 void Subset::store_variable_d(Varcode code, double val)
 {
-    Varinfo info = bulletin->tables.btable->query(code);
+    Varinfo info = tables->btable->query(code);
     push_back(Var(info, val));
 }
 
 void Subset::store_variable_c(Varcode code, const char* val)
 {
-    Varinfo info = bulletin->tables.btable->query(code);
+    Varinfo info = tables->btable->query(code);
     push_back(Var(info, val));
 }
 
 void Subset::store_variable_undef(Varcode code)
 {
-    Varinfo info = bulletin->tables.btable->query(code);
+    Varinfo info = tables->btable->query(code);
     push_back(Var(info));
 }
 
 void Subset::append_c_with_dpb(Varcode ccode, int count, const char* bitmap)
 {
-    Varinfo info = bulletin->tables.local_vartable->get_bitmap_entry(ccode, count);
+    Varinfo info = tables->get_bitmap_entry(ccode, count);
 
 	/* Create the Var with the bitmap */
 	Var var(info, bitmap);
@@ -185,10 +184,10 @@ void Subset::print(FILE* out) const
 unsigned Subset::diff(const Subset& s2) const
 {
     // Compare btables
-    if (bulletin->tables.btable->pathname() != s2.bulletin->tables.btable->pathname())
+    if (tables->btable->pathname() != s2.tables->btable->pathname())
     {
         notes::logf("B tables differ (first is %s, second is %s)\n",
-                bulletin->tables.btable->pathname().c_str(), s2.bulletin->tables.btable->pathname().c_str());
+                tables->btable->pathname().c_str(), s2.tables->btable->pathname().c_str());
         return 1;
     }
 

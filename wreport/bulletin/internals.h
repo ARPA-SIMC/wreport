@@ -37,70 +37,6 @@ struct Bulletin;
 namespace bulletin {
 
 /**
- * Storage for non-B-table Varinfo entries used locally in a Bulletin
- */
-struct LocalVartable
-{
-    struct Entry
-    {
-        _Varinfo varinfo;
-        Entry* next = nullptr;
-    };
-
-    Entry* first = nullptr;
-
-    LocalVartable() {}
-    LocalVartable(const LocalVartable&) = delete;
-    LocalVartable(LocalVartable&&) = delete;
-    ~LocalVartable() { clear(); }
-    LocalVartable operator=(const LocalVartable&) = delete;
-    LocalVartable operator=(LocalVartable&&) = delete;
-
-    void clear()
-    {
-        while (first)
-        {
-            Entry* next = first->next;
-            delete first;
-            first = next;
-        }
-    }
-
-    // Create a single use varinfo to store the bitmap
-    _Varinfo* new_entry()
-    {
-        std::unique_ptr<Entry> entry(new Entry);
-        entry->next = first;
-        first = entry.release();
-        return &(first->varinfo);
-    }
-
-    // Create a varinfo to store the bitmap
-    Varinfo get_bitmap_entry(Varcode code, unsigned size)
-    {
-        auto res = new_entry();
-        res->set_string(code, "DATA PRESENT BITMAP", size);
-        return res;
-    }
-
-    // Create a varinfo to store character data
-    Varinfo get_chardata_entry(Varcode code, unsigned size)
-    {
-        auto res = new_entry();
-        res->set_string(code, "CHARACTER DATA", size);
-        return res;
-    }
-
-    // Create a varinfo to store a C06 unknown local descriptor
-    Varinfo get_unknown(Varcode code, unsigned bit_len)
-    {
-        auto res = new_entry();
-        res->set_binary(code, "UNKNOWN LOCAL DESCRIPTOR", bit_len);
-        return res;
-    }
-};
-
-/**
  * Associate a Data Present Bitmap to decoded variables in a subset
  */
 struct Bitmap
@@ -222,9 +158,6 @@ struct AssociatedField
  */
 struct Parser : public bulletin::Visitor
 {
-    /// B table used to resolve variable information
-    const Vartable* btable;
-
     /// Current subset (used to refer to past variables)
     const Subset* current_subset;
 
@@ -262,7 +195,7 @@ struct Parser : public bulletin::Visitor
 
 
     Parser();
-    Parser(const DTable& dtable);
+    Parser(Tables& tables);
     virtual ~Parser();
 
     /**
@@ -370,32 +303,6 @@ struct BaseParser : public Parser
     Var& get_var();
     /// Get the variable at the given position
     Var& get_var(unsigned var_pos) const;
-
-    virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
-    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
-};
-
-/**
- * Common bulletin::Parser base for visitors that do not modify the bulletin.
- *
- * This assumes a fully decoded bulletin.
- */
-struct ConstBaseParser : public Parser
-{
-    /// Bulletin being visited
-    const Bulletin& bulletin;
-    /// Index of the subset being visited
-    unsigned current_subset_no;
-    /// Index of the next variable to be visited
-    unsigned current_var;
-
-    /// Create visitor for the given bulletin
-    ConstBaseParser(const Bulletin& bulletin);
-
-    /// Get the next variable
-    const Var& get_var();
-    /// Get the variable at the given position
-    const Var& get_var(unsigned var_pos) const;
 
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
     virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);

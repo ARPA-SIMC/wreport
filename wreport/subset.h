@@ -32,7 +32,7 @@
 #include <vector>
 
 namespace wreport {
-struct Bulletin;
+struct Tables;
 
 /**
  * Represent a BUFR/CREX data subset as a list of decoded variables
@@ -40,18 +40,18 @@ struct Bulletin;
 struct Subset : public std::vector<Var>
 {
     // Bulletin owning this subset
-    Bulletin* bulletin;
+    Tables* tables;
 
-	/**
-	 * Create a new BUFR/CREX subset.
-	 *
-	 * @param btable
-	 *   Reference to the B table to use to create variables.
-	 */
-    Subset(Bulletin* bulletin);
+    /**
+     * Create a new BUFR/CREX subset.
+     *
+     * @param btable
+     *   Reference to the B table to use to create variables.
+     */
+    Subset(Tables& tables);
     Subset(const Subset& subset) = default;
     Subset(Subset&& subset)
-        : std::vector<Var>(move(subset)), bulletin(subset.bulletin)
+        : std::vector<Var>(move(subset)), tables(subset.tables)
     {
     }
     ~Subset();
@@ -60,7 +60,7 @@ struct Subset : public std::vector<Var>
     {
         if (this == &s) return *this;
         std::vector<Var>::operator=(s);
-        bulletin = s.bulletin;
+        tables = s.tables;
         return *this;
     }
 
@@ -90,7 +90,7 @@ struct Subset : public std::vector<Var>
 
 	/**
 	 * Store a new variable in the message, providing its value as a double
-	 bulletin->*
+	 *
 	 * @param code
 	 *   The Varcode of the variable to add.  See @ref vartable.h
 	 * @param val

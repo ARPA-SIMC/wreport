@@ -83,7 +83,7 @@ struct BulletinHeadHandler : public RawHandler
     /// Decode and handle the decoded bulletin
     virtual void handle_raw_crex(const std::string& raw_data, const char* fname, long offset);
 
-    virtual void handle(const wreport::Bulletin&) = 0;
+    virtual void handle(wreport::Bulletin&) = 0;
 };
 
 // Interface for classes that process bulletins, parsing full messages
@@ -97,7 +97,7 @@ struct BulletinFullHandler : public RawHandler
     /// Decode and handle the decoded bulletin
     virtual void handle_raw_crex(const std::string& raw_data, const char* fname, long offset);
 
-    virtual void handle(const wreport::Bulletin&) = 0;
+    virtual void handle(wreport::Bulletin&) = 0;
 };
 
 // Signature for functions that read bulletins from a file

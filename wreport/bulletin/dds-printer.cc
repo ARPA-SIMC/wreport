@@ -26,8 +26,8 @@ using namespace std;
 namespace wreport {
 namespace bulletin {
 
-DDSPrinter::DDSPrinter(const Bulletin& b, FILE* out)
-    : ConstBaseParser(b), out(out)
+DDSPrinter::DDSPrinter(Bulletin& b, FILE* out)
+    : BaseParser(b), out(out)
 {
 }
 
@@ -49,26 +49,26 @@ void DDSPrinter::print_context(Varcode code, unsigned var_pos)
 
 void DDSPrinter::d_group_begin(Varcode code)
 {
-    ConstBaseParser::d_group_begin(code);
+    BaseParser::d_group_begin(code);
     stack.push_back(code);
 }
 
 void DDSPrinter::d_group_end(Varcode code)
 {
-    ConstBaseParser::d_group_end(code);
+    BaseParser::d_group_end(code);
     stack.pop_back();
 }
 
 void DDSPrinter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     stack.push_back(code);
-    ConstBaseParser::r_replication(code, delayed_code, ops);
+    BaseParser::r_replication(code, delayed_code, ops);
     stack.pop_back();
 }
 
 void DDSPrinter::do_start_subset(unsigned subset_no, const Subset& current_subset)
 {
-    ConstBaseParser::do_start_subset(subset_no, current_subset);
+    BaseParser::do_start_subset(subset_no, current_subset);
     stack.clear();
 }
 
@@ -113,10 +113,10 @@ const Var& DDSPrinter::do_semantic_var(Varinfo info)
 
 const Var& DDSPrinter::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
-    const Var& res = ConstBaseParser::do_bitmap(code, rep_code, delayed_code, ops);
+    const Var& res = BaseParser::do_bitmap(code, rep_code, delayed_code, ops);
     if (delayed_code)
     {
-        Varinfo info = btable->query(delayed_code);
+        Varinfo info = tables->btable->query(delayed_code);
         print_context(info, 0);
         Var var(info, (int)res.info()->len);
         var.print(out);

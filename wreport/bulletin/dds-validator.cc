@@ -27,8 +27,8 @@ using namespace std;
 namespace wreport {
 namespace bulletin {
 
-DDSValidator::DDSValidator(const Bulletin& b)
-    : ConstBaseParser(b)
+DDSValidator::DDSValidator(Bulletin& b)
+    : BaseParser(b)
 {
     is_crex = dynamic_cast<const CrexBulletin*>(&b) != NULL;
 }

@@ -29,7 +29,7 @@ struct PrintContents : public BulletinFullHandler
     PrintContents(FILE* out=stderr) : out(out) {}
 
     /// Dump the contents of a message
-    virtual void handle(const wreport::Bulletin& b)
+    void handle(wreport::Bulletin& b) override
     {
         b.print(out);
     }
@@ -41,7 +41,7 @@ struct PrintStructure : public BulletinFullHandler
     PrintStructure(FILE* out=stderr) : out(out) {}
 
     /// Dump the contents of a message, with structure
-    virtual void handle(const wreport::Bulletin& b)
+    void handle(wreport::Bulletin& b) override
     {
         b.print_structured(out);
     }
@@ -53,7 +53,7 @@ struct PrintDDS : public BulletinHeadHandler
     PrintDDS(FILE* out=stderr) : out(out) {}
 
     /// Dump the contents of the Data Descriptor Section a message
-    virtual void handle(const wreport::Bulletin& b)
+    void handle(wreport::Bulletin& b) override
     {
         b.print_datadesc(out);
     }
@@ -66,7 +66,7 @@ struct PrintTables : public BulletinHeadHandler
     PrintTables(FILE* out=stderr) : out(out), header_printed(false) {}
 
     /// Dump the contents of the Data Descriptor Section a message
-    virtual void handle(const wreport::Bulletin& b)
+    void handle(wreport::Bulletin& b) override
     {
         if (const BufrBulletin* m = dynamic_cast<const BufrBulletin*>(&b))
         {

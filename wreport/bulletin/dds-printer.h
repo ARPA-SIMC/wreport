@@ -33,7 +33,7 @@ namespace bulletin {
 /**
  * bulletin::Visitor that prints the bulletin contents and its structure
  */
-class DDSPrinter : public ConstBaseParser
+class DDSPrinter : public BaseParser
 {
     std::vector<Varcode> stack;
     FILE* out;
@@ -50,7 +50,7 @@ public:
      * @param out
      *   FILE to print to
      */
-    DDSPrinter(const Bulletin& b, FILE* out);
+    DDSPrinter(Bulletin& b, FILE* out);
     virtual ~DDSPrinter();
 
     virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);

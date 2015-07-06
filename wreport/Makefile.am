@@ -26,6 +26,7 @@ nobase_dist_wreportinclude_HEADERS = \
 	subset.h \
 	internals/fs.h \
 	internals/tabledir.h \
+	tables.h \
 	var.h \
 	varinfo.h \
 	vartable.h \
@@ -50,6 +51,7 @@ libwreport_la_SOURCES = \
 	var.cc \
 	opcode.cc \
 	dtable.cc \
+	tables.cc \
 	subset.cc \
 	bulletin.cc \
 	bulletin/interpreter.cc \
@@ -112,6 +114,7 @@ tut_test_SOURCES = \
 	var-tut.cc \
 	opcode-tut.cc \
 	dtable-tut.cc \
+	tables-tut.cc \
 	bulletin-tut.cc \
 	bufr_decoder-tut.cc \
 	bufr_decoder1-tut.cc \

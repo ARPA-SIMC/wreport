@@ -31,6 +31,7 @@
 #include <wreport/var.h>
 #include <wreport/subset.h>
 #include <wreport/opcode.h>
+#include <wreport/tables.h>
 #include <vector>
 #include <memory>
 
@@ -45,31 +46,6 @@ struct Visitor;
 struct Parser;
 struct BufrInput;
 struct LocalVartable;
-
-struct Tables
-{
-    /// vartable used to lookup B table codes
-    const Vartable* btable;
-    /// dtable used to lookup D table codes
-    const DTable* dtable;
-    /// Storage for temporary Varinfos for bitmaps and character data
-    bulletin::LocalVartable* local_vartable;
-
-    Tables();
-    Tables(const Tables&) = delete;
-    Tables(Tables&&);
-    ~Tables();
-
-    Tables& operator=(const Tables&) = delete;
-    Tables& operator=(Tables&&);
-
-    bool loaded() const;
-
-    void clear();
-    void load_bufr(int centre, int subcentre, int master_table, int local_table);
-    void load_crex(int master_table_number, int edition, int table);
-};
-
 }
 
 /**
@@ -130,7 +106,7 @@ struct Bulletin
 	int rep_second;	/**< Second */
 	/** @} */
 
-    bulletin::Tables tables;
+    Tables tables;
 
 	/** Parsed data descriptor section */
 	std::vector<Varcode> datadesc;
@@ -198,32 +174,28 @@ struct Bulletin
 	 */
 	virtual void decode(const std::string& buf, const char* fname="(memory)", size_t offset=0) = 0;
 
-	/**
-	 * Encode the message
-	 */
-	virtual void encode(std::string& buf) const = 0;
+    /**
+     * Encode the message
+     */
+    virtual void encode(std::string& buf) = 0;
 
     /**
      * Walk the structure of the data descriptor section sending events to an
      * opcode::Explorer
      */
-    void visit_datadesc(bulletin::Visitor& e) const;
+    void visit_datadesc(bulletin::Visitor& e);
 
     /**
      * Run the Data Descriptor Section interpreter, sending commands to \a
      * executor
      */
-    void visit(bulletin::Parser& out) const;
+    void visit(bulletin::Parser& out);
 
-	/**
-	 * Dump the contents of this bulletin
-	 */
-	void print(FILE* out) const;
+    /// Dump the contents of this bulletin
+    void print(FILE* out);
 
-    /**
-     * Dump the contents of this bulletin, in a more structured way
-     */
-    void print_structured(FILE* out) const;
+    /// Dump the contents of this bulletin, in a more structured way
+    void print_structured(FILE* out);
 
     /// Print format-specific details
     virtual void print_details(FILE* out) const;
@@ -236,7 +208,7 @@ struct Bulletin
      * @param indent
      *   Indent all output by this amount of spaces
      */
-    void print_datadesc(FILE* out, unsigned indent=0) const;
+    void print_datadesc(FILE* out, unsigned indent=0);
 
     /**
      * Compute the differences between two bulletins
@@ -333,14 +305,14 @@ struct BufrBulletin : public Bulletin
 
 	virtual ~BufrBulletin();
 
-	void clear();
-	virtual const char* encoding_name() const throw () { return "BUFR"; }
-	virtual void load_tables();
-	virtual void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0);
-	virtual void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
-	virtual void encode(std::string& buf) const;
-	virtual void print_details(FILE* out) const;
-    virtual unsigned diff_details(const Bulletin& msg) const;
+    void clear();
+    const char* encoding_name() const throw () override { return "BUFR"; }
+    void load_tables() override;
+    void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
+    void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
+    void encode(std::string& buf) override;
+    void print_details(FILE* out) const override;
+    unsigned diff_details(const Bulletin& msg) const override;
 
     /**
      * Create or reset the raw_details structure for this bulletin.
@@ -399,14 +371,14 @@ struct CrexBulletin : public Bulletin
 	/** True if the CREX message uses the check digit feature */
 	bool has_check_digit;
 
-	void clear();
-	virtual const char* encoding_name() const throw () { return "CREX"; }
-	virtual void load_tables();
-	virtual void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0);
-	virtual void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
-	virtual void encode(std::string& buf) const;
-	virtual void print_details(FILE* out) const;
-    virtual unsigned diff_details(const Bulletin& msg) const;
+    void clear();
+    const char* encoding_name() const throw () override { return "CREX"; }
+    void load_tables() override;
+    void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
+    void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
+    void encode(std::string& buf) override;
+    void print_details(FILE* out) const override;
+    unsigned diff_details(const Bulletin& msg) const override;
 
 	/**
 	 * Read an encoded BUFR message from a stream

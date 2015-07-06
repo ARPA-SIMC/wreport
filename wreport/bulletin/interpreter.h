@@ -1,20 +1,24 @@
+#ifndef WREPORT_BULLETIN_INTERPETER_H
+#define WREPORT_BULLETIN_INTERPETER_H
+
 #include <wreport/opcode.h>
 
 namespace wreport {
 struct Vartable;
 struct DTable;
+struct Tables;
 
 namespace bulletin {
 struct Visitor;
 
 struct Interpreter
 {
-    const DTable& dtable;
+    const Tables& tables;
     Opcodes opcodes;
     Visitor& visitor;
 
-    Interpreter(const DTable& dtable, Opcodes opcodes, Visitor& visitor)
-        : dtable(dtable), opcodes(opcodes), visitor(visitor)
+    Interpreter(const Tables& tables, Opcodes opcodes, Visitor& visitor)
+        : tables(tables), opcodes(opcodes), visitor(visitor)
     {
     }
 
@@ -39,10 +43,10 @@ struct Visitor
      *
      * This must be provided by the caller
      */
-    const DTable* dtable;
+    Tables* tables;
 
     Visitor();
-    Visitor(const DTable& dtable);
+    Visitor(Tables& tables);
     virtual ~Visitor();
 
     /**
@@ -262,3 +266,4 @@ public:
 
 }
 }
+#endif

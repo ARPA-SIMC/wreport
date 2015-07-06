@@ -52,7 +52,7 @@ std::string slurpfile(const std::string& name);
  */
 std::vector<std::string> all_test_files(const std::string& encoding);
 
-void track_bulletin(const Bulletin& b, const char* tag, const char* fname);
+void track_bulletin(Bulletin& b, const char* tag, const char* fname);
 
 template<typename BULLETIN>
 struct MsgTester

@@ -78,7 +78,7 @@ std::vector<std::string> all_test_files(const std::string& encoding)
     return res;
 }
 
-void track_bulletin(const Bulletin& b, const char* tag, const char* fname)
+void track_bulletin(Bulletin& b, const char* tag, const char* fname)
 {
     string dumpfname = "/tmp/bulletin-" + str::basename(fname) + "-" + tag;
     FILE* out = fopen(dumpfname.c_str(), "wt");

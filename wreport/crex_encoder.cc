@@ -30,17 +30,17 @@ namespace wreport {
 
 namespace {
 
-struct DDSEncoder : public bulletin::ConstBaseParser
+struct DDSEncoder : public bulletin::BaseParser
 {
     bulletin::CrexOutput& ob;
 
-    DDSEncoder(const Bulletin& b, bulletin::CrexOutput& ob) : ConstBaseParser(b), ob(ob) {}
+    DDSEncoder(Bulletin& b, bulletin::CrexOutput& ob) : BaseParser(b), ob(ob) {}
     virtual ~DDSEncoder() {}
 
     void do_start_subset(unsigned subset_no, const Subset& current_subset)
     {
         TRACE("start_subset %u\n", subset_no);
-        bulletin::ConstBaseParser::do_start_subset(subset_no, current_subset);
+        bulletin::BaseParser::do_start_subset(subset_no, current_subset);
 
         /* Encode the subsection terminator */
         if (subset_no > 0)
@@ -105,29 +105,27 @@ struct DDSEncoder : public bulletin::ConstBaseParser
 
 struct Encoder
 {
-    /* Input message data */
-    const CrexBulletin& in;
-    /* Output decoded variables */
+    // Input message data
+    CrexBulletin& in;
+    // Output decoded variables
     bulletin::CrexOutput out;
 
-	/* Offset of the start of CREX section 1 */
-	int sec1_start;
-	/* Offset of the start of CREX section 2 */
-	int sec2_start;
-	/* Offset of the start of CREX section 3 */
-	int sec3_start;
-	/* Offset of the start of CREX section 4 */
-	int sec4_start;
+    // Offset of the start of CREX section 1
+    int sec1_start = 0;
+    // Offset of the start of CREX section 2
+    int sec2_start = 0;
+    // Offset of the start of CREX section 3
+    int sec3_start = 0;
+    // Offset of the start of CREX section 4
+    int sec4_start = 0;
 
-	/* Subset we are encoding */
-	const Subset* subset;
+    // Subset we are encoding
+    const Subset* subset = nullptr;
 
-	Encoder(const CrexBulletin& in, std::string& out)
-		: in(in), out(out),
-		  sec1_start(0), sec2_start(0), sec3_start(0), sec4_start(0),
-		  subset(0)
-	{
-	}
+    Encoder(CrexBulletin& in, std::string& out)
+        : in(in), out(out)
+    {
+    }
 
     void encode_sec1()
     {
@@ -201,13 +199,11 @@ struct Encoder
 
 } // Unnamed namespace
 
-void CrexBulletin::encode(std::string& buf) const
+void CrexBulletin::encode(std::string& buf)
 {
-	Encoder e(*this, buf);
-	e.run();
-	//out.encoding = CREX;
+    Encoder e(*this, buf);
+    e.run();
+    //out.encoding = CREX;
 }
 
-} // bufrex namespace
-
-/* vim:set ts=4 sw=4: */
+}
