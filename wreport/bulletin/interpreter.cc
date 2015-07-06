@@ -5,6 +5,16 @@
 #include "wreport/vartable.h"
 #include "wreport/tables.h"
 
+// #define TRACE_INTERPRETER
+
+#ifdef TRACE_INTERPRETER
+#define TRACE(...) fprintf(stderr, __VA_ARGS__)
+#define IFTRACE if (1)
+#else
+#define TRACE(...) do { } while (0)
+#define IFTRACE if (0)
+#endif
+
 namespace wreport {
 namespace bulletin {
 
@@ -149,13 +159,41 @@ void DDSInterpreter::run()
 
 
 void DDSInterpreter::b_variable(Varcode code) {}
-void DDSInterpreter::c_modifier(Varcode code) {}
-void DDSInterpreter::c_change_data_width(Varcode code, int change) {}
-void DDSInterpreter::c_change_data_scale(Varcode code, int change) {}
-void DDSInterpreter::c_increase_scale_ref_width(Varcode code, int change) {}
+void DDSInterpreter::c_modifier(Varcode code)
+{
+    TRACE("C DATA %01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+}
+
+void DDSInterpreter::c_change_data_width(Varcode code, int change)
+{
+    TRACE("Set width change from %d to %d\n", c_width_change, change);
+    c_width_change = change;
+}
+
+void DDSInterpreter::c_change_data_scale(Varcode code, int change)
+{
+    TRACE("Set scale change from %d to %d\n", c_scale_change, change);
+    c_scale_change = change;
+}
+
+void DDSInterpreter::c_increase_scale_ref_width(Varcode code, int change)
+{
+    TRACE("Increase scale, reference value and data width by %d\n", change);
+    c_scale_ref_width_increase = change;
+}
 void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
 void DDSInterpreter::c_char_data(Varcode code) {}
-void DDSInterpreter::c_char_data_override(Varcode code, unsigned new_length) {}
+void DDSInterpreter::c_char_data_override(Varcode code, unsigned new_length)
+{
+    IFTRACE {
+        if (new_length)
+            TRACE("decode_c_data:character size overridden to %d chars for all fields\n", new_length);
+        else
+            TRACE("decode_c_data:character size overridde end\n");
+    }
+    c_string_len_override = new_length;
+}
+
 void DDSInterpreter::c_quality_information_bitmap(Varcode code) {}
 void DDSInterpreter::c_substituted_value_bitmap(Varcode code) {}
 void DDSInterpreter::c_substituted_value(Varcode code) {}

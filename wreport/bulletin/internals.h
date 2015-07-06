@@ -167,21 +167,6 @@ struct Parser : public bulletin::DDSInterpreter
     /// Current associated field state
     AssociatedField associated_field;
 
-    /// Current value of scale change from C modifier
-    int c_scale_change;
-
-    /// Current value of width change from C modifier
-    int c_width_change;
-
-    /**
-     * Current value of string length override from C08 modifiers (0 for no
-     * override)
-     */
-    int c_string_len_override;
-
-    /// Increase of scale, reference value and data width
-    int c_scale_ref_width_increase;
-
     /// Nonzero if a Data Present Bitmap is expected
     Varcode want_bitmap;
 
@@ -257,18 +242,13 @@ struct Parser : public bulletin::DDSInterpreter
     //@{
     /// bulletin::Visitor methods implementation
     virtual void b_variable(Varcode code);
-    virtual void c_modifier(Varcode code);
-    virtual void c_change_data_width(Varcode code, int change);
-    virtual void c_change_data_scale(Varcode code, int change);
     virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
     virtual void c_char_data(Varcode code);
-    virtual void c_char_data_override(Varcode code, unsigned new_length);
     virtual void c_quality_information_bitmap(Varcode code);
     virtual void c_substituted_value_bitmap(Varcode code);
     virtual void c_substituted_value(Varcode code);
     virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
     virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
-    virtual void c_increase_scale_ref_width(Varcode code, int change);
     //@}
 };
 

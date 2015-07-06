@@ -25,6 +25,22 @@ struct DDSInterpreter
     const Tables& tables;
     std::stack<Opcodes> opcode_stack;
 
+    /// Current value of scale change from C modifier
+    int c_scale_change = 0;
+
+    /// Current value of width change from C modifier
+    int c_width_change = 0;
+
+    /// Increase of scale, reference value and data width
+    int c_scale_ref_width_increase = 0;
+
+    /**
+     * Current value of string length override from C08 modifiers (0 for no
+     * override)
+     */
+    int c_string_len_override = 0;
+
+
     DDSInterpreter(const Tables& tables, const Opcodes& opcodes)
         : tables(tables)
     {
