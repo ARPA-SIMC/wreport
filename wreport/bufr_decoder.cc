@@ -472,7 +472,7 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         return var;
     }
 
-    virtual const Var& add_to_all(const Var& var)
+    const Var& add_to_all(const Var& var) override
     {
         const Var* res = 0;
         for (unsigned i = 0; i < subset_count; ++i)
@@ -483,19 +483,19 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         return *res;
     }
 
-    virtual void do_var(Varinfo info)
+    void do_var(Varinfo info) override
     {
         DataSink target(d.out);
         decode_b_value(info, target);
     }
 
-    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override
     {
         AttrSink target(d.out, var_pos);
         decode_b_value(info, target);
     }
 
-    void do_char_data(Varcode code)
+    void do_char_data(Varcode code) override
     {
         // TODO: if compressed, extract the data from each subset? Store it in each dataset?
         error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(code));
