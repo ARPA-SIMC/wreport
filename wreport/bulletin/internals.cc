@@ -242,7 +242,6 @@ const Var* AssociatedField::get_attribute(const Var& var) const
 }
 
 
-Parser::Parser() : Visitor(), current_subset(0) {}
 Parser::Parser(Tables& tables) : Visitor(tables), current_subset(0) {}
 Parser::~Parser() {}
 

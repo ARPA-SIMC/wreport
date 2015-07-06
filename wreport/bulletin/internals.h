@@ -194,7 +194,6 @@ struct Parser : public bulletin::Visitor
     unsigned data_pos;
 
 
-    Parser();
     Parser(Tables& tables);
     virtual ~Parser();
 
