@@ -34,10 +34,16 @@ struct Tables
     Tables& operator=(const Tables&) = delete;
     Tables& operator=(Tables&&);
 
+    /// Check if the B and D tables have been loaded
     bool loaded() const;
 
+    /// Clear btable, datable and all locally generated Varinfos
     void clear();
+
+    /// Load BUFR B and D tables
     void load_bufr(int centre, int subcentre, int master_table, int local_table);
+
+    /// Load CREX B and D tables
     void load_crex(int master_table_number, int edition, int table);
 
     // Create a varinfo to store the bitmap
