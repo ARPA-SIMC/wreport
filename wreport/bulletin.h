@@ -208,7 +208,7 @@ struct Bulletin
      * @param indent
      *   Indent all output by this amount of spaces
      */
-    void print_datadesc(FILE* out, unsigned indent=0);
+    void print_datadesc(FILE* out, unsigned indent=0) const;
 
     /**
      * Compute the differences between two bulletins

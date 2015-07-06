@@ -256,7 +256,7 @@ void CrexBulletin::print_details(FILE* out) const
 	fprintf(out, " CREX details: T%02d%02d%02d cd%d\n", master_table_number, edition, table, (int)has_check_digit);
 }
 
-void Bulletin::print_datadesc(FILE* out, unsigned indent)
+void Bulletin::print_datadesc(FILE* out, unsigned indent) const
 {
     bulletin::Printer printer(tables);
     printer.out = out;
