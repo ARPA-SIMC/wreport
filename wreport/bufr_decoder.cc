@@ -530,7 +530,8 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
     // Bitmap size is now in count
 
     // Read the bitmap
-    char buf[count + 1];
+    string buf;
+    buf.resize(count);
     if (d.out.compression)
     {
         for (unsigned i = 0; i < count; ++i)
@@ -554,10 +555,9 @@ const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode de
             buf[i] = (val == 0) ? '+' : '-';
         }
     }
-    buf[count] = 0;
 
     // Create a single use varinfo to store the bitmap
-    Varinfo info = tables->get_bitmap_entry(code, count);
+    Varinfo info = tables->get_bitmap(code, buf);
 
     // Store the bitmap
     Var bmp(info, buf);

@@ -76,7 +76,7 @@ void Subset::store_variable_undef(Varcode code)
 
 void Subset::append_c_with_dpb(Varcode ccode, int count, const char* bitmap)
 {
-    Varinfo info = tables->get_bitmap_entry(ccode, count);
+    Varinfo info = tables->get_bitmap(ccode, bitmap);
 
 	/* Create the Var with the bitmap */
 	Var var(info, bitmap);

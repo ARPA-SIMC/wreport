@@ -1,4 +1,5 @@
 #include "tables.h"
+#include "error.h"
 #include "internals/tabledir.h"
 
 using namespace std;
@@ -62,11 +63,21 @@ _Varinfo* Tables::new_entry()
     return &local_vartable.front();
 }
 
-Varinfo Tables::get_bitmap_entry(Varcode code, unsigned size)
+Varinfo Tables::get_bitmap(Varcode code, const std::string& bitmap) const
 {
-    auto res = new_entry();
-    res->set_string(code, "DATA PRESENT BITMAP", size);
-    return res;
+    auto res = bitmap_table.find(bitmap);
+    if (res != bitmap_table.end())
+    {
+        if (res->second.code != code)
+            error_consistency::throwf("Bitmap '%s' has been requested with varcode %01d%02d%03d but it already exists as %01d%02d%03d",
+                    bitmap.c_str(), WR_VAR_FXY(code), WR_VAR_FXY(res->second.code));
+        return &(res->second);
+    }
+
+    auto new_entry = bitmap_table.emplace(make_pair(bitmap, _Varinfo()));
+    _Varinfo& vi = new_entry.first->second;
+    vi.set_string(code, "DATA PRESENT BITMAP", bitmap.size());
+    return &vi;
 }
 
 Varinfo Tables::get_chardata_entry(Varcode code, unsigned size)
