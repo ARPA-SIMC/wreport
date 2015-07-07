@@ -80,9 +80,17 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             c_width_change = change;
             break;
         }
-        case 2:
-            c_change_data_scale(code, WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+        case 2: {
+            /*
+             * Change scale Add Y - 128 to Scale in Table B for elements that
+             * are not code or flag tables.
+             */
+            int change = WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0;
+            TRACE("Set scale change from %d to %d\n", c_scale_change, change);
+            c_scale_change = change;
+
             break;
+        }
         case 4: {
             Varcode sig_code = 0;
             if (WR_VAR_Y(code))
@@ -158,12 +166,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
                         WR_VAR_Y(code));
             */
     }
-}
-
-void DDSInterpreter::c_change_data_scale(Varcode code, int change)
-{
-    TRACE("Set scale change from %d to %d\n", c_scale_change, change);
-    c_scale_change = change;
 }
 
 void DDSInterpreter::c_increase_scale_ref_width(Varcode code, int change)
@@ -306,8 +308,10 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
     switch (WR_VAR_X(code))
     {
         case 1:
-            /// Change of data width
             fprintf(out, " change data width to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            break;
+        case 2:
+            fprintf(out, " change data scale to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
             break;
         default:
             fputs(" (C modifier)\n", out);
@@ -347,11 +351,6 @@ void Printer::d_group_end(Varcode code)
     indent -= indent_step;
 }
 
-void Printer::c_change_data_scale(Varcode code, int change)
-{
-    print_lead(code);
-    fprintf(out, " change data scale to %d\n", change);
-}
 void Printer::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
 {
     print_lead(code);

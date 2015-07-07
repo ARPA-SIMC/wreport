@@ -82,16 +82,6 @@ struct DDSInterpreter
     virtual void c_modifier(Varcode code, Opcodes& next);
 
     /**
-     * Notify a change of data scale
-     *
-     * @param code
-     *   The C modifier code
-     * @param change
-     *   The scale change (positive or negative)
-     */
-    virtual void c_change_data_scale(Varcode code, int change);
-
-    /**
      * Notify the declaration of an associated field for the next values.
      *
      * @param code
@@ -274,7 +264,6 @@ public:
 
     void b_variable(Varcode code) override;
     void c_modifier(Varcode code, Opcodes& next) override;
-    void c_change_data_scale(Varcode code, int change) override;
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
     void c_char_data(Varcode code) override;
     void c_char_data_override(Varcode code, unsigned new_length) override;
