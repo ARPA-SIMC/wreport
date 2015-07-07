@@ -49,10 +49,10 @@ public:
      */
     DDSValidator(Bulletin& b, unsigned subset_idx);
 
-    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
-    virtual void do_var(Varinfo info);
-    virtual const Var& do_semantic_var(Varinfo info);
-    virtual void do_char_data(Varcode code);
+    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override;
+    void do_var(Varinfo info) override;
+    const Var& define_semantic_var(Varinfo info) override;
+    void do_char_data(Varcode code) override;
 };
 
 }

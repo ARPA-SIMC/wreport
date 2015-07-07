@@ -7,20 +7,12 @@ namespace bulletin {
 
 Bitmap::Bitmap()
 {
+    iter = refs.rend();
 }
 
 Bitmap::~Bitmap()
 {
     delete bitmap;
-}
-
-void Bitmap::reset()
-{
-    delete bitmap;
-    bitmap = 0;
-    old_anchor = 0;
-    refs.clear();
-    iter = refs.rend();
 }
 
 void Bitmap::init(const Var& bitmap, const Subset& subset, unsigned anchor)
@@ -70,6 +62,31 @@ void Bitmap::init(const Var& bitmap, const Subset& subset, unsigned anchor)
 bool Bitmap::eob() const { return iter == refs.rend(); }
 unsigned Bitmap::next() { unsigned res = *iter; ++iter; return res; }
 
+
+Bitmaps::~Bitmaps()
+{
+    delete current;
+}
+
+unsigned Bitmaps::next()
+{
+    if (!current)
+        throw error_consistency("bitmap iteration requested when no bitmap is currently active");
+    unsigned res = current->next();
+    if (current->eob())
+    {
+        delete current;
+        current = 0;
+    }
+    return res;
+}
+
+void Bitmaps::define(const Var& bitmap, const Subset& subset, unsigned anchor)
+{
+    delete current;
+    current = new Bitmap;
+    current->init(bitmap, subset, anchor);
+}
 
 }
 }

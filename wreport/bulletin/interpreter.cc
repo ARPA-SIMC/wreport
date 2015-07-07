@@ -206,12 +206,12 @@ void DDSInterpreter::c_quality_information_bitmap(Varcode code)
                     WR_VAR_F(code),
                     WR_VAR_X(code),
                     WR_VAR_Y(code));
-    want_bitmap = code;
+    bitmaps.pending_definitions = code;
 }
 
 void DDSInterpreter::c_substituted_value_bitmap(Varcode code)
 {
-    want_bitmap = code;
+    bitmaps.pending_definitions = code;
 }
 
 void DDSInterpreter::c_substituted_value(Varcode code) {}
@@ -230,15 +230,15 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
         TRACE("\n");
     }
 
-    if (want_bitmap)
+    if (bitmaps.pending_definitions)
     {
         if (count == 0 && delayed_code == 0)
             delayed_code = WR_VAR(0, 31, 12);
-        define_bitmap(want_bitmap, code, delayed_code, ops);
+        define_bitmap(code, delayed_code, ops);
         // TODO: bitmap.init(bitmap_var, *current_subset, data_pos);
         if (delayed_code)
             ++data_pos;
-        want_bitmap = 0;
+        bitmaps.pending_definitions = 0;
     } else {
         /* If using delayed replication and count is not 0, use count for the
          * delayed replication factor; else, look for a delayed replication
@@ -276,7 +276,7 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
 void DDSInterpreter::d_group_begin(Varcode code) {}
 void DDSInterpreter::d_group_end(Varcode code) {}
 
-void DDSInterpreter::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+void DDSInterpreter::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     throw error_unimplemented("define_bitmap is not implemented in this interpreter");
 }

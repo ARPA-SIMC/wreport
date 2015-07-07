@@ -237,10 +237,10 @@ void Parser::b_variable(Varcode code)
 {
     Varinfo info = get_varinfo(code);
     // Choose which value we should encode
-    if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && !bitmap.eob())
+    if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && bitmaps.active())
     {
         // Attribute of the variable pointed by the bitmap
-        unsigned target = bitmap.next();
+        unsigned target = bitmaps.next();
         TRACE("b_variable attribute %01d%02d%03d subset pos %u\n",
                 WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code), target);
         do_attr(info, target, code);
@@ -309,17 +309,14 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
 
 void Parser::c_substituted_value(Varcode code)
 {
-    if (bitmap.bitmap == NULL)
-        error_consistency::throwf("found C23255 with no active bitmap");
-    if (bitmap.eob())
-        error_consistency::throwf("found C23255 while at the end of active bitmap");
-    unsigned target = bitmap.next();
+    if (!bitmaps.active())
+        error_consistency::throwf("found C23255 while there is no active bitmap");
+    unsigned target = bitmaps.next();
     // Use the details of the corrisponding variable for decoding
     Varinfo info = current_subset[target].info();
     // Encode the value
     do_attr(info, target, info->code);
 }
-
 
 BaseParser::BaseParser(Bulletin& bulletin, unsigned subset_no)
     : Parser(bulletin.tables, bulletin.datadesc, subset_no, bulletin.subset(subset_no)), bulletin(bulletin), current_subset_no(0)
@@ -344,13 +341,13 @@ Var& BaseParser::get_var(unsigned var_pos) const
     return bulletin.subsets[current_subset_no][var_pos];
 }
 
-void BaseParser::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+void BaseParser::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
                 current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-    bitmap.init(var, current_subset, data_pos);
+    bitmaps.define(var, current_subset, data_pos);
 }
 
 }

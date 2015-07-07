@@ -28,11 +28,7 @@ struct DDSInterpreter
     std::stack<Opcodes> opcode_stack;
 
     /// Bitmap iteration
-    Bitmap bitmap;
-
-    /// Nonzero if a Data Present Bitmap is expected
-#warning TODO move to Bitmaps
-    Varcode want_bitmap = 0;
+    Bitmaps bitmaps;
 
     /**
      * Number of data items processed so far.
@@ -240,7 +236,7 @@ struct DDSInterpreter
      * @returns
      *   The bitmap that has been processed.
      */
-    virtual void define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
+    virtual void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
 
     /**
      * Request processing, according to \a info, of a data variabile that is

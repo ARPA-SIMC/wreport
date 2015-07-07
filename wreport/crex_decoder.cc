@@ -176,9 +176,6 @@ struct CrexParser : public bulletin::Parser
     {
     }
 
-    /// Notify the start of a subset
-    //virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
-
     void do_var(Varinfo info)
     {
         define_semantic_var(info);

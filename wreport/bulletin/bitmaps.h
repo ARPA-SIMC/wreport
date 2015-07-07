@@ -1,6 +1,7 @@
 #ifndef WREPORT_BULLETIN_BITMAPS_H
 #define WREPORT_BULLETIN_BITMAPS_H
 
+#include <wreport/varinfo.h>
 #include <vector>
 
 namespace wreport {
@@ -48,12 +49,6 @@ struct Bitmap
     Bitmap& operator=(const Bitmap&) = delete;
 
     /**
-     * Resets the object. To be called at start of decoding, to discard all
-     * previous leftover context, if any.
-     */
-    void reset();
-
-    /**
      * Initialise the bitmap handler
      *
      * @param bitmap
@@ -77,6 +72,31 @@ struct Bitmap
      * is present
      */
     unsigned next();
+};
+
+struct Bitmaps
+{
+    /// Nonzero if a Data Present Bitmap is expected
+    Varcode pending_definitions = 0;
+
+    /// Currently active bitmap
+    Bitmap* current = nullptr;
+
+    Bitmaps() {}
+    Bitmaps(const Bitmaps&) = delete;
+    ~Bitmaps();
+    Bitmaps& operator=(const Bitmaps&) = delete;
+
+    void define(const Var& bitmap, const Subset& subset, unsigned anchor);
+
+    /**
+     * Return the next variable offset for which the bitmap reports that data
+     * is present
+     */
+    unsigned next();
+
+    /// Return true if there is an active bitmap
+    bool active() const { return (bool)current; }
 };
 
 }

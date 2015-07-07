@@ -155,7 +155,7 @@ struct BaseParser : public Parser
     /// Get the variable at the given position
     Var& get_var(unsigned var_pos) const;
 
-    void define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
+    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
 };
 
 }
