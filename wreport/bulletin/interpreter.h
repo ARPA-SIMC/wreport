@@ -51,12 +51,15 @@ struct DDSInterpreter
     {
         opcode_stack.push(opcodes);
     }
-    DDSInterpreter(const DDSInterpreter&) = delete;
+
     virtual ~DDSInterpreter()
     {
     }
+
+    DDSInterpreter(const DDSInterpreter&) = delete;
     DDSInterpreter& operator=(const DDSInterpreter&) = delete;
 
+    /// Run the interpreter
     void run();
 
     /**
@@ -76,7 +79,7 @@ struct DDSInterpreter
      * @param code
      *   The C modifier code
      */
-    virtual void c_modifier(Varcode code);
+    virtual void c_modifier(Varcode code, Opcodes& next);
 
     /**
      * Notify a change of data width

@@ -21,126 +21,30 @@ namespace bulletin {
 
 void DDSInterpreter::run()
 {
-    auto& opcodes = opcode_stack.top();
-    for (unsigned i = 0; i < opcodes.size(); ++i)
+    Opcodes opcodes = opcode_stack.top();
+    while (!opcodes.empty())
     {
-        Varcode cur = opcodes[i];
+        Varcode cur = opcodes.pop_left();
         switch (WR_VAR_F(cur))
         {
             case 0: b_variable(cur); break;
             case 1: {
+                // Replicate the next X elements Y times
                 Varcode rep_code = 0;
-                Varcode next_code = opcodes[i+1];
-                if (WR_VAR_Y(cur) == 0)
+                if (WR_VAR_Y(cur) == 0 && !opcodes.empty())
                 {
                     // Delayed replication, if replicator is there. In case of
                     // CREX, delayed replicator codes are implicit
+                    Varcode next_code = opcodes[0];
                     if (WR_VAR_F(next_code) == 0 && WR_VAR_X(next_code) == 31)
-                    {
-                        rep_code = opcodes[i+1];
-                        ++i;
-                    }
+                        rep_code = opcodes.pop_left();
                 }
-                Opcodes ops = opcodes.sub(i + 1, WR_VAR_X(cur));
-                r_replication(cur, rep_code, ops);
-                i += WR_VAR_X(cur);
+                r_replication(cur, rep_code, opcodes.pop_left(WR_VAR_X(cur)));
                 break;
             }
             case 2:
                 // Generic notification
-                c_modifier(cur);
-                // Specific notification
-                switch (WR_VAR_X(cur))
-                {
-                    case 1:
-                        c_change_data_width(cur, WR_VAR_Y(cur) ? WR_VAR_Y(cur) - 128 : 0);
-                        break;
-                    case 2:
-                        c_change_data_scale(cur, WR_VAR_Y(cur) ? WR_VAR_Y(cur) - 128 : 0);
-                        break;
-                    case 4: {
-                        Varcode sig_code = 0;
-                        if (WR_VAR_Y(cur))
-                        {
-                            sig_code = opcodes[i + 1];
-                            ++i;
-                        }
-                        c_associated_field(cur, sig_code, WR_VAR_Y(cur));
-                        break;
-                    }
-                    case 5:
-                        c_char_data(cur);
-                        break;
-                    case 6:
-                        c_local_descriptor(cur, opcodes[i + 1], WR_VAR_Y(cur));
-                        ++i;
-                        break;
-                    case 7:
-                        c_increase_scale_ref_width(cur, WR_VAR_Y(cur));
-                        break;
-                    case 8:
-                        c_char_data_override(cur, WR_VAR_Y(cur));
-                        break;
-                    case 22:
-                        c_quality_information_bitmap(cur);
-                        break;
-                    case 23:
-                        // Substituted values
-                        switch (WR_VAR_Y(cur))
-                        {
-                            case 0:
-                                c_substituted_value_bitmap(cur);
-                                break;
-                            case 255:
-                                c_substituted_value(cur);
-                                break;
-                            default:
-                                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
-                                        WR_VAR_F(cur),
-                                        WR_VAR_X(cur),
-                                        WR_VAR_Y(cur));
-                        }
-                        break;
-                    case 37:
-                        // Use defined data present bitmap
-                        switch (WR_VAR_Y(cur))
-                        {
-                            case 0: // Reuse last defined bitmap
-                                c_reuse_last_bitmap(true);
-                                break;
-                            case 255: // cancels reuse of the last defined bitmap
-                                c_reuse_last_bitmap(false);
-                                break;
-                            default:
-                                error_consistency::throwf("C modifier %d%02d%03d uses unsupported y=%03d",
-                                        WR_VAR_F(cur), WR_VAR_X(cur), WR_VAR_Y(cur), WR_VAR_Y(cur));
-                                break;
-                        }
-                        break;
-                        /*
-                    case 24:
-                        // First order statistical values
-                        if (WR_VAR_Y(code) == 0)
-                        {
-                            used += do_r_data(ops.sub(1), var_pos);
-                        } else
-                            error_consistency::throwf("C modifier %d%02d%03d not yet supported",
-                                        WR_VAR_F(code),
-                                        WR_VAR_X(code),
-                                        WR_VAR_Y(code));
-                        break;
-                        */
-                    default:
-                        notes::logf("ignoring unsupported C modifier %01d%02d%03d",
-                                    WR_VAR_F(cur), WR_VAR_X(cur), WR_VAR_Y(cur));
-                        break;
-                        /*
-                        error_unimplemented::throwf("C modifier %d%02d%03d is not yet supported",
-                                    WR_VAR_F(cur),
-                                    WR_VAR_X(cur),
-                                    WR_VAR_Y(cur));
-                        */
-                }
+                c_modifier(cur, opcodes);
                 break;
             case 3:
             {
@@ -152,8 +56,7 @@ void DDSInterpreter::run()
                 break;
             }
             default:
-                error_consistency::throwf("cannot handle opcode %01d%02d%03d",
-                    WR_VAR_F(cur), WR_VAR_X(cur), WR_VAR_Y(cur));
+                error_consistency::throwf("cannot handle opcode %01d%02d%03d", WR_VAR_FXY(cur));
         }
     }
 }
@@ -161,9 +64,92 @@ void DDSInterpreter::run()
 
 void DDSInterpreter::b_variable(Varcode code) {}
 
-void DDSInterpreter::c_modifier(Varcode code)
+void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
 {
-    TRACE("C DATA %01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+    TRACE("C DATA %01d%02d%03d\n", WR_VAR_FXY(code));
+    switch (WR_VAR_X(code))
+    {
+        case 1:
+            c_change_data_width(code, WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            break;
+        case 2:
+            c_change_data_scale(code, WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            break;
+        case 4: {
+            Varcode sig_code = 0;
+            if (WR_VAR_Y(code))
+                sig_code = next.pop_left();
+            c_associated_field(code, sig_code, WR_VAR_Y(code));
+            break;
+        }
+        case 5:
+            c_char_data(code);
+            break;
+        case 6:
+            c_local_descriptor(code, next.pop_left(), WR_VAR_Y(code));
+            break;
+        case 7:
+            c_increase_scale_ref_width(code, WR_VAR_Y(code));
+            break;
+        case 8:
+            c_char_data_override(code, WR_VAR_Y(code));
+            break;
+        case 22:
+            c_quality_information_bitmap(code);
+            break;
+        case 23:
+            // Substituted values
+            switch (WR_VAR_Y(code))
+            {
+                case 0:
+                    c_substituted_value_bitmap(code);
+                    break;
+                case 255:
+                    c_substituted_value(code);
+                    break;
+                default:
+                    error_consistency::throwf("C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
+            }
+            break;
+        case 37:
+            // Use defined data present bitmap
+            switch (WR_VAR_Y(code))
+            {
+                case 0: // Reuse last defined bitmap
+                    c_reuse_last_bitmap(true);
+                    break;
+                case 255: // cancels reuse of the last defined bitmap
+                    c_reuse_last_bitmap(false);
+                    break;
+                default:
+                    error_consistency::throwf("C modifier %d%02d%03d uses unsupported y=%03d",
+                            WR_VAR_FXY(code), WR_VAR_Y(code));
+                    break;
+            }
+            break;
+            /*
+        case 24:
+            // First order statistical values
+            if (WR_VAR_Y(code) == 0)
+            {
+                used += do_r_data(ops.sub(1), var_pos);
+            } else
+                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
+                            WR_VAR_F(code),
+                            WR_VAR_X(code),
+                            WR_VAR_Y(code));
+            break;
+            */
+        default:
+            notes::logf("ignoring unsupported C modifier %01d%02d%03d", WR_VAR_FXY(code));
+            break;
+            /*
+            error_unimplemented::throwf("C modifier %d%02d%03d is not yet supported",
+                        WR_VAR_F(code),
+                        WR_VAR_X(code),
+                        WR_VAR_Y(code));
+            */
+    }
 }
 
 void DDSInterpreter::c_change_data_width(Varcode code, int change)

@@ -2,6 +2,7 @@
 #define WREPORT_OPCODE_H
 
 #include <wreport/varinfo.h>
+#include <wreport/error.h>
 #include <vector>
 #include <cstdio>
 
@@ -45,6 +46,32 @@ struct Opcodes
 
 	/// True if there are no opcodes
 	bool empty() const { return begin == end; }
+
+    /**
+     * Return the first element and advance begin to the next one.
+     *
+     * If the sequence is empty, throw an exception
+     */
+    Varcode pop_left()
+    {
+        if (empty()) throw error_consistency("cannot do pop_left on an empty opcode sequence");
+        return *begin++;
+    }
+
+    /**
+     * Return the first \a count elements and advance begin to the first opcode
+     * after the sequence.
+     *
+     * If the sequence has less that \a count elements, throw an exception
+     */
+    Opcodes pop_left(unsigned count)
+    {
+        if (size() < count)
+            error_consistency::throwf("cannot do pop_left(%u) on an opcode sequence of only %u elements", count, size());
+        Opcodes res(begin, begin + count);
+        begin += count;
+        return res;
+    }
 
     /// First opcode in the list (0 if the list is empty)
     Varcode head() const

@@ -23,9 +23,9 @@ struct VisitCounter : public bulletin::DDSInterpreter
     VisitCounter(const Tables& tables, const Opcodes& opcodes)
         : bulletin::DDSInterpreter(tables, opcodes), count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
 
-    void b_variable(Varcode code) { ++count_b; }
-    void c_modifier(Varcode code) { ++count_c; }
-    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+    void b_variable(Varcode code) override { ++count_b; }
+    void c_modifier(Varcode code, Opcodes& next) override { ++count_c; bulletin::DDSInterpreter::c_modifier(code, next); }
+    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override
     {
         if (delayed_code)
             ++count_r_delayed;
@@ -35,7 +35,7 @@ struct VisitCounter : public bulletin::DDSInterpreter
         run();
         opcode_stack.pop();
     }
-    void d_group_begin(Varcode code) { ++count_d; }
+    void d_group_begin(Varcode code) override { ++count_d; }
 };
 
 typedef test_group<> test_group;
