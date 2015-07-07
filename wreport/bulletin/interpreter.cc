@@ -137,7 +137,13 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             break;
         }
         case 22:
-            c_quality_information_bitmap(code);
+            // Quality information
+            if (WR_VAR_Y(code) != 0)
+                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
+                            WR_VAR_F(code),
+                            WR_VAR_X(code),
+                            WR_VAR_Y(code));
+            bitmaps.pending_definitions = code;
             break;
         case 23:
             // Substituted values
@@ -196,17 +202,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
 
 void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
 void DDSInterpreter::c_char_data(Varcode code) {}
-
-void DDSInterpreter::c_quality_information_bitmap(Varcode code)
-{
-    // Quality information
-    if (WR_VAR_Y(code) != 0)
-        error_consistency::throwf("C modifier %d%02d%03d not yet supported",
-                    WR_VAR_F(code),
-                    WR_VAR_X(code),
-                    WR_VAR_Y(code));
-    bitmaps.pending_definitions = code;
-}
 
 void DDSInterpreter::c_substituted_value_bitmap(Varcode code)
 {
@@ -328,6 +323,9 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
         case 8:
             fprintf(out, " change width of string fields to %d\n", WR_VAR_Y(code));
             break;
+        case 22:
+            fputs(" quality information with bitmap\n", out);
+            break;
         default:
             fputs(" (C modifier)\n", out);
             break;
@@ -376,11 +374,6 @@ void Printer::c_char_data(Varcode code)
 {
     print_lead(code);
     fputs(" character data\n", out);
-}
-void Printer::c_quality_information_bitmap(Varcode code)
-{
-    print_lead(code);
-    fputs(" quality information with bitmap\n", out);
 }
 void Printer::c_substituted_value_bitmap(Varcode code)
 {
