@@ -1,15 +1,17 @@
 #ifndef WREPORT_BULLETIN_INTERPETER_H
 #define WREPORT_BULLETIN_INTERPETER_H
 
-#include <bulletin/bitmaps.h>
+#include <wreport/bulletin/bitmaps.h>
+#include <wreport/bulletin/associated_fields.h>
+#include <wreport/bulletin/associated_fields.h>
 #include <wreport/opcode.h>
+#include <wreport/tables.h>
 #include <memory>
 #include <stack>
 
 namespace wreport {
 struct Vartable;
 struct DTable;
-struct Tables;
 struct Var;
 
 namespace bulletin {
@@ -29,6 +31,9 @@ struct DDSInterpreter
 
     /// Bitmap iteration
     Bitmaps bitmaps;
+
+    /// Current associated field state
+    AssociatedField associated_field;
 
     /// Current value of scale change from C modifier
     int c_scale_change = 0;
@@ -54,7 +59,7 @@ protected:
 
 public:
     DDSInterpreter(const Tables& tables, const Opcodes& opcodes)
-        : tables(tables)
+        : tables(tables), associated_field(*tables.btable)
     {
         opcode_stack.push(opcodes);
     }
