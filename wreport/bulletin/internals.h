@@ -60,6 +60,8 @@ struct UncompressedEncoder : public bulletin::DDSInterpreter
 };
 
 // TODO: CompressedEncoder
+// TODO: UncompressedDecoder
+// TODO: CompressedDecoder
 
 /**
  * Abstract interface for classes that can be used as targets for the Bulletin
