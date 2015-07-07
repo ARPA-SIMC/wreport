@@ -1,6 +1,7 @@
 #ifndef WREPORT_BULLETIN_INTERPETER_H
 #define WREPORT_BULLETIN_INTERPETER_H
 
+#include <bulletin/bitmaps.h>
 #include <wreport/opcode.h>
 #include <memory>
 #include <stack>
@@ -25,6 +26,22 @@ struct DDSInterpreter
 {
     const Tables& tables;
     std::stack<Opcodes> opcode_stack;
+
+    /// Bitmap iteration
+    Bitmap bitmap;
+
+    /// Nonzero if a Data Present Bitmap is expected
+#warning TODO move to Bitmaps
+    Varcode want_bitmap = 0;
+
+    /**
+     * Number of data items processed so far.
+     *
+     * This is used to generate reference to past decoded data, used when
+     * associating attributes to variables.
+     */
+#warning TODO move to Bitmaps
+    unsigned data_pos;
 
     /// Current value of scale change from C modifier
     int c_scale_change = 0;
@@ -223,7 +240,7 @@ struct DDSInterpreter
      * @returns
      *   The bitmap that has been processed.
      */
-    virtual const Var& define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
+    virtual void define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
 
     /**
      * Request processing, according to \a info, of a data variabile that is

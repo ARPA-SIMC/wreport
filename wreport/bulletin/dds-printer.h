@@ -57,7 +57,7 @@ public:
     void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override;
     void do_var(Varinfo info) override;
     const Var& define_semantic_var(Varinfo info) override;
-    const Var& define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
+    void define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
     void do_char_data(Varcode code) override;
 
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;

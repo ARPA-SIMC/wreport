@@ -36,76 +36,6 @@ struct Bulletin;
 
 namespace bulletin {
 
-/**
- * Associate a Data Present Bitmap to decoded variables in a subset
- */
-struct Bitmap
-{
-    /// Bitmap being iterated
-    const Var* bitmap;
-
-    /**
-     * Arrays of variable indices corresponding to positions in the bitmap
-     * where data is present
-     */
-    std::vector<unsigned> refs;
-
-    /**
-     * Iterator over refs
-     *
-     * Since refs is filled while going backwards over the subset, iteration is
-     * done via a reverse_iterator.
-     */
-    std::vector<unsigned>::const_reverse_iterator iter;
-
-    /**
-     * Anchor point of the first bitmap found since the last reset().
-     *
-     * From the specs it looks like bitmaps refer to all data that precedes the
-     * C operator that defines or uses them, but from the data samples that we
-     * have it look like when multiple bitmaps are present, they always refer
-     * to the same set of variables.
-     *
-     * For this reason we remember the first anchor point that we see and
-     * always refer the other bitmaps that we see to it.
-     */
-    unsigned old_anchor;
-
-    Bitmap();
-    ~Bitmap();
-
-    /**
-     * Resets the object. To be called at start of decoding, to discard all
-     * previous leftover context, if any.
-     */
-    void reset();
-
-    /**
-     * Initialise the bitmap handler
-     *
-     * @param bitmap
-     *   The bitmap
-     * @param subset
-     *   The subset to which the bitmap refers
-     * @param anchor
-     *   The index to the first element after the end of the bitmap (usually
-     *   the C operator that defines or uses the bitmap)
-     */
-    void init(const Var& bitmap, const Subset& subset, unsigned anchor);
-
-    /**
-     * True if there is no bitmap or if the bitmap has been iterated until the
-     * end
-     */
-    bool eob() const;
-
-    /**
-     * Return the next variable offset for which the bitmap reports that data
-     * is present
-     */
-    unsigned next();
-};
-
 struct AssociatedField
 {
     /// B table used to generate associated field attributes
@@ -161,22 +91,8 @@ struct Parser : public bulletin::DDSInterpreter
     /// Current subset (used to refer to past variables)
     const Subset* current_subset;
 
-    /// Bitmap iteration
-    Bitmap bitmap;
-
     /// Current associated field state
     AssociatedField associated_field;
-
-    /// Nonzero if a Data Present Bitmap is expected
-    Varcode want_bitmap;
-
-    /**
-     * Number of data items processed so far.
-     *
-     * This is used to generate reference to past decoded data, used when
-     * associating attributes to variables.
-     */
-    unsigned data_pos;
 
 
     Parser(const Tables& tables, const Opcodes& opcodes);
@@ -215,11 +131,8 @@ struct Parser : public bulletin::DDSInterpreter
     void b_variable(Varcode code) override;
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
     void c_char_data(Varcode code) override;
-    void c_quality_information_bitmap(Varcode code) override;
-    void c_substituted_value_bitmap(Varcode code) override;
     void c_substituted_value(Varcode code) override;
     void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
-    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
     //@}
 };
 
@@ -246,7 +159,7 @@ struct BaseParser : public Parser
     Var& get_var(unsigned var_pos) const;
 
     void do_start_subset(unsigned subset_no, const Subset& current_subset) override;
-    const Var& define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
+    void define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
 };
 
 }

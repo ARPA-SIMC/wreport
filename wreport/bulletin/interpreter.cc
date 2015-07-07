@@ -4,6 +4,7 @@
 #include "wreport/dtable.h"
 #include "wreport/vartable.h"
 #include "wreport/tables.h"
+#include "wreport/var.h"
 
 // #define TRACE_INTERPRETER
 
@@ -197,16 +198,85 @@ void DDSInterpreter::c_char_data_override(Varcode code, unsigned new_length)
     c_string_len_override = new_length;
 }
 
-void DDSInterpreter::c_quality_information_bitmap(Varcode code) {}
-void DDSInterpreter::c_substituted_value_bitmap(Varcode code) {}
+void DDSInterpreter::c_quality_information_bitmap(Varcode code)
+{
+    // Quality information
+    if (WR_VAR_Y(code) != 0)
+        error_consistency::throwf("C modifier %d%02d%03d not yet supported",
+                    WR_VAR_F(code),
+                    WR_VAR_X(code),
+                    WR_VAR_Y(code));
+    want_bitmap = code;
+}
+
+void DDSInterpreter::c_substituted_value_bitmap(Varcode code)
+{
+    want_bitmap = code;
+}
+
 void DDSInterpreter::c_substituted_value(Varcode code) {}
 void DDSInterpreter::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
 void DDSInterpreter::c_reuse_last_bitmap(Varcode code) {}
-void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) {}
+
+void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+{
+    // unsigned group = WR_VAR_X(code);
+    unsigned count = WR_VAR_Y(code);
+
+    IFTRACE{
+        TRACE("visitor r_replication %01d%02d%03d, %u times, %u opcodes: ",
+                WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code), count, WR_VAR_X(code));
+        ops.print(stderr);
+        TRACE("\n");
+    }
+
+    if (want_bitmap)
+    {
+        if (count == 0 && delayed_code == 0)
+            delayed_code = WR_VAR(0, 31, 12);
+        define_bitmap(want_bitmap, code, delayed_code, ops);
+        // TODO: bitmap.init(bitmap_var, *current_subset, data_pos);
+        if (delayed_code)
+            ++data_pos;
+        want_bitmap = 0;
+    } else {
+        /* If using delayed replication and count is not 0, use count for the
+         * delayed replication factor; else, look for a delayed replication
+         * factor among the input variables */
+        if (count == 0)
+        {
+            Varinfo info = tables.btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
+            const Var& var = define_semantic_var(info);
+            if (var.code() == WR_VAR(0, 31, 0))
+            {
+                count = var.isset() ? 0 : 1;
+            } else {
+                count = var.enqi();
+            }
+            ++data_pos;
+        }
+        IFTRACE {
+            TRACE("visitor r_replication %d items %d times%s\n", WR_VAR_X(code), count, delayed_code ? " (delayed)" : "");
+            TRACE("Repeat opcodes: ");
+            ops.print(stderr);
+            TRACE("\n");
+        }
+
+        // encode_data_section on it `count' times
+        for (unsigned i = 0; i < count; ++i)
+        {
+            opcode_stack.push(ops);
+            run();
+            opcode_stack.pop();
+        }
+    }
+}
+
+
 void DDSInterpreter::d_group_begin(Varcode code) {}
 void DDSInterpreter::d_group_end(Varcode code) {}
 
-const Var& DDSInterpreter::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+void DDSInterpreter::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     throw error_unimplemented("define_bitmap is not implemented in this interpreter");
 }

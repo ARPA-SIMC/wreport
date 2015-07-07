@@ -41,63 +41,6 @@ using namespace std;
 namespace wreport {
 namespace bulletin {
 
-Bitmap::Bitmap() : bitmap(0) {}
-Bitmap::~Bitmap() {}
-
-void Bitmap::reset()
-{
-    bitmap = 0;
-    old_anchor = 0;
-    refs.clear();
-    iter = refs.rend();
-}
-
-void Bitmap::init(const Var& bitmap, const Subset& subset, unsigned anchor)
-{
-    this->bitmap = &bitmap;
-    refs.clear();
-
-    // From the specs it looks like bitmaps refer to all data that precedes
-    // the C operator that defines or uses the bitmap, but from the data
-    // samples that we have it look like when multiple bitmaps are present,
-    // they always refer to the same set of variables. For this reason we
-    // remember the first anchor point that we see and always refer the
-    // other bitmaps that we see to it.
-    if (old_anchor)
-        anchor = old_anchor;
-    else
-        old_anchor = anchor;
-
-    unsigned b_cur = bitmap.info()->len;
-    unsigned s_cur = anchor;
-    if (b_cur == 0) throw error_consistency("data present bitmap has length 0");
-    if (s_cur == 0) throw error_consistency("data present bitmap is anchored at start of subset");
-
-    while (true)
-    {
-        --b_cur;
-        --s_cur;
-        while (WR_VAR_F(subset[s_cur].code()) != 0)
-        {
-            if (s_cur == 0) throw error_consistency("bitmap refers to variables before the start of the subset");
-            --s_cur;
-        }
-
-        if (bitmap.enqc()[b_cur] == '+')
-            refs.push_back(s_cur);
-
-        if (b_cur == 0)
-            break;
-        if (s_cur == 0)
-            throw error_consistency("bitmap refers to variables before the start of the subset");
-    }
-
-    iter = refs.rbegin();
-}
-
-bool Bitmap::eob() const { return iter == refs.rend(); }
-unsigned Bitmap::next() { unsigned res = *iter; ++iter; return res; }
-
 
 AssociatedField::AssociatedField() : btable(0), skip_missing(true), bit_count(0) {}
 AssociatedField::~AssociatedField() {}
@@ -358,22 +301,6 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
     }
 }
 
-void Parser::c_quality_information_bitmap(Varcode code)
-{
-    // Quality information
-    if (WR_VAR_Y(code) != 0)
-        error_consistency::throwf("C modifier %d%02d%03d not yet supported",
-                    WR_VAR_F(code),
-                    WR_VAR_X(code),
-                    WR_VAR_Y(code));
-    want_bitmap = code;
-}
-
-void Parser::c_substituted_value_bitmap(Varcode code)
-{
-    want_bitmap = code;
-}
-
 void Parser::c_substituted_value(Varcode code)
 {
     if (bitmap.bitmap == NULL)
@@ -385,60 +312,6 @@ void Parser::c_substituted_value(Varcode code)
     Varinfo info = (*current_subset)[target].info();
     // Encode the value
     do_attr(info, target, info->code);
-}
-
-/* If using delayed replication and count is not -1, use count for the delayed
- * replication factor; else, look for a delayed replication factor among the
- * input variables */
-void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
-{
-    // unsigned group = WR_VAR_X(code);
-    unsigned count = WR_VAR_Y(code);
-
-    IFTRACE{
-        TRACE("visitor r_replication %01d%02d%03d, %u times, %u opcodes: ",
-                WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code), count, WR_VAR_X(code));
-        ops.print(stderr);
-        TRACE("\n");
-    }
-
-    if (want_bitmap)
-    {
-        if (count == 0 && delayed_code == 0)
-            delayed_code = WR_VAR(0, 31, 12);
-        const Var& bitmap_var = define_bitmap(want_bitmap, code, delayed_code, ops);
-        bitmap.init(bitmap_var, *current_subset, data_pos);
-        if (delayed_code)
-            ++data_pos;
-        want_bitmap = 0;
-    } else {
-        if (count == 0)
-        {
-            Varinfo info = tables.btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
-            const Var& var = define_semantic_var(info);
-            if (var.code() == WR_VAR(0, 31, 0))
-            {
-                count = var.isset() ? 0 : 1;
-            } else {
-                count = var.enqi();
-            }
-            ++data_pos;
-        }
-        IFTRACE {
-            TRACE("visitor r_replication %d items %d times%s\n", WR_VAR_X(code), count, delayed_code ? " (delayed)" : "");
-            TRACE("Repeat opcodes: ");
-            ops.print(stderr);
-            TRACE("\n");
-        }
-
-        // encode_data_section on it `count' times
-        for (unsigned i = 0; i < count; ++i)
-        {
-            opcode_stack.push(ops);
-            run();
-            opcode_stack.pop();
-        }
-    }
 }
 
 void Parser::do_start_subset(unsigned subset_no, const Subset& current_subset)
@@ -489,13 +362,13 @@ void BaseParser::do_start_subset(unsigned subset_no, const Subset& current_subse
     current_var = 0;
 }
 
-const Var& BaseParser::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+void BaseParser::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
                 current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-    return var;
+    bitmap.init(var, *current_subset, data_pos);
 }
 
 }

@@ -105,7 +105,7 @@ struct DDSEncoder : public bulletin::BaseParser
         ob.append_var(info, var);
         return var;
     }
-    const Var& define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
+    void define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
     {
         const Var& var = get_var();
         if (WR_VAR_F(var.code()) != 2)
@@ -137,7 +137,7 @@ struct DDSEncoder : public bulletin::BaseParser
         for (unsigned i = 0; i < var.info()->len; ++i)
             ob.add_bits(var.enqc()[i] == '+' ? 0 : 1, 1);
 
-        return var;
+        bitmap.init(var, *current_subset, data_pos);
     }
     void do_char_data(Varcode code) override
     {
