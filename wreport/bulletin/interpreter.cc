@@ -412,9 +412,20 @@ const Var& DDSInterpreter::define_semantic_variable(Varinfo info)
     throw error_unimplemented("define_semantic_variable is not implemented in this interpreter");
 }
 
-void DDSInterpreter::define_variable(Varinfo info) {}
-void DDSInterpreter::define_substituted_value(unsigned pos) {}
-void DDSInterpreter::define_attribute(Varinfo info, unsigned pos) {}
+void DDSInterpreter::define_variable(Varinfo info)
+{
+    throw error_unimplemented("define_variable is not implemented in this interpreter");
+}
+
+void DDSInterpreter::define_substituted_value(unsigned pos)
+{
+    throw error_unimplemented("define_substituted_variable is not implemented in this interpreter");
+}
+
+void DDSInterpreter::define_attribute(Varinfo info, unsigned pos)
+{
+    throw error_unimplemented("define_attribute is not implemented in this interpreter");
+}
 
 void DDSInterpreter::define_raw_character_data(Varcode code)
 {
@@ -545,6 +556,10 @@ void Printer::c_reuse_last_bitmap(Varcode code)
             fprintf(out, " unknown B37%03d reuse of last data present bitmap code\n", WR_VAR_Y(code));
             break;
     }
+}
+
+void Printer::define_variable(Varinfo info)
+{
 }
 
 }

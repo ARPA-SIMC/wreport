@@ -311,14 +311,12 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
         return decode_b_value(info);
     }
 
-    /**
-     * Request processing, according to \a info, of the attribute \a attr_code
-     * of the variable in position \a var_pos in the current subset.
-     */
-    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override
+    void define_substituted_value(unsigned pos) override
     {
+        // Use the details of the corrisponding variable for decoding
+        Varinfo info = current_subset[pos].info();
         Var var = decode_b_value(info);
-        TRACE(" do_attr adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
+        TRACE(" define_substituted_value adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
                 WR_VAR_F(var.code()),
                 WR_VAR_X(var.code()),
                 WR_VAR_Y(var.code()),
@@ -326,7 +324,21 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
                 WR_VAR_F((*target)[var_pos].code()),
                 WR_VAR_X((*target)[var_pos].code()),
                 WR_VAR_Y((*target)[var_pos].code()));
-        (*target)[var_pos].seta(var);
+        (*target)[pos].seta(var);
+    }
+
+    void define_attribute(Varinfo info, unsigned pos) override
+    {
+        Var var = decode_b_value(info);
+        TRACE(" define_attribute adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
+                WR_VAR_F(var.code()),
+                WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()),
+                var.value(),
+                WR_VAR_F((*target)[var_pos].code()),
+                WR_VAR_X((*target)[var_pos].code()),
+                WR_VAR_Y((*target)[var_pos].code()));
+        (*target)[pos].seta(var);
     }
 
     /**
@@ -482,9 +494,17 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         decode_b_value(info, target);
     }
 
-    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override
+    void define_substituted_value(unsigned pos) override
     {
-        AttrSink target(d.out, var_pos);
+        // Use the details of the corrisponding variable for decoding
+        Varinfo info = current_subset[pos].info();
+        AttrSink target(d.out, pos);
+        decode_b_value(info, target);
+    }
+
+    void define_attribute(Varinfo info, unsigned pos) override
+    {
+        AttrSink target(d.out, pos);
         decode_b_value(info, target);
     }
 

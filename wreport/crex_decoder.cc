@@ -217,11 +217,6 @@ struct CrexParser : public bulletin::Parser
     {
         return read_variable(info);
     }
-
-    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
-    {
-        throw error_unimplemented("do_attr");
-    }
 };
 
 void Decoder::decode_data()

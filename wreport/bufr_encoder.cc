@@ -76,7 +76,19 @@ struct DDSEncoder : public bulletin::BaseParser
     }
     virtual ~DDSEncoder() {}
 
-    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override
+    void define_substituted_value(unsigned pos) override
+    {
+        // Use the details of the corrisponding variable for decoding
+        Varinfo info = current_subset[pos].info();
+        encode_attr(info, pos, info->code);
+    }
+
+    void define_attribute(Varinfo info, unsigned pos) override
+    {
+        encode_attr(info, pos, info->code);
+    }
+
+    void encode_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
     {
         const Var& var = get_var(var_pos);
         if (const Var* a = var.enqa(attr_code))

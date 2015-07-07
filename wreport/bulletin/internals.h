@@ -47,15 +47,6 @@ struct Parser : public bulletin::DDSInterpreter
 
     Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset);
     virtual ~Parser();
-
-    /**
-     * Request processing, according to \a info, of the attribute \a attr_code
-     * of the variable in position \a var_pos in the current subset.
-     */
-    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
-
-    void define_substituted_value(unsigned pos) override;
-    void define_attribute(Varinfo info, unsigned pos) override;
 };
 
 /**

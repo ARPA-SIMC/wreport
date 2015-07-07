@@ -1,24 +1,3 @@
-/*
- * bulletin/dds-printer - Print a DDS using the interpreter
- *
- * Copyright (C) 2011--2015  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include "wreport/bulletin/dds-printer.h"
 
 using namespace std;
@@ -66,13 +45,13 @@ void DDSPrinter::r_replication(Varcode code, Varcode delayed_code, const Opcodes
     stack.pop_back();
 }
 
-void DDSPrinter::do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+void DDSPrinter::print_attr(Varinfo info, unsigned var_pos)
 {
     print_context(info, var_pos);
     fprintf(out, "(attr)");
 
     const Var& var = get_var(var_pos);
-    if (const Var* a = var.enqa(attr_code))
+    if (const Var* a = var.enqa(info->code))
         a->print(out);
     else
         fprintf(out, "(undef)");
@@ -127,7 +106,17 @@ void DDSPrinter::define_raw_character_data(Varcode code)
     var.print(out);
 }
 
-}
+void DDSPrinter::define_substituted_value(unsigned pos)
+{
+    // Use the details of the corrisponding variable for decoding
+    Varinfo info = current_subset[pos].info();
+    print_attr(info, pos);
 }
 
-/* vim:set ts=4 sw=4: */
+void DDSPrinter::define_attribute(Varinfo info, unsigned pos)
+{
+    print_attr(info, pos);
+}
+
+}
+}

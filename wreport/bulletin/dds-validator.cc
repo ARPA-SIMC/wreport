@@ -66,10 +66,10 @@ void DDSValidator::check_fits(Varinfo info, const Var& var)
     }
 }
 
-void DDSValidator::do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+void DDSValidator::check_attr(Varinfo info, unsigned var_pos)
 {
     const Var& var = get_var(var_pos);
-    if (const Var* a = var.enqa(attr_code))
+    if (const Var* a = var.enqa(info->code))
         check_fits(info, *a);
 }
 
@@ -91,6 +91,18 @@ const Var& DDSValidator::define_semantic_variable(Varinfo info)
     const Var& var = get_var();
     check_fits(info, var);
     return var;
+}
+
+void DDSValidator::define_substituted_value(unsigned pos)
+{
+    // Use the details of the corrisponding variable for decoding
+    Varinfo info = current_subset[pos].info();
+    check_attr(info, pos);
+}
+
+void DDSValidator::define_attribute(Varinfo info, unsigned pos)
+{
+    check_attr(info, pos);
 }
 
 void DDSValidator::define_raw_character_data(Varcode code)

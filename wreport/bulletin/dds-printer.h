@@ -1,24 +1,3 @@
-/*
- * bulletin/dds-printer - Print a DDS using the interpreter
- *
- * Copyright (C) 2011--2015  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #ifndef WREPORT_BULLETIN_DDS_PRINTER_H
 #define WREPORT_BULLETIN_DDS_PRINTER_H
 
@@ -40,6 +19,7 @@ class DDSPrinter : public BaseParser
 
     void print_context(Varinfo info, unsigned var_pos);
     void print_context(Varcode code, unsigned var_pos);
+    void print_attr(Varinfo info, unsigned var_pos);
 
 public:
     /**
@@ -53,7 +33,8 @@ public:
     DDSPrinter(Bulletin& b, FILE* out, unsigned subset_idx);
     virtual ~DDSPrinter();
 
-    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override;
+    void define_substituted_value(unsigned pos) override;
+    void define_attribute(Varinfo info, unsigned pos) override;
     void define_variable(Varinfo info) override;
     const Var& define_semantic_variable(Varinfo info) override;
     void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
@@ -66,5 +47,4 @@ public:
 
 }
 }
-
 #endif

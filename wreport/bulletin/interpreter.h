@@ -225,6 +225,8 @@ public:
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
     void d_group_begin(Varcode code) override;
     void d_group_end(Varcode code) override;
+
+    void define_variable(Varinfo info) override;
 };
 
 

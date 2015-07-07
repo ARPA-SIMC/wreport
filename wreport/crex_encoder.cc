@@ -45,11 +45,6 @@ struct DDSEncoder : public bulletin::BaseParser
     }
     virtual ~DDSEncoder() {}
 
-    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override
-    {
-        throw error_unimplemented("do_attr");
-    }
-
     void define_variable(Varinfo info) override
     {
         const Var& var = get_var();

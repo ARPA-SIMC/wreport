@@ -39,6 +39,7 @@ class DDSValidator : public BaseParser
 {
     bool is_crex;
     void check_fits(Varinfo info, const Var& var);
+    void check_attr(Varinfo info, unsigned var_pos);
 
 public:
     /**
@@ -49,7 +50,8 @@ public:
      */
     DDSValidator(Bulletin& b, unsigned subset_idx);
 
-    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override;
+    void define_substituted_value(unsigned pos) override;
+    void define_attribute(Varinfo info, unsigned pos) override;
     void define_variable(Varinfo info) override;
     const Var& define_semantic_variable(Varinfo info) override;
     void define_raw_character_data(Varcode code) override;

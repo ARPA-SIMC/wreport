@@ -51,18 +51,6 @@ Parser::Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no,
 
 Parser::~Parser() {}
 
-void Parser::define_substituted_value(unsigned pos)
-{
-    // Use the details of the corrisponding variable for decoding
-    Varinfo info = current_subset[pos].info();
-    do_attr(info, pos, info->code);
-}
-
-void Parser::define_attribute(Varinfo info, unsigned pos)
-{
-    do_attr(info, pos, info->code);
-}
-
 BaseParser::BaseParser(Bulletin& bulletin, unsigned subset_no)
     : Parser(bulletin.tables, bulletin.datadesc, subset_no, bulletin.subset(subset_no)), bulletin(bulletin), current_subset_no(0)
 {
