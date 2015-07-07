@@ -5,32 +5,22 @@
 namespace wreport {
 namespace bulletin {
 
-Bitmap::Bitmap()
+Bitmap::Bitmap(const Var& bitmap, const Subset& subset, unsigned anchor)
+    : bitmap(bitmap)
 {
-    iter = refs.rend();
-}
-
-Bitmap::~Bitmap()
-{
-    delete bitmap;
-}
-
-void Bitmap::init(const Var& bitmap, const Subset& subset, unsigned anchor)
-{
-    delete this->bitmap;
-    this->bitmap = new Var(bitmap);
-    refs.clear();
-
-    // From the specs it looks like bitmaps refer to all data that precedes
-    // the C operator that defines or uses the bitmap, but from the data
-    // samples that we have it look like when multiple bitmaps are present,
-    // they always refer to the same set of variables. For this reason we
-    // remember the first anchor point that we see and always refer the
-    // other bitmaps that we see to it.
-    if (old_anchor)
-        anchor = old_anchor;
-    else
-        old_anchor = anchor;
+//    /**
+//     * Anchor point of the first bitmap found since the last reset().
+//     *
+//     * From the specs it looks like bitmaps refer to all data that precedes the
+//     * C operator that defines or uses them, but from the data samples that we
+//     * have it look like when multiple bitmaps are present, they always refer
+//     * to the same set of variables.
+//     *
+//     * For this reason we remember the first anchor point that we see and
+//     * always refer the other bitmaps that we see to it.
+//     */
+//  FIXME: we do not seem to currently do that and all seems fine; do we
+//  actually have samples where this matters?
 
     unsigned b_cur = bitmap.info()->len;
     unsigned s_cur = anchor;
@@ -59,6 +49,10 @@ void Bitmap::init(const Var& bitmap, const Subset& subset, unsigned anchor)
     iter = refs.rbegin();
 }
 
+Bitmap::~Bitmap()
+{
+}
+
 bool Bitmap::eob() const { return iter == refs.rend(); }
 unsigned Bitmap::next() { unsigned res = *iter; ++iter; return res; }
 
@@ -84,8 +78,7 @@ unsigned Bitmaps::next()
 void Bitmaps::define(const Var& bitmap, const Subset& subset, unsigned anchor)
 {
     delete current;
-    current = new Bitmap;
-    current->init(bitmap, subset, anchor);
+    current = new Bitmap(bitmap, subset, anchor);
 }
 
 }

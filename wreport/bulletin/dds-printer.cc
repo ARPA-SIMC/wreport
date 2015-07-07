@@ -112,11 +112,11 @@ void DDSPrinter::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opc
     {
         Varinfo info = tables.btable->query(delayed_code);
         print_context(info, 0);
-        Var var(info, (int)bitmaps.current->bitmap->info()->len);
+        Var var(info, (int)bitmaps.current->bitmap.info()->len);
         var.print(out);
     }
-    print_context(bitmaps.current->bitmap->info(), 0);
-    bitmaps.current->bitmap->print(out);
+    print_context(bitmaps.current->bitmap.info(), 0);
+    bitmaps.current->bitmap.print(out);
 }
 
 void DDSPrinter::do_char_data(Varcode code)

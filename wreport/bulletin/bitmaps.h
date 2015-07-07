@@ -1,7 +1,7 @@
 #ifndef WREPORT_BULLETIN_BITMAPS_H
 #define WREPORT_BULLETIN_BITMAPS_H
 
-#include <wreport/varinfo.h>
+#include <wreport/var.h>
 #include <vector>
 
 namespace wreport {
@@ -14,7 +14,7 @@ namespace bulletin {
 struct Bitmap
 {
     /// Bitmap being iterated
-    Var* bitmap = nullptr;
+    Var bitmap;
 
     /**
      * Arrays of variable indices corresponding to positions in the bitmap
@@ -31,35 +31,20 @@ struct Bitmap
     std::vector<unsigned>::const_reverse_iterator iter;
 
     /**
-     * Anchor point of the first bitmap found since the last reset().
-     *
-     * From the specs it looks like bitmaps refer to all data that precedes the
-     * C operator that defines or uses them, but from the data samples that we
-     * have it look like when multiple bitmaps are present, they always refer
-     * to the same set of variables.
-     *
-     * For this reason we remember the first anchor point that we see and
-     * always refer the other bitmaps that we see to it.
-     */
-    unsigned old_anchor = 0;
-
-    Bitmap();
-    Bitmap(const Bitmap&) = delete;
-    ~Bitmap();
-    Bitmap& operator=(const Bitmap&) = delete;
-
-    /**
-     * Initialise the bitmap handler
+     * Create a new bitmap
      *
      * @param bitmap
-     *   The bitmap
+     *   The bitmap variable
      * @param subset
      *   The subset to which the bitmap refers
      * @param anchor
      *   The index to the first element after the end of the bitmap (usually
      *   the C operator that defines or uses the bitmap)
      */
-    void init(const Var& bitmap, const Subset& subset, unsigned anchor);
+    Bitmap(const Var& bitmap, const Subset& subset, unsigned anchor);
+    Bitmap(const Bitmap&) = delete;
+    ~Bitmap();
+    Bitmap& operator=(const Bitmap&) = delete;
 
     /**
      * True if there is no bitmap or if the bitmap has been iterated until the
