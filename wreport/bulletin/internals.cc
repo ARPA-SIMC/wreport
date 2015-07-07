@@ -42,15 +42,11 @@ namespace wreport {
 namespace bulletin {
 
 
-AssociatedField::AssociatedField() : btable(0), skip_missing(true), bit_count(0) {}
-AssociatedField::~AssociatedField() {}
-
-void AssociatedField::reset(const Vartable& btable)
+AssociatedField::AssociatedField(const Vartable& btable)
+    : btable(btable), skip_missing(true), bit_count(0), significance(63)
 {
-    this->btable = &btable;
-    bit_count = 0;
-    significance = 63;
 }
+AssociatedField::~AssociatedField() {}
 
 std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
 {
@@ -58,10 +54,10 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
     {
         case 1:
             // Add attribute B33002=value
-            return unique_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 2)), (int)value));
+            return unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 2)), (int)value));
         case 2:
             // Add attribute B33003=value
-            return unique_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 3)), (int)value));
+            return unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 3)), (int)value));
         case 3:
         case 4:
         case 5:
@@ -73,7 +69,7 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
             // Add attribute B33050=value
             if (!skip_missing || value != 15)
             {
-                unique_ptr<Var> res(new Var(btable->query(WR_VAR(0, 33, 50))));
+                unique_ptr<Var> res(new Var(btable.query(WR_VAR(0, 33, 50))));
                 if (value != 15)
                    res->seti(value);
                 return res;
@@ -81,12 +77,12 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
                 return unique_ptr<Var>();
         case 7:
             // Add attribute B33040=value
-            return unique_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 40)), (int)value));
+            return unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 40)), (int)value));
         case 8:
             // Add attribute B33002=value
             if (!skip_missing || value != 3)
             {
-                unique_ptr<Var> res(new Var(btable->query(WR_VAR(0, 33, 2))));
+                unique_ptr<Var> res(new Var(btable.query(WR_VAR(0, 33, 2))));
                 if (value != 3)
                    res->seti(value);
                 return res;
@@ -95,7 +91,7 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
         case 21:
             // Add attribute B33041=value
             if (!skip_missing || value != 1)
-                return unique_ptr<Var>(new Var(btable->query(WR_VAR(0, 33, 41)), 0));
+                return unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 41)), 0));
             else
                 return unique_ptr<Var>();
         case 63:
@@ -186,10 +182,9 @@ const Var* AssociatedField::get_attribute(const Var& var) const
 
 
 Parser::Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset)
-    : DDSInterpreter(tables, opcodes), current_subset(current_subset)
+    : DDSInterpreter(tables, opcodes), current_subset(current_subset), associated_field(*tables.btable)
 {
     TRACE("parser: start on subset %u\n", subset_no);
-    associated_field.reset(*tables.btable);
 }
 
 Parser::~Parser() {}

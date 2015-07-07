@@ -39,7 +39,7 @@ namespace bulletin {
 struct AssociatedField
 {
     /// B table used to generate associated field attributes
-    const Vartable* btable;
+    const Vartable& btable;
 
     /**
      * If true, fields with a missing values will be returned as 0. If it is
@@ -57,14 +57,9 @@ struct AssociatedField
     /// Significance of C04yyy field according to code table B31021
     unsigned significance;
 
-    AssociatedField();
-    ~AssociatedField();
 
-    /**
-     * Resets the object. To be called at start of decoding, to discard all
-     * previous leftover context, if any.
-     */
-    void reset(const Vartable& btable);
+    AssociatedField(const Vartable& btable);
+    ~AssociatedField();
 
     /**
      * Create a Var that can be used as an attribute for the currently defined
@@ -104,11 +99,7 @@ struct Parser : public bulletin::DDSInterpreter
      */
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
 
-    //@{
-    /// bulletin::Visitor methods implementation
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
-    //@}
-
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;
 };
