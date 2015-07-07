@@ -221,8 +221,7 @@ void Bulletin::print_structured(FILE* out)
     // Print all the subsets
     for (unsigned i = 0; i < subsets.size(); ++i)
     {
-        bulletin::DDSPrinter printer(*this, out);
-        printer.do_start_subset(i, subsets[i]);
+        bulletin::DDSPrinter printer(*this, out, i);
         printer.run();
     }
 }

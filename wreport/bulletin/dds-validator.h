@@ -47,7 +47,7 @@ public:
      * @param b
      *   Reference to the bulletin being visited
      */
-    DDSValidator(Bulletin& b);
+    DDSValidator(Bulletin& b, unsigned subset_idx);
 
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code);
     virtual void do_var(Varinfo info);

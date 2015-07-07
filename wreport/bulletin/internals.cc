@@ -185,7 +185,13 @@ const Var* AssociatedField::get_attribute(const Var& var) const
 }
 
 
-Parser::Parser(const Tables& tables, const Opcodes& opcodes) : DDSInterpreter(tables, opcodes), current_subset(0) {}
+Parser::Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset)
+    : DDSInterpreter(tables, opcodes), current_subset(current_subset)
+{
+    TRACE("parser: start on subset %u\n", subset_no);
+    associated_field.reset(*tables.btable);
+}
+
 Parser::~Parser() {}
 
 Varinfo Parser::get_varinfo(Varcode code)
@@ -309,31 +315,17 @@ void Parser::c_substituted_value(Varcode code)
         error_consistency::throwf("found C23255 while at the end of active bitmap");
     unsigned target = bitmap.next();
     // Use the details of the corrisponding variable for decoding
-    Varinfo info = (*current_subset)[target].info();
+    Varinfo info = current_subset[target].info();
     // Encode the value
     do_attr(info, target, info->code);
 }
 
-void Parser::do_start_subset(unsigned subset_no, const Subset& current_subset)
+
+BaseParser::BaseParser(Bulletin& bulletin, unsigned subset_no)
+    : Parser(bulletin.tables, bulletin.datadesc, subset_no, bulletin.subset(subset_no)), bulletin(bulletin), current_subset_no(0)
 {
-    TRACE("visit: start encoding subset %u\n", subset_no);
-
-    this->current_subset = &current_subset;
-
-    c_scale_change = 0;
-    c_width_change = 0;
-    c_string_len_override = 0;
-    c_scale_ref_width_increase = 0;
-    bitmap.reset();
-    associated_field.reset(*tables.btable);
-    want_bitmap = 0;
-    data_pos = 0;
-}
-
-
-BaseParser::BaseParser(Bulletin& bulletin)
-    : Parser(bulletin.tables, bulletin.datadesc), bulletin(bulletin), current_subset_no(0)
-{
+    current_subset_no = subset_no;
+    current_var = 0;
 }
 
 Var& BaseParser::get_var()
@@ -345,21 +337,11 @@ Var& BaseParser::get_var()
 
 Var& BaseParser::get_var(unsigned var_pos) const
 {
-    unsigned max_var = current_subset->size();
+    unsigned max_var = current_subset.size();
     if (var_pos >= max_var)
         error_consistency::throwf("requested variable #%u out of a maximum of %u in subset %u",
                 var_pos, max_var, current_subset_no);
     return bulletin.subsets[current_subset_no][var_pos];
-}
-
-void BaseParser::do_start_subset(unsigned subset_no, const Subset& current_subset)
-{
-    Parser::do_start_subset(subset_no, current_subset);
-    if (subset_no >= bulletin.subsets.size())
-        error_consistency::throwf("requested subset #%u out of a maximum of %zd", subset_no, bulletin.subsets.size());
-    this->current_subset = &(bulletin.subsets[subset_no]);
-    current_subset_no = subset_no;
-    current_var = 0;
 }
 
 void BaseParser::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
@@ -368,7 +350,7 @@ void BaseParser::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_c
     if (WR_VAR_F(var.code()) != 2)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
                 current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-    bitmap.init(var, *current_subset, data_pos);
+    bitmap.init(var, current_subset, data_pos);
 }
 
 }

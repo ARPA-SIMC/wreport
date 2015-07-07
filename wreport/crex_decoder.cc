@@ -168,9 +168,13 @@ struct Decoder
 struct CrexParser : public bulletin::Parser
 {
     CrexInput& in;
-    Subset* out;
+    Subset& out;
 
-    CrexParser(Bulletin& bulletin, CrexInput& in) : bulletin::Parser(bulletin.tables, bulletin.datadesc), in(in) {}
+    CrexParser(Bulletin& bulletin, CrexInput& in, unsigned subset_idx)
+        : bulletin::Parser(bulletin.tables, bulletin.datadesc, subset_idx, bulletin.obtain_subset(subset_idx)),
+          in(in), out(bulletin.obtain_subset(subset_idx))
+    {
+    }
 
     /// Notify the start of a subset
     //virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
@@ -205,11 +209,11 @@ struct CrexParser : public bulletin::Parser
         }
 
         /* Store the variable that we found */
-        out->store_variable(var);
+        out.store_variable(var);
         IFTRACE{
             TRACE("do_var: stored variable: "); var.print(stderr); TRACE("\n");
         }
-        return out->back();
+        return out.back();
     }
 
     void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
@@ -230,12 +234,7 @@ void Decoder::decode_data()
     // Scan the various subsections
     for (unsigned i = 0; ; ++i)
     {
-        /* Current subset we are decoding */
-        Subset& current_subset = out.obtain_subset(i);
-
-        CrexParser parser(out, in);
-        parser.out = &current_subset;
-        parser.do_start_subset(i, current_subset);
+        CrexParser parser(out, in, i);
         parser.run();
 
         in.skip_spaces();

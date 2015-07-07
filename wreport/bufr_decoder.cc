@@ -241,7 +241,8 @@ struct BaseBufrDecoder : public bulletin::Parser
     /// Input buffer
     bulletin::BufrInput& in;
 
-    BaseBufrDecoder(Decoder& d) : bulletin::Parser(d.out.tables, d.out.datadesc), d(d), in(d.in)
+    BaseBufrDecoder(Decoder& d, unsigned subset_idx, const Subset& current_subset)
+        : bulletin::Parser(d.out.tables, d.out.datadesc, subset_idx, current_subset), d(d), in(d.in)
     {
         associated_field.skip_missing = !d.conf_add_undef_attrs;
     }
@@ -270,13 +271,16 @@ struct BaseBufrDecoder : public bulletin::Parser
 struct UncompressedBufrDecoder : public BaseBufrDecoder
 {
     /// Subset we send variables to
-    Subset* target;
+    Subset* target = nullptr;
 
     /// If set, it is the associated field for the next variable to be decoded
-    Var* cur_associated_field;
+    Var* cur_associated_field = nullptr;
 
-    UncompressedBufrDecoder(Decoder& d)
-        : BaseBufrDecoder(d), target(0), cur_associated_field(0) {}
+    UncompressedBufrDecoder(Decoder& d, unsigned subset_no, const Subset& current_subset)
+        : BaseBufrDecoder(d, subset_no, current_subset), target(&d.out.obtain_subset(subset_no))
+    {
+    }
+
     ~UncompressedBufrDecoder()
     {
         if (cur_associated_field)
@@ -305,17 +309,6 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     Var decode_semantic_b_value(Varinfo info)
     {
         return decode_b_value(info);
-    }
-
-    void do_start_subset(unsigned subset_no, const Subset& current_subset)
-    {
-        BaseBufrDecoder::do_start_subset(subset_no, current_subset);
-        target = &d.out.obtain_subset(subset_no);
-        if (cur_associated_field)
-        {
-            delete cur_associated_field;
-            cur_associated_field = 0;
-        }
     }
 
     /**
@@ -374,7 +367,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     const Var& add_to_all(const Var& var) override
     {
         target->store_variable(var);
-        return current_subset->back();
+        return current_subset.back();
     }
 
     /**
@@ -433,8 +426,8 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
     /// Number of subsets in data section
     unsigned subset_count;
 
-    CompressedBufrDecoder(Decoder& d)
-        : BaseBufrDecoder(d), subset_count(d.out.subsets.size())
+    CompressedBufrDecoder(Decoder& d, unsigned subset_no, const Subset& current_subset)
+        : BaseBufrDecoder(d, subset_no, current_subset), subset_count(d.out.subsets.size())
     {
     }
 
@@ -573,7 +566,7 @@ void BaseBufrDecoder::define_bitmap(Varcode code, Varcode rep_code, Varcode dela
         TRACE("\n");
     }
 
-    bitmap.init(res, *current_subset, data_pos);
+    bitmap.init(res, current_subset, data_pos);
 }
 
 void Decoder::decode_data()
@@ -590,16 +583,14 @@ void Decoder::decode_data()
 
     if (out.compression)
     {
-        CompressedBufrDecoder dec(*this);
-        dec.do_start_subset(0, out.subsets[0]);
         // Run only once
+        CompressedBufrDecoder dec(*this, 0, out.subsets[0]);
         dec.run();
     } else {
         // Run once per subset
         for (unsigned i = 0; i < out.subsets.size(); ++i)
         {
-            UncompressedBufrDecoder dec(*this);
-            dec.do_start_subset(i, out.subsets[i]);
+            UncompressedBufrDecoder dec(*this, i, out.subsets[i]);
             dec.run();
         }
     }

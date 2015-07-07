@@ -70,7 +70,8 @@ struct DDSEncoder : public bulletin::BaseParser
 {
     bulletin::BufrOutput& ob;
 
-    DDSEncoder(Bulletin& b, bulletin::BufrOutput& ob) : BaseParser(b), ob(ob)
+    DDSEncoder(Bulletin& b, bulletin::BufrOutput& ob, unsigned subset_idx)
+        : BaseParser(b, subset_idx), ob(ob)
     {
     }
     virtual ~DDSEncoder() {}
@@ -137,7 +138,7 @@ struct DDSEncoder : public bulletin::BaseParser
         for (unsigned i = 0; i < var.info()->len; ++i)
             ob.add_bits(var.enqc()[i] == '+' ? 0 : 1, 1);
 
-        bitmap.init(var, *current_subset, data_pos);
+        bitmap.init(var, current_subset, data_pos);
     }
     void do_char_data(Varcode code) override
     {
@@ -332,8 +333,7 @@ void Encoder::encode_sec4()
     for (unsigned i = 0; i < in.subsets.size(); ++i)
     {
         // Encode the data of this subset
-        DDSEncoder e(in, out);
-        e.do_start_subset(i, in.subsets[i]);
+        DDSEncoder e(in, out, i);
         e.run();
     }
 

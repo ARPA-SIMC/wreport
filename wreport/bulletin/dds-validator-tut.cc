@@ -44,8 +44,7 @@ static void _validate(Bulletin& b, const wibble::tests::Location& loc)
         // Validate them
         for (unsigned i = 0; i < b.subsets.size(); ++i)
         {
-            bulletin::DDSValidator validator(b);
-            validator.do_start_subset(i, b.subsets[i]);
+            bulletin::DDSValidator validator(b, i);
             validator.run();
         }
     } catch (std::exception& e) {

@@ -34,18 +34,16 @@ struct DDSEncoder : public bulletin::BaseParser
 {
     bulletin::CrexOutput& ob;
 
-    DDSEncoder(Bulletin& b, bulletin::CrexOutput& ob) : BaseParser(b), ob(ob) {}
-    virtual ~DDSEncoder() {}
-
-    void do_start_subset(unsigned subset_no, const Subset& current_subset)
+    DDSEncoder(Bulletin& b, bulletin::CrexOutput& ob, unsigned subset_no)
+        : BaseParser(b, subset_no), ob(ob)
     {
         TRACE("start_subset %u\n", subset_no);
-        bulletin::BaseParser::do_start_subset(subset_no, current_subset);
 
         /* Encode the subsection terminator */
         if (subset_no > 0)
             ob.raw_append("+\r\r\n", 4);
     }
+    virtual ~DDSEncoder() {}
 
     void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override
     {
@@ -178,8 +176,7 @@ struct Encoder
         // Encode all subsets
         for (unsigned i = 0; i < in.subsets.size(); ++i)
         {
-            DDSEncoder e(in, out);
-            e.do_start_subset(i, in.subsets[i]);
+            DDSEncoder e(in, out, i);
             e.run();
         }
         out.raw_append("++\r\r\n", 5);

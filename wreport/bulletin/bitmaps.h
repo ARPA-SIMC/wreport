@@ -40,7 +40,7 @@ struct Bitmap
      * For this reason we remember the first anchor point that we see and
      * always refer the other bitmaps that we see to it.
      */
-    unsigned old_anchor;
+    unsigned old_anchor = 0;
 
     Bitmap();
     Bitmap(const Bitmap&) = delete;

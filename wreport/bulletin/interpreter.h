@@ -41,7 +41,7 @@ struct DDSInterpreter
      * associating attributes to variables.
      */
 #warning TODO move to Bitmaps
-    unsigned data_pos;
+    unsigned data_pos = 0;
 
     /// Current value of scale change from C modifier
     int c_scale_change = 0;

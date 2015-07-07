@@ -89,13 +89,13 @@ struct AssociatedField
 struct Parser : public bulletin::DDSInterpreter
 {
     /// Current subset (used to refer to past variables)
-    const Subset* current_subset;
+    const Subset& current_subset;
 
     /// Current associated field state
     AssociatedField associated_field;
 
 
-    Parser(const Tables& tables, const Opcodes& opcodes);
+    Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset);
     virtual ~Parser();
 
     /**
@@ -103,9 +103,6 @@ struct Parser : public bulletin::DDSInterpreter
      * taking into account current C modifiers
      */
     Varinfo get_varinfo(Varcode code);
-
-    /// Notify the start of a subset
-    virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
 
     /**
      * Request processing, according to \a info, of the attribute \a attr_code
@@ -151,14 +148,13 @@ struct BaseParser : public Parser
     unsigned current_var;
 
     /// Create visitor for the given bulletin
-    BaseParser(Bulletin& bulletin);
+    BaseParser(Bulletin& bulletin, unsigned subset_idx);
 
     /// Get the next variable
     Var& get_var();
     /// Get the variable at the given position
     Var& get_var(unsigned var_pos) const;
 
-    void do_start_subset(unsigned subset_no, const Subset& current_subset) override;
     void define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
 };
 

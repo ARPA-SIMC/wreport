@@ -26,8 +26,8 @@ using namespace std;
 namespace wreport {
 namespace bulletin {
 
-DDSPrinter::DDSPrinter(Bulletin& b, FILE* out)
-    : BaseParser(b), out(out)
+DDSPrinter::DDSPrinter(Bulletin& b, FILE* out, unsigned subset_idx)
+    : BaseParser(b, subset_idx), out(out)
 {
 }
 
@@ -64,12 +64,6 @@ void DDSPrinter::r_replication(Varcode code, Varcode delayed_code, const Opcodes
     stack.push_back(code);
     BaseParser::r_replication(code, delayed_code, ops);
     stack.pop_back();
-}
-
-void DDSPrinter::do_start_subset(unsigned subset_no, const Subset& current_subset)
-{
-    BaseParser::do_start_subset(subset_no, current_subset);
-    stack.clear();
 }
 
 void DDSPrinter::do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)

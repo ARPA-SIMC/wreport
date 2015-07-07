@@ -50,10 +50,9 @@ public:
      * @param out
      *   FILE to print to
      */
-    DDSPrinter(Bulletin& b, FILE* out);
+    DDSPrinter(Bulletin& b, FILE* out, unsigned subset_idx);
     virtual ~DDSPrinter();
 
-    void do_start_subset(unsigned subset_no, const Subset& current_subset) override;
     void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override;
     void do_var(Varinfo info) override;
     const Var& define_semantic_var(Varinfo info) override;
