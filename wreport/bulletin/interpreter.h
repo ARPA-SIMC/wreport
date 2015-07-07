@@ -30,15 +30,6 @@ struct DDSInterpreter
     /// Bitmap iteration
     Bitmaps bitmaps;
 
-    /**
-     * Number of data items processed so far.
-     *
-     * This is used to generate reference to past decoded data, used when
-     * associating attributes to variables.
-     */
-#warning TODO move to Bitmaps
-    unsigned data_pos = 0;
-
     /// Current value of scale change from C modifier
     int c_scale_change = 0;
 

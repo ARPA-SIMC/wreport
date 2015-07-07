@@ -64,6 +64,16 @@ struct Bitmaps
     /// Nonzero if a Data Present Bitmap is expected
     Varcode pending_definitions = 0;
 
+    /**
+     * Index to the last referred element for the next bitmap that will be
+     * defined.
+     *
+     * This is used to generate reference to past decoded data, used when
+     * associating attributes to variables.
+     */
+    unsigned next_bitmap_anchor_point = 0;
+
+
     /// Currently active bitmap
     Bitmap* current = nullptr;
 
@@ -72,7 +82,7 @@ struct Bitmaps
     ~Bitmaps();
     Bitmaps& operator=(const Bitmaps&) = delete;
 
-    void define(const Var& bitmap, const Subset& subset, unsigned anchor);
+    void define(const Var& bitmap, const Subset& subset);
 
     /**
      * Return the next variable offset for which the bitmap reports that data

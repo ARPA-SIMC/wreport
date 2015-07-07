@@ -568,7 +568,7 @@ void BaseBufrDecoder::define_bitmap(Varcode rep_code, Varcode delayed_code, cons
         TRACE("\n");
     }
 
-    bitmaps.define(res, current_subset, data_pos);
+    bitmaps.define(res, current_subset);
 }
 
 void Decoder::decode_data()

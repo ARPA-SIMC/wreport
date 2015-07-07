@@ -249,7 +249,7 @@ void Parser::b_variable(Varcode code)
         TRACE("b_variable variable %01d%02d%03d\n",
                 WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
         do_var(info);
-        ++data_pos;
+        ++bitmaps.next_bitmap_anchor_point;
     }
 }
 
@@ -271,7 +271,7 @@ void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
         // Encode B31021
         const Var& var = define_semantic_var(info);
         associated_field.significance = var.enq(63);
-        ++data_pos;
+        ++bitmaps.next_bitmap_anchor_point;
     }
     associated_field.bit_count = WR_VAR_Y(code);
 }
@@ -303,7 +303,7 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
             Varinfo info = tables.get_unknown(desc_code, WR_VAR_Y(code));
             do_var(info);
         }
-        ++data_pos;
+        ++bitmaps.next_bitmap_anchor_point;
     }
 }
 
@@ -347,7 +347,7 @@ void BaseParser::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opc
     if (WR_VAR_F(var.code()) != 2)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
                 current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-    bitmaps.define(var, current_subset, data_pos);
+    bitmaps.define(var, current_subset);
 }
 
 }

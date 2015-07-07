@@ -138,7 +138,7 @@ struct DDSEncoder : public bulletin::BaseParser
         for (unsigned i = 0; i < var.info()->len; ++i)
             ob.add_bits(var.enqc()[i] == '+' ? 0 : 1, 1);
 
-        bitmaps.define(var, current_subset, data_pos);
+        bitmaps.define(var, current_subset);
     }
     void do_char_data(Varcode code) override
     {

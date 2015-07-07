@@ -235,9 +235,8 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
         if (count == 0 && delayed_code == 0)
             delayed_code = WR_VAR(0, 31, 12);
         define_bitmap(code, delayed_code, ops);
-        // TODO: bitmap.init(bitmap_var, *current_subset, data_pos);
         if (delayed_code)
-            ++data_pos;
+            ++bitmaps.next_bitmap_anchor_point;
         bitmaps.pending_definitions = 0;
     } else {
         /* If using delayed replication and count is not 0, use count for the
@@ -253,7 +252,7 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
             } else {
                 count = var.enqi();
             }
-            ++data_pos;
+            ++bitmaps.next_bitmap_anchor_point;
         }
         IFTRACE {
             TRACE("visitor r_replication %d items %d times%s\n", WR_VAR_X(code), count, delayed_code ? " (delayed)" : "");
