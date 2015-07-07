@@ -102,18 +102,6 @@ public:
     virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
 
     /**
-     * Notify the length of the following local descriptor
-     *
-     * @param code
-     *   The C modifier code
-     * @param desc_code
-     *   Local descriptor for which the length is provided
-     * @param nbits
-     *   Bit size of the data described by \a desc_code
-     */
-    virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
-
-    /**
      * Reuse last defined data present bitmap
      *
      * y is the Y value in the C modifier, currently defined as 0 for reusing
@@ -243,7 +231,6 @@ public:
     void b_variable(Varcode code) override;
     void c_modifier(Varcode code, Opcodes& next) override;
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
-    void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
     void c_reuse_last_bitmap(Varcode code) override;
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
     void d_group_begin(Varcode code) override;

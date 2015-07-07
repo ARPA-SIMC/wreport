@@ -216,32 +216,6 @@ void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
     associated_field.bit_count = WR_VAR_Y(code);
 }
 
-void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
-{
-    // Length of next local descriptor
-    if (WR_VAR_Y(code))
-    {
-        bool skip = true;
-        if (tables.btable->contains(desc_code))
-        {
-            Varinfo info = get_varinfo(desc_code);
-            if (info->bit_len == WR_VAR_Y(code))
-            {
-                // If we can resolve the descriptor and the size is the
-                // same, attempt decoding
-                define_variable(info);
-                skip = false;
-            }
-        }
-        if (skip)
-        {
-            Varinfo info = tables.get_unknown(desc_code, WR_VAR_Y(code));
-            define_variable(info);
-        }
-        ++bitmaps.next_bitmap_anchor_point;
-    }
-}
-
 void Parser::define_substituted_value(unsigned pos)
 {
     // Use the details of the corrisponding variable for decoding

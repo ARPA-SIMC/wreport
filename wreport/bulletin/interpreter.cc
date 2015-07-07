@@ -162,9 +162,39 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
              */
             define_raw_character_data(code);
             break;
-        case 6:
-            c_local_descriptor(code, next.pop_left(), WR_VAR_Y(code));
+        case 6: {
+            /*
+             * Signify data width for the immediately following local
+             * descriptor.
+             *
+             * Y bits of data are described by the immediately following
+             * descriptor.
+             */
+            Varcode desc_code = next.pop_left();
+            // Length of next local descriptor
+            if (unsigned nbits = WR_VAR_Y(code))
+            {
+                bool skip = true;
+                if (tables.btable->contains(desc_code))
+                {
+                    Varinfo info = get_varinfo(desc_code);
+                    if (info->bit_len == nbits)
+                    {
+                        // If we can resolve the descriptor and the size is the
+                        // same, attempt decoding
+                        define_variable(info);
+                        skip = false;
+                    }
+                }
+                if (skip)
+                {
+                    Varinfo info = tables.get_unknown(desc_code, nbits);
+                    define_variable(info);
+                }
+                ++bitmaps.next_bitmap_anchor_point;
+            }
             break;
+        }
         case 7: {
             /*
              * Increase scale, reference value and data width.
@@ -283,7 +313,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
 }
 
 void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
-void DDSInterpreter::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
 void DDSInterpreter::c_reuse_last_bitmap(Varcode code) {}
 
 void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
@@ -402,6 +431,12 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
         case 5:
             fputs(" character data\n", out);
             break;
+        case 6:
+            if (next.empty())
+                fprintf(out, " local descriptor (unknown) %d bits long\n", WR_VAR_Y(code));
+            else
+                fprintf(out, " local descriptor %d%02d%03d %d bits long\n", WR_VAR_FXY(next[0]), WR_VAR_Y(code));
+            break;
         case 7:
             fprintf(out, " change data scale, reference value and data width by %d\n", WR_VAR_Y(code));
             break;
@@ -467,12 +502,6 @@ void Printer::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
     print_lead(code);
     fprintf(out, " %d bits of associated field, significance code %d%02d%03d\n",
            nbits, WR_VAR_F(sig_code), WR_VAR_X(sig_code), WR_VAR_Y(sig_code));
-}
-void Printer::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
-{
-    print_lead(code);
-    fprintf(out, " local descriptor %d%02d%03d %d bits long\n",
-            WR_VAR_F(desc_code), WR_VAR_X(desc_code), WR_VAR_Y(desc_code), nbits);
 }
 void Printer::c_reuse_last_bitmap(Varcode code)
 {

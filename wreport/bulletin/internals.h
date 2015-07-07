@@ -107,7 +107,6 @@ struct Parser : public bulletin::DDSInterpreter
     //@{
     /// bulletin::Visitor methods implementation
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
-    void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
     //@}
 
     void define_substituted_value(unsigned pos) override;
