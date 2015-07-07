@@ -82,16 +82,6 @@ struct DDSInterpreter
     virtual void c_modifier(Varcode code, Opcodes& next);
 
     /**
-     * Notify a change of data width
-     *
-     * @param code
-     *   The C modifier code
-     * @param change
-     *   The width change (positive or negative)
-     */
-    virtual void c_change_data_width(Varcode code, int change);
-
-    /**
      * Notify a change of data scale
      *
      * @param code
@@ -282,21 +272,20 @@ public:
 
     Printer(const Tables& tables, const Opcodes& opcodes);
 
-    virtual void b_variable(Varcode code);
-    virtual void c_modifier(Varcode code);
-    virtual void c_change_data_width(Varcode code, int change);
-    virtual void c_change_data_scale(Varcode code, int change);
-    virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
-    virtual void c_char_data(Varcode code);
-    virtual void c_char_data_override(Varcode code, unsigned new_length);
-    virtual void c_quality_information_bitmap(Varcode code);
-    virtual void c_substituted_value_bitmap(Varcode code);
-    virtual void c_substituted_value(Varcode code);
-    virtual void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits);
-    virtual void c_reuse_last_bitmap(Varcode code);
-    virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
-    virtual void d_group_begin(Varcode code);
-    virtual void d_group_end(Varcode code);
+    void b_variable(Varcode code) override;
+    void c_modifier(Varcode code, Opcodes& next) override;
+    void c_change_data_scale(Varcode code, int change) override;
+    void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
+    void c_char_data(Varcode code) override;
+    void c_char_data_override(Varcode code, unsigned new_length) override;
+    void c_quality_information_bitmap(Varcode code) override;
+    void c_substituted_value_bitmap(Varcode code) override;
+    void c_substituted_value(Varcode code) override;
+    void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
+    void c_reuse_last_bitmap(Varcode code) override;
+    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
+    void d_group_begin(Varcode code) override;
+    void d_group_end(Varcode code) override;
 };
 
 

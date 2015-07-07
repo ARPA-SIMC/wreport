@@ -69,9 +69,17 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
     TRACE("C DATA %01d%02d%03d\n", WR_VAR_FXY(code));
     switch (WR_VAR_X(code))
     {
-        case 1:
-            c_change_data_width(code, WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+        case 1: {
+            /*
+             * Change data width: add Y-128 bits to the data width given for
+             * each data element in table B, other than string variables, and
+             * flag tables.
+             */
+            int change = WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0;
+            TRACE("Set width change from %d to %d\n", c_width_change, change);
+            c_width_change = change;
             break;
+        }
         case 2:
             c_change_data_scale(code, WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
             break;
@@ -150,12 +158,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
                         WR_VAR_Y(code));
             */
     }
-}
-
-void DDSInterpreter::c_change_data_width(Varcode code, int change)
-{
-    TRACE("Set width change from %d to %d\n", c_width_change, change);
-    c_width_change = change;
 }
 
 void DDSInterpreter::c_change_data_scale(Varcode code, int change)
@@ -298,10 +300,20 @@ void Printer::b_variable(Varcode code)
     putc('\n', out);
 }
 
-void Printer::c_modifier(Varcode code)
+void Printer::c_modifier(Varcode code, Opcodes& next)
 {
     print_lead(code);
-    fputs(" (C modifier)\n", out);
+    switch (WR_VAR_X(code))
+    {
+        case 1:
+            /// Change of data width
+            fprintf(out, " change data width to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            break;
+        default:
+            fputs(" (C modifier)\n", out);
+            break;
+    }
+    DDSInterpreter::c_modifier(code, next);
 }
 
 void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
@@ -335,11 +347,6 @@ void Printer::d_group_end(Varcode code)
     indent -= indent_step;
 }
 
-void Printer::c_change_data_width(Varcode code, int change)
-{
-    print_lead(code);
-    fprintf(out, " change data width to %d\n", change);
-}
 void Printer::c_change_data_scale(Varcode code, int change)
 {
     print_lead(code);
