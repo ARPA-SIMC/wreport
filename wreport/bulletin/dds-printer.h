@@ -54,7 +54,7 @@ public:
     virtual ~DDSPrinter();
 
     void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override;
-    void do_var(Varinfo info) override;
+    void define_variable(Varinfo info) override;
     const Var& define_semantic_variable(Varinfo info) override;
     void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
     void do_char_data(Varcode code) override;

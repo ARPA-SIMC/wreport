@@ -84,7 +84,7 @@ struct DDSEncoder : public bulletin::BaseParser
         else
             ob.append_missing(info);
     }
-    void do_var(Varinfo info) override
+    void define_variable(Varinfo info) override
     {
         const Var& var = get_var();
 

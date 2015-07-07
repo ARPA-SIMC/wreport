@@ -176,12 +176,7 @@ struct CrexParser : public bulletin::Parser
     {
     }
 
-    void do_var(Varinfo info)
-    {
-        define_semantic_variable(info);
-    }
-
-    const Var& define_semantic_variable(Varinfo info)
+    const Var& read_variable(Varinfo info)
     {
         // Create the new Var
         Var var(info);
@@ -208,9 +203,19 @@ struct CrexParser : public bulletin::Parser
         /* Store the variable that we found */
         out.store_variable(var);
         IFTRACE{
-            TRACE("do_var: stored variable: "); var.print(stderr); TRACE("\n");
+            TRACE("define_variable: stored variable: "); var.print(stderr); TRACE("\n");
         }
         return out.back();
+    }
+
+    void define_variable(Varinfo info) override
+    {
+        read_variable(info);
+    }
+
+    const Var& define_semantic_variable(Varinfo info) override
+    {
+        return read_variable(info);
     }
 
     void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)

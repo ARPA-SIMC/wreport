@@ -234,22 +234,17 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
             {
                 // If we can resolve the descriptor and the size is the
                 // same, attempt decoding
-                do_var(info);
+                define_variable(info);
                 skip = false;
             }
         }
         if (skip)
         {
             Varinfo info = tables.get_unknown(desc_code, WR_VAR_Y(code));
-            do_var(info);
+            define_variable(info);
         }
         ++bitmaps.next_bitmap_anchor_point;
     }
-}
-
-void Parser::define_variable(Varinfo info)
-{
-    do_var(info);
 }
 
 void Parser::define_substituted_value(unsigned pos)

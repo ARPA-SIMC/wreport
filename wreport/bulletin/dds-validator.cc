@@ -73,7 +73,7 @@ void DDSValidator::do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
         check_fits(info, *a);
 }
 
-void DDSValidator::do_var(Varinfo info)
+void DDSValidator::define_variable(Varinfo info)
 {
     const Var& var = get_var();
 

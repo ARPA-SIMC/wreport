@@ -105,14 +105,6 @@ struct Parser : public bulletin::DDSInterpreter
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
 
     /**
-     * Request processing, according to \a info, of a data variable.
-     *
-     * associated_field should be consulted to see if there are also associated
-     * fields that need processing.
-     */
-    virtual void do_var(Varinfo info) = 0;
-
-    /**
      * Request processing of C05yyy character data
      */
     virtual void do_char_data(Varcode code) = 0;
@@ -126,7 +118,6 @@ struct Parser : public bulletin::DDSInterpreter
 
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;
-    void define_variable(Varinfo info) override;
 };
 
 /**

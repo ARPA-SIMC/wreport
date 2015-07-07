@@ -78,7 +78,7 @@ void DDSPrinter::do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
         fprintf(out, "(undef)");
 }
 
-void DDSPrinter::do_var(Varinfo info)
+void DDSPrinter::define_variable(Varinfo info)
 {
     const Var& var = get_var();
 

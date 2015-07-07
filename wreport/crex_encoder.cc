@@ -50,7 +50,7 @@ struct DDSEncoder : public bulletin::BaseParser
         throw error_unimplemented("do_attr");
     }
 
-    void do_var(Varinfo info) override
+    void define_variable(Varinfo info) override
     {
         const Var& var = get_var();
         IFTRACE {

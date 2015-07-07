@@ -332,7 +332,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     /**
      * Request processing, according to \a info, of a data variable.
      */
-    void do_var(Varinfo info) override
+    void define_variable(Varinfo info) override
     {
         if (associated_field.bit_count)
         {
@@ -349,13 +349,13 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
 
         target->store_variable(decode_b_value(info));
         IFTRACE {
-            TRACE(" do_var decoded: ");
+            TRACE(" define_variable decoded: ");
             target->back().print(stderr);
         }
         if (cur_associated_field)
         {
             IFTRACE {
-                TRACE(" do_var with associated field: ");
+                TRACE(" define_variable with associated field: ");
                 cur_associated_field->print(stderr);
             }
             unique_ptr<Var> af(cur_associated_field);
@@ -476,7 +476,7 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         return *res;
     }
 
-    void do_var(Varinfo info) override
+    void define_variable(Varinfo info) override
     {
         DataSink target(d.out);
         decode_b_value(info, target);
