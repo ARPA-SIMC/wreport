@@ -128,9 +128,10 @@ struct Parser : public bulletin::DDSInterpreter
     void b_variable(Varcode code) override;
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
     void c_char_data(Varcode code) override;
-    void c_substituted_value(Varcode code) override;
     void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
     //@}
+
+    void define_substituted_value(unsigned pos) override;
 };
 
 /**

@@ -103,14 +103,6 @@ struct DDSInterpreter
     virtual void c_char_data(Varcode code);
 
     /**
-     * Notify a substituted value
-     *
-     * @param code
-     *   The C modifier code
-     */
-    virtual void c_substituted_value(Varcode code);
-
-    /**
      * Notify the length of the following local descriptor
      *
      * @param code
@@ -187,6 +179,12 @@ struct DDSInterpreter
      * @returns a copy of the variable
      */
     virtual const Var& define_semantic_var(Varinfo info);
+
+    /**
+     * Request processing of a substituted value corresponding to position \a
+     * pos in the list or previous variables
+     */
+    virtual void define_substituted_value(unsigned pos);
 };
 
 

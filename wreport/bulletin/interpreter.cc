@@ -172,7 +172,9 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
                      * data present bit-map associated with the substituted
                      * values operator
                      */
-                    c_substituted_value(code);
+                    if (!bitmaps.active())
+                        error_consistency::throwf("found C23255 while there is no active bitmap");
+                    define_substituted_value(bitmaps.next());
                     break;
                 default:
                     error_consistency::throwf("C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
@@ -222,7 +224,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
 void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
 void DDSInterpreter::c_char_data(Varcode code) {}
 
-void DDSInterpreter::c_substituted_value(Varcode code) {}
 void DDSInterpreter::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
 void DDSInterpreter::c_reuse_last_bitmap(Varcode code) {}
 
@@ -291,6 +292,10 @@ void DDSInterpreter::define_bitmap(Varcode rep_code, Varcode delayed_code, const
 const Var& DDSInterpreter::define_semantic_var(Varinfo info)
 {
     throw error_unimplemented("define_semantic_var is not implemented in this interpreter");
+}
+
+void DDSInterpreter::define_substituted_value(unsigned pos)
+{
 }
 
 

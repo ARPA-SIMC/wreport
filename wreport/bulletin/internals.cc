@@ -307,15 +307,12 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
     }
 }
 
-void Parser::c_substituted_value(Varcode code)
+void Parser::define_substituted_value(unsigned pos)
 {
-    if (!bitmaps.active())
-        error_consistency::throwf("found C23255 while there is no active bitmap");
-    unsigned target = bitmaps.next();
     // Use the details of the corrisponding variable for decoding
-    Varinfo info = current_subset[target].info();
+    Varinfo info = current_subset[pos].info();
     // Encode the value
-    do_attr(info, target, info->code);
+    do_attr(info, pos, info->code);
 }
 
 BaseParser::BaseParser(Bulletin& bulletin, unsigned subset_no)
