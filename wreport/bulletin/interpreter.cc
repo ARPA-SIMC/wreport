@@ -106,7 +106,7 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             break;
         case 7: {
             /*
-             * Increase scale, reference value and data width
+             * Increase scale, reference value and data width.
              *
              * For Table B elements, which are not CCITTIA5, code or flag tables:
              *  1. Add Y to the existing scale factor
@@ -119,9 +119,23 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             c_scale_ref_width_increase = change;
             break;
         }
-        case 8:
-            c_char_data_override(code, WR_VAR_Y(code));
+        case 8: {
+            /**
+             * Change width of CCITTIA5 field.
+             *
+             * Y characters (representing Y * 8 bits in length) replace the
+             * specified data width given for each CCITTIA5 element in Table B.
+             */
+            int change = WR_VAR_Y(code);
+            IFTRACE {
+                if (change)
+                    TRACE("decode_c_data:character size overridden to %d chars for all fields\n", change);
+                else
+                    TRACE("decode_c_data:character size overridde end\n");
+            }
+            c_string_len_override = change;
             break;
+        }
         case 22:
             c_quality_information_bitmap(code);
             break;
@@ -182,17 +196,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
 
 void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
 void DDSInterpreter::c_char_data(Varcode code) {}
-
-void DDSInterpreter::c_char_data_override(Varcode code, unsigned new_length)
-{
-    IFTRACE {
-        if (new_length)
-            TRACE("decode_c_data:character size overridden to %d chars for all fields\n", new_length);
-        else
-            TRACE("decode_c_data:character size overridde end\n");
-    }
-    c_string_len_override = new_length;
-}
 
 void DDSInterpreter::c_quality_information_bitmap(Varcode code)
 {
@@ -322,6 +325,9 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
         case 7:
             fprintf(out, " change data scale, reference value and data width by %d\n", WR_VAR_Y(code));
             break;
+        case 8:
+            fprintf(out, " change width of string fields to %d\n", WR_VAR_Y(code));
+            break;
         default:
             fputs(" (C modifier)\n", out);
             break;
@@ -370,11 +376,6 @@ void Printer::c_char_data(Varcode code)
 {
     print_lead(code);
     fputs(" character data\n", out);
-}
-void Printer::c_char_data_override(Varcode code, unsigned new_length)
-{
-    print_lead(code);
-    fprintf(out, " override character data length to %d\n", new_length);
 }
 void Printer::c_quality_information_bitmap(Varcode code)
 {

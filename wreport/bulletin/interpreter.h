@@ -103,16 +103,6 @@ struct DDSInterpreter
     virtual void c_char_data(Varcode code);
 
     /**
-     * Notify an override of character data length
-     *
-     * @param code
-     *   The C modifier code
-     * @param new_length
-     *   New length of all following character data (or 0 to reset to default)
-     */
-    virtual void c_char_data_override(Varcode code, unsigned new_length);
-
-    /**
      * Notify a bitmap for quality information data
      *
      * @param code
@@ -256,7 +246,6 @@ public:
     void c_modifier(Varcode code, Opcodes& next) override;
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
     void c_char_data(Varcode code) override;
-    void c_char_data_override(Varcode code, unsigned new_length) override;
     void c_quality_information_bitmap(Varcode code) override;
     void c_substituted_value_bitmap(Varcode code) override;
     void c_substituted_value(Varcode code) override;
