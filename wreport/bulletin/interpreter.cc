@@ -104,9 +104,21 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
         case 6:
             c_local_descriptor(code, next.pop_left(), WR_VAR_Y(code));
             break;
-        case 7:
-            c_increase_scale_ref_width(code, WR_VAR_Y(code));
+        case 7: {
+            /*
+             * Increase scale, reference value and data width
+             *
+             * For Table B elements, which are not CCITTIA5, code or flag tables:
+             *  1. Add Y to the existing scale factor
+             *  2. Multiply the existing reference value by 10^Y
+             *  3. Calculate ( ( 10 * Y ) + 2 ) / 3 , disregard any fractional
+             *     remainder and add the result to the existing bit width.
+             */
+            int change = WR_VAR_Y(code);
+            TRACE("Increase scale, reference value and data width by %d\n", change);
+            c_scale_ref_width_increase = change;
             break;
+        }
         case 8:
             c_char_data_override(code, WR_VAR_Y(code));
             break;
@@ -166,12 +178,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
                         WR_VAR_Y(code));
             */
     }
-}
-
-void DDSInterpreter::c_increase_scale_ref_width(Varcode code, int change)
-{
-    TRACE("Increase scale, reference value and data width by %d\n", change);
-    c_scale_ref_width_increase = change;
 }
 
 void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
@@ -312,6 +318,9 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
             break;
         case 2:
             fprintf(out, " change data scale to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            break;
+        case 7:
+            fprintf(out, " change data scale, reference value and data width by %d\n", WR_VAR_Y(code));
             break;
         default:
             fputs(" (C modifier)\n", out);
