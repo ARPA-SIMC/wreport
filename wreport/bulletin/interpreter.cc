@@ -147,10 +147,41 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             break;
         }
         case 4: {
-            Varcode sig_code = 0;
-            if (WR_VAR_Y(code))
-                sig_code = next.pop_left();
-            c_associated_field(code, sig_code, WR_VAR_Y(code));
+            /*
+             * Add associated field.
+             *
+             * Precede each data element with Y bits of information. This
+             * operation associates a data field (e.g. quality control
+             * information) of Y bits with each data element.
+             *
+             * The Add Associated Field operator, whenever used, must be
+             * immediately followed by the Class 31 Data description operator
+             * qualifier 0 31 021 to indicate the meaning of the associated
+             * fields.
+             */
+            unsigned nbits = WR_VAR_Y(code);
+            TRACE("Set C04 bits to %d\n", nbits);
+            // FIXME: nested C04 modifiers are not currently implemented
+            if (nbits && associated_field.bit_count)
+                throw error_unimplemented("nested C04 modifiers are not yet implemented");
+            if (nbits > 32)
+                error_unimplemented::throwf("C04 modifier wants %d bits but only at most 32 are supported", nbits);
+            if (nbits)
+            {
+                Varcode sig_code = next.pop_left();
+                if (sig_code != WR_VAR(0, 31, 21))
+                    error_consistency::throwf("C04%03i modifier is followed by data descriptor %01d%02d%03d instead of B31021",
+                            nbits, WR_VAR_FXY(sig_code));
+
+                // Get encoding informations for this associated_field_significance
+                Varinfo info = tables.btable->query(WR_VAR(0, 31, 21));
+
+                // Get the value for B31021, defaulting to 63 if missing
+                const Var& var = define_semantic_variable(info);
+                associated_field.significance = var.enq(63);
+                ++bitmaps.next_bitmap_anchor_point;
+            }
+            associated_field.bit_count = nbits;
             break;
         }
         case 5:
@@ -312,7 +343,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
     }
 }
 
-void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
 void DDSInterpreter::c_reuse_last_bitmap(Varcode code) {}
 
 void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
@@ -428,6 +458,9 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
         case 2:
             fprintf(out, " change data scale to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
             break;
+        case 4:
+            fprintf(out, " %d bits of associated field\n", WR_VAR_Y(code));
+            break;
         case 5:
             fputs(" character data\n", out);
             break;
@@ -497,12 +530,6 @@ void Printer::d_group_end(Varcode code)
     indent -= indent_step;
 }
 
-void Printer::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
-{
-    print_lead(code);
-    fprintf(out, " %d bits of associated field, significance code %d%02d%03d\n",
-           nbits, WR_VAR_F(sig_code), WR_VAR_X(sig_code), WR_VAR_Y(sig_code));
-}
 void Printer::c_reuse_last_bitmap(Varcode code)
 {
     print_lead(code);

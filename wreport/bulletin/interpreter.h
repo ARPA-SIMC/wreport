@@ -3,7 +3,6 @@
 
 #include <wreport/bulletin/bitmaps.h>
 #include <wreport/bulletin/associated_fields.h>
-#include <wreport/bulletin/associated_fields.h>
 #include <wreport/opcode.h>
 #include <wreport/tables.h>
 #include <memory>
@@ -92,19 +91,6 @@ public:
      *   The C modifier code
      */
     virtual void c_modifier(Varcode code, Opcodes& next);
-
-    /**
-     * Notify the declaration of an associated field for the next values.
-     *
-     * @param code
-     *   The C modifier code
-     * @param sig_code
-     *   The B code of the associated field significance opcode (or 0 to mark
-     *   the end of the associated field encoding)
-     * @param nbits
-     *   The number of bits used for the associated field.
-     */
-    virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
 
     /**
      * Reuse last defined data present bitmap
@@ -235,7 +221,6 @@ public:
 
     void b_variable(Varcode code) override;
     void c_modifier(Varcode code, Opcodes& next) override;
-    void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
     void c_reuse_last_bitmap(Varcode code) override;
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
     void d_group_begin(Varcode code) override;

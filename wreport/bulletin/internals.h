@@ -54,7 +54,6 @@ struct Parser : public bulletin::DDSInterpreter
      */
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
 
-    void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;
 };

@@ -51,28 +51,6 @@ Parser::Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no,
 
 Parser::~Parser() {}
 
-void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
-{
-    // Add associated field
-    TRACE("Set C04 bits to %d\n", WR_VAR_Y(code));
-    // FIXME: nested C04 modifiers are not currently implemented
-    if (WR_VAR_Y(code) && associated_field.bit_count)
-        throw error_unimplemented("nested C04 modifiers are not yet implemented");
-    if (WR_VAR_Y(code) > 32)
-        error_unimplemented::throwf("C04 modifier wants %d bits but only at most 32 are supported", WR_VAR_Y(code));
-    if (WR_VAR_Y(code))
-    {
-        // Get encoding informations for this associated_field_significance
-        Varinfo info = tables.btable->query(WR_VAR(0, 31, 21));
-
-        // Encode B31021
-        const Var& var = define_semantic_variable(info);
-        associated_field.significance = var.enq(63);
-        ++bitmaps.next_bitmap_anchor_point;
-    }
-    associated_field.bit_count = WR_VAR_Y(code);
-}
-
 void Parser::define_substituted_value(unsigned pos)
 {
     // Use the details of the corrisponding variable for decoding
