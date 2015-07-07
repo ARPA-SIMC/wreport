@@ -206,35 +206,6 @@ struct Parser : public bulletin::DDSInterpreter
     virtual void do_var(Varinfo info) = 0;
 
     /**
-     * Request processing, according to \a info, of a data variabile that is
-     * significant for controlling the encoding process.
-     *
-     * This means that the variable has always the same value on all datasets
-     * (in case of compressed datasets), and that the interpreter needs to know
-     * its value.
-     *
-     * @returns a copy of the variable
-     */
-    virtual const Var& do_semantic_var(Varinfo info) = 0;
-
-    /**
-     * Request processing of a data present bitmap.
-     *
-     * @param code
-     *   The C modifier code that defines the bitmap
-     * @param rep_code
-     *   The R replicator that defines the bitmap
-     * @param delayed_code
-     *   The B delayed replicator that defines the bitmap length (it is 0 if
-     *   the length is encoded in the YYY part of rep_code
-     * @param ops
-     *   The replicated opcodes that define the bitmap
-     * @returns
-     *   The bitmap that has been processed.
-     */
-    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) = 0;
-
-    /**
      * Request processing of C05yyy character data
      */
     virtual void do_char_data(Varcode code) = 0;
@@ -274,8 +245,8 @@ struct BaseParser : public Parser
     /// Get the variable at the given position
     Var& get_var(unsigned var_pos) const;
 
-    virtual void do_start_subset(unsigned subset_no, const Subset& current_subset);
-    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
+    void do_start_subset(unsigned subset_no, const Subset& current_subset) override;
+    const Var& define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
 };
 
 }

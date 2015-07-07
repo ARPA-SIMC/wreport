@@ -259,11 +259,11 @@ struct BaseBufrDecoder : public bulletin::Parser
      */
     virtual const Var& add_to_all(const Var& var) = 0;
 
-    virtual const Var& do_semantic_var(Varinfo info)
+    const Var& define_semantic_var(Varinfo info) override
     {
         return add_to_all(decode_semantic_b_value(info));
     }
-    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
+    const Var& define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
 };
 
 /// Decoder for uncompressed data
@@ -502,12 +502,12 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
     }
 };
 
-const Var& BaseBufrDecoder::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+const Var& BaseBufrDecoder::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     unsigned group = WR_VAR_X(rep_code);
     unsigned count = WR_VAR_Y(rep_code);
 
-    TRACE("do_bitmap %d\n", count);
+    TRACE("define_bitmap %d\n", count);
 
     if (count == 0)
     {

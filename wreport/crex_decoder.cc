@@ -177,10 +177,10 @@ struct CrexParser : public bulletin::Parser
 
     void do_var(Varinfo info)
     {
-        do_semantic_var(info);
+        define_semantic_var(info);
     }
 
-    const Var& do_semantic_var(Varinfo info)
+    const Var& define_semantic_var(Varinfo info)
     {
         // Create the new Var
         Var var(info);
@@ -215,10 +215,6 @@ struct CrexParser : public bulletin::Parser
     void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
     {
         throw error_unimplemented("do_attr");
-    }
-    const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
-    {
-        throw error_unimplemented("do_bitmap");
     }
     void do_char_data(Varcode code)
     {

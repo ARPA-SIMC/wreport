@@ -75,7 +75,7 @@ struct DDSEncoder : public bulletin::BaseParser
     }
     virtual ~DDSEncoder() {}
 
-    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override
     {
         const Var& var = get_var(var_pos);
         if (const Var* a = var.enqa(attr_code))
@@ -83,7 +83,7 @@ struct DDSEncoder : public bulletin::BaseParser
         else
             ob.append_missing(info);
     }
-    virtual void do_var(Varinfo info)
+    void do_var(Varinfo info) override
     {
         const Var& var = get_var();
 
@@ -99,13 +99,13 @@ struct DDSEncoder : public bulletin::BaseParser
 
         ob.append_var(info, var);
     }
-    virtual const Var& do_semantic_var(Varinfo info)
+    const Var& define_semantic_var(Varinfo info) override
     {
         const Var& var = get_var();
         ob.append_var(info, var);
         return var;
     }
-    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+    const Var& define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
     {
         const Var& var = get_var();
         if (WR_VAR_F(var.code()) != 2)
@@ -139,7 +139,7 @@ struct DDSEncoder : public bulletin::BaseParser
 
         return var;
     }
-    virtual void do_char_data(Varcode code)
+    void do_char_data(Varcode code) override
     {
         const Var& var = get_var();
         const char* val = var.enq("");

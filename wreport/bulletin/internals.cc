@@ -320,7 +320,7 @@ void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
         Varinfo info = tables.btable->query(WR_VAR(0, 31, 21));
 
         // Encode B31021
-        const Var& var = do_semantic_var(info);
+        const Var& var = define_semantic_var(info);
         associated_field.significance = var.enq(63);
         ++data_pos;
     }
@@ -406,7 +406,7 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
     {
         if (count == 0 && delayed_code == 0)
             delayed_code = WR_VAR(0, 31, 12);
-        const Var& bitmap_var = do_bitmap(want_bitmap, code, delayed_code, ops);
+        const Var& bitmap_var = define_bitmap(want_bitmap, code, delayed_code, ops);
         bitmap.init(bitmap_var, *current_subset, data_pos);
         if (delayed_code)
             ++data_pos;
@@ -415,7 +415,7 @@ void Parser::r_replication(Varcode code, Varcode delayed_code, const Opcodes& op
         if (count == 0)
         {
             Varinfo info = tables.btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
-            const Var& var = do_semantic_var(info);
+            const Var& var = define_semantic_var(info);
             if (var.code() == WR_VAR(0, 31, 0))
             {
                 count = var.isset() ? 0 : 1;
@@ -489,7 +489,7 @@ void BaseParser::do_start_subset(unsigned subset_no, const Subset& current_subse
     current_var = 0;
 }
 
-const Var& BaseParser::do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+const Var& BaseParser::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)

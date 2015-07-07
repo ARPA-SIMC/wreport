@@ -159,6 +159,7 @@ void DDSInterpreter::run()
 
 
 void DDSInterpreter::b_variable(Varcode code) {}
+
 void DDSInterpreter::c_modifier(Varcode code)
 {
     TRACE("C DATA %01d%02d%03d\n", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
@@ -181,8 +182,10 @@ void DDSInterpreter::c_increase_scale_ref_width(Varcode code, int change)
     TRACE("Increase scale, reference value and data width by %d\n", change);
     c_scale_ref_width_increase = change;
 }
+
 void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
 void DDSInterpreter::c_char_data(Varcode code) {}
+
 void DDSInterpreter::c_char_data_override(Varcode code, unsigned new_length)
 {
     IFTRACE {
@@ -202,6 +205,16 @@ void DDSInterpreter::c_reuse_last_bitmap(Varcode code) {}
 void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) {}
 void DDSInterpreter::d_group_begin(Varcode code) {}
 void DDSInterpreter::d_group_end(Varcode code) {}
+
+const Var& DDSInterpreter::define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+{
+    throw error_unimplemented("define_bitmap is not implemented in this interpreter");
+}
+
+const Var& DDSInterpreter::define_semantic_var(Varinfo info)
+{
+    throw error_unimplemented("define_semantic_var is not implemented in this interpreter");
+}
 
 
 Printer::Printer(const Tables& tables, const Opcodes& opcodes)

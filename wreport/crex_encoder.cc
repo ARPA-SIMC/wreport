@@ -47,12 +47,12 @@ struct DDSEncoder : public bulletin::BaseParser
             ob.raw_append("+\r\r\n", 4);
     }
 
-    virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code)
+    void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override
     {
         throw error_unimplemented("do_attr");
     }
 
-    virtual void do_var(Varinfo info)
+    void do_var(Varinfo info) override
     {
         const Var& var = get_var();
         IFTRACE {
@@ -62,7 +62,7 @@ struct DDSEncoder : public bulletin::BaseParser
         ob.append_var(info, var);
     }
 
-    virtual const Var& do_semantic_var(Varinfo info)
+    const Var& define_semantic_var(Varinfo info) override
     {
         const Var& var = get_var();
         IFTRACE {
@@ -91,12 +91,7 @@ struct DDSEncoder : public bulletin::BaseParser
         return var;
     }
 
-    virtual const Var& do_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
-    {
-        throw error_unimplemented("do_bitmap");
-    }
-
-    virtual void do_char_data(Varcode code)
+    void do_char_data(Varcode code) override
     {
         throw error_unimplemented("do_char_data");
     }

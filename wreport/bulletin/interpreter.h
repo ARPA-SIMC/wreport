@@ -9,6 +9,7 @@ namespace wreport {
 struct Vartable;
 struct DTable;
 struct Tables;
+struct Var;
 
 namespace bulletin {
 struct Visitor;
@@ -206,6 +207,35 @@ struct DDSInterpreter
      *   The increase, to be handled according to table C, X=7
      */
     virtual void c_increase_scale_ref_width(Varcode code, int change);
+
+    /**
+     * Request processing of a data present bitmap.
+     *
+     * @param code
+     *   The C modifier code that defines the bitmap
+     * @param rep_code
+     *   The R replicator that defines the bitmap
+     * @param delayed_code
+     *   The B delayed replicator that defines the bitmap length (it is 0 if
+     *   the length is encoded in the YYY part of rep_code
+     * @param ops
+     *   The replicated opcodes that define the bitmap
+     * @returns
+     *   The bitmap that has been processed.
+     */
+    virtual const Var& define_bitmap(Varcode code, Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
+
+    /**
+     * Request processing, according to \a info, of a data variabile that is
+     * significant for controlling the encoding process.
+     *
+     * This means that the variable has always the same value on all datasets
+     * (in case of compressed datasets), and that the interpreter needs to know
+     * its value.
+     *
+     * @returns a copy of the variable
+     */
+    virtual const Var& define_semantic_var(Varinfo info);
 };
 
 
