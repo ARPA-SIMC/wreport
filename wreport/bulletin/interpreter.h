@@ -103,14 +103,6 @@ struct DDSInterpreter
     virtual void c_char_data(Varcode code);
 
     /**
-     * Notify a bitmap for substituted values
-     *
-     * @param code
-     *   The C modifier code
-     */
-    virtual void c_substituted_value_bitmap(Varcode code);
-
-    /**
      * Notify a substituted value
      *
      * @param code
@@ -238,8 +230,6 @@ public:
     void c_modifier(Varcode code, Opcodes& next) override;
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
     void c_char_data(Varcode code) override;
-    void c_substituted_value_bitmap(Varcode code) override;
-    void c_substituted_value(Varcode code) override;
     void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
     void c_reuse_last_bitmap(Varcode code) override;
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;

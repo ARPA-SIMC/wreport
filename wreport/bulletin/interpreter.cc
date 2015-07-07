@@ -120,7 +120,7 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             break;
         }
         case 8: {
-            /**
+            /*
              * Change width of CCITTIA5 field.
              *
              * Y characters (representing Y * 8 bits in length) replace the
@@ -137,7 +137,12 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             break;
         }
         case 22:
-            // Quality information
+            /*
+             * Quality information follows.
+             *
+             * The values of class 33 elements which follow relate to the data
+             * defined by the data present bit-map
+             */
             if (WR_VAR_Y(code) != 0)
                 error_consistency::throwf("C modifier %d%02d%03d not yet supported",
                             WR_VAR_F(code),
@@ -146,13 +151,27 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             bitmaps.pending_definitions = code;
             break;
         case 23:
-            // Substituted values
             switch (WR_VAR_Y(code))
             {
                 case 0:
-                    c_substituted_value_bitmap(code);
+                    /*
+                     * Substituted values operator.
+                     *
+                     * The substituted values which follow relate to the data
+                     * defined by the data present bit-map
+                     */
+                    bitmaps.pending_definitions = code;
                     break;
                 case 255:
+                    /*
+                     * Substituted values marker operator.
+                     *
+                     * This operator shall signify a data item containing a
+                     * substituted value; the element descriptor for the
+                     * substituted value is obtained by the application of the
+                     * data present bit-map associated with the substituted
+                     * values operator
+                     */
                     c_substituted_value(code);
                     break;
                 default:
@@ -202,11 +221,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
 
 void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
 void DDSInterpreter::c_char_data(Varcode code) {}
-
-void DDSInterpreter::c_substituted_value_bitmap(Varcode code)
-{
-    bitmaps.pending_definitions = code;
-}
 
 void DDSInterpreter::c_substituted_value(Varcode code) {}
 void DDSInterpreter::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
@@ -326,6 +340,19 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
         case 22:
             fputs(" quality information with bitmap\n", out);
             break;
+        case 23:
+            switch (WR_VAR_Y(code))
+            {
+                case 0:
+                    fputs(" substituted values bitmap\n", out);
+                    break;
+                case 255:
+                    fputs(" one substituted value\n", out);
+                    break;
+                default:
+                    error_consistency::throwf("C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
+            }
+            break;
         default:
             fputs(" (C modifier)\n", out);
             break;
@@ -374,16 +401,6 @@ void Printer::c_char_data(Varcode code)
 {
     print_lead(code);
     fputs(" character data\n", out);
-}
-void Printer::c_substituted_value_bitmap(Varcode code)
-{
-    print_lead(code);
-    fputs(" substituted values bitmap\n", out);
-}
-void Printer::c_substituted_value(Varcode code)
-{
-    print_lead(code);
-    fputs(" one substituted value\n", out);
 }
 void Printer::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
 {
