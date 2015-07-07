@@ -30,12 +30,12 @@ namespace wreport {
 
 namespace {
 
-struct DDSEncoder : public bulletin::BaseParser
+struct DDSEncoder : public bulletin::UncompressedEncoder
 {
     bulletin::CrexOutput& ob;
 
     DDSEncoder(Bulletin& b, bulletin::CrexOutput& ob, unsigned subset_no)
-        : BaseParser(b, subset_no), ob(ob)
+        : UncompressedEncoder(b, subset_no), ob(ob)
     {
         TRACE("start_subset %u\n", subset_no);
 

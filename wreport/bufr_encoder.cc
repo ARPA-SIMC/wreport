@@ -66,12 +66,12 @@ namespace wreport {
 
 namespace {
 
-struct DDSEncoder : public bulletin::BaseParser
+struct DDSEncoder : public bulletin::UncompressedEncoder
 {
     bulletin::BufrOutput& ob;
 
     DDSEncoder(Bulletin& b, bulletin::BufrOutput& ob, unsigned subset_idx)
-        : BaseParser(b, subset_idx), ob(ob)
+        : UncompressedEncoder(b, subset_idx), ob(ob)
     {
     }
     virtual ~DDSEncoder() {}

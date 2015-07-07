@@ -35,7 +35,7 @@ namespace bulletin {
  * bulletin subsets can actualy be encoded matching the bulletin Data
  * Descriptor Section.
  */
-class DDSValidator : public BaseParser
+class DDSValidator : public UncompressedEncoder
 {
     bool is_crex;
     void check_fits(Varinfo info, const Var& var);

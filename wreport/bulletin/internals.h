@@ -37,6 +37,31 @@ struct Bulletin;
 namespace bulletin {
 
 /**
+ * Base DDSInterpreter specialisation for message encoders that works on a
+ * subset at a time
+ */
+struct UncompressedEncoder : public bulletin::DDSInterpreter
+{
+    /// Current subset (used to refer to past variables)
+    const Subset& current_subset;
+    /// Index of the next variable to be visited
+    unsigned current_var = 0;
+
+    UncompressedEncoder(const Bulletin& bulletin, unsigned subset_no);
+    virtual ~UncompressedEncoder();
+
+    /// Get the next variable
+    const Var& get_var();
+
+    /// Get the variable at the given position
+    const Var& get_var(unsigned pos) const;
+
+    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
+};
+
+// TODO: CompressedEncoder
+
+/**
  * Abstract interface for classes that can be used as targets for the Bulletin
  * Data Descriptor Section interpreters.
  */
@@ -47,31 +72,6 @@ struct Parser : public bulletin::DDSInterpreter
 
     Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset);
     virtual ~Parser();
-};
-
-/**
- * Common bulletin::Parser base for visitors that modify the bulletin.
- *
- * This assumes a fully decoded bulletin.
- */
-struct BaseParser : public Parser
-{
-    /// Bulletin being visited
-    Bulletin& bulletin;
-    /// Index of the subset being visited
-    unsigned current_subset_no;
-    /// Index of the next variable to be visited
-    unsigned current_var;
-
-    /// Create visitor for the given bulletin
-    BaseParser(Bulletin& bulletin, unsigned subset_idx);
-
-    /// Get the next variable
-    Var& get_var();
-    /// Get the variable at the given position
-    Var& get_var(unsigned var_pos) const;
-
-    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
 };
 
 }

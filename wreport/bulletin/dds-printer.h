@@ -12,10 +12,11 @@ namespace bulletin {
 /**
  * bulletin::Visitor that prints the bulletin contents and its structure
  */
-class DDSPrinter : public BaseParser
+class DDSPrinter : public UncompressedEncoder
 {
     std::vector<Varcode> stack;
     FILE* out;
+    unsigned subset_no;
 
     void print_context(Varinfo info, unsigned var_pos);
     void print_context(Varcode code, unsigned var_pos);

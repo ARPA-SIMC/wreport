@@ -6,7 +6,7 @@ namespace wreport {
 namespace bulletin {
 
 DDSPrinter::DDSPrinter(Bulletin& b, FILE* out, unsigned subset_idx)
-    : BaseParser(b, subset_idx), out(out)
+    : UncompressedEncoder(b, subset_idx), out(out), subset_no(subset_idx)
 {
 }
 
@@ -19,7 +19,7 @@ void DDSPrinter::print_context(Varinfo info, unsigned var_pos)
 
 void DDSPrinter::print_context(Varcode code, unsigned var_pos)
 {
-    fprintf(out, "%2u.%2u ", current_subset_no, var_pos);
+    fprintf(out, "%2u.%2u ", subset_no, var_pos);
     for (vector<Varcode>::const_iterator i = stack.begin();
             i != stack.end(); ++i)
         fprintf(out, "%01d%02d%03d/", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
@@ -28,20 +28,20 @@ void DDSPrinter::print_context(Varcode code, unsigned var_pos)
 
 void DDSPrinter::d_group_begin(Varcode code)
 {
-    BaseParser::d_group_begin(code);
+    UncompressedEncoder::d_group_begin(code);
     stack.push_back(code);
 }
 
 void DDSPrinter::d_group_end(Varcode code)
 {
-    BaseParser::d_group_end(code);
+    UncompressedEncoder::d_group_end(code);
     stack.pop_back();
 }
 
 void DDSPrinter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     stack.push_back(code);
-    BaseParser::r_replication(code, delayed_code, ops);
+    UncompressedEncoder::r_replication(code, delayed_code, ops);
     stack.pop_back();
 }
 
@@ -86,7 +86,7 @@ const Var& DDSPrinter::define_semantic_variable(Varinfo info)
 
 void DDSPrinter::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
-    BaseParser::define_bitmap(rep_code, delayed_code, ops);
+    UncompressedEncoder::define_bitmap(rep_code, delayed_code, ops);
     if (delayed_code)
     {
         Varinfo info = tables.btable->query(delayed_code);

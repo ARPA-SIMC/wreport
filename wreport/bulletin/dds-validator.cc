@@ -28,7 +28,7 @@ namespace wreport {
 namespace bulletin {
 
 DDSValidator::DDSValidator(Bulletin& b, unsigned subset_idx)
-    : BaseParser(b, subset_idx)
+    : UncompressedEncoder(b, subset_idx)
 {
     is_crex = dynamic_cast<const CrexBulletin*>(&b) != NULL;
 }
