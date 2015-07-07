@@ -52,7 +52,7 @@ public:
     void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) override;
     void define_variable(Varinfo info) override;
     const Var& define_semantic_variable(Varinfo info) override;
-    void do_char_data(Varcode code) override;
+    void define_raw_character_data(Varcode code) override;
 };
 
 }

@@ -154,7 +154,13 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             break;
         }
         case 5:
-            c_char_data(code);
+            /*
+             * Signify character
+             *
+             * Y characters (CCITT International Alphabet No. 5) are inserted
+             * as a data field of Y * 8 bits in length
+             */
+            define_raw_character_data(code);
             break;
         case 6:
             c_local_descriptor(code, next.pop_left(), WR_VAR_Y(code));
@@ -277,8 +283,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
 }
 
 void DDSInterpreter::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) {}
-void DDSInterpreter::c_char_data(Varcode code) {}
-
 void DDSInterpreter::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) {}
 void DDSInterpreter::c_reuse_last_bitmap(Varcode code) {}
 
@@ -353,6 +357,11 @@ void DDSInterpreter::define_variable(Varinfo info) {}
 void DDSInterpreter::define_substituted_value(unsigned pos) {}
 void DDSInterpreter::define_attribute(Varinfo info, unsigned pos) {}
 
+void DDSInterpreter::define_raw_character_data(Varcode code)
+{
+    throw error_unimplemented("define_raw_character_data is not implemented in this interpreter");
+}
+
 Printer::Printer(const Tables& tables, const Opcodes& opcodes)
     : DDSInterpreter(tables, opcodes), out(stdout), indent(0), indent_step(2)
 {
@@ -389,6 +398,9 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
             break;
         case 2:
             fprintf(out, " change data scale to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            break;
+        case 5:
+            fputs(" character data\n", out);
             break;
         case 7:
             fprintf(out, " change data scale, reference value and data width by %d\n", WR_VAR_Y(code));
@@ -455,11 +467,6 @@ void Printer::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
     print_lead(code);
     fprintf(out, " %d bits of associated field, significance code %d%02d%03d\n",
            nbits, WR_VAR_F(sig_code), WR_VAR_X(sig_code), WR_VAR_Y(sig_code));
-}
-void Printer::c_char_data(Varcode code)
-{
-    print_lead(code);
-    fputs(" character data\n", out);
 }
 void Printer::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
 {

@@ -216,11 +216,6 @@ void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
     associated_field.bit_count = WR_VAR_Y(code);
 }
 
-void Parser::c_char_data(Varcode code)
-{
-    do_char_data(code);
-}
-
 void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
 {
     // Length of next local descriptor

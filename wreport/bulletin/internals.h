@@ -104,15 +104,9 @@ struct Parser : public bulletin::DDSInterpreter
      */
     virtual void do_attr(Varinfo info, unsigned var_pos, Varcode attr_code) = 0;
 
-    /**
-     * Request processing of C05yyy character data
-     */
-    virtual void do_char_data(Varcode code) = 0;
-
     //@{
     /// bulletin::Visitor methods implementation
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
-    void c_char_data(Varcode code) override;
     void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
     //@}
 

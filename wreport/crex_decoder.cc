@@ -222,10 +222,6 @@ struct CrexParser : public bulletin::Parser
     {
         throw error_unimplemented("do_attr");
     }
-    void do_char_data(Varcode code)
-    {
-        throw error_unimplemented("do_char_data");
-    }
 };
 
 void Decoder::decode_data()

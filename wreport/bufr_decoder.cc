@@ -373,7 +373,7 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
     /**
      * Request processing of C05yyy character data
      */
-    void do_char_data(Varcode code)
+    void define_raw_character_data(Varcode code)
     {
         unsigned cdatalen = WR_VAR_Y(code);
         string buf;
@@ -488,7 +488,7 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         decode_b_value(info, target);
     }
 
-    void do_char_data(Varcode code) override
+    void define_raw_character_data(Varcode code) override
     {
         // TODO: if compressed, extract the data from each subset? Store it in each dataset?
         error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(code));

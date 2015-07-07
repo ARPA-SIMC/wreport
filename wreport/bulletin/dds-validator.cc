@@ -93,7 +93,7 @@ const Var& DDSValidator::define_semantic_variable(Varinfo info)
     return var;
 }
 
-void DDSValidator::do_char_data(Varcode code)
+void DDSValidator::define_raw_character_data(Varcode code)
 {
     const Var& var = get_var();
     if (var.code() != code)

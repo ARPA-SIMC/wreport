@@ -140,7 +140,7 @@ struct DDSEncoder : public bulletin::BaseParser
 
         bitmaps.define(var, current_subset);
     }
-    void do_char_data(Varcode code) override
+    void define_raw_character_data(Varcode code) override
     {
         const Var& var = get_var();
         const char* val = var.enq("");

@@ -88,11 +88,6 @@ struct DDSEncoder : public bulletin::BaseParser
         }
         return var;
     }
-
-    void do_char_data(Varcode code) override
-    {
-        throw error_unimplemented("do_char_data");
-    }
 };
 
 

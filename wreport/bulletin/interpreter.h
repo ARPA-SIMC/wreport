@@ -102,14 +102,6 @@ public:
     virtual void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits);
 
     /**
-     * Notify raw character data encoded via a C modifier
-     *
-     * @param code
-     *   The C modifier code
-     */
-    virtual void c_char_data(Varcode code);
-
-    /**
      * Notify the length of the following local descriptor
      *
      * @param code
@@ -206,6 +198,9 @@ public:
      * variable as position \a pos in the list of previous variables.
      */
     virtual void define_attribute(Varinfo info, unsigned pos);
+
+    /// Request processing of C05yyy raw character data
+    virtual void define_raw_character_data(Varcode code);
 };
 
 
@@ -248,7 +243,6 @@ public:
     void b_variable(Varcode code) override;
     void c_modifier(Varcode code, Opcodes& next) override;
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
-    void c_char_data(Varcode code) override;
     void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
     void c_reuse_last_bitmap(Varcode code) override;
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;

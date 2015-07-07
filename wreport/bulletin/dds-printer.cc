@@ -119,7 +119,7 @@ void DDSPrinter::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opc
     bitmaps.current->bitmap.print(out);
 }
 
-void DDSPrinter::do_char_data(Varcode code)
+void DDSPrinter::define_raw_character_data(Varcode code)
 {
     print_context(code, 0);
 
