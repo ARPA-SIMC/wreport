@@ -260,7 +260,7 @@ struct BaseBufrDecoder : public bulletin::Parser
      */
     virtual const Var& add_to_all(const Var& var) = 0;
 
-    const Var& define_semantic_var(Varinfo info) override
+    const Var& define_semantic_variable(Varinfo info) override
     {
         return add_to_all(decode_semantic_b_value(info));
     }

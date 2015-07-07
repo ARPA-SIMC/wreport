@@ -178,10 +178,10 @@ struct CrexParser : public bulletin::Parser
 
     void do_var(Varinfo info)
     {
-        define_semantic_var(info);
+        define_semantic_variable(info);
     }
 
-    const Var& define_semantic_var(Varinfo info)
+    const Var& define_semantic_variable(Varinfo info)
     {
         // Create the new Var
         Var var(info);

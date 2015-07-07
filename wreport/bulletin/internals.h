@@ -99,12 +99,6 @@ struct Parser : public bulletin::DDSInterpreter
     virtual ~Parser();
 
     /**
-     * Return the Varinfo describing the variable \a code, possibly altered
-     * taking into account current C modifiers
-     */
-    Varinfo get_varinfo(Varcode code);
-
-    /**
      * Request processing, according to \a info, of the attribute \a attr_code
      * of the variable in position \a var_pos in the current subset.
      */
@@ -125,13 +119,14 @@ struct Parser : public bulletin::DDSInterpreter
 
     //@{
     /// bulletin::Visitor methods implementation
-    void b_variable(Varcode code) override;
     void c_associated_field(Varcode code, Varcode sig_code, unsigned nbits) override;
     void c_char_data(Varcode code) override;
     void c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits) override;
     //@}
 
     void define_substituted_value(unsigned pos) override;
+    void define_attribute(Varinfo info, unsigned pos) override;
+    void define_variable(Varinfo info) override;
 };
 
 /**

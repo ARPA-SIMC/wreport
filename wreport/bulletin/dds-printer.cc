@@ -98,7 +98,7 @@ void DDSPrinter::do_var(Varinfo info)
     var.print(out);
 }
 
-const Var& DDSPrinter::define_semantic_var(Varinfo info)
+const Var& DDSPrinter::define_semantic_variable(Varinfo info)
 {
     const Var& var = get_var();
     var.print(out);

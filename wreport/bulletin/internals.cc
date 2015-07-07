@@ -194,66 +194,6 @@ Parser::Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no,
 
 Parser::~Parser() {}
 
-Varinfo Parser::get_varinfo(Varcode code)
-{
-    Varinfo peek = tables.btable->query(code);
-
-    if (!c_scale_change && !c_width_change && !c_string_len_override && !c_scale_ref_width_increase)
-        return peek;
-
-    int scale = peek->scale;
-    if (c_scale_change)
-    {
-        TRACE("get_varinfo:applying %d scale change\n", c_scale_change);
-        scale += c_scale_change;
-    }
-
-    int bit_len = peek->bit_len;
-    if (peek->type == Vartype::String && c_string_len_override)
-    {
-        TRACE("get_varinfo:overriding string to %d bytes\n", c_string_len_override);
-        bit_len = c_string_len_override * 8;
-    }
-    else if (c_width_change)
-    {
-        TRACE("get_varinfo:applying %d width change\n", c_width_change);
-        bit_len += c_width_change;
-    }
-
-    if (c_scale_ref_width_increase)
-    {
-        TRACE("get_varinfo:applying %d increase of scale, ref, width\n", c_scale_ref_width_increase);
-        // TODO: misses reference value adjustment
-        scale += c_scale_ref_width_increase;
-        bit_len += (10 * c_scale_ref_width_increase + 2) / 3;
-        // c_ref *= 10**code
-    }
-
-    TRACE("get_info:requesting alteration scale:%d, bit_len:%d\n", scale, bit_len);
-    return tables.btable->query_altered(code, scale, bit_len);
-}
-
-void Parser::b_variable(Varcode code)
-{
-    Varinfo info = get_varinfo(code);
-    // Choose which value we should encode
-    if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && bitmaps.active())
-    {
-        // Attribute of the variable pointed by the bitmap
-        unsigned target = bitmaps.next();
-        TRACE("b_variable attribute %01d%02d%03d subset pos %u\n",
-                WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code), target);
-        do_attr(info, target, code);
-    } else {
-        // Proper variable
-        TRACE("b_variable variable %01d%02d%03d\n",
-                WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
-        do_var(info);
-        ++bitmaps.next_bitmap_anchor_point;
-    }
-}
-
-
 void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
 {
     // Add associated field
@@ -269,7 +209,7 @@ void Parser::c_associated_field(Varcode code, Varcode sig_code, unsigned nbits)
         Varinfo info = tables.btable->query(WR_VAR(0, 31, 21));
 
         // Encode B31021
-        const Var& var = define_semantic_var(info);
+        const Var& var = define_semantic_variable(info);
         associated_field.significance = var.enq(63);
         ++bitmaps.next_bitmap_anchor_point;
     }
@@ -307,11 +247,20 @@ void Parser::c_local_descriptor(Varcode code, Varcode desc_code, unsigned nbits)
     }
 }
 
+void Parser::define_variable(Varinfo info)
+{
+    do_var(info);
+}
+
 void Parser::define_substituted_value(unsigned pos)
 {
     // Use the details of the corrisponding variable for decoding
     Varinfo info = current_subset[pos].info();
-    // Encode the value
+    do_attr(info, pos, info->code);
+}
+
+void Parser::define_attribute(Varinfo info, unsigned pos)
+{
     do_attr(info, pos, info->code);
 }
 

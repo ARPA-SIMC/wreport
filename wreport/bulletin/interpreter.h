@@ -45,7 +45,14 @@ struct DDSInterpreter
      */
     int c_string_len_override = 0;
 
+protected:
+    /**
+     * Return a Varinfo for the given Varcode, applying all relevant C
+     * modifications that are currently active.
+     */
+    Varinfo get_varinfo(Varcode code);
 
+public:
     DDSInterpreter(const Tables& tables, const Opcodes& opcodes)
         : tables(tables)
     {
@@ -169,6 +176,14 @@ struct DDSInterpreter
     virtual void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
 
     /**
+     * Request processing, according to \a info, of a data variable.
+     *
+     * associated_field should be consulted to see if there are also associated
+     * fields that need processing.
+     */
+    virtual void define_variable(Varinfo info);
+
+    /**
      * Request processing, according to \a info, of a data variabile that is
      * significant for controlling the encoding process.
      *
@@ -178,13 +193,19 @@ struct DDSInterpreter
      *
      * @returns a copy of the variable
      */
-    virtual const Var& define_semantic_var(Varinfo info);
+    virtual const Var& define_semantic_variable(Varinfo info);
 
     /**
      * Request processing of a substituted value corresponding to position \a
      * pos in the list or previous variables
      */
     virtual void define_substituted_value(unsigned pos);
+
+    /**
+     * Request processing of an attribute encoded with \a info, related to the
+     * variable as position \a pos in the list of previous variables.
+     */
+    virtual void define_attribute(Varinfo info, unsigned pos);
 };
 
 

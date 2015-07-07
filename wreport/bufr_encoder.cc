@@ -100,7 +100,7 @@ struct DDSEncoder : public bulletin::BaseParser
 
         ob.append_var(info, var);
     }
-    const Var& define_semantic_var(Varinfo info) override
+    const Var& define_semantic_variable(Varinfo info) override
     {
         const Var& var = get_var();
         ob.append_var(info, var);

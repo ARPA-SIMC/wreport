@@ -61,8 +61,63 @@ void DDSInterpreter::run()
     }
 }
 
+Varinfo DDSInterpreter::get_varinfo(Varcode code)
+{
+    Varinfo peek = tables.btable->query(code);
 
-void DDSInterpreter::b_variable(Varcode code) {}
+    if (!c_scale_change && !c_width_change && !c_string_len_override && !c_scale_ref_width_increase)
+        return peek;
+
+    int scale = peek->scale;
+    if (c_scale_change)
+    {
+        TRACE("get_varinfo:applying %d scale change\n", c_scale_change);
+        scale += c_scale_change;
+    }
+
+    int bit_len = peek->bit_len;
+    if (peek->type == Vartype::String && c_string_len_override)
+    {
+        TRACE("get_varinfo:overriding string to %d bytes\n", c_string_len_override);
+        bit_len = c_string_len_override * 8;
+    }
+    else if (c_width_change)
+    {
+        TRACE("get_varinfo:applying %d width change\n", c_width_change);
+        bit_len += c_width_change;
+    }
+
+    if (c_scale_ref_width_increase)
+    {
+        TRACE("get_varinfo:applying %d increase of scale, ref, width\n", c_scale_ref_width_increase);
+        // TODO: misses reference value adjustment
+        scale += c_scale_ref_width_increase;
+        bit_len += (10 * c_scale_ref_width_increase + 2) / 3;
+        // c_ref *= 10**code
+    }
+
+    TRACE("get_info:requesting alteration scale:%d, bit_len:%d\n", scale, bit_len);
+    return tables.btable->query_altered(code, scale, bit_len);
+}
+
+void DDSInterpreter::b_variable(Varcode code)
+{
+    Varinfo info = get_varinfo(code);
+    // Choose which value we should encode
+    if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && bitmaps.active())
+    {
+        // Attribute of the variable pointed by the bitmap
+        unsigned pos = bitmaps.next();
+        TRACE("b_variable attribute %01d%02d%03d subset pos %u\n", WR_VAR_FXY(code), pos);
+        define_attribute(info, pos);
+    } else {
+        // Proper variable
+        TRACE("b_variable variable %01d%02d%03d\n",
+                WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
+        define_variable(info);
+        ++bitmaps.next_bitmap_anchor_point;
+    }
+}
 
 void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
 {
@@ -254,7 +309,7 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
         if (count == 0)
         {
             Varinfo info = tables.btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
-            const Var& var = define_semantic_var(info);
+            const Var& var = define_semantic_variable(info);
             if (var.code() == WR_VAR(0, 31, 0))
             {
                 count = var.isset() ? 0 : 1;
@@ -289,15 +344,14 @@ void DDSInterpreter::define_bitmap(Varcode rep_code, Varcode delayed_code, const
     throw error_unimplemented("define_bitmap is not implemented in this interpreter");
 }
 
-const Var& DDSInterpreter::define_semantic_var(Varinfo info)
+const Var& DDSInterpreter::define_semantic_variable(Varinfo info)
 {
-    throw error_unimplemented("define_semantic_var is not implemented in this interpreter");
+    throw error_unimplemented("define_semantic_variable is not implemented in this interpreter");
 }
 
-void DDSInterpreter::define_substituted_value(unsigned pos)
-{
-}
-
+void DDSInterpreter::define_variable(Varinfo info) {}
+void DDSInterpreter::define_substituted_value(unsigned pos) {}
+void DDSInterpreter::define_attribute(Varinfo info, unsigned pos) {}
 
 Printer::Printer(const Tables& tables, const Opcodes& opcodes)
     : DDSInterpreter(tables, opcodes), out(stdout), indent(0), indent_step(2)
