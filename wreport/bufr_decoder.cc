@@ -24,7 +24,7 @@
 #include "opcode.h"
 #include "bulletin.h"
 #include "bulletin/internals.h"
-#include "bulletin/buffers.h"
+#include "buffers/bufr.h"
 #include "conv.h"
 #include "notes.h"
 
@@ -65,7 +65,7 @@ static inline uint32_t all_ones(int bitlen)
 struct Decoder
 {
     /// Input data
-    bulletin::BufrInput& in;
+    buffers::BufrInput& in;
     /* Output decoded variables */
     BufrBulletin& out;
     /// Number of expected subsets (read in decode_header, used in decode_data)
@@ -236,12 +236,12 @@ struct Decoder
 struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
 {
     /// Input buffer
-    bulletin::BufrInput& in;
+    buffers::BufrInput& in;
 
     /// If set, it is the associated field for the next variable to be decoded
     Var* cur_associated_field = nullptr;
 
-    UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, bulletin::BufrInput& in)
+    UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, buffers::BufrInput& in)
         : bulletin::UncompressedDecoder(bulletin, subset_no), in(in)
     {
     }
@@ -417,7 +417,7 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
     }
 };
 
-struct DataSink : public bulletin::CompressedVarSink
+struct DataSink : public buffers::CompressedVarSink
 {
     Bulletin& out;
     DataSink(Bulletin& out) : out(out) {}
@@ -427,7 +427,7 @@ struct DataSink : public bulletin::CompressedVarSink
     }
 };
 
-struct AttrSink : public bulletin::CompressedVarSink
+struct AttrSink : public buffers::CompressedVarSink
 {
     Bulletin& out;
     unsigned var_pos;
@@ -442,17 +442,17 @@ struct AttrSink : public bulletin::CompressedVarSink
 struct CompressedBufrDecoder : public bulletin::CompressedDecoder
 {
     /// Input buffer
-    bulletin::BufrInput& in;
+    buffers::BufrInput& in;
 
     /// Number of subsets in data section
     unsigned subset_count;
 
-    CompressedBufrDecoder(BufrBulletin& bulletin, bulletin::BufrInput& in)
+    CompressedBufrDecoder(BufrBulletin& bulletin, buffers::BufrInput& in)
         : bulletin::CompressedDecoder(bulletin), in(in), subset_count(bulletin.subsets.size())
     {
     }
 
-    void decode_b_value(Varinfo info, bulletin::CompressedVarSink& dest)
+    void decode_b_value(Varinfo info, buffers::CompressedVarSink& dest)
     {
         switch (info->type)
         {

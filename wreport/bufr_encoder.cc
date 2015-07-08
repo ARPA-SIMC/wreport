@@ -1,6 +1,6 @@
 #include "bulletin.h"
-#include "bulletin/buffers.h"
 #include "bulletin/internals.h"
+#include "buffers/bufr.h"
 #include <netinet/in.h>
 #include <cstring>
 #include "config.h"
@@ -23,9 +23,9 @@ namespace {
 
 struct DDSEncoder : public bulletin::UncompressedEncoder
 {
-    bulletin::BufrOutput& ob;
+    buffers::BufrOutput& ob;
 
-    DDSEncoder(Bulletin& b, unsigned subset_idx, bulletin::BufrOutput& ob)
+    DDSEncoder(Bulletin& b, unsigned subset_idx, buffers::BufrOutput& ob)
         : UncompressedEncoder(b, subset_idx), ob(ob)
     {
     }
@@ -121,7 +121,7 @@ struct Encoder
     /* Input message data */
     BufrBulletin& in;
     /// Output buffer
-    bulletin::BufrOutput& out;
+    buffers::BufrOutput& out;
 
     /*
      * Offset of the start of BUFR sections
@@ -131,7 +131,7 @@ struct Encoder
      */
     unsigned sec[6] = { 0, 0, 0, 0, 0, 0 };
 
-    Encoder(BufrBulletin& in, bulletin::BufrOutput& out)
+    Encoder(BufrBulletin& in, buffers::BufrOutput& out)
         : in(in), out(out)
     {
     }
@@ -346,7 +346,7 @@ void Encoder::encode_sec4()
 
 void BufrBulletin::encode(std::string& buf)
 {
-    bulletin::BufrOutput out(buf);
+    buffers::BufrOutput out(buf);
 
     Encoder e(*this, out);
 

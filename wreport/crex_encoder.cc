@@ -1,6 +1,6 @@
 #include "bulletin.h"
-#include "bulletin/buffers.h"
 #include "bulletin/internals.h"
+#include "buffers/crex.h"
 #include "config.h"
 
 // #define TRACE_ENCODER
@@ -21,9 +21,9 @@ namespace {
 
 struct DDSEncoder : public bulletin::UncompressedEncoder
 {
-    bulletin::CrexOutput& ob;
+    buffers::CrexOutput& ob;
 
-    DDSEncoder(Bulletin& b, unsigned subset_no, bulletin::CrexOutput& ob)
+    DDSEncoder(Bulletin& b, unsigned subset_no, buffers::CrexOutput& ob)
         : UncompressedEncoder(b, subset_no), ob(ob)
     {
         TRACE("start_subset %u\n", subset_no);
@@ -74,7 +74,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
     }
 };
 
-void encode_sec1(CrexBulletin& in, bulletin::CrexOutput out)
+void encode_sec1(CrexBulletin& in, buffers::CrexOutput out)
 {
     out.raw_appendf("T%02d%02d%02d A%03d%03d",
             in.master_table_number,
@@ -118,7 +118,7 @@ void encode_sec1(CrexBulletin& in, bulletin::CrexOutput out)
 
 void CrexBulletin::encode(std::string& buf)
 {
-    bulletin::CrexOutput out(buf);
+    buffers::CrexOutput out(buf);
 
     // Encode section 0
     out.raw_append("CREX++\r\r\n", 9);

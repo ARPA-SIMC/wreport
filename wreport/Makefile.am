@@ -15,11 +15,12 @@ nobase_dist_wreportinclude_HEADERS = \
 	dtable.h \
 	error.h \
 	notes.h \
+	buffers/bufr.h \
+	buffers/crex.h \
 	bulletin.h \
 	bulletin/associated_fields.h \
 	bulletin/bitmaps.h \
 	bulletin/interpreter.h \
-	bulletin/buffers.h \
 	bulletin/internals.h \
 	bulletin/dds-validator.h \
 	bulletin/dds-printer.h \
@@ -55,11 +56,12 @@ libwreport_la_SOURCES = \
 	dtable.cc \
 	tables.cc \
 	subset.cc \
+	buffers/bufr.cc \
+	buffers/crex.cc \
 	bulletin.cc \
 	bulletin/associated_fields.cc \
 	bulletin/bitmaps.cc \
 	bulletin/interpreter.cc \
-	bulletin/buffers.cc \
 	bulletin/internals.cc \
 	bulletin/dds-validator.cc \
 	bulletin/dds-printer.cc \
@@ -123,10 +125,11 @@ tut_test_SOURCES = \
 	bufr_decoder-tut.cc \
 	bufr_encoder-tut.cc \
 	crex_decoder-tut.cc \
+	buffers/bufr-tut.cc \
+	buffers/crex-tut.cc \
 	bulletin/associated_fields-tut.cc \
 	bulletin/bitmaps-tut.cc \
 	bulletin/interpreter-tut.cc \
-	bulletin/buffers-tut.cc \
 	bulletin/internals-tut.cc \
 	bulletin/dds-validator-tut.cc \
 	tests-tut.cc \

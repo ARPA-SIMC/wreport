@@ -1,6 +1,6 @@
 #include "bulletin.h"
-#include "bulletin/buffers.h"
 #include "bulletin/internals.h"
+#include "buffers/crex.h"
 #include <cstring>
 #include "config.h"
 
@@ -20,7 +20,7 @@ namespace wreport {
 namespace bulletin {
 namespace {
 
-void decode_header(bulletin::CrexInput& in, CrexBulletin& out)
+void decode_header(buffers::CrexInput& in, CrexBulletin& out)
 {
     /* Read crex section 0 (Indicator section) */
     in.check_available_data(6, "initial header of CREX message");
@@ -119,9 +119,9 @@ void decode_header(bulletin::CrexInput& in, CrexBulletin& out)
 
 struct CrexParser : public bulletin::UncompressedDecoder
 {
-    CrexInput& in;
+    buffers::CrexInput& in;
 
-    CrexParser(Bulletin& bulletin, unsigned subset_idx, CrexInput& in)
+    CrexParser(Bulletin& bulletin, unsigned subset_idx, buffers::CrexInput& in)
         : bulletin::UncompressedDecoder(bulletin, subset_idx), in(in)
     {
     }
@@ -169,7 +169,7 @@ struct CrexParser : public bulletin::UncompressedDecoder
     }
 };
 
-void decode_data(bulletin::CrexInput& in, CrexBulletin& out)
+void decode_data(buffers::CrexInput& in, CrexBulletin& out)
 {
     /* Decode crex section 2 (data section) */
     in.mark_section_start(2);
@@ -223,7 +223,7 @@ void CrexBulletin::decode_header(const std::string& buf, const char* fname, size
     this->fname = fname;
     this->offset = offset;
 
-    bulletin::CrexInput in(buf, fname, offset);
+    buffers::CrexInput in(buf, fname, offset);
     bulletin::decode_header(in, *this);
 }
 
@@ -233,7 +233,7 @@ void CrexBulletin::decode(const std::string& buf, const char* fname, size_t offs
     this->fname = fname;
     this->offset = offset;
 
-    bulletin::CrexInput in(buf, fname, offset);
+    buffers::CrexInput in(buf, fname, offset);
     bulletin::decode_header(in, *this);
     bulletin::decode_data(in, *this);
 }
