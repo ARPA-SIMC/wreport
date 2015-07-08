@@ -70,10 +70,9 @@ struct UncompressedDecoder : public bulletin::DDSInterpreter
 
 struct CompressedDecoder : public bulletin::DDSInterpreter
 {
-    /// Current subset (used to refer to past variables)
-    const Subset& current_subset;
+    Bulletin& output_bulletin;
 
-    CompressedDecoder(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset);
+    CompressedDecoder(Bulletin& bulletin);
     virtual ~CompressedDecoder();
 };
 

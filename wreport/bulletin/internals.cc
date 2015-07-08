@@ -83,10 +83,10 @@ UncompressedDecoder::~UncompressedDecoder()
 }
 
 
-CompressedDecoder::CompressedDecoder(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset)
-    : DDSInterpreter(tables, opcodes), current_subset(current_subset)
+CompressedDecoder::CompressedDecoder(Bulletin& bulletin)
+    : DDSInterpreter(bulletin.tables, bulletin.datadesc), output_bulletin(bulletin)
 {
-    TRACE("parser: start on subset %u\n", subset_no);
+    TRACE("parser: start on compressed bulletin\n");
 }
 
 CompressedDecoder::~CompressedDecoder() {}

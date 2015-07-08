@@ -450,8 +450,8 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
     /// Number of subsets in data section
     unsigned subset_count;
 
-    CompressedBufrDecoder(Decoder& d, unsigned subset_no, const Subset& current_subset)
-        : bulletin::CompressedDecoder(d.out.tables, d.out.datadesc, subset_no, current_subset), d(d), in(d.in), subset_count(d.out.subsets.size())
+    CompressedBufrDecoder(Decoder& d)
+        : bulletin::CompressedDecoder(d.out), d(d), in(d.in), subset_count(d.out.subsets.size())
     {
     }
 
@@ -518,7 +518,7 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
     void define_substituted_value(unsigned pos) override
     {
         // Use the details of the corrisponding variable for decoding
-        Varinfo info = current_subset[pos].info();
+        Varinfo info = output_bulletin.subset(0)[pos].info();
         AttrSink target(d.out, pos);
         decode_b_value(info, target);
     }
@@ -616,7 +616,7 @@ void CompressedBufrDecoder::define_bitmap(Varcode rep_code, Varcode delayed_code
         TRACE("\n");
     }
 
-    bitmaps.define(res, current_subset);
+    bitmaps.define(res, output_bulletin.subset(0));
 }
 
 void Decoder::decode_data()
@@ -634,7 +634,7 @@ void Decoder::decode_data()
     if (out.compression)
     {
         // Run only once
-        CompressedBufrDecoder dec(*this, 0, out.subsets[0]);
+        CompressedBufrDecoder dec(*this);
         dec.associated_field.skip_missing = !conf_add_undef_attrs;
         dec.run();
     } else {
