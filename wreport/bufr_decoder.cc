@@ -441,17 +441,14 @@ struct AttrSink : public bulletin::CompressedVarSink
 /// Decoder for compressed data
 struct CompressedBufrDecoder : public bulletin::CompressedDecoder
 {
-    /// Decoder object with configuration information
-    Decoder& d;
-
     /// Input buffer
     bulletin::BufrInput& in;
 
     /// Number of subsets in data section
     unsigned subset_count;
 
-    CompressedBufrDecoder(Decoder& d)
-        : bulletin::CompressedDecoder(d.out), d(d), in(d.in), subset_count(d.out.subsets.size())
+    CompressedBufrDecoder(BufrBulletin& bulletin, bulletin::BufrInput& in)
+        : bulletin::CompressedDecoder(bulletin), in(in), subset_count(bulletin.subsets.size())
     {
     }
 
@@ -503,15 +500,15 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
         const Var* res = 0;
         for (unsigned i = 0; i < subset_count; ++i)
         {
-            d.out.subsets[i].store_variable(var);
-            if (!res) res = &d.out.subsets[i].back();
+            output_bulletin.subsets[i].store_variable(var);
+            if (!res) res = &output_bulletin.subsets[i].back();
         }
         return *res;
     }
 
     void define_variable(Varinfo info) override
     {
-        DataSink target(d.out);
+        DataSink target(output_bulletin);
         decode_b_value(info, target);
     }
 
@@ -519,13 +516,13 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
     {
         // Use the details of the corrisponding variable for decoding
         Varinfo info = output_bulletin.subset(0)[pos].info();
-        AttrSink target(d.out, pos);
+        AttrSink target(output_bulletin, pos);
         decode_b_value(info, target);
     }
 
     void define_attribute(Varinfo info, unsigned pos) override
     {
-        AttrSink target(d.out, pos);
+        AttrSink target(output_bulletin, pos);
         decode_b_value(info, target);
     }
 
@@ -574,28 +571,19 @@ void CompressedBufrDecoder::define_bitmap(Varcode rep_code, Varcode delayed_code
     // Read the bitmap
     string buf;
     buf.resize(count);
-    if (d.out.compression)
+    for (unsigned i = 0; i < count; ++i)
     {
-        for (unsigned i = 0; i < count; ++i)
-        {
-            uint32_t val = in.get_bits(1);
-            buf[i] = (val == 0) ? '+' : '-';
-            // Decode the number of bits (encoded in 6 bits) of difference
-            // values. It's odd to repeat this for each bit in the bitmap, but
-            // that's how things are transmitted and it's somewhat consistent
-            // with how data compression is specified
-            val = in.get_bits(6);
-            // If compressed, ensure that the difference bits are 0 and they are
-            // not trying to transmit odd things like delta bitmaps 
-            if (val != 0)
-                in.parse_error("bitmap entry %u declares %u difference bits, but we only support 0", i, val);
-        }
-    } else {
-        for (unsigned i = 0; i < count; ++i)
-        {
-            uint32_t val = in.get_bits(1);
-            buf[i] = (val == 0) ? '+' : '-';
-        }
+        uint32_t val = in.get_bits(1);
+        buf[i] = (val == 0) ? '+' : '-';
+        // Decode the number of bits (encoded in 6 bits) of difference
+        // values. It's odd to repeat this for each bit in the bitmap, but
+        // that's how things are transmitted and it's somewhat consistent
+        // with how data compression is specified
+        val = in.get_bits(6);
+        // If compressed, ensure that the difference bits are 0 and they are
+        // not trying to transmit odd things like delta bitmaps 
+        if (val != 0)
+            in.parse_error("bitmap entry %u declares %u difference bits, but we only support 0", i, val);
     }
 
     // Create a single use varinfo to store the bitmap
@@ -634,7 +622,7 @@ void Decoder::decode_data()
     if (out.compression)
     {
         // Run only once
-        CompressedBufrDecoder dec(*this);
+        CompressedBufrDecoder dec(out, in);
         dec.associated_field.skip_missing = !conf_add_undef_attrs;
         dec.run();
     } else {
