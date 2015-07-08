@@ -268,23 +268,22 @@ struct BaseBufrDecoder : public bulletin::Parser
 };
 
 /// Decoder for uncompressed data
-struct UncompressedBufrDecoder : public BaseBufrDecoder
+struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
 {
-    /// Subset we send variables to
-    Subset* target = nullptr;
+    /// Input buffer
+    bulletin::BufrInput& in;
 
     /// If set, it is the associated field for the next variable to be decoded
     Var* cur_associated_field = nullptr;
 
-    UncompressedBufrDecoder(Decoder& d, unsigned subset_no, const Subset& current_subset)
-        : BaseBufrDecoder(d, subset_no, current_subset), target(&d.out.obtain_subset(subset_no))
+    UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, bulletin::BufrInput& in)
+        : bulletin::UncompressedDecoder(bulletin, subset_no), in(in)
     {
     }
 
     ~UncompressedBufrDecoder()
     {
-        if (cur_associated_field)
-            delete cur_associated_field;
+        delete cur_associated_field;
     }
 
     Var decode_b_value(Varinfo info)
@@ -306,39 +305,22 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
         return var;
     }
 
-    Var decode_semantic_b_value(Varinfo info)
-    {
-        return decode_b_value(info);
-    }
-
     void define_substituted_value(unsigned pos) override
     {
         // Use the details of the corrisponding variable for decoding
-        Varinfo info = current_subset[pos].info();
+        Varinfo info = output_subset[pos].info();
         Var var = decode_b_value(info);
         TRACE(" define_substituted_value adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value(),
-                WR_VAR_F((*target)[var_pos].code()),
-                WR_VAR_X((*target)[var_pos].code()),
-                WR_VAR_Y((*target)[var_pos].code()));
-        (*target)[pos].seta(var);
+                WR_VAR_FXY(var.code()), var.value(), WR_VAR_FXY(output_subset[var_pos].code()));
+        output_subset[pos].seta(var);
     }
 
     void define_attribute(Varinfo info, unsigned pos) override
     {
         Var var = decode_b_value(info);
         TRACE(" define_attribute adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
-                WR_VAR_F(var.code()),
-                WR_VAR_X(var.code()),
-                WR_VAR_Y(var.code()),
-                var.value(),
-                WR_VAR_F((*target)[var_pos].code()),
-                WR_VAR_X((*target)[var_pos].code()),
-                WR_VAR_Y((*target)[var_pos].code()));
-        (*target)[pos].seta(var);
+                WR_VAR_FXY(var.code()), var.value(), WR_VAR_FXY(output_subset[var_pos].code()));
+        output_subset[pos].seta(var);
     }
 
     /**
@@ -359,10 +341,10 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
             cur_associated_field = associated_field.make_attribute(val).release();
         }
 
-        target->store_variable(decode_b_value(info));
+        output_subset.store_variable(decode_b_value(info));
         IFTRACE {
             TRACE(" define_variable decoded: ");
-            target->back().print(stderr);
+            output_subset.back().print(stderr);
         }
         if (cur_associated_field)
         {
@@ -372,14 +354,8 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
             }
             unique_ptr<Var> af(cur_associated_field);
             cur_associated_field = 0;
-            target->back().seta(move(af));
+            output_subset.back().seta(move(af));
         }
-    }
-
-    const Var& add_to_all(const Var& var) override
-    {
-        target->store_variable(var);
-        return current_subset.back();
     }
 
     /**
@@ -405,9 +381,74 @@ struct UncompressedBufrDecoder : public BaseBufrDecoder
 
         // Store the character data
         Var cdata(info, buf);
-        add_to_all(cdata);
+        output_subset.store_variable(cdata);
 
         TRACE("decode_c_data:decoded string %s\n", buf.c_str());
+    }
+
+    const Var& define_semantic_variable(Varinfo info) override
+    {
+        output_subset.store_variable(decode_b_value(info));
+        return output_subset.back();
+    }
+
+    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
+    {
+        Varcode code = bitmaps.pending_definitions;
+
+        unsigned group = WR_VAR_X(rep_code);
+        unsigned count = WR_VAR_Y(rep_code);
+
+        TRACE("define_bitmap %d\n", count);
+
+        if (count == 0)
+        {
+            // Fetch the repetition count
+            Varinfo rep_info = tables.btable->query(delayed_code);
+            Var rep_count = decode_b_value(rep_info);
+            count = rep_count.enqi();
+        }
+
+        // Sanity checks
+        if (group != 1)
+            in.parse_error("bitmap section replicates %u descriptors instead of one", group);
+        if (ops.size() != 1)
+            in.parse_error("there are %u descriptors after bitmap replicator instead of just one", ops.size());
+        if (ops[0] != WR_VAR(0, 31, 31))
+            in.parse_error("bitmap element descriptor is %01d%02d%03d instead of B31031",
+                    WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
+
+        // Bitmap size is now in count
+
+        // Read the bitmap
+        string buf;
+        buf.resize(count);
+        for (unsigned i = 0; i < count; ++i)
+        {
+            uint32_t val = in.get_bits(1);
+            buf[i] = (val == 0) ? '+' : '-';
+        }
+
+        // Create a single use varinfo to store the bitmap
+        Varinfo info = tables.get_bitmap(code, buf);
+
+        // Store the bitmap
+        Var bmp(info, buf);
+
+        // Add var to subset(s)
+        output_subset.store_variable(bmp);
+        const Var& res = output_subset.back();
+
+        // Bitmap will stay set as a reference to the variable to use as the
+        // current bitmap. The subset(s) are taking care of memory managing it.
+
+        IFTRACE {
+            TRACE("Decoded bitmap count %u: ", count);
+            res.print(stderr);
+            TRACE("\n");
+        }
+
+        bitmaps.define(res, output_subset);
     }
 };
 
@@ -612,7 +653,7 @@ void Decoder::decode_data()
         // Run once per subset
         for (unsigned i = 0; i < out.subsets.size(); ++i)
         {
-            UncompressedBufrDecoder dec(*this, i, out.subsets[i]);
+            UncompressedBufrDecoder dec(out, i, in);
             dec.run();
         }
     }
