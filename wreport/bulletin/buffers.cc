@@ -770,8 +770,8 @@ void BufrOutput::flush()
 
 
 
-CrexInput::CrexInput(const std::string& in)
-    : data(in.c_str()), data_len(in.size()), fname(NULL), offset(0), cur(data), has_check_digit(false)
+CrexInput::CrexInput(const std::string& in, const char* fname, size_t offset)
+    : data(in.c_str()), data_len(in.size()), fname(fname), offset(offset), cur(data), has_check_digit(false)
 {
     for (int i = 0; i < 5; ++i)
         sec[i] = 0;

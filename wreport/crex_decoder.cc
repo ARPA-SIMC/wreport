@@ -1,39 +1,8 @@
-/*
- * wreport/bulletin - CREX decoder
- *
- * Copyright (C) 2005--2015  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
-#include "config.h"
-
-#include "opcode.h"
 #include "bulletin.h"
 #include "bulletin/buffers.h"
 #include "bulletin/internals.h"
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <ctype.h>  /* isspace */
-#include <stdlib.h> /* malloc */
-#include <string.h> /* memcpy */
-#include <math.h>   /* NAN */
-#include <assert.h> /* NAN */
-#include <errno.h>  /* NAN */
+#include <cstring>
+#include "config.h"
 
 // #define TRACE_DECODER
 
@@ -49,8 +18,8 @@ using namespace std;
 
 namespace wreport {
 namespace bulletin {
-
 namespace {
+
 void decode_header(bulletin::CrexInput& in, CrexBulletin& out)
 {
     /* Read crex section 0 (Indicator section) */
@@ -254,9 +223,7 @@ void CrexBulletin::decode_header(const std::string& buf, const char* fname, size
     this->fname = fname;
     this->offset = offset;
 
-    bulletin::CrexInput in(buf);
-    in.fname = fname;
-    in.offset = offset;
+    bulletin::CrexInput in(buf, fname, offset);
     bulletin::decode_header(in, *this);
 }
 
@@ -266,13 +233,9 @@ void CrexBulletin::decode(const std::string& buf, const char* fname, size_t offs
     this->fname = fname;
     this->offset = offset;
 
-    bulletin::CrexInput in(buf);
-    in.fname = fname;
-    in.offset = offset;
+    bulletin::CrexInput in(buf, fname, offset);
     bulletin::decode_header(in, *this);
     bulletin::decode_data(in, *this);
 }
 
 }
-
-/* vim:set ts=4 sw=4: */

@@ -451,7 +451,7 @@ struct CrexInput
      * @param in
      *   The string with the data to read
      */
-    CrexInput(const std::string& in);
+    CrexInput(const std::string& in, const char* fname, size_t offset);
 
     /// Return true if the cursor is at the end of the buffer
     bool eof() const;
