@@ -1,18 +1,7 @@
-#include "config.h"
-
-#include "opcode.h"
 #include "bulletin.h"
 #include "bulletin/buffers.h"
 #include "bulletin/internals.h"
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <ctype.h>	/* isspace */
-#include <stdlib.h>	/* malloc */
-#include <string.h>	/* memcpy */
-#include <math.h>	/* NAN */
-#include <assert.h>	/* NAN */
-#include <errno.h>	/* NAN */
+#include "config.h"
 
 // #define TRACE_ENCODER
 
@@ -34,7 +23,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
 {
     bulletin::CrexOutput& ob;
 
-    DDSEncoder(Bulletin& b, bulletin::CrexOutput& ob, unsigned subset_no)
+    DDSEncoder(Bulletin& b, unsigned subset_no, bulletin::CrexOutput& ob)
         : UncompressedEncoder(b, subset_no), ob(ob)
     {
         TRACE("start_subset %u\n", subset_no);
@@ -85,112 +74,80 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
     }
 };
 
-
-struct Encoder
+void encode_sec1(CrexBulletin& in, bulletin::CrexOutput out)
 {
-    // Input message data
-    CrexBulletin& in;
-    // Output decoded variables
-    bulletin::CrexOutput out;
+    out.raw_appendf("T%02d%02d%02d A%03d%03d",
+            in.master_table_number,
+            in.edition,
+            in.table,
+            in.type,
+            in.localsubtype);
 
-    // Offset of the start of CREX section 1
-    int sec1_start = 0;
-    // Offset of the start of CREX section 2
-    int sec2_start = 0;
-    // Offset of the start of CREX section 3
-    int sec3_start = 0;
-    // Offset of the start of CREX section 4
-    int sec4_start = 0;
+    /* Encode the data descriptor section */
 
-    // Subset we are encoding
-    const Subset* subset = nullptr;
-
-    Encoder(CrexBulletin& in, std::string& out)
-        : in(in), out(out)
+    for (vector<Varcode>::const_iterator i = in.datadesc.begin();
+            i != in.datadesc.end(); ++i)
     {
-    }
-
-    void encode_sec1()
-    {
-        out.raw_appendf("T%02d%02d%02d A%03d%03d",
-                in.master_table_number,
-                in.edition,
-                in.table,
-                in.type,
-                in.localsubtype);
-
-        /* Encode the data descriptor section */
-
-		for (vector<Varcode>::const_iterator i = in.datadesc.begin();
-				i != in.datadesc.end(); ++i)
-		{
-			char prefix;
-			switch (WR_VAR_F(*i))
-			{
-				case 0: prefix = 'B'; break;
-				case 1: prefix = 'R'; break;
-				case 2: prefix = 'C'; break;
-				case 3: prefix = 'D'; break;
-				default: prefix = '?'; break;
-			}
-
-			// Don't put delayed replication counts in the data section
-			if (WR_VAR_F(*i) == 0 && WR_VAR_X(*i) == 31 && WR_VAR_Y(*i) < 3)
-				continue;
-
-            out.raw_appendf(" %c%02d%03d", prefix, WR_VAR_X(*i), WR_VAR_Y(*i));
-        }
-
-        if (out.has_check_digit)
+        char prefix;
+        switch (WR_VAR_F(*i))
         {
-            out.raw_append(" E", 2);
-            out.expected_check_digit = 1;
+            case 0: prefix = 'B'; break;
+            case 1: prefix = 'R'; break;
+            case 2: prefix = 'C'; break;
+            case 3: prefix = 'D'; break;
+            default: prefix = '?'; break;
         }
 
-        out.raw_append("++\r\r\n", 5);
+        // Don't put delayed replication counts in the data section
+        if (WR_VAR_F(*i) == 0 && WR_VAR_X(*i) == 31 && WR_VAR_Y(*i) < 3)
+            continue;
+
+        out.raw_appendf(" %c%02d%03d", prefix, WR_VAR_X(*i), WR_VAR_Y(*i));
     }
 
-    void run()
+    if (out.has_check_digit)
     {
-        /* Encode section 0 */
-        out.raw_append("CREX++\r\r\n", 9);
-
-        /* Encode section 1 */
-        sec1_start = out.buf.size();
-        encode_sec1();
-        TRACE("SEC1 encoded as [[[%s]]]", out.buf.substr(sec1_start).c_str());
-
-        /* Encode section 2 */
-        sec2_start = out.buf.size();
-
-        // Encode all subsets
-        for (unsigned i = 0; i < in.subsets.size(); ++i)
-        {
-            DDSEncoder e(in, out, i);
-            e.run();
-        }
-        out.raw_append("++\r\r\n", 5);
-
-        TRACE("SEC2 encoded as [[[%s]]]", out.buf.substr(sec2_start).c_str());
-
-        /* Encode section 3 */
-        sec3_start = out.buf.size();
-        /* Nothing to do, as we have no custom section */
-
-        /* Encode section 4 */
-        sec4_start = out.buf.size();
-        out.raw_append("7777\r\r\n", 7);
+        out.raw_append(" E", 2);
+        out.expected_check_digit = 1;
     }
-};
 
+    out.raw_append("++\r\r\n", 5);
+}
 
-} // Unnamed namespace
+}
 
 void CrexBulletin::encode(std::string& buf)
 {
-    Encoder e(*this, buf);
-    e.run();
-    //out.encoding = CREX;
+    bulletin::CrexOutput out(buf);
+
+    // Encode section 0
+    out.raw_append("CREX++\r\r\n", 9);
+
+    // Encode section 1
+    int sec1_start = out.buf.size();
+    encode_sec1(*this, out);
+    TRACE("SEC1 encoded as [[[%s]]]", out.buf.substr(sec1_start).c_str());
+
+    /* Encode section 2 */
+    int sec2_start = out.buf.size();
+
+    // Encode all subsets
+    for (unsigned i = 0; i < subsets.size(); ++i)
+    {
+        DDSEncoder e(*this, i, out);
+        e.run();
+    }
+    out.raw_append("++\r\r\n", 5);
+
+    TRACE("SEC2 encoded as [[[%s]]]", out.buf.substr(sec2_start).c_str());
+
+    /* Encode section 3 */
+    int sec3_start = out.buf.size();
+    /* Nothing to do, as we have no custom section */
+
+    /* Encode section 4 */
+    int sec4_start = out.buf.size();
+    out.raw_append("7777\r\r\n", 7);
 }
 
 }
