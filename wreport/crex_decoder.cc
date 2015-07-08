@@ -148,14 +148,12 @@ void decode_header(bulletin::CrexInput& in, CrexBulletin& out)
 }
 
 
-struct CrexParser : public bulletin::Parser
+struct CrexParser : public bulletin::UncompressedDecoder
 {
     CrexInput& in;
-    Subset& out;
 
-    CrexParser(Bulletin& bulletin, CrexInput& in, unsigned subset_idx)
-        : bulletin::Parser(bulletin.tables, bulletin.datadesc, subset_idx, bulletin.obtain_subset(subset_idx)),
-          in(in), out(bulletin.obtain_subset(subset_idx))
+    CrexParser(Bulletin& bulletin, unsigned subset_idx, CrexInput& in)
+        : bulletin::UncompressedDecoder(bulletin, subset_idx), in(in)
     {
     }
 
@@ -184,11 +182,11 @@ struct CrexParser : public bulletin::Parser
         }
 
         /* Store the variable that we found */
-        out.store_variable(var);
+        output_subset.store_variable(var);
         IFTRACE{
             TRACE("define_variable: stored variable: "); var.print(stderr); TRACE("\n");
         }
-        return out.back();
+        return output_subset.back();
     }
 
     void define_variable(Varinfo info) override
@@ -210,7 +208,7 @@ void decode_data(bulletin::CrexInput& in, CrexBulletin& out)
     // Scan the various subsections
     for (unsigned i = 0; ; ++i)
     {
-        CrexParser parser(out, in, i);
+        CrexParser parser(out, i, in);
         parser.run();
 
         in.skip_spaces();

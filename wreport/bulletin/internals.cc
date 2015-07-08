@@ -73,6 +73,16 @@ void UncompressedEncoder::define_bitmap(Varcode rep_code, Varcode delayed_code, 
 }
 
 
+UncompressedDecoder::UncompressedDecoder(Bulletin& bulletin, unsigned subset_no)
+    : DDSInterpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_no))
+{
+}
+
+UncompressedDecoder::~UncompressedDecoder()
+{
+}
+
+
 Parser::Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset)
     : DDSInterpreter(tables, opcodes), current_subset(current_subset)
 {

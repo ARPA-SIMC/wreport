@@ -59,6 +59,15 @@ struct UncompressedEncoder : public bulletin::DDSInterpreter
     void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
 };
 
+struct UncompressedDecoder : public bulletin::DDSInterpreter
+{
+    /// Subset where decoded variables go
+    Subset& output_subset;
+
+    UncompressedDecoder(Bulletin& bulletin, unsigned subset_no);
+    ~UncompressedDecoder();
+};
+
 // TODO: CompressedEncoder
 // TODO: UncompressedDecoder
 // TODO: CompressedDecoder
