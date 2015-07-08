@@ -52,13 +52,16 @@ std::vector<Test> make_tests()
         }
     });
 
-    auto declare_test = [&](std::string fname, std::function<void(wibble::tests::Location, const BufrBulletin&)> check_contents) {
+    auto _declare_test = [&](WIBBLE_TEST_LOCPRM, std::string fname, std::function<void(wibble::tests::Location, const BufrBulletin&)> check_contents) {
         res.emplace_back(fname, [=](Fixture& f) {
             TestBufr test(fname);
             test.check_contents = check_contents;
             wruntest(test.run);
         });
     };
+
+    #define declare_test(fname, check_contents) wruntest(_declare_test, fname, check_contents)
+
 
     declare_test("bufr/bufr1", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
         ensure_equals(msg.edition, 3);
