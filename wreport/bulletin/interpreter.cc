@@ -30,16 +30,27 @@ void DDSInterpreter::run()
             case 0: b_variable(cur); break;
             case 1: {
                 // Replicate the next X elements Y times
-                Varcode rep_code = 0;
-                if (WR_VAR_Y(cur) == 0 && !opcodes.empty())
+                Varcode delayed_replication_code = 0;
+                unsigned count = WR_VAR_Y(cur);
+                if (count == 0 && !opcodes.empty())
                 {
                     // Delayed replication, if replicator is there. In case of
                     // CREX, delayed replicator codes are implicit
                     Varcode next_code = opcodes[0];
                     if (WR_VAR_F(next_code) == 0 && WR_VAR_X(next_code) == 31)
-                        rep_code = opcodes.pop_left();
+                        delayed_replication_code = opcodes.pop_left();
                 }
-                r_replication(cur, rep_code, opcodes.pop_left(WR_VAR_X(cur)));
+
+                if (bitmaps.pending_definitions)
+                {
+                    if (count == 0 && delayed_replication_code == 0)
+                        delayed_replication_code = WR_VAR(0, 31, 12);
+                    define_bitmap(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
+                    if (delayed_replication_code)
+                        ++bitmaps.next_bitmap_anchor_point;
+                    bitmaps.pending_definitions = 0;
+                } else
+                    r_replication(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
                 break;
             }
             case 2:
@@ -357,44 +368,34 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
         TRACE("\n");
     }
 
-    if (bitmaps.pending_definitions)
+    /* If using delayed replication and count is not 0, use count for the
+     * delayed replication factor; else, look for a delayed replication
+     * factor among the input variables */
+    if (count == 0)
     {
-        if (count == 0 && delayed_code == 0)
-            delayed_code = WR_VAR(0, 31, 12);
-        define_bitmap(code, delayed_code, ops);
-        if (delayed_code)
-            ++bitmaps.next_bitmap_anchor_point;
-        bitmaps.pending_definitions = 0;
-    } else {
-        /* If using delayed replication and count is not 0, use count for the
-         * delayed replication factor; else, look for a delayed replication
-         * factor among the input variables */
-        if (count == 0)
+        Varinfo info = tables.btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
+        const Var& var = define_semantic_variable(info);
+        if (var.code() == WR_VAR(0, 31, 0))
         {
-            Varinfo info = tables.btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
-            const Var& var = define_semantic_variable(info);
-            if (var.code() == WR_VAR(0, 31, 0))
-            {
-                count = var.isset() ? 0 : 1;
-            } else {
-                count = var.enqi();
-            }
-            ++bitmaps.next_bitmap_anchor_point;
+            count = var.isset() ? 0 : 1;
+        } else {
+            count = var.enqi();
         }
-        IFTRACE {
-            TRACE("visitor r_replication %d items %d times%s\n", WR_VAR_X(code), count, delayed_code ? " (delayed)" : "");
-            TRACE("Repeat opcodes: ");
-            ops.print(stderr);
-            TRACE("\n");
-        }
+        ++bitmaps.next_bitmap_anchor_point;
+    }
+    IFTRACE {
+        TRACE("visitor r_replication %d items %d times%s\n", WR_VAR_X(code), count, delayed_code ? " (delayed)" : "");
+        TRACE("Repeat opcodes: ");
+        ops.print(stderr);
+        TRACE("\n");
+    }
 
-        // encode_data_section on it `count' times
-        for (unsigned i = 0; i < count; ++i)
-        {
-            opcode_stack.push(ops);
-            run();
-            opcode_stack.pop();
-        }
+    // encode_data_section on it `count' times
+    for (unsigned i = 0; i < count; ++i)
+    {
+        opcode_stack.push(ops);
+        run();
+        opcode_stack.pop();
     }
 }
 
