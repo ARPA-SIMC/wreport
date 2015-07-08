@@ -55,6 +55,64 @@ std::vector<std::string> all_test_files(const std::string& encoding);
 void track_bulletin(Bulletin& b, const char* tag, const char* fname);
 
 template<typename BULLETIN>
+struct TestCodec
+{
+    std::string fname;
+    std::function<void(wibble::tests::Location, const BULLETIN&)> check_contents = [](WIBBLE_TEST_LOCPRM, const BULLETIN&) {};
+
+    TestCodec(const std::string& fname) : fname(fname) {}
+    virtual ~TestCodec() {}
+
+    void run(WIBBLE_TEST_LOCPRM)
+    {
+        using namespace wibble::tests;
+
+        WIBBLE_TEST_INFO(test_info);
+
+        // Read the whole contents of the test file
+        std::string raw1 = wcallchecked(slurpfile(fname));
+
+        test_info() << fname << ": decode original version";
+        auto msg1 = BULLETIN::create();
+        wrunchecked(try {
+            msg1->decode(raw1, fname.c_str());
+        } catch (wreport::error_parse& e) {
+            try {
+                msg1->print_structured(stderr);
+            } catch (wreport::error& e) {
+                std::cerr << "Dump interrupted: " << e.what();
+            }
+            throw;
+        });
+        wruntest(check_contents, *msg1);
+
+        // Encode it again
+        test_info() << fname << ": re-encode original version";
+        std::string raw;
+        wrunchecked(msg1->encode(raw));
+
+        // Decode our encoder's output
+        test_info() << fname << ": decode what we encoded";
+        auto msg2 = BULLETIN::create();
+        wrunchecked(msg2->decode(raw, fname.c_str()));
+
+        // Test the decoded version
+        wruntest(check_contents, *msg2);
+
+        // Ensure the two are the same
+        test_info() << fname << ": comparing original and re-encoded";
+        notes::Collect c(std::cerr);
+        unsigned diffs = msg1->diff(*msg2);
+        if (diffs)
+        {
+            track_bulletin(*msg1, "orig", fname.c_str());
+            track_bulletin(*msg2, "reenc", fname.c_str());
+        }
+        wassert(actual(diffs) == 0);
+    }
+};
+
+template<typename BULLETIN>
 struct MsgTester
 {
 	virtual ~MsgTester() {}

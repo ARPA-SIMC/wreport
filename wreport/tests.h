@@ -111,6 +111,13 @@ struct test_group : public tut::group_base
         tut::runner.get().register_group(name, this);
     }
 
+    test_group(const char* name, std::function<std::vector<Test>()> tests)
+        : name(name), tests(tests())
+    {
+        // register itself
+        tut::runner.get().register_group(name, this);
+    }
+
     virtual T* create_fixture()
     {
         return new T;

@@ -121,7 +121,6 @@ tut_test_SOURCES = \
 	tables-tut.cc \
 	bulletin-tut.cc \
 	bufr_decoder-tut.cc \
-	bufr_decoder1-tut.cc \
 	bufr_encoder-tut.cc \
 	crex_decoder-tut.cc \
 	bulletin/associated_fields-tut.cc \

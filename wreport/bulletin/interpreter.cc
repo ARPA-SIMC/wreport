@@ -406,7 +406,6 @@ void DDSInterpreter::r_bitmap(Varcode code, Varcode delayed_replication_code, co
     bitmaps.pending_definitions = 0;
 }
 
-
 void DDSInterpreter::d_group_begin(Varcode code) {}
 void DDSInterpreter::d_group_end(Varcode code) {}
 
