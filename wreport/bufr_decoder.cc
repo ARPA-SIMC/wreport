@@ -439,7 +439,7 @@ struct AttrSink : public bulletin::CompressedVarSink
 };
 
 /// Decoder for compressed data
-struct CompressedBufrDecoder : public bulletin::Parser
+struct CompressedBufrDecoder : public bulletin::CompressedDecoder
 {
     /// Decoder object with configuration information
     Decoder& d;
@@ -451,7 +451,7 @@ struct CompressedBufrDecoder : public bulletin::Parser
     unsigned subset_count;
 
     CompressedBufrDecoder(Decoder& d, unsigned subset_no, const Subset& current_subset)
-        : bulletin::Parser(d.out.tables, d.out.datadesc, subset_no, current_subset), d(d), in(d.in), subset_count(d.out.subsets.size())
+        : bulletin::CompressedDecoder(d.out.tables, d.out.datadesc, subset_no, current_subset), d(d), in(d.in), subset_count(d.out.subsets.size())
     {
     }
 

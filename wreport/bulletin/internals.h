@@ -68,21 +68,13 @@ struct UncompressedDecoder : public bulletin::DDSInterpreter
     ~UncompressedDecoder();
 };
 
-// TODO: CompressedEncoder
-// TODO: UncompressedDecoder
-// TODO: CompressedDecoder
-
-/**
- * Abstract interface for classes that can be used as targets for the Bulletin
- * Data Descriptor Section interpreters.
- */
-struct Parser : public bulletin::DDSInterpreter
+struct CompressedDecoder : public bulletin::DDSInterpreter
 {
     /// Current subset (used to refer to past variables)
     const Subset& current_subset;
 
-    Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset);
-    virtual ~Parser();
+    CompressedDecoder(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset);
+    virtual ~CompressedDecoder();
 };
 
 }

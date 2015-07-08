@@ -83,13 +83,13 @@ UncompressedDecoder::~UncompressedDecoder()
 }
 
 
-Parser::Parser(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset)
+CompressedDecoder::CompressedDecoder(const Tables& tables, const Opcodes& opcodes, unsigned subset_no, const Subset& current_subset)
     : DDSInterpreter(tables, opcodes), current_subset(current_subset)
 {
     TRACE("parser: start on subset %u\n", subset_no);
 }
 
-Parser::~Parser() {}
+CompressedDecoder::~CompressedDecoder() {}
 
 }
 }
