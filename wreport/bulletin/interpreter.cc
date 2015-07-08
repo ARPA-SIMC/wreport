@@ -41,15 +41,14 @@ void DDSInterpreter::run()
                         delayed_replication_code = opcodes.pop_left();
                 }
 
+                // CREX has an implicit delayed replication code: use that if
+                // none was defined.
+                if (count == 0 && !delayed_replication_code)
+                    delayed_replication_code = WR_VAR(0, 31, 12);
+
                 if (bitmaps.pending_definitions)
-                {
-                    if (count == 0 && delayed_replication_code == 0)
-                        delayed_replication_code = WR_VAR(0, 31, 12);
-                    define_bitmap(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
-                    if (delayed_replication_code)
-                        ++bitmaps.next_bitmap_anchor_point;
-                    bitmaps.pending_definitions = 0;
-                } else
+                    r_bitmap(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
+                else
                     r_replication(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
                 break;
             }
@@ -373,7 +372,7 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
      * factor among the input variables */
     if (count == 0)
     {
-        Varinfo info = tables.btable->query(delayed_code ? delayed_code : WR_VAR(0, 31, 12));
+        Varinfo info = tables.btable->query(delayed_code);
         const Var& var = define_semantic_variable(info);
         if (var.code() == WR_VAR(0, 31, 0))
         {
@@ -397,6 +396,14 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
         run();
         opcode_stack.pop();
     }
+}
+
+void DDSInterpreter::r_bitmap(Varcode code, Varcode delayed_replication_code, const Opcodes& ops)
+{
+    define_bitmap(code, delayed_replication_code, ops);
+    if (delayed_replication_code)
+        ++bitmaps.next_bitmap_anchor_point;
+    bitmaps.pending_definitions = 0;
 }
 
 

@@ -101,8 +101,8 @@ public:
     virtual void c_reuse_last_bitmap(Varcode code);
 
     /**
-     * Notify a replicated section
-     * 
+     * Handle a replicated section
+     *
      * @param code
      *   The R replication code
      * @param delayed_code
@@ -112,6 +112,11 @@ public:
      *   The replicated operators
      */
     virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
+
+    /**
+     * Handle a replicated section which defines a bitmap
+     */
+    virtual void r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
 
     /**
      * Notify the start of a D group
