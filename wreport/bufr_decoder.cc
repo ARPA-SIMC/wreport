@@ -232,41 +232,6 @@ struct Decoder
     void decode_data();
 };
 
-/// Common functions to both decoders
-struct BaseBufrDecoder : public bulletin::Parser
-{
-    /// Decoder object with configuration information
-    Decoder& d;
-
-    /// Input buffer
-    bulletin::BufrInput& in;
-
-    BaseBufrDecoder(Decoder& d, unsigned subset_idx, const Subset& current_subset)
-        : bulletin::Parser(d.out.tables, d.out.datadesc, subset_idx, current_subset), d(d), in(d.in)
-    {
-        associated_field.skip_missing = !d.conf_add_undef_attrs;
-    }
-
-    /**
-     * Decode a value that must always be the same acrosso all datasets.
-     *
-     * @returns the decoded value
-     */
-    virtual Var decode_semantic_b_value(Varinfo info) = 0;
-
-    /**
-     * Add \a var to all datasets, returning a pointer to one version of \a var
-     * that is memory managed by one of the datasets.
-     */
-    virtual const Var& add_to_all(const Var& var) = 0;
-
-    const Var& define_semantic_variable(Varinfo info) override
-    {
-        return add_to_all(decode_semantic_b_value(info));
-    }
-    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
-};
-
 /// Decoder for uncompressed data
 struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
 {
@@ -474,13 +439,19 @@ struct AttrSink : public bulletin::CompressedVarSink
 };
 
 /// Decoder for compressed data
-struct CompressedBufrDecoder : public BaseBufrDecoder
+struct CompressedBufrDecoder : public bulletin::Parser
 {
+    /// Decoder object with configuration information
+    Decoder& d;
+
+    /// Input buffer
+    bulletin::BufrInput& in;
+
     /// Number of subsets in data section
     unsigned subset_count;
 
     CompressedBufrDecoder(Decoder& d, unsigned subset_no, const Subset& current_subset)
-        : BaseBufrDecoder(d, subset_no, current_subset), subset_count(d.out.subsets.size())
+        : bulletin::Parser(d.out.tables, d.out.datadesc, subset_no, current_subset), d(d), in(d.in), subset_count(d.out.subsets.size())
     {
     }
 
@@ -500,6 +471,11 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         }
     }
 
+    /**
+     * Decode a value that must always be the same acrosso all datasets.
+     *
+     * @returns the decoded value
+     */
     Var decode_semantic_b_value(Varinfo info)
     {
         Var var(info);
@@ -518,7 +494,11 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         return var;
     }
 
-    const Var& add_to_all(const Var& var) override
+    /**
+     * Add \a var to all datasets, returning a pointer to one version of \a var
+     * that is memory managed by one of the datasets.
+     */
+    const Var& add_to_all(const Var& var)
     {
         const Var* res = 0;
         for (unsigned i = 0; i < subset_count; ++i)
@@ -554,9 +534,16 @@ struct CompressedBufrDecoder : public BaseBufrDecoder
         // TODO: if compressed, extract the data from each subset? Store it in each dataset?
         error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(code));
     }
+
+    const Var& define_semantic_variable(Varinfo info) override
+    {
+        return add_to_all(decode_semantic_b_value(info));
+    }
+
+    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
 };
 
-void BaseBufrDecoder::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+void CompressedBufrDecoder::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
 {
     Varcode code = bitmaps.pending_definitions;
 
@@ -648,12 +635,14 @@ void Decoder::decode_data()
     {
         // Run only once
         CompressedBufrDecoder dec(*this, 0, out.subsets[0]);
+        dec.associated_field.skip_missing = !conf_add_undef_attrs;
         dec.run();
     } else {
         // Run once per subset
         for (unsigned i = 0; i < out.subsets.size(); ++i)
         {
             UncompressedBufrDecoder dec(out, i, in);
+            dec.associated_field.skip_missing = !conf_add_undef_attrs;
             dec.run();
         }
     }
