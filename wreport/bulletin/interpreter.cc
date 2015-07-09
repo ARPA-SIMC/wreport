@@ -187,8 +187,7 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
                 Varinfo info = tables.btable->query(WR_VAR(0, 31, 21));
 
                 // Get the value for B31021, defaulting to 63 if missing
-                uint32_t sig = define_semantic_variable(info);
-                associated_field.significance = sig == 0xffffffff ? 63 : sig;
+                associated_field.significance = define_associated_field_significance(info);
                 ++bitmaps.next_bitmap_anchor_point;
             }
             associated_field.bit_count = nbits;
@@ -413,6 +412,11 @@ uint32_t DDSInterpreter::define_semantic_variable(Varinfo info)
     throw error_unimplemented("define_semantic_variable is not implemented in this interpreter");
 }
 
+unsigned DDSInterpreter::define_associated_field_significance(Varinfo info)
+{
+    throw error_unimplemented("define_associated_field_significance is not implemented in this interpreter");
+}
+
 void DDSInterpreter::define_variable(Varinfo info)
 {
     throw error_unimplemented("define_variable is not implemented in this interpreter");
@@ -432,6 +436,7 @@ void DDSInterpreter::define_raw_character_data(Varcode code)
 {
     throw error_unimplemented("define_raw_character_data is not implemented in this interpreter");
 }
+
 
 Printer::Printer(const Tables& tables, const Opcodes& opcodes)
     : DDSInterpreter(tables, opcodes), out(stdout), indent(0), indent_step(2)

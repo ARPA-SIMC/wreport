@@ -359,6 +359,12 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
             return 0xffffffff;
     }
 
+    unsigned define_associated_field_significance(Varinfo info) override
+    {
+        output_subset.store_variable(decode_b_value(info));
+        return output_subset.back().enq(63);
+    }
+
     void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
     {
         Varcode code = bitmaps.pending_definitions;
@@ -528,60 +534,63 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
             return 0xffffffff;
     }
 
-    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
-};
-
-void CompressedBufrDecoder::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
-{
-    Varcode code = bitmaps.pending_definitions;
-
-    unsigned group = WR_VAR_X(rep_code);
-    unsigned count = WR_VAR_Y(rep_code);
-
-    TRACE("define_bitmap %d\n", count);
-
-    if (count == 0)
+    unsigned define_associated_field_significance(Varinfo info) override
     {
-        // Fetch the repetition count
-        Varinfo rep_info = tables.btable->query(delayed_code);
-        Var rep_count = decode_semantic_b_value(rep_info);
-        count = rep_count.enqi();
+        return add_to_all(decode_semantic_b_value(info)).enq(63);
     }
 
-    // Sanity checks
-    if (group != 1)
-        in.parse_error("bitmap section replicates %u descriptors instead of one", group);
-    if (ops.size() != 1)
-        in.parse_error("there are %u descriptors after bitmap replicator instead of just one", ops.size());
-    if (ops[0] != WR_VAR(0, 31, 31))
-        in.parse_error("bitmap element descriptor is %01d%02d%03d instead of B31031",
-                WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
+    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
+    {
+        Varcode code = bitmaps.pending_definitions;
 
-    // Bitmap size is now in count
+        unsigned group = WR_VAR_X(rep_code);
+        unsigned count = WR_VAR_Y(rep_code);
 
-    // Read the bitmap
-    string buf = in.decode_compressed_bitmap(count);
+        TRACE("define_bitmap %d\n", count);
 
-    // Create a single use varinfo to store the bitmap
-    Varinfo info = tables.get_bitmap(code, buf);
+        if (count == 0)
+        {
+            // Fetch the repetition count
+            Varinfo rep_info = tables.btable->query(delayed_code);
+            Var rep_count = decode_semantic_b_value(rep_info);
+            count = rep_count.enqi();
+        }
 
-    // Store the bitmap
-    Var bmp(info, buf);
+        // Sanity checks
+        if (group != 1)
+            in.parse_error("bitmap section replicates %u descriptors instead of one", group);
+        if (ops.size() != 1)
+            in.parse_error("there are %u descriptors after bitmap replicator instead of just one", ops.size());
+        if (ops[0] != WR_VAR(0, 31, 31))
+            in.parse_error("bitmap element descriptor is %01d%02d%03d instead of B31031",
+                    WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
 
-    // Add var to subset(s)
-    const Var& res = add_to_all(bmp);
+        // Bitmap size is now in count
 
-    // Bitmap will stay set as a reference to the variable to use as the
-    // current bitmap. The subset(s) are taking care of memory managing it.
+        // Read the bitmap
+        string buf = in.decode_compressed_bitmap(count);
 
-    IFTRACE {
-        TRACE("Decoded bitmap count %u: ", count);
-        res.print(stderr);
-        TRACE("\n");
+        // Create a single use varinfo to store the bitmap
+        Varinfo info = tables.get_bitmap(code, buf);
+
+        // Store the bitmap
+        Var bmp(info, buf);
+
+        // Add var to subset(s)
+        const Var& res = add_to_all(bmp);
+
+        // Bitmap will stay set as a reference to the variable to use as the
+        // current bitmap. The subset(s) are taking care of memory managing it.
+
+        IFTRACE {
+            TRACE("Decoded bitmap count %u: ", count);
+            res.print(stderr);
+            TRACE("\n");
+        }
+
+        bitmaps.define(res, output_bulletin.subset(0));
     }
-
-    bitmaps.define(res, output_bulletin.subset(0));
-}
+};
 
 void Decoder::decode_data()
 {

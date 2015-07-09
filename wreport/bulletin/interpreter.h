@@ -172,6 +172,14 @@ public:
     virtual uint32_t define_semantic_variable(Varinfo info);
 
     /**
+     * Request processing of an associated field significance variable
+     * (B31021).
+     *
+     * Return the associated field significance value
+     */
+    virtual unsigned define_associated_field_significance(Varinfo info);
+
+    /**
      * Request processing of a substituted value corresponding to position \a
      * pos in the list or previous variables
      */

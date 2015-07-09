@@ -76,6 +76,12 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
         else
             return 0xffffffff;
     }
+    unsigned define_associated_field_significance(Varinfo info) override
+    {
+        const Var& var = get_var();
+        ob.append_var(info, var);
+        return var.enq(63);
+    }
     void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
     {
         const Var& var = get_var();
