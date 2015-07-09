@@ -313,7 +313,7 @@ void BufrInput::decode_compressed_number(Var& dest, uint32_t base, unsigned diff
     }
 }
 
-void BufrInput::decode_number(Varinfo info, unsigned subsets, const bulletin::AssociatedField& associated_field, CompressedVarSink& dest)
+void BufrInput::decode_number(Varinfo info, unsigned subsets, const bulletin::AssociatedField& associated_field, std::function<void(unsigned, Var&&)> dest)
 {
     Var var(info);
 
@@ -373,7 +373,7 @@ void BufrInput::decode_number(Varinfo info, unsigned subsets, const bulletin::As
         }
         decode_compressed_number(var, base, diffbits);
         if (af.get()) var.seta(move(af));
-        dest(var, i);
+        dest(i, move(var));
     }
 }
 
@@ -414,7 +414,7 @@ void BufrInput::decode_compressed_semantic_number(Var& dest, unsigned subsets)
     }
 }
 
-void BufrInput::decode_string(Varinfo info, unsigned subsets, CompressedVarSink& dest)
+void BufrInput::decode_string(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
 {
     /* Read a string */
     Var var(info);
@@ -462,8 +462,8 @@ void BufrInput::decode_string(Varinfo info, unsigned subsets, CompressedVarSink&
                 var.unset();
             }
 
-            /* Add it to this subset */
-            dest(var, i);
+            // Add it to this subset
+            dest(i, move(var));
         }
     } else {
         /* Add the string to all the subsets */
@@ -471,7 +471,7 @@ void BufrInput::decode_string(Varinfo info, unsigned subsets, CompressedVarSink&
         {
             // Set the variable value
             if (!missing) var.setc(str);
-            dest(var, i);
+            dest(i, Var(var));
         }
     }
 }

@@ -3,8 +3,9 @@
 
 #include <wreport/error.h>
 #include <wreport/varinfo.h>
-#include <cstdint>
 #include <string>
+#include <functional>
+#include <cstdint>
 
 namespace wreport {
 struct Var;
@@ -14,24 +15,6 @@ struct AssociatedField;
 }
 
 namespace buffers {
-
-/**
- * Destination for decoded variables from compressed BUFRs
- */
-struct CompressedVarSink
-{
-    virtual ~CompressedVarSink() {}
-
-    /**
-     * Send a variable to a subset
-     *
-     * @param var
-     *   Variable to send
-     * @param idx
-     *   Index of the subset that will get \a var
-     */
-    virtual void operator()(const Var& var, unsigned idx) = 0;
-};
 
 /**
  * Binary buffer with bit-level read operations
@@ -257,7 +240,7 @@ public:
      * Decode a number as described by \a info from a compressed bufr with
      * \a subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_number(Varinfo info, unsigned subsets, const bulletin::AssociatedField& associated_field, CompressedVarSink& dest);
+    void decode_number(Varinfo info, unsigned subsets, const bulletin::AssociatedField& associated_field, std::function<void(unsigned, Var&&)> dest);
 
     /**
      * Decode a number as described by dest.info(), and set it as value for \a
@@ -320,7 +303,7 @@ public:
      * Decode a string as described by \a info from a compressed bufr with \a
      * subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_string(Varinfo info, unsigned subsets, CompressedVarSink& dest);
+    void decode_string(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
 
     /**
      * Decode a generic binary value as-is, as described by dest.info(), ad set

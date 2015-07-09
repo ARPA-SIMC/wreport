@@ -416,27 +416,6 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
     }
 };
 
-struct DataSink : public buffers::CompressedVarSink
-{
-    Bulletin& out;
-    DataSink(Bulletin& out) : out(out) {}
-    virtual void operator()(const Var& var, unsigned idx)
-    {
-        out.subsets[idx].store_variable(var);
-    }
-};
-
-struct AttrSink : public buffers::CompressedVarSink
-{
-    Bulletin& out;
-    unsigned var_pos;
-    AttrSink(Bulletin& out, unsigned var_pos) : out(out), var_pos(var_pos) {}
-    virtual void operator()(const Var& var, unsigned idx)
-    {
-        out.subsets[idx][var_pos].seta(var);
-    }
-};
-
 /// Decoder for compressed data
 struct CompressedBufrDecoder : public bulletin::CompressedDecoder
 {
@@ -451,7 +430,7 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
     {
     }
 
-    void decode_b_value(Varinfo info, buffers::CompressedVarSink& dest)
+    void decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest)
     {
         switch (info->type)
         {
@@ -507,22 +486,25 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
 
     void define_variable(Varinfo info) override
     {
-        DataSink target(output_bulletin);
-        decode_b_value(info, target);
+        decode_b_value(info, [&](unsigned idx, Var&& var){
+            output_bulletin.subsets[idx].store_variable(var);
+        });
     }
 
     void define_substituted_value(unsigned pos) override
     {
         // Use the details of the corrisponding variable for decoding
         Varinfo info = output_bulletin.subset(0)[pos].info();
-        AttrSink target(output_bulletin, pos);
-        decode_b_value(info, target);
+        decode_b_value(info, [&](unsigned idx, Var&& var) {
+            output_bulletin.subsets[idx][pos].seta(var);
+        });
     }
 
     void define_attribute(Varinfo info, unsigned pos) override
     {
-        AttrSink target(output_bulletin, pos);
-        decode_b_value(info, target);
+        decode_b_value(info, [&](unsigned idx, Var&& var) {
+            output_bulletin.subsets[idx][pos].seta(var);
+        });
     }
 
     void define_raw_character_data(Varcode code) override
