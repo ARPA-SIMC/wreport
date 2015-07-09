@@ -38,7 +38,7 @@ public:
     void define_attribute(Varinfo info, unsigned pos) override;
     void define_variable(Varinfo info) override;
     uint32_t define_semantic_variable(Varinfo info) override;
-    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
+    void define_bitmap(unsigned bitmap_size) override;
     void define_raw_character_data(Varcode code) override;
 
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;

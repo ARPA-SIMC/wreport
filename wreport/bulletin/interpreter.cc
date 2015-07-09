@@ -47,9 +47,31 @@ void DDSInterpreter::run()
                     delayed_replication_code = WR_VAR(0, 31, 12);
 
                 if (bitmaps.pending_definitions)
-                    r_bitmap(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
+                {
+                    unsigned opcode_count = WR_VAR_X(cur);
+
+                    // Sanity checks
+                    if (opcode_count != 1)
+                        error_consistency::throwf("bitmap section replicates %u descriptors instead of one", opcode_count);
+
+                    Opcodes replicated = opcodes.pop_left(1);
+
+                    if (replicated[0] != WR_VAR(0, 31, 31))
+                        error_consistency::throwf("bitmap element descriptor is %01d%02d%03d instead of B31031", WR_VAR_FXY(replicated[0]));
+
+                    if (!count)
+                    {
+                        Varinfo rep_info = tables.btable->query(delayed_replication_code);
+                        count = define_bitmap_delayed_replication_factor(rep_info);
+                        ++bitmaps.next_bitmap_anchor_point;
+                    }
+
+                    r_bitmap(count);
+                }
                 else
+                {
                     r_replication(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
+                }
                 break;
             }
             case 2:
@@ -391,18 +413,16 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
     }
 }
 
-void DDSInterpreter::r_bitmap(Varcode code, Varcode delayed_replication_code, const Opcodes& ops)
+void DDSInterpreter::r_bitmap(unsigned bitmap_size)
 {
-    define_bitmap(code, delayed_replication_code, ops);
-    if (delayed_replication_code)
-        ++bitmaps.next_bitmap_anchor_point;
+    define_bitmap(bitmap_size);
     bitmaps.pending_definitions = 0;
 }
 
 void DDSInterpreter::d_group_begin(Varcode code) {}
 void DDSInterpreter::d_group_end(Varcode code) {}
 
-void DDSInterpreter::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+void DDSInterpreter::define_bitmap(unsigned bitmap_size)
 {
     throw error_unimplemented("define_bitmap is not implemented in this interpreter");
 }
@@ -410,6 +430,11 @@ void DDSInterpreter::define_bitmap(Varcode rep_code, Varcode delayed_code, const
 uint32_t DDSInterpreter::define_semantic_variable(Varinfo info)
 {
     throw error_unimplemented("define_semantic_variable is not implemented in this interpreter");
+}
+
+unsigned DDSInterpreter::define_bitmap_delayed_replication_factor(Varinfo info)
+{
+    throw error_unimplemented("define_bitmap_delayed_replication_factor is not implemented in this interpreter");
 }
 
 unsigned DDSInterpreter::define_associated_field_significance(Varinfo info)

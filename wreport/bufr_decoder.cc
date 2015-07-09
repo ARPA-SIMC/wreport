@@ -365,36 +365,26 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
         return output_subset.back().enq(63);
     }
 
-    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
+    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override
+    {
+        Var rep_count = decode_b_value(info);
+        return rep_count.enqi();
+#if 0
+        const Var& var = get_var();
+        ob.append_var(info, var);
+        return var.enqi();
+#endif
+    }
+    void define_bitmap(unsigned bitmap_size) override
     {
         Varcode code = bitmaps.pending_definitions;
 
-        unsigned group = WR_VAR_X(rep_code);
-        unsigned count = WR_VAR_Y(rep_code);
-
-        TRACE("define_bitmap %d\n", count);
-
-        if (count == 0)
-        {
-            // Fetch the repetition count
-            Varinfo rep_info = tables.btable->query(delayed_code);
-            Var rep_count = decode_b_value(rep_info);
-            count = rep_count.enqi();
-        }
-
-        // Sanity checks
-        if (group != 1)
-            in.parse_error("bitmap section replicates %u descriptors instead of one", group);
-        if (ops.size() != 1)
-            in.parse_error("there are %u descriptors after bitmap replicator instead of just one", ops.size());
-        if (ops[0] != WR_VAR(0, 31, 31))
-            in.parse_error("bitmap element descriptor is %01d%02d%03d instead of B31031",
-                    WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
+        TRACE("define_bitmap %d\n", bitmap_size);
 
         // Bitmap size is now in count
 
         // Read the bitmap
-        string buf = in.decode_uncompressed_bitmap(count);
+        string buf = in.decode_uncompressed_bitmap(bitmap_size);
 
         // Create a single use varinfo to store the bitmap
         Varinfo info = tables.get_bitmap(code, buf);
@@ -410,7 +400,7 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
         // current bitmap. The subset(s) are taking care of memory managing it.
 
         IFTRACE {
-            TRACE("Decoded bitmap count %u: ", count);
+            TRACE("Decoded bitmap count %u: ", bitmap_size);
             res.print(stderr);
             TRACE("\n");
         }
@@ -539,36 +529,17 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
         return add_to_all(decode_semantic_b_value(info)).enq(63);
     }
 
-    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
+    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override
+    {
+        Var rep_count = decode_semantic_b_value(info);
+        return rep_count.enqi();
+    }
+    void define_bitmap(unsigned bitmap_size) override
     {
         Varcode code = bitmaps.pending_definitions;
 
-        unsigned group = WR_VAR_X(rep_code);
-        unsigned count = WR_VAR_Y(rep_code);
-
-        TRACE("define_bitmap %d\n", count);
-
-        if (count == 0)
-        {
-            // Fetch the repetition count
-            Varinfo rep_info = tables.btable->query(delayed_code);
-            Var rep_count = decode_semantic_b_value(rep_info);
-            count = rep_count.enqi();
-        }
-
-        // Sanity checks
-        if (group != 1)
-            in.parse_error("bitmap section replicates %u descriptors instead of one", group);
-        if (ops.size() != 1)
-            in.parse_error("there are %u descriptors after bitmap replicator instead of just one", ops.size());
-        if (ops[0] != WR_VAR(0, 31, 31))
-            in.parse_error("bitmap element descriptor is %01d%02d%03d instead of B31031",
-                    WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
-
-        // Bitmap size is now in count
-
         // Read the bitmap
-        string buf = in.decode_compressed_bitmap(count);
+        string buf = in.decode_compressed_bitmap(bitmap_size);
 
         // Create a single use varinfo to store the bitmap
         Varinfo info = tables.get_bitmap(code, buf);
@@ -583,7 +554,7 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
         // current bitmap. The subset(s) are taking care of memory managing it.
 
         IFTRACE {
-            TRACE("Decoded bitmap count %u: ", count);
+            TRACE("Decoded bitmap count %u: ", bitmap_size);
             res.print(stderr);
             TRACE("\n");
         }

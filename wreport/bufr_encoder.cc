@@ -82,7 +82,14 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
         ob.append_var(info, var);
         return var.enq(63);
     }
-    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
+    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override
+    {
+        const Var& var = peek_var();
+        Var rep_var(info, (int)var.info()->len);
+        ob.append_var(info, rep_var);
+        return var.info()->len;
+    }
+    void define_bitmap(unsigned bitmap_size) override
     {
         const Var& var = get_var();
         if (WR_VAR_F(var.code()) != 2)
@@ -93,25 +100,14 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
             var.print(stderr);
         }
 
-        //int group = WR_VAR_X(rep_code);
-        int count = WR_VAR_Y(rep_code);
+        //TRACE("encode_r_data bitmap %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
 
-        if (count == 0)
-        {
-            Varinfo info = tables.btable->query(delayed_code);
-            count = var.info()->len;
-            ob.add_bits(count, info->bit_len);
-        }
-        TRACE("encode_r_data bitmap %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
+        if (var.info()->len != bitmap_size)
+            error_consistency::throwf("bitmap given is %u bits long, but we need to encode %u bits",
+                    var.info()->len, bitmap_size);
 
         // Encode the bitmap here directly
-        if (ops[0] != WR_VAR(0, 31, 31))
-            error_consistency::throwf("bitmap data descriptor is %d%02d%03d instead of B31031",
-                    WR_VAR_F(ops[0]), WR_VAR_X(ops[0]), WR_VAR_Y(ops[0]));
-        if (ops.size() != 1)
-            error_consistency::throwf("repeated sequence for bitmap encoding contains more than just B31031");
-
-        for (unsigned i = 0; i < var.info()->len; ++i)
+        for (unsigned i = 0; i < bitmap_size; ++i)
             ob.add_bits(var.enqc()[i] == '+' ? 0 : 1, 1);
 
         bitmaps.define(var, current_subset);

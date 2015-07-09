@@ -116,7 +116,7 @@ public:
     /**
      * Handle a replicated section which defines a bitmap
      */
-    virtual void r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
+    virtual void r_bitmap(unsigned bitmap_size);
 
     /**
      * Notify the start of a D group
@@ -149,7 +149,7 @@ public:
      * @returns
      *   The bitmap that has been processed.
      */
-    virtual void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops);
+    virtual void define_bitmap(unsigned bitmap_size);
 
     /**
      * Request processing, according to \a info, of a data variable.
@@ -172,10 +172,18 @@ public:
     virtual uint32_t define_semantic_variable(Varinfo info);
 
     /**
+     * Request processing of a delayed replication factor variable used to
+     * encode the size of a bitmap.
+     *
+     * @returns the repetition count
+     */
+    virtual unsigned define_bitmap_delayed_replication_factor(Varinfo info);
+
+    /**
      * Request processing of an associated field significance variable
      * (B31021).
      *
-     * Return the associated field significance value
+     * @returns the associated field significance value
      */
     virtual unsigned define_associated_field_significance(Varinfo info);
 

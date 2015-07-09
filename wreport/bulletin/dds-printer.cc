@@ -84,9 +84,10 @@ uint32_t DDSPrinter::define_semantic_variable(Varinfo info)
     return var.enqi();
 }
 
-void DDSPrinter::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+void DDSPrinter::define_bitmap(unsigned bitmap_size)
 {
-    UncompressedEncoder::define_bitmap(rep_code, delayed_code, ops);
+    UncompressedEncoder::define_bitmap(bitmap_size);
+#if 0
     if (delayed_code)
     {
         Varinfo info = tables.btable->query(delayed_code);
@@ -94,6 +95,7 @@ void DDSPrinter::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opc
         Var var(info, (int)bitmaps.current->bitmap.info()->len);
         var.print(out);
     }
+#endif
     print_context(bitmaps.current->bitmap.info(), 0);
     bitmaps.current->bitmap.print(out);
 }

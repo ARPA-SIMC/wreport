@@ -50,6 +50,11 @@ UncompressedEncoder::~UncompressedEncoder()
 {
 }
 
+const Var& UncompressedEncoder::peek_var()
+{
+    return get_var(current_var);
+}
+
 const Var& UncompressedEncoder::get_var()
 {
     return get_var(current_var++);
@@ -63,7 +68,7 @@ const Var& UncompressedEncoder::get_var(unsigned pos) const
     return current_subset[pos];
 }
 
-void UncompressedEncoder::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)
+void UncompressedEncoder::define_bitmap(unsigned bitmap_size)
 {
     const Var& var = get_var();
     if (WR_VAR_F(var.code()) != 2)

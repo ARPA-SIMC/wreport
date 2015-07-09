@@ -50,13 +50,16 @@ struct UncompressedEncoder : public bulletin::DDSInterpreter
     UncompressedEncoder(const Bulletin& bulletin, unsigned subset_no);
     virtual ~UncompressedEncoder();
 
-    /// Get the next variable
+    /// Get the next variable, without incrementing current_var
+    const Var& peek_var();
+
+    /// Get the next variable, incrementing current_var by 1
     const Var& get_var();
 
     /// Get the variable at the given position
     const Var& get_var(unsigned pos) const;
 
-    void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
+    void define_bitmap(unsigned bitmap_size) override;
 };
 
 struct UncompressedDecoder : public bulletin::DDSInterpreter
