@@ -41,10 +41,6 @@
 namespace wreport {
 struct DTable;
 
-namespace buffers {
-struct BufrInput;
-}
-
 namespace bulletin {
 struct Visitor;
 struct Parser;
@@ -289,14 +285,6 @@ struct BufrBulletin : public Bulletin
 	char* optional_section;
 
     /**
-     * Raw details about the message that has been decoded.
-     *
-     * It is only filled in by a decoding operation: in all other cases it is
-     * NULL.
-     */
-    buffers::BufrInput* raw_details;
-
-    /**
      * Options used to customise encoding or decoding.
      *
      * It is NULL by default, in which case default options are used.
@@ -318,13 +306,6 @@ struct BufrBulletin : public Bulletin
     void encode(std::string& buf) override;
     void print_details(FILE* out) const override;
     unsigned diff_details(const Bulletin& msg) const override;
-
-    /**
-     * Create or reset the raw_details structure for this bulletin.
-     *
-     * This is only invoked during decoding.
-     */
-    buffers::BufrInput& reset_raw_details(const std::string& buf);
 
 	/**
 	 * Read an encoded BUFR message from a stream

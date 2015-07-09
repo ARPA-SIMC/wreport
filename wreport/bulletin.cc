@@ -24,7 +24,6 @@
 #include "error.h"
 #include "opcode.h"
 #include "dtable.h"
-#include "buffers/bufr.h"
 #include "bulletin.h"
 #include "bulletin/dds-printer.h"
 #include "bulletin/internals.h"
@@ -85,7 +84,7 @@ std::unique_ptr<BufrCodecOptions> BufrCodecOptions::create()
 }
 
 BufrBulletin::BufrBulletin()
-    : optional_section_length(0), optional_section(0), raw_details(0), codec_options(0)
+    : optional_section_length(0), optional_section(0), codec_options(0)
 {
 }
 
@@ -96,8 +95,7 @@ std::unique_ptr<BufrBulletin> BufrBulletin::create()
 
 BufrBulletin::~BufrBulletin()
 {
-	if (optional_section) delete[] optional_section;
-    if (raw_details) delete raw_details;
+    delete[] optional_section;
 }
 
 void BufrBulletin::clear()
@@ -112,15 +110,6 @@ void BufrBulletin::clear()
 void BufrBulletin::load_tables()
 {
     tables.load_bufr(centre, subcentre, master_table, local_table);
-}
-
-buffers::BufrInput& BufrBulletin::reset_raw_details(const std::string& buf)
-{
-    if (raw_details == 0)
-        raw_details = new buffers::BufrInput(buf);
-    else
-        raw_details->reset(buf);
-    return *raw_details;
 }
 
 /*

@@ -65,7 +65,7 @@ static inline uint32_t all_ones(int bitlen)
 struct Decoder
 {
     /// Input data
-    buffers::BufrInput& in;
+    buffers::BufrInput in;
     /* Output decoded variables */
     BufrBulletin& out;
     /// Number of expected subsets (read in decode_header, used in decode_data)
@@ -74,8 +74,7 @@ struct Decoder
     bool conf_add_undef_attrs;
 
     Decoder(const std::string& buf, const char* fname, size_t offset, BufrBulletin& out)
-        : in(out.reset_raw_details(buf)), out(out),
-          conf_add_undef_attrs(false)
+        : in(buf), out(out), conf_add_undef_attrs(false)
     {
         if (out.codec_options)
         {

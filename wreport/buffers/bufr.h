@@ -82,7 +82,7 @@ public:
     /// Offsets of the start of BUFR sections
     unsigned sec[6];
 
- 
+
     /**
      * Wrap a string iinto a BufrInput
      *
