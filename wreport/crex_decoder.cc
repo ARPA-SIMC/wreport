@@ -126,8 +126,10 @@ struct CrexParser : public bulletin::UncompressedDecoder
     {
     }
 
-    const Var& read_variable(Varinfo info)
+    uint32_t read_variable(Varinfo info)
     {
+        uint32_t res = 0xffffffff;
+
         // Create the new Var
         Var var(info);
 
@@ -147,6 +149,7 @@ struct CrexParser : public bulletin::UncompressedDecoder
             } else {
                 int val = strtol((const char*)d_start, 0, 10);
                 var.seti(val);
+                res = val;
             }
         }
 
@@ -155,7 +158,7 @@ struct CrexParser : public bulletin::UncompressedDecoder
         IFTRACE{
             TRACE("define_variable: stored variable: "); var.print(stderr); TRACE("\n");
         }
-        return output_subset.back();
+        return res;
     }
 
     void define_variable(Varinfo info) override
@@ -165,11 +168,7 @@ struct CrexParser : public bulletin::UncompressedDecoder
 
     uint32_t define_semantic_variable(Varinfo info) override
     {
-        const Var& var = read_variable(info);
-        if (var.isset())
-            return var.enqi();
-        else
-            return 0xffffffff;
+        return read_variable(info);
     }
 };
 
