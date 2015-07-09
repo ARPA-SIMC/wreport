@@ -591,6 +591,11 @@ void Var::seta(const Var& attr)
 	seta(unique_ptr<Var>(new Var(attr)));
 }
 
+void Var::seta(Var&& attr)
+{
+    seta(unique_ptr<Var>(new Var(attr)));
+}
+
 void Var::seta(unique_ptr<Var>&& attr)
 {
     // Ensure that the attribute does not have attributes of its own

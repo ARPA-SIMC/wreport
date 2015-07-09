@@ -220,6 +220,16 @@ public:
 	 */
 	void seta(const Var& attr);
 
+    /**
+     * Set an attribute of the variable.  An existing attribute with the same
+     * wreport::Varcode will be replaced.
+     *
+     * @param attr
+     *   The attribute to add. Its value will be moved inside the destination
+     *   attribute, and attr will be unset.
+     */
+    void seta(Var&& attr);
+
 	/**
 	 * Set an attribute of the variable.  An existing attribute with the same
 	 * wreport::Varcode will be replaced.

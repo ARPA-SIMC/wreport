@@ -67,6 +67,9 @@ struct Subset : public std::vector<Var>
 	/// Store a decoded variable in the message, to be encoded later.
 	void store_variable(const Var& var);
 
+    /// Store a decoded variable in the message, to be encoded later.
+    void store_variable(Var&& var);
+
 	/**
 	 * Store a new variable in the message, copying it from an already existing
 	 * variable.

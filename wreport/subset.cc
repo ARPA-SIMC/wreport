@@ -44,6 +44,11 @@ void Subset::store_variable(const Var& var)
 	push_back(var);
 }
 
+void Subset::store_variable(Var&& var)
+{
+    emplace_back(move(var));
+}
+
 void Subset::store_variable(Varcode code, const Var& var)
 {
     Varinfo info = tables->btable->query(code);
