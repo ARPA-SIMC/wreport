@@ -122,26 +122,29 @@ public:
     /// Return the number of bits left in the message to be decoded
     unsigned bits_left() const { return (data_len - s4_cursor) * 8 + pbyte_len; }
 
-    /**
-     * Read a byte value at offset \a pos
-     */
+    /// Read a byte value at offset \a pos
     inline unsigned read_byte(unsigned pos) const
     {
         return (unsigned)data[pos];
     }
 
-    /**
-     * Read a byte value at offset \a pos inside section \a section
-     */
+    /// Read a byte value at offset \a pos inside section \a section
     inline unsigned read_byte(unsigned section, unsigned pos) const
     {
         return (unsigned)data[sec[section] + pos];
     }
 
-    /**
-     * Read a big endian integer value \a byte_len bytes long, at offset \a pos
-     */
-    unsigned read_number(unsigned pos, unsigned byte_len) const;
+    /// Read a big endian integer value \a byte_len bytes long, at offset \a pos
+    unsigned read_number(unsigned pos, unsigned byte_len) const
+    {
+        unsigned res = 0;
+        for (unsigned i = 0; i < byte_len; ++i)
+        {
+            res <<= 8;
+            res |= data[pos + i];
+        }
+        return res;
+    }
 
     /**
      * Read a big endian integer value \a byte_len bytes long, at offset \a pos
@@ -156,7 +159,33 @@ public:
      * Get the integer value of the next 'n' bits from the decode input
      * n must be <= 32.
      */
-    uint32_t get_bits(unsigned n);
+    uint32_t get_bits(unsigned n)
+    {
+        uint32_t result = 0;
+
+        if (s4_cursor == data_len)
+            parse_error("end of buffer while looking for %d bits of bit-packed data", n);
+
+        // TODO: review and benchmark and possibly simplify
+        // (a possible alternative approach is to keep a current bitmask that
+        // starts at 0x80 and is shifted right by 1 at each read until it
+        // reaches 0, and get rid of pbyte_len)
+        for (unsigned i = 0; i < n; i++)
+        {
+            if (pbyte_len == 0)
+            {
+                pbyte_len = 8;
+                pbyte = data[s4_cursor++];
+            }
+            result <<= 1;
+            if (pbyte & 0x80)
+                result |= 1;
+            pbyte <<= 1;
+            pbyte_len--;
+        }
+
+        return result;
+    }
 
     /// Dump to stderr 'count' bits of 'buf', starting at the 'ofs-th' bit
     void debug_dump_next_bits(const char* desc, int count) const;
@@ -212,7 +241,7 @@ public:
      * @param diffbits
      *   The number of bits used to encode the difference from \a base
      */
-    void decode_number(Var& dest, uint32_t base, unsigned diffbits);
+    void decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits);
 
     /**
      * Decode a number as described by dest.info(), and set it as value for \a

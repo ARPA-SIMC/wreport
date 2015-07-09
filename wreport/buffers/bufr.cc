@@ -80,41 +80,6 @@ void BufrInput::scan_other_sections(bool has_optional)
     s4_cursor = sec[4] + 4;
 }
 
-unsigned BufrInput::read_number(unsigned pos, unsigned byte_len) const
-{
-    unsigned res = 0;
-    for (unsigned i = 0; i < byte_len; ++i)
-    {
-        res <<= 8;
-        res |= data[pos + i];
-    }
-    return res;
-}
-
-uint32_t BufrInput::get_bits(unsigned n)
-{
-    uint32_t result = 0;
-
-    if (s4_cursor == data_len)
-        parse_error("end of buffer while looking for %d bits of bit-packed data", n);
-
-    for (unsigned i = 0; i < n; i++) 
-    {
-        if (pbyte_len == 0) 
-        {
-            pbyte_len = 8;
-            pbyte = data[s4_cursor++];
-        }
-        result <<= 1;
-        if (pbyte & 0x80)
-            result |= 1;
-        pbyte <<= 1;
-        pbyte_len--;
-    }
-
-    return result;
-}
-
 void BufrInput::debug_dump_next_bits(const char* desc, int count) const
 {
     fputs(desc, stderr);
@@ -323,7 +288,7 @@ void BufrInput::decode_number(Var& dest)
     }
 }
 
-void BufrInput::decode_number(Var& dest, uint32_t base, unsigned diffbits)
+void BufrInput::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits)
 {
     Varinfo info = dest.info();
 
@@ -406,7 +371,7 @@ void BufrInput::decode_number(Varinfo info, unsigned subsets, const bulletin::As
             uint32_t af_offset = get_bits(af_diffbits);
             af = associated_field.make_attribute(af_base + af_offset);
         }
-        decode_number(var, base, diffbits);
+        decode_compressed_number(var, base, diffbits);
         if (af.get()) var.seta(move(af));
         dest(var, i);
     }
@@ -440,14 +405,14 @@ void BufrInput::decode_semantic_number(Var& dest, unsigned subsets)
     //TRACE("Compressed number, base value %d diff bits %d\n", base, diffbits);
 
     // Decode the destination variable
-    decode_number(dest, base, diffbits);
+    decode_compressed_number(dest, base, diffbits);
 
     // Decode all other versions and ensure they are the same
     Var copy(dest.info());
     for (unsigned i = 1; i < subsets; ++i)
     {
         // TODO: only compare the diffbits without needing to reconstruct the var
-        decode_number(copy, base, diffbits);
+        decode_compressed_number(copy, base, diffbits);
         if (dest != copy)
         {
             string val1 = dest.format();
