@@ -47,7 +47,7 @@ protected:
 
 public:
     /// Input buffer
-    const unsigned char* data;
+    const uint8_t* data;
 
     /// Input buffer size
     size_t data_len;
@@ -59,7 +59,7 @@ public:
      *
      * If not available, it is NULL.
      */
-    const char* fname;
+    const char* fname = nullptr;
 
     /**
      * File offset of the start of the message.
@@ -68,16 +68,16 @@ public:
      *
      * If not available, it is 0.
      */
-    size_t start_offset;
+    size_t start_offset = 0;
 
     /// Offset of the byte we are currently decoding
-    unsigned s4_cursor;
+    unsigned s4_cursor = 0;
 
     /// Byte we are currently decoding
-    unsigned char pbyte;
+    uint8_t pbyte = 0;
 
     /// Bits left in pbyte to decode
-    int pbyte_len;
+    int pbyte_len = 0;
 
     /// Offsets of the start of BUFR sections
     unsigned sec[6];
@@ -92,7 +92,7 @@ public:
     BufrInput(const std::string& in);
 
     /// Start decoding a different buffer
-    void reset(const std::string& in);
+    //void reset(const std::string& in);
 
     /**
      * Scan the message filling in the sec[] array of start offsets of sections
@@ -117,10 +117,10 @@ public:
     void scan_other_sections(bool has_optional);
 
     /// Return the current decoding byte offset
-    int offset() const;
+    unsigned offset() const { return s4_cursor; }
 
     /// Return the number of bits left in the message to be decoded
-    int bits_left() const;
+    unsigned bits_left() const { return (data_len - s4_cursor) * 8 + pbyte_len; }
 
     /**
      * Read a byte value at offset \a pos
@@ -241,7 +241,7 @@ public:
      * @param subsets
      *   Number of subsets in the compressed data section
      */
-    void decode_number(Var& dest, unsigned subsets);
+    void decode_semantic_number(Var& dest, unsigned subsets);
 
     /**
      * Read a string from the data section

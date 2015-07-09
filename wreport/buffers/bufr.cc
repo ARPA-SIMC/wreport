@@ -40,18 +40,8 @@ namespace buffers {
 
 BufrInput::BufrInput(const std::string& in)
 {
-    reset(in);
-}
-
-void BufrInput::reset(const std::string& in)
-{
     data = (const unsigned char*)in.data();
     data_len = in.size();
-    fname = NULL;
-    start_offset = 0;
-    s4_cursor = 0;
-    pbyte = 0;
-    pbyte_len = 0;
     for (unsigned i = 0; i < sizeof(sec)/sizeof(sec[0]); ++i)
         sec[i] = 0;
 }
@@ -89,9 +79,6 @@ void BufrInput::scan_other_sections(bool has_optional)
 
     s4_cursor = sec[4] + 4;
 }
-
-int BufrInput::offset() const { return s4_cursor; }
-int BufrInput::bits_left() const { return (data_len - s4_cursor) * 8 + pbyte_len; }
 
 unsigned BufrInput::read_number(unsigned pos, unsigned byte_len) const
 {
@@ -425,7 +412,7 @@ void BufrInput::decode_number(Varinfo info, unsigned subsets, const bulletin::As
     }
 }
 
-void BufrInput::decode_number(Var& dest, unsigned subsets)
+void BufrInput::decode_semantic_number(Var& dest, unsigned subsets)
 {
     Varinfo info = dest.info();
 
