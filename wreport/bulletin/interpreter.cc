@@ -48,25 +48,7 @@ void DDSInterpreter::run()
 
                 if (bitmaps.pending_definitions)
                 {
-                    unsigned opcode_count = WR_VAR_X(cur);
-
-                    // Sanity checks
-                    if (opcode_count != 1)
-                        error_consistency::throwf("bitmap section replicates %u descriptors instead of one", opcode_count);
-
-                    Opcodes replicated = opcodes.pop_left(1);
-
-                    if (replicated[0] != WR_VAR(0, 31, 31))
-                        error_consistency::throwf("bitmap element descriptor is %01d%02d%03d instead of B31031", WR_VAR_FXY(replicated[0]));
-
-                    if (!count)
-                    {
-                        Varinfo rep_info = tables.btable->query(delayed_replication_code);
-                        count = define_bitmap_delayed_replication_factor(rep_info);
-                        ++bitmaps.next_bitmap_anchor_point;
-                    }
-
-                    r_bitmap(count);
+                    r_bitmap(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
                 }
                 else
                 {
@@ -413,9 +395,27 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
     }
 }
 
-void DDSInterpreter::r_bitmap(unsigned bitmap_size)
+void DDSInterpreter::r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
-    define_bitmap(bitmap_size);
+    // Get and check the opcode count, which must be 1
+    unsigned opcode_count = WR_VAR_X(code);
+    if (opcode_count != 1)
+        error_consistency::throwf("bitmap section replicates %u descriptors instead of one", opcode_count);
+
+    // And the opcode must be B31031
+    if (ops[0] != WR_VAR(0, 31, 31))
+        error_consistency::throwf("bitmap element descriptor is %01d%02d%03d instead of B31031", WR_VAR_FXY(ops[0]));
+
+    // Get the bitmap size
+    unsigned count = WR_VAR_Y(code);
+    if (!count)
+    {
+        Varinfo rep_info = tables.btable->query(delayed_code);
+        count = define_bitmap_delayed_replication_factor(rep_info);
+        ++bitmaps.next_bitmap_anchor_point;
+    }
+
+    define_bitmap(count);
     bitmaps.pending_definitions = 0;
 }
 

@@ -116,7 +116,7 @@ public:
     /**
      * Handle a replicated section which defines a bitmap
      */
-    virtual void r_bitmap(unsigned bitmap_size);
+    virtual void r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
 
     /**
      * Notify the start of a D group
