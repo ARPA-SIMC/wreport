@@ -1,6 +1,5 @@
 #include "bufr.h"
 #include "wreport/var.h"
-#include "wreport/bulletin/associated_fields.h"
 #include <cstdarg>
 #include "config.h"
 
@@ -350,7 +349,8 @@ void BufrInput::decode_compressed_number(Varinfo info, unsigned subsets, std::fu
     }
 }
 
-void BufrInput::decode_compressed_number(Varinfo info, unsigned subsets, const bulletin::AssociatedField& associated_field, std::function<void(unsigned, Var&&)> dest)
+//void BufrInput::decode_compressed_number(Varinfo info, unsigned subsets, const bulletin::AssociatedField& associated_field, std::function<void(unsigned, Var&&)> dest)
+void BufrInput::decode_compressed_number(Varinfo info, unsigned associated_field_bits, unsigned subsets, std::function<void(unsigned, Var&&, uint32_t)> dest)
 {
     Var var(info);
 
@@ -372,9 +372,9 @@ void BufrInput::decode_compressed_number(Varinfo info, unsigned subsets, const b
      */
 
     /// Associated field base value
-    uint32_t af_base = associated_field.bit_count ? get_bits(associated_field.bit_count) : 0;
+    uint32_t af_base = get_bits(associated_field_bits);
     /// Number of bits used to encode the associated field differences
-    uint32_t af_diffbits = associated_field.bit_count ? get_bits(6) : 0;
+    uint32_t af_diffbits = get_bits(6);
 
     // Data field base value
     uint32_t base = get_bits(info->bit_len);
@@ -402,15 +402,9 @@ void BufrInput::decode_compressed_number(Varinfo info, unsigned subsets, const b
 
     for (unsigned i = 0; i < subsets; ++i)
     {
-        unique_ptr<Var> af;
-        if (associated_field.bit_count)
-        {
-            uint32_t af_offset = get_bits(af_diffbits);
-            af = associated_field.make_attribute(af_base + af_offset);
-        }
+        uint32_t af_value = af_base + get_bits(af_diffbits);
         decode_compressed_number(var, base, diffbits);
-        if (af.get()) var.seta(move(af));
-        dest(i, move(var));
+        dest(i, move(var), af_value);
     }
 }
 

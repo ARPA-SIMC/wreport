@@ -442,7 +442,13 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
             case Vartype::Integer:
             case Vartype::Decimal:
                 if (associated_field.bit_count)
-                    in.decode_compressed_number(info, subset_count, associated_field, dest);
+                {
+                    in.decode_compressed_number(info, associated_field.bit_count, subset_count, [&](unsigned subset_no, Var&& var, uint32_t associated_field_val) {
+                        unique_ptr<Var> af(associated_field.make_attribute(associated_field_val));
+                        if (af.get()) var.seta(move(af));
+                        dest(subset_no, move(var));
+                    });
+                }
                 else
                     in.decode_compressed_number(info, subset_count, dest);
                 break;
