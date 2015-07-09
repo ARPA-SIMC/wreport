@@ -270,7 +270,7 @@ public:
      * @param subsets
      *   Number of subsets in the compressed data section
      */
-    void decode_semantic_number(Var& dest, unsigned subsets);
+    void decode_compressed_semantic_number(Var& dest, unsigned subsets);
 
     /**
      * Read a string from the data section

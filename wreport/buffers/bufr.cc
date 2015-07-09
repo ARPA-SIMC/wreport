@@ -302,7 +302,7 @@ void BufrInput::decode_compressed_number(Var& dest, uint32_t base, unsigned diff
         //TRACE("datasec:decode_b_num:decoded[%d] as missing\n", i);
         dest.unset();
     } else {
-        /* Compute the value for this subset */
+        // Compute the value for this subset
         uint32_t newval = base + diff;
         double dval = info->decode_binary(newval);
         TRACE("BufrInput:decode_number:decoded diffbits %u %u+%u=%u->%f %s\n",
@@ -377,7 +377,7 @@ void BufrInput::decode_number(Varinfo info, unsigned subsets, const bulletin::As
     }
 }
 
-void BufrInput::decode_semantic_number(Var& dest, unsigned subsets)
+void BufrInput::decode_compressed_semantic_number(Var& dest, unsigned subsets)
 {
     Varinfo info = dest.info();
 
@@ -385,42 +385,32 @@ void BufrInput::decode_semantic_number(Var& dest, unsigned subsets)
 
     //TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, base);
 
-    /* Check if there are bits which are not 1 (that is, if the value is present) */
+    // Check if there are bits which are not 1 (that is, if the value is present)
     bool missing = (base == all_ones(info->bit_len));
 
-    /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, base, info.type);*/
     //TRACE("datasec:decode_b_num:len %d base %d info-len %d info-desc %s\n", info->bit_len, base, info->bit_len, info->desc);
 
-    /* Store the variable that we found */
+    // Store the variable that we found
 
-    /* If compression is in use, then we just decoded the base value.  Now
-     * we need to decode all the offsets */
-
-    /* Decode the number of bits (encoded in 6 bits) that these difference
-     * values occupy */
+    /* If compression is in use, then we just decoded the base value. Now we
+     * need to decode all the offsets. However, since this value cannot change
+     * across subsets without breaking the alignment of the variables in the
+     * various subsets, we only need to check that the 6-bits difference value
+     * size is 0, and use the base value we just decoded as the final value */
     uint32_t diffbits = get_bits(6);
-    if (missing && diffbits != 0)
-        error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
+    if (diffbits)
+        error_consistency::throwf("cannot handle a semantic variable (like a repetition count) that differs across subsets");
 
     //TRACE("Compressed number, base value %d diff bits %d\n", base, diffbits);
 
     // Decode the destination variable
-    decode_compressed_number(dest, base, diffbits);
-
-    // Decode all other versions and ensure they are the same
-    Var copy(dest.info());
-    for (unsigned i = 1; i < subsets; ++i)
+    if (missing)
     {
-        // TODO: only compare the diffbits without needing to reconstruct the var
-        decode_compressed_number(copy, base, diffbits);
-        if (dest != copy)
-        {
-            string val1 = dest.format();
-            string val2 = copy.format();
-            error_consistency::throwf("When decoding %d%02d%03d from compressed BUFR data, decoded values differ (%s != %s) but should all be the same",
-                   WR_VAR_F(dest.code()), WR_VAR_X(dest.code()), WR_VAR_Y(dest.code()),
-                   val2.c_str(), val1.c_str());
-        }
+        //TRACE("datasec:decode_b_num:decoded[%d] as missing\n", i);
+        dest.unset();
+    } else {
+        double dval = info->decode_binary(base);
+        dest.setd(dval);
     }
 }
 

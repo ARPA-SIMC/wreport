@@ -484,7 +484,7 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
                 throw error_unimplemented("decode_b_binary TODO");
             case Vartype::Integer:
             case Vartype::Decimal:
-                in.decode_semantic_number(var, subset_count);
+                in.decode_compressed_semantic_number(var, subset_count);
                 break;
         }
         return var;
