@@ -350,10 +350,13 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
         TRACE("decode_c_data:decoded string %s\n", buf.c_str());
     }
 
-    const Var& define_semantic_variable(Varinfo info) override
+    uint32_t define_semantic_variable(Varinfo info) override
     {
         output_subset.store_variable(decode_b_value(info));
-        return output_subset.back();
+        if (output_subset.back().isset())
+            return output_subset.back().enqi();
+        else
+            return 0xffffffff;
     }
 
     void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
@@ -516,9 +519,13 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
         error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(code));
     }
 
-    const Var& define_semantic_variable(Varinfo info) override
+    uint32_t define_semantic_variable(Varinfo info) override
     {
-        return add_to_all(decode_semantic_b_value(info));
+        const Var& var = add_to_all(decode_semantic_b_value(info));
+        if (var.isset())
+            return var.enqi();
+        else
+            return 0xffffffff;
     }
 
     void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;

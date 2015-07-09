@@ -86,11 +86,11 @@ void DDSValidator::define_variable(Varinfo info)
     check_fits(info, var);
 }
 
-const Var& DDSValidator::define_semantic_variable(Varinfo info)
+uint32_t DDSValidator::define_semantic_variable(Varinfo info)
 {
     const Var& var = get_var();
     check_fits(info, var);
-    return var;
+    return var.enqi();
 }
 
 void DDSValidator::define_substituted_value(unsigned pos)

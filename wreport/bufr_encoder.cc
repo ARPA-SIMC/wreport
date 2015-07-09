@@ -67,11 +67,14 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
 
         ob.append_var(info, var);
     }
-    const Var& define_semantic_variable(Varinfo info) override
+    uint32_t define_semantic_variable(Varinfo info) override
     {
         const Var& var = get_var();
         ob.append_var(info, var);
-        return var;
+        if (var.isset())
+            return var.enqi();
+        else
+            return 0xffffffff;
     }
     void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override
     {

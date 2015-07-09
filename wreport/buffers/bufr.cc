@@ -260,6 +260,7 @@ void BufrInput::decode_number(Var& dest)
     if (WR_VAR_X(info->code) == 31 && WR_VAR_F(info->code) == 0)
         switch (WR_VAR_Y(info->code))
         {
+            case 0:
             case 1:
             case 2:
             case 11:

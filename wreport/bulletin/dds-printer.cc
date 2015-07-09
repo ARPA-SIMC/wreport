@@ -77,11 +77,11 @@ void DDSPrinter::define_variable(Varinfo info)
     var.print(out);
 }
 
-const Var& DDSPrinter::define_semantic_variable(Varinfo info)
+uint32_t DDSPrinter::define_semantic_variable(Varinfo info)
 {
     const Var& var = get_var();
     var.print(out);
-    return var;
+    return var.enqi();
 }
 
 void DDSPrinter::define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops)

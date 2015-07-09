@@ -44,7 +44,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
         ob.append_var(info, var);
     }
 
-    const Var& define_semantic_variable(Varinfo info) override
+    uint32_t define_semantic_variable(Varinfo info) override
     {
         const Var& var = get_var();
         IFTRACE {
@@ -64,13 +64,16 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
                 ob.raw_append(" ", 1);
                 ob.encode_check_digit();
                 ob.raw_appendf("%04u", count);
-                break;
+
+                return count;
             }
             default:
                 ob.append_var(info, var);
-                break;
+                if (var.isset())
+                    return var.enqi();
+                else
+                    return 0xffffffff;
         }
-        return var;
     }
 };
 

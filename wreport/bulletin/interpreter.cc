@@ -187,8 +187,8 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
                 Varinfo info = tables.btable->query(WR_VAR(0, 31, 21));
 
                 // Get the value for B31021, defaulting to 63 if missing
-                const Var& var = define_semantic_variable(info);
-                associated_field.significance = var.enq(63);
+                uint32_t sig = define_semantic_variable(info);
+                associated_field.significance = sig == 0xffffffff ? 63 : sig;
                 ++bitmaps.next_bitmap_anchor_point;
             }
             associated_field.bit_count = nbits;
@@ -373,13 +373,7 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
     if (count == 0)
     {
         Varinfo info = tables.btable->query(delayed_code);
-        const Var& var = define_semantic_variable(info);
-        if (var.code() == WR_VAR(0, 31, 0))
-        {
-            count = var.isset() ? 0 : 1;
-        } else {
-            count = var.enqi();
-        }
+        count = define_semantic_variable(info);
         ++bitmaps.next_bitmap_anchor_point;
     }
     IFTRACE {
@@ -414,7 +408,7 @@ void DDSInterpreter::define_bitmap(Varcode rep_code, Varcode delayed_code, const
     throw error_unimplemented("define_bitmap is not implemented in this interpreter");
 }
 
-const Var& DDSInterpreter::define_semantic_variable(Varinfo info)
+uint32_t DDSInterpreter::define_semantic_variable(Varinfo info)
 {
     throw error_unimplemented("define_semantic_variable is not implemented in this interpreter");
 }

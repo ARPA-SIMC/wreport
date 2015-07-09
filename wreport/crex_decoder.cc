@@ -163,9 +163,13 @@ struct CrexParser : public bulletin::UncompressedDecoder
         read_variable(info);
     }
 
-    const Var& define_semantic_variable(Varinfo info) override
+    uint32_t define_semantic_variable(Varinfo info) override
     {
-        return read_variable(info);
+        const Var& var = read_variable(info);
+        if (var.isset())
+            return var.enqi();
+        else
+            return 0xffffffff;
     }
 };
 

@@ -167,9 +167,9 @@ public:
      * (in case of compressed datasets), and that the interpreter needs to know
      * its value.
      *
-     * @returns a copy of the variable
+     * @returns the value of the variable, or 0xffffffff if it is unset
      */
-    virtual const Var& define_semantic_variable(Varinfo info);
+    virtual uint32_t define_semantic_variable(Varinfo info);
 
     /**
      * Request processing of a substituted value corresponding to position \a

@@ -37,7 +37,7 @@ public:
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;
     void define_variable(Varinfo info) override;
-    const Var& define_semantic_variable(Varinfo info) override;
+    uint32_t define_semantic_variable(Varinfo info) override;
     void define_bitmap(Varcode rep_code, Varcode delayed_code, const Opcodes& ops) override;
     void define_raw_character_data(Varcode code) override;
 
