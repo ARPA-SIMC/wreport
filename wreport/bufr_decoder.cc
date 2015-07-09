@@ -385,13 +385,7 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
         // Bitmap size is now in count
 
         // Read the bitmap
-        string buf;
-        buf.resize(count);
-        for (unsigned i = 0; i < count; ++i)
-        {
-            uint32_t val = in.get_bits(1);
-            buf[i] = (val == 0) ? '+' : '-';
-        }
+        string buf = in.decode_uncompressed_bitmap(count);
 
         // Create a single use varinfo to store the bitmap
         Varinfo info = tables.get_bitmap(code, buf);
@@ -559,22 +553,7 @@ void CompressedBufrDecoder::define_bitmap(Varcode rep_code, Varcode delayed_code
     // Bitmap size is now in count
 
     // Read the bitmap
-    string buf;
-    buf.resize(count);
-    for (unsigned i = 0; i < count; ++i)
-    {
-        uint32_t val = in.get_bits(1);
-        buf[i] = (val == 0) ? '+' : '-';
-        // Decode the number of bits (encoded in 6 bits) of difference
-        // values. It's odd to repeat this for each bit in the bitmap, but
-        // that's how things are transmitted and it's somewhat consistent
-        // with how data compression is specified
-        val = in.get_bits(6);
-        // If compressed, ensure that the difference bits are 0 and they are
-        // not trying to transmit odd things like delta bitmaps 
-        if (val != 0)
-            in.parse_error("bitmap entry %u declares %u difference bits, but we only support 0", i, val);
-    }
+    string buf = in.decode_compressed_bitmap(count);
 
     // Create a single use varinfo to store the bitmap
     Varinfo info = tables.get_bitmap(code, buf);

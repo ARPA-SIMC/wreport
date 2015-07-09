@@ -319,6 +319,59 @@ public:
      *   decoded value
      */
     void decode_binary(Var& dest);
+
+    /**
+     * Decode an uncompressed bitmap of \a size bits.
+     *
+     * The result will be a string \a size bytes long, with a '+' where the
+     * bitmap reports that data is present, and a '-' where the bitmap reports
+     * that data is not present.
+     */
+    std::string decode_uncompressed_bitmap(unsigned size)
+    {
+        std::string buf;
+        buf.resize(size);
+        for (unsigned i = 0; i < size; ++i)
+        {
+            uint32_t val = get_bits(1);
+            buf[i] = (val == 0) ? '+' : '-';
+        }
+        return buf;
+    }
+
+    /**
+     * Decode a "compressed" bitmap of \a size bits.
+     *
+     * The result will be a string \a size bytes long, with a '+' where the
+     * bitmap reports that data is present, and a '-' where the bitmap reports
+     * that data is not present.
+     *
+     * It would be more correct to say that it decodes a bitmap from a
+     * compressed BUFR message, because bitmaps in compressed messages are
+     * actually encoded with 7 bits per bit instead of one, because after each
+     * bit they need to send 6 bits saying that it will be followed by 0 bits
+     * of difference values.
+     */
+    std::string decode_compressed_bitmap(unsigned size)
+    {
+        std::string buf;
+        buf.resize(size);
+        for (unsigned i = 0; i < size; ++i)
+        {
+            uint32_t val = get_bits(1);
+            buf[i] = (val == 0) ? '+' : '-';
+            // Decode the number of bits (encoded in 6 bits) of difference
+            // values. It's odd to repeat this for each bit in the bitmap, but
+            // that's how things are transmitted and it's somewhat consistent
+            // with how data compression is specified
+            val = get_bits(6);
+            // If compressed, ensure that the difference bits are 0 and they are
+            // not trying to transmit odd things like delta bitmaps
+            if (val != 0)
+                parse_error("bitmap entry %u declares %u difference bits, but we only support 0", i, val);
+        }
+        return buf;
+    }
 };
 
 /**
