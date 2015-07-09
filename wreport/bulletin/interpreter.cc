@@ -47,13 +47,9 @@ void DDSInterpreter::run()
                     delayed_replication_code = WR_VAR(0, 31, 12);
 
                 if (bitmaps.pending_definitions)
-                {
                     r_bitmap(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
-                }
                 else
-                {
                     r_replication(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
-                }
                 break;
             }
             case 2:

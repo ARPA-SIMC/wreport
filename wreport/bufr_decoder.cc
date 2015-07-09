@@ -366,12 +366,8 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
     {
         Var rep_count = decode_b_value(info);
         return rep_count.enqi();
-#if 0
-        const Var& var = get_var();
-        ob.append_var(info, var);
-        return var.enqi();
-#endif
     }
+
     void define_bitmap(unsigned bitmap_size) override
     {
         Varcode code = bitmaps.pending_definitions;
@@ -472,15 +468,10 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
      * Add \a var to all datasets, returning a pointer to one version of \a var
      * that is memory managed by one of the datasets.
      */
-    const Var& add_to_all(const Var& var)
+    void add_to_all(const Var& var)
     {
-        const Var* res = 0;
         for (unsigned i = 0; i < subset_count; ++i)
-        {
             output_bulletin.subsets[i].store_variable(var);
-            if (!res) res = &output_bulletin.subsets[i].back();
-        }
-        return *res;
     }
 
     void define_variable(Varinfo info) override
@@ -514,13 +505,16 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
 
     unsigned define_delayed_replication_factor(Varinfo info) override
     {
-        const Var& var = add_to_all(decode_semantic_b_value(info));
-        return var.enqi();
+        Var res(decode_semantic_b_value(info));
+        add_to_all(res);
+        return res.enqi();
     }
 
     unsigned define_associated_field_significance(Varinfo info) override
     {
-        return add_to_all(decode_semantic_b_value(info)).enq(63);
+        Var res(decode_semantic_b_value(info));
+        add_to_all(res);
+        return res.enq(63);
     }
 
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override
@@ -538,22 +532,22 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
         // Create a single use varinfo to store the bitmap
         Varinfo info = tables.get_bitmap(code, buf);
 
-        // Store the bitmap
+        // Create the bitmap variable
         Var bmp(info, buf);
 
         // Add var to subset(s)
-        const Var& res = add_to_all(bmp);
+        add_to_all(bmp);
 
         // Bitmap will stay set as a reference to the variable to use as the
         // current bitmap. The subset(s) are taking care of memory managing it.
 
         IFTRACE {
             TRACE("Decoded bitmap count %u: ", bitmap_size);
-            res.print(stderr);
+            bmp.print(stderr);
             TRACE("\n");
         }
 
-        bitmaps.define(res, output_bulletin.subset(0));
+        bitmaps.define(move(bmp), output_bulletin.subset(0));
     }
 };
 
