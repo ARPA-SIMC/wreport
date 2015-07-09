@@ -350,13 +350,10 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
         TRACE("decode_c_data:decoded string %s\n", buf.c_str());
     }
 
-    uint32_t define_semantic_variable(Varinfo info) override
+    unsigned define_delayed_replication_factor(Varinfo info) override
     {
         output_subset.store_variable(decode_b_value(info));
-        if (output_subset.back().isset())
-            return output_subset.back().enqi();
-        else
-            return 0xffffffff;
+        return output_subset.back().enqi();
     }
 
     unsigned define_associated_field_significance(Varinfo info) override
@@ -515,13 +512,10 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
         error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(code));
     }
 
-    uint32_t define_semantic_variable(Varinfo info) override
+    unsigned define_delayed_replication_factor(Varinfo info) override
     {
         const Var& var = add_to_all(decode_semantic_b_value(info));
-        if (var.isset())
-            return var.enqi();
-        else
-            return 0xffffffff;
+        return var.enqi();
     }
 
     unsigned define_associated_field_significance(Varinfo info) override

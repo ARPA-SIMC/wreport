@@ -169,7 +169,7 @@ public:
      *
      * @returns the value of the variable, or 0xffffffff if it is unset
      */
-    virtual uint32_t define_semantic_variable(Varinfo info);
+    virtual unsigned define_delayed_replication_factor(Varinfo info);
 
     /**
      * Request processing of a delayed replication factor variable used to

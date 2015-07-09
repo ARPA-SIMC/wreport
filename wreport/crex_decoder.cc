@@ -166,7 +166,7 @@ struct CrexParser : public bulletin::UncompressedDecoder
         read_variable(info);
     }
 
-    uint32_t define_semantic_variable(Varinfo info) override
+    unsigned define_delayed_replication_factor(Varinfo info) override
     {
         return read_variable(info);
     }

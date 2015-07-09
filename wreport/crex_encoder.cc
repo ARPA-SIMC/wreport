@@ -44,7 +44,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
         ob.append_var(info, var);
     }
 
-    uint32_t define_semantic_variable(Varinfo info) override
+    unsigned define_delayed_replication_factor(Varinfo info) override
     {
         const Var& var = get_var();
         IFTRACE {

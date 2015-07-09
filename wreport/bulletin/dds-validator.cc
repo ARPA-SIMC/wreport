@@ -86,7 +86,7 @@ void DDSValidator::define_variable(Varinfo info)
     check_fits(info, var);
 }
 
-uint32_t DDSValidator::define_semantic_variable(Varinfo info)
+unsigned DDSValidator::define_delayed_replication_factor(Varinfo info)
 {
     const Var& var = get_var();
     check_fits(info, var);

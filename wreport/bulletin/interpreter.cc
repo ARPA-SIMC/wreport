@@ -394,7 +394,7 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
     if (count == 0)
     {
         Varinfo info = tables.btable->query(delayed_code);
-        count = define_semantic_variable(info);
+        count = define_delayed_replication_factor(info);
         ++bitmaps.next_bitmap_anchor_point;
     }
     IFTRACE {
@@ -427,9 +427,9 @@ void DDSInterpreter::define_bitmap(unsigned bitmap_size)
     throw error_unimplemented("define_bitmap is not implemented in this interpreter");
 }
 
-uint32_t DDSInterpreter::define_semantic_variable(Varinfo info)
+unsigned DDSInterpreter::define_delayed_replication_factor(Varinfo info)
 {
-    throw error_unimplemented("define_semantic_variable is not implemented in this interpreter");
+    throw error_unimplemented("define_delayed_replication_factor is not implemented in this interpreter");
 }
 
 unsigned DDSInterpreter::define_bitmap_delayed_replication_factor(Varinfo info)

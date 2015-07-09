@@ -77,7 +77,7 @@ void DDSPrinter::define_variable(Varinfo info)
     var.print(out);
 }
 
-uint32_t DDSPrinter::define_semantic_variable(Varinfo info)
+unsigned DDSPrinter::define_delayed_replication_factor(Varinfo info)
 {
     const Var& var = get_var();
     var.print(out);
