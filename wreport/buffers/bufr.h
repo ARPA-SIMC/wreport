@@ -240,7 +240,13 @@ public:
      * Decode a number as described by \a info from a compressed bufr with
      * \a subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_number(Varinfo info, unsigned subsets, const bulletin::AssociatedField& associated_field, std::function<void(unsigned, Var&&)> dest);
+    void decode_compressed_number(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
+
+    /**
+     * Decode a number as described by \a info from a compressed bufr with
+     * \a subsets subsets, and send the resulting variables to \a dest
+     */
+    void decode_compressed_number(Varinfo info, unsigned subsets, const bulletin::AssociatedField& associated_field, std::function<void(unsigned, Var&&)> dest);
 
     /**
      * Decode a number as described by dest.info(), and set it as value for \a
