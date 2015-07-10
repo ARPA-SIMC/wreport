@@ -248,4 +248,36 @@ unsigned _Varinfo::encode_binary(double fval) const
     return (unsigned)res;
 }
 
+bool BufrTableID::operator<(const BufrTableID& o) const
+{
+    if (originating_centre < o.originating_centre) return true;
+    if (originating_centre > o.originating_centre) return false;
+    if (originating_subcentre < o.originating_subcentre) return true;
+    if (originating_subcentre > o.originating_subcentre) return false;
+    if (master_table < o.master_table) return true;
+    if (master_table > o.master_table) return false;
+    if (master_table_version_number < o.master_table_version_number) return true;
+    if (master_table_version_number > o.master_table_version_number) return false;
+    if (master_table_version_number_local < o.master_table_version_number_local) return true;
+    if (master_table_version_number_local > o.master_table_version_number_local) return false;
+    return false;
+}
+
+bool CrexTableID::operator<(const CrexTableID& o) const
+{
+    if (originating_centre < o.originating_centre) return true;
+    if (originating_centre > o.originating_centre) return false;
+    if (originating_subcentre < o.originating_subcentre) return true;
+    if (originating_subcentre > o.originating_subcentre) return false;
+    if (master_table < o.master_table) return true;
+    if (master_table > o.master_table) return false;
+    if (master_table_version_number < o.master_table_version_number) return true;
+    if (master_table_version_number > o.master_table_version_number) return false;
+    if (master_table_version_number_local < o.master_table_version_number_local) return true;
+    if (master_table_version_number_local > o.master_table_version_number_local) return false;
+    if (master_table_version_number_bufr < o.master_table_version_number_bufr) return true;
+    if (master_table_version_number_bufr > o.master_table_version_number_bufr) return false;
+    return false;
+}
+
 }
