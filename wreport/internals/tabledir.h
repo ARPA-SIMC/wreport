@@ -1,6 +1,7 @@
 #ifndef WREPORT_TABLEDIR_H
 #define WREPORT_TABLEDIR_H
 
+#include <wreport/varinfo.h>
 #include <string>
 #include <vector>
 
@@ -30,16 +31,10 @@ struct Table
 /// Information about a version of a BUFR table
 struct BufrTable : Table
 {
-    int centre;
-    int subcentre;
-    int master_table;
-    int local_table;
+    BufrTableID id;
 
-    BufrTable(int centre, int subcentre, int master_table, int local_table,
-              const std::string& dirname, const std::string& filename)
-        : Table(dirname, filename),
-          centre(centre), subcentre(subcentre),
-          master_table(master_table), local_table(local_table) {}
+    BufrTable(const BufrTableID& id, const std::string& dirname, const std::string& filename)
+        : Table(dirname, filename), id(id) {}
 
     void load_if_needed() override;
 };
@@ -47,14 +42,10 @@ struct BufrTable : Table
 /// Information about a version of a CREX table
 struct CrexTable : Table
 {
-    int master_table_number;
-    int edition;
-    int table;
+    CrexTableID id;
 
-    CrexTable(int master_table_number, int edition, int table,
-              const std::string& dirname, const std::string& filename)
-        : Table(dirname, filename), master_table_number(master_table_number),
-          edition(edition), table(table) {}
+    CrexTable(const CrexTableID& id, const std::string& dirname, const std::string& filename)
+        : Table(dirname, filename), id(id) {}
 
     void load_if_needed() override;
 };
@@ -78,13 +69,10 @@ struct Dir
 /// Query for a BUFR table
 struct BufrQuery
 {
-    int centre;
-    int subcentre;
-    int master_table;
-    int local_table;
+    BufrTableID id;
     BufrTable* result;
 
-    BufrQuery(int centre, int subcentre, int master_table, int local_table);
+    BufrQuery(const BufrTableID& id);
     void search(Dir& dir);
     bool is_better(const BufrTable& t);
 };
@@ -92,12 +80,10 @@ struct BufrQuery
 /// Query for a CREX table
 struct CrexQuery
 {
-    int master_table_number;
-    int edition;
-    int table;
+    CrexTableID id;
     CrexTable* result;
 
-    CrexQuery(int master_table_number, int edition, int table);
+    CrexQuery(const CrexTableID& id);
     void search(Dir& dir);
     bool is_better(const CrexTable& t);
 };
@@ -122,10 +108,10 @@ public:
     void add_directory(const std::string& dir);
 
     /// Find a BUFR table
-    const tabledir::BufrTable* find_bufr(int centre, int subcentre, int master_table, int local_table);
+    const tabledir::BufrTable* find_bufr(const BufrTableID& id);
 
     /// Find a CREX table
-    const tabledir::CrexTable* find_crex(int master_table_number, int edition, int table);
+    const tabledir::CrexTable* find_crex(const CrexTableID& id);
 
     /// Find a BUFR table by file name
     const tabledir::BufrTable* find_bufr(const std::string& basename);

@@ -41,10 +41,10 @@ struct Tables
     void clear();
 
     /// Load BUFR B and D tables
-    void load_bufr(int centre, int subcentre, int master_table, int local_table);
+    void load_bufr(const BufrTableID& id);
 
     /// Load CREX B and D tables
-    void load_crex(int master_table_number, int edition, int table);
+    void load_crex(const CrexTableID& id);
 
     // Create a varinfo to store the bitmap
     Varinfo get_bitmap(Varcode code, const std::string& bitmap) const;

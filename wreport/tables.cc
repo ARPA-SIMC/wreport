@@ -48,18 +48,28 @@ void Tables::clear()
     unknown_table.clear();
 }
 
-void Tables::load_bufr(int centre, int subcentre, int master_table, int local_table)
+void Tables::load_bufr(const BufrTableID& id)
 {
     auto tabledir = tabledir::Tabledir::get();
-    auto t = tabledir.find_bufr(centre, subcentre, master_table, local_table);
+    auto t = tabledir.find_bufr(id);
+    if (!t)
+        error_notfound::throwf("BUFR table for center %hu:%hu table %hhu:%hhu:%hhu not found",
+                id.originating_centre, id.originating_subcentre,
+                id.master_table, id.master_table_version_number,
+                id.master_table_version_number_local);
     btable = t->btable;
     dtable = t->dtable;
 }
 
-void Tables::load_crex(int master_table_number, int edition, int table)
+void Tables::load_crex(const CrexTableID& id)
 {
     auto tabledir = tabledir::Tabledir::get();
-    auto t = tabledir.find_crex(master_table_number, edition, table);
+    auto t = tabledir.find_crex(id);
+    if (!t)
+        error_notfound::throwf("CREX table for center %hu:%hu table %hhu:%hhu:%hhu:%hhu not found",
+                id.originating_centre, id.originating_subcentre,
+                id.master_table, id.master_table_version_number,
+                id.master_table_version_number_local, id.master_table_version_number_bufr);
     btable = t->btable;
     dtable = t->dtable;
 }

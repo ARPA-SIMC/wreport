@@ -78,10 +78,10 @@ struct Vartable
     static const Vartable* load_crex(const std::string& pathname);
 
     /// Find a BUFR table
-    static const Vartable* get_bufr(int master_table, int centre=0, int subcentre=0, int local_table=0);
+    static const Vartable* get_bufr(const BufrTableID& id);
 
     /// Find a CREX table
-    static const Vartable* get_crex(int master_table_number, int edition, int table);
+    static const Vartable* get_crex(const CrexTableID& id);
 
     /// Find a BUFR table, by file name (without extension)
     static const Vartable* get_bufr(const std::string& basename);

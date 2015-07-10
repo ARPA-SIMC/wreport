@@ -529,17 +529,17 @@ const Vartable* Vartable::load_crex(const std::string& pathname)
     return (*tables)[pathname] = new CrexVartable(pathname);
 }
 
-const Vartable* Vartable::get_bufr(int master_table, int centre, int subcentre, int local_table)
+const Vartable* Vartable::get_bufr(const BufrTableID& id)
 {
     auto tabledir = tabledir::Tabledir::get();
-    auto res = tabledir.find_bufr(centre, subcentre, master_table, local_table);
+    auto res = tabledir.find_bufr(id);
     return res->btable;
 }
 
-const Vartable* Vartable::get_crex(int master_table_number, int edition, int table)
+const Vartable* Vartable::get_crex(const CrexTableID& id)
 {
     auto tabledir = tabledir::Tabledir::get();
-    auto res = tabledir.find_crex(master_table_number, edition, table);
+    auto res = tabledir.find_crex(id);
     return res->btable;
 }
 
