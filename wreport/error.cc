@@ -33,7 +33,7 @@
 
 #include <sstream>
 
-#include "compat.h"
+#include "internals/compat.h"
 
 namespace wreport {
 

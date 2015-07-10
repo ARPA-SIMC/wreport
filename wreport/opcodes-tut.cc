@@ -1,5 +1,5 @@
 #include <test-utils-wreport.h>
-#include <wreport/opcode.h>
+#include <wreport/opcodes.h>
 
 using namespace wibble::tests;
 using namespace wibble;

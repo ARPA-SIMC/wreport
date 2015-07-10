@@ -1,7 +1,7 @@
 #ifndef WREPORT_DTABLE_H
 #define WREPORT_DTABLE_H
 
-#include <wreport/opcode.h>
+#include <wreport/opcodes.h>
 #include <string>
 #include <vector>
 

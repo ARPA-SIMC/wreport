@@ -3,7 +3,7 @@
 
 #include <wreport/bulletin/bitmaps.h>
 #include <wreport/bulletin/associated_fields.h>
-#include <wreport/opcode.h>
+#include <wreport/opcodes.h>
 #include <wreport/tables.h>
 #include <memory>
 #include <stack>

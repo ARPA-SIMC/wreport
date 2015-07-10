@@ -1,10 +1,9 @@
 #include "notes.h"
-
 #include <cstdio>
 #include <cstdarg>
 #include <cstdlib>
 #include <iostream>
-#include "compat.h"
+#include "internals/compat.h"
 
 using namespace std;
 

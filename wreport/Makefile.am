@@ -24,7 +24,7 @@ nobase_dist_wreportinclude_HEADERS = \
 	bulletin/internals.h \
 	bulletin/dds-validator.h \
 	bulletin/dds-printer.h \
-	opcode.h \
+	opcodes.h \
 	options.h \
 	subset.h \
 	internals/fs.h \
@@ -52,7 +52,7 @@ libwreport_la_SOURCES = \
 	varinfo.cc \
 	vartable.cc \
 	var.cc \
-	opcode.cc \
+	opcodes.cc \
 	dtable.cc \
 	tables.cc \
 	subset.cc \
@@ -87,7 +87,7 @@ uniconv.cc: uniconv.gperf
 	if ! gperf < $< > $@; then rm $@; /bin/false; fi
 
 BUILT_SOURCES = uniconv.cc
-EXTRA_DIST = compat.h uniconv.gperf uniconv.cc main.dox style.dox features.dox examples.dox
+EXTRA_DIST = internals/compat.h uniconv.gperf uniconv.cc main.dox style.dox features.dox examples.dox
 
 #
 # Unit testing
@@ -118,7 +118,7 @@ tut_test_SOURCES = \
 	varinfo-tut.cc \
 	vartable-tut.cc \
 	var-tut.cc \
-	opcode-tut.cc \
+	opcodes-tut.cc \
 	dtable-tut.cc \
 	tables-tut.cc \
 	bulletin-tut.cc \

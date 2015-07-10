@@ -22,7 +22,6 @@
 #include <config.h>
 
 #include "error.h"
-#include "opcode.h"
 #include "dtable.h"
 #include "bulletin.h"
 #include "bulletin/dds-printer.h"

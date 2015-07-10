@@ -30,7 +30,7 @@
 
 #include <wreport/var.h>
 #include <wreport/subset.h>
-#include <wreport/opcode.h>
+#include <wreport/opcodes.h>
 #include <wreport/tables.h>
 #include <vector>
 #include <memory>
