@@ -5,7 +5,7 @@ using namespace std;
 namespace wreport {
 namespace bulletin {
 
-DDSPrinter::DDSPrinter(Bulletin& b, FILE* out, unsigned subset_idx)
+DDSPrinter::DDSPrinter(const Bulletin& b, FILE* out, unsigned subset_idx)
     : UncompressedEncoder(b, subset_idx), out(out), subset_no(subset_idx)
 {
 }

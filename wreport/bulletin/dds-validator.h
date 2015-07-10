@@ -48,7 +48,7 @@ public:
      * @param b
      *   Reference to the bulletin being visited
      */
-    DDSValidator(Bulletin& b, unsigned subset_idx);
+    DDSValidator(const Bulletin& b, unsigned subset_idx);
 
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;

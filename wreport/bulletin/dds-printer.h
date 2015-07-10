@@ -31,7 +31,7 @@ public:
      * @param out
      *   FILE to print to
      */
-    DDSPrinter(Bulletin& b, FILE* out, unsigned subset_idx);
+    DDSPrinter(const Bulletin& b, FILE* out, unsigned subset_idx);
     virtual ~DDSPrinter();
 
     void define_substituted_value(unsigned pos) override;

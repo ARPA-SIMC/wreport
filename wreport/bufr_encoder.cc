@@ -25,7 +25,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
 {
     buffers::BufrOutput& ob;
 
-    DDSEncoder(Bulletin& b, unsigned subset_idx, buffers::BufrOutput& ob)
+    DDSEncoder(const Bulletin& b, unsigned subset_idx, buffers::BufrOutput& ob)
         : UncompressedEncoder(b, subset_idx), ob(ob)
     {
     }
@@ -121,7 +121,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
 struct Encoder
 {
     /* Input message data */
-    BufrBulletin& in;
+    const BufrBulletin& in;
     /// Output buffer
     buffers::BufrOutput& out;
 
@@ -133,7 +133,7 @@ struct Encoder
      */
     unsigned sec[6] = { 0, 0, 0, 0, 0, 0 };
 
-    Encoder(BufrBulletin& in, buffers::BufrOutput& out)
+    Encoder(const BufrBulletin& in, buffers::BufrOutput& out)
         : in(in), out(out)
     {
     }
@@ -346,7 +346,7 @@ void Encoder::encode_sec4()
 
 }
 
-void BufrBulletin::encode(std::string& buf)
+void BufrBulletin::encode(std::string& buf) const
 {
     buffers::BufrOutput out(buf);
 

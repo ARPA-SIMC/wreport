@@ -27,7 +27,7 @@ using namespace std;
 namespace wreport {
 namespace bulletin {
 
-DDSValidator::DDSValidator(Bulletin& b, unsigned subset_idx)
+DDSValidator::DDSValidator(const Bulletin& b, unsigned subset_idx)
     : UncompressedEncoder(b, subset_idx)
 {
     is_crex = dynamic_cast<const CrexBulletin*>(&b) != NULL;

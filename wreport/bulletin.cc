@@ -165,7 +165,7 @@ void CrexBulletin::encode(std::string& buf) const
 }
 */
 
-void Bulletin::print(FILE* out)
+void Bulletin::print(FILE* out) const
 {
 	fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
 		encoding_name(), edition,
@@ -191,7 +191,7 @@ void Bulletin::print(FILE* out)
 	}
 }
 
-void Bulletin::print_structured(FILE* out)
+void Bulletin::print_structured(FILE* out) const
 {
     fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
             encoding_name(), edition,

@@ -1,32 +1,5 @@
-/*
- * wreport/bulletin - Decoded weather bulletin
- *
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #ifndef WREPORT_BULLETIN_H
 #define WREPORT_BULLETIN_H
-
-/** @file
- * @ingroup bufrex
- * Intermediate representation of parsed values, ordered according to a BUFR or
- * CREX message template.
- */
 
 #include <wreport/var.h>
 #include <wreport/subset.h>
@@ -40,12 +13,6 @@
  */
 namespace wreport {
 struct DTable;
-
-namespace bulletin {
-struct Visitor;
-struct Parser;
-struct LocalVartable;
-}
 
 /**
  * Storage for the decoded data of a BUFR or CREX message.
@@ -176,27 +143,13 @@ struct Bulletin
     /**
      * Encode the message
      */
-    virtual void encode(std::string& buf) = 0;
-
-#if 0
-    /**
-     * Walk the structure of the data descriptor section sending events to an
-     * opcode::Explorer
-     */
-    void visit_datadesc(bulletin::Visitor& e);
-
-    /**
-     * Run the Data Descriptor Section interpreter, sending commands to \a
-     * executor
-     */
-    void visit(bulletin::Parser& out);
-#endif
+    virtual void encode(std::string& buf) const = 0;
 
     /// Dump the contents of this bulletin
-    void print(FILE* out);
+    void print(FILE* out) const;
 
     /// Dump the contents of this bulletin, in a more structured way
-    void print_structured(FILE* out);
+    void print_structured(FILE* out) const;
 
     /// Print format-specific details
     virtual void print_details(FILE* out) const;
@@ -303,7 +256,7 @@ struct BufrBulletin : public Bulletin
     void load_tables() override;
     void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
     void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
-    void encode(std::string& buf) override;
+    void encode(std::string& buf) const override;
     void print_details(FILE* out) const override;
     unsigned diff_details(const Bulletin& msg) const override;
 
@@ -362,7 +315,7 @@ struct CrexBulletin : public Bulletin
     void load_tables() override;
     void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
     void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
-    void encode(std::string& buf) override;
+    void encode(std::string& buf) const override;
     void print_details(FILE* out) const override;
     unsigned diff_details(const Bulletin& msg) const override;
 

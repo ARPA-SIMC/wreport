@@ -23,7 +23,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
 {
     buffers::CrexOutput& ob;
 
-    DDSEncoder(Bulletin& b, unsigned subset_no, buffers::CrexOutput& ob)
+    DDSEncoder(const Bulletin& b, unsigned subset_no, buffers::CrexOutput& ob)
         : UncompressedEncoder(b, subset_no), ob(ob)
     {
         TRACE("start_subset %u\n", subset_no);
@@ -77,7 +77,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
     }
 };
 
-void encode_sec1(CrexBulletin& in, buffers::CrexOutput out)
+void encode_sec1(const CrexBulletin& in, buffers::CrexOutput out)
 {
     out.raw_appendf("T%02d%02d%02d A%03d%03d",
             in.master_table_number,
@@ -119,7 +119,7 @@ void encode_sec1(CrexBulletin& in, buffers::CrexOutput out)
 
 }
 
-void CrexBulletin::encode(std::string& buf)
+void CrexBulletin::encode(std::string& buf) const
 {
     buffers::CrexOutput out(buf);
 
