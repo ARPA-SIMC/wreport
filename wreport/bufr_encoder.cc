@@ -346,8 +346,10 @@ void Encoder::encode_sec4()
 
 }
 
-void BufrBulletin::encode(std::string& buf) const
+string BufrBulletin::encode() const
 {
+    std::string buf;
+    buf.reserve(1024);
     buffers::BufrOutput out(buf);
 
     Encoder e(*this, out);
@@ -374,6 +376,7 @@ void BufrBulletin::encode(std::string& buf) const
         memcpy((char*)out.out.data() + 4, ((char*)&val) + 1, 3);
         TRACE("msg size %zd\n", out.out.size());
     }
+    return buf;
 }
 
 }

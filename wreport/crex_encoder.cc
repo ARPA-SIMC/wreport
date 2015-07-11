@@ -126,8 +126,10 @@ void encode_sec1(const CrexBulletin& in, buffers::CrexOutput out)
 
 }
 
-void CrexBulletin::encode(std::string& buf) const
+string CrexBulletin::encode() const
 {
+    std::string buf;
+    buf.reserve(1024);
     buffers::CrexOutput out(buf);
 
     // Encode section 0
@@ -158,6 +160,7 @@ void CrexBulletin::encode(std::string& buf) const
     /* Encode section 4 */
     int sec4_start = out.buf.size();
     out.raw_append("7777\r\r\n", 7);
+    return buf;
 }
 
 }

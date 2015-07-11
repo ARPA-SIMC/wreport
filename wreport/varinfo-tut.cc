@@ -1,4 +1,4 @@
-#include <test-utils-wreport.h>
+#include "tests.h"
 #include <wreport/varinfo.h>
 #include <cstring>
 

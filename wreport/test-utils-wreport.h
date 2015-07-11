@@ -88,8 +88,7 @@ struct TestCodec
 
         // Encode it again
         test_info() << fname << ": re-encode original version";
-        std::string raw;
-        wrunchecked(msg1->encode(raw));
+        std::string raw = wcallchecked(msg1->encode());
 
         // Decode our encoder's output
         test_info() << fname << ": decode what we encoded";
@@ -146,8 +145,7 @@ struct MsgTester
         (*this)("orig", *msg1);
 
         // Encode it again
-        std::string raw;
-        wrunchecked(msg1->encode(raw));
+        std::string raw = wcallchecked(msg1->encode());
 
         // Decode our encoder's output
         std::unique_ptr<BULLETIN> msg2 = BULLETIN::create();

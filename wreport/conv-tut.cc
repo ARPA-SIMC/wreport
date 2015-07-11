@@ -17,7 +17,7 @@
  * Author: Enrico Zini <enrico@enricozini.com>
  */
 
-#include <test-utils-wreport.h>
+#include <tests.h>
 #include <wreport/conv.h>
 #include <wreport/codetables.h>
 

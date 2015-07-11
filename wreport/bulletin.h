@@ -107,11 +107,11 @@ struct Bulletin
     /// Varcode and opcode tables used for encoding or decoding
     Tables tables;
 
-	/** Parsed data descriptor section */
-	std::vector<Varcode> datadesc;
+    /// Parsed data descriptor section
+    std::vector<Varcode> datadesc;
 
-	/** Decoded variables */
-	std::vector<Subset> subsets;
+    /// Decoded variables
+    std::vector<Subset> subsets;
 
 
 	Bulletin();
@@ -120,8 +120,8 @@ struct Bulletin
 	/// Reset the bulletin
 	virtual void clear();
 
-	/** Type of source/target encoding */
-	virtual const char* encoding_name() const throw () = 0;
+    /// Type of source/target encoding
+    virtual const char* encoding_name() const throw () = 0;
 
 	/**
 	 * Get a Subset from the message.
@@ -173,10 +173,8 @@ struct Bulletin
 	 */
 	virtual void decode(const std::string& buf, const char* fname="(memory)", size_t offset=0) = 0;
 
-    /**
-     * Encode the message
-     */
-    virtual void encode(std::string& buf) const = 0;
+    /// Encode the message
+    virtual std::string encode() const = 0;
 
     /// Dump the contents of this bulletin
     void print(FILE* out) const;
@@ -312,7 +310,7 @@ struct BufrBulletin : public Bulletin
     void load_tables() override;
     void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
     void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
-    void encode(std::string& buf) const override;
+    std::string encode() const override;
     void print_details(FILE* out) const override;
     unsigned diff_details(const Bulletin& msg) const override;
 
@@ -414,7 +412,7 @@ struct CrexBulletin : public Bulletin
     void load_tables() override;
     void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
     void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
-    void encode(std::string& buf) const override;
+    std::string encode() const override;
     void print_details(FILE* out) const override;
     unsigned diff_details(const Bulletin& msg) const override;
 

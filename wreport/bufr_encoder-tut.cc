@@ -87,8 +87,7 @@ std::vector<Test> tests {
         test.run("orig", msg);
 
         // Encode
-        string rmsg;
-        msg.encode(rmsg);
+        string rmsg = wcallchecked(msg.encode());
 
         // Ensure that the encoded strings are space-padded
         ensure(memfind(rmsg, "abcdefg       ", 14));
@@ -162,8 +161,7 @@ std::vector<Test> tests {
         test.run("orig", msg);
 
         // Encode
-        string rmsg;
-        msg.encode(rmsg);
+        string rmsg = wcallchecked(msg.encode());
 
         // Ensure that the encoded strings are space-padded
         ensure(memfind(rmsg, "abcdefg       ", 14));
