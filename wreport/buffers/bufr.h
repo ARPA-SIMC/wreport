@@ -2,7 +2,7 @@
 #define WREPORT_BUFFERS_BUFR_H
 
 #include <wreport/error.h>
-#include <wreport/varinfo.h>
+#include <wreport/var.h>
 #include <string>
 #include <functional>
 #include <cstdint>
@@ -69,9 +69,6 @@ public:
      *   String with the data to read
      */
     BufrInput(const std::string& in);
-
-    /// Start decoding a different buffer
-    //void reset(const std::string& in);
 
     /**
      * Scan the message filling in the sec[] array of start offsets of sections
@@ -232,11 +229,112 @@ public:
      */
     void decode_number(Var& dest);
 
+    bool decode_compressed_base(Varinfo info, uint32_t& base, uint32_t& diffbits);
+
     /**
      * Decode a number as described by \a info from a compressed bufr with
      * \a subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_compressed_number(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
+    void decode_compressed_number(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
+    {
+        // Data field base value
+        uint32_t base;
+
+        // Number of bits used for each difference value
+        uint32_t diffbits;
+
+        bool missing = decode_compressed_base(info, base, diffbits);
+        if (missing)
+        {
+            for (unsigned i = 0; i < subsets; ++i)
+                dest(i, Var(info));
+        }
+        else if (!diffbits)
+        {
+            Var var(info, info->decode_binary(base));
+            for (unsigned i = 0; i < subsets; ++i)
+                dest(i, Var(var));
+        }
+        else
+        {
+            Var var(info);
+            for (unsigned i = 0; i < subsets; ++i)
+            {
+                decode_compressed_number(var, base, diffbits);
+                dest(i, std::move(var));
+            }
+        }
+    }
+
+    template<typename Adder>
+    void decode_string(Varinfo info, unsigned subsets, Adder& dest)
+    {
+        // Decode the base value
+        char str[info->bit_len / 8 + 2];
+        size_t len;
+        bool missing = !decode_string(info->bit_len, str, len);
+
+        // Decode the number of bits (encoded in 6 bits) for each difference
+        // value
+        uint32_t diffbits = get_bits(6);
+
+        if (missing && diffbits == 0)
+            dest.add_missing(info);
+        else if (diffbits == 0)
+        {
+            // Add the same string to all the subsets
+            dest.add_same(Var(info, str));
+        } else {
+            /* For compressed strings, the reference value must be all zeros */
+            for (size_t i = 0; i < len; ++i)
+                if (str[i] != 0)
+                    error_unimplemented::throwf("compressed strings with %d bit deltas have non-zero reference value", diffbits);
+
+            /* Let's also check that the number of
+             * difference characters is the same length as
+             * the reference string */
+            if (diffbits > len)
+                error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
+
+            for (unsigned i = 0; i < subsets; ++i)
+            {
+                // Set the variable value
+                if (decode_string(diffbits * 8, str, len))
+                {
+                    // Compute the value for this subset
+                    dest.add_var(i, Var(info, str));
+                } else {
+                    // Missing value
+                    dest.add_var(i, Var(info));
+                }
+            }
+        }
+    }
+
+    template<typename Adder>
+    void decode_compressed_number(Varinfo info, unsigned subsets, Adder& dest)
+    {
+        // Data field base value
+        uint32_t base;
+
+        // Number of bits used for each difference value
+        uint32_t diffbits;
+
+        bool missing = decode_compressed_base(info, base, diffbits);
+        if (missing)
+            dest.add_missing(info);
+        else if (!diffbits)
+            dest.add_same(Var(info, info->decode_binary(base)));
+        else
+        {
+            Var var(info);
+            for (unsigned i = 0; i < subsets; ++i)
+            {
+                decode_compressed_number(var, base, diffbits);
+                dest.add_var(i, std::move(var));
+            }
+        }
+    }
 
     /**
      * Decode a number as described by \a info from a compressed bufr with

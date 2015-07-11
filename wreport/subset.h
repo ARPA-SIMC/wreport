@@ -78,13 +78,11 @@ struct Subset : public std::vector<Var>
 	 */
 	void store_variable_c(Varcode code, const char* val);
 
-	/**
-	 * Store a new, undefined variable in the message
-	 *
-	 * @param code
-	 *   The Varcode of the variable to add.  See @ref vartable.h
-	 */
-	void store_variable_undef(Varcode code);
+    /// Store a new, undefined variable in the message
+    void store_variable_undef(Varcode code);
+
+    /// Store a new, undefined variable in the message
+    void store_variable_undef(Varinfo info);
 
 	/**
 	 * Compute and append a data present bitmap

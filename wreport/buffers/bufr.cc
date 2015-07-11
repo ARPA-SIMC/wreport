@@ -288,6 +288,25 @@ void BufrInput::decode_number(Var& dest)
     }
 }
 
+bool BufrInput::decode_compressed_base(Varinfo info, uint32_t& base, uint32_t& diffbits)
+{
+    // Data field base value
+    base = get_bits(info->bit_len);
+
+    // Check if there are bits which are not 1 (that is, if the value is present)
+    bool missing = (base == all_ones(info->bit_len));
+
+    // We just decoded the base value. Now we need to decode all the offsets
+
+    // Decode the number of bits (encoded in 6 bits) that these difference
+    // values occupy
+    diffbits = get_bits(6);
+    if (missing && diffbits != 0)
+        error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
+
+    return missing;
+}
+
 void BufrInput::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits)
 {
     Varinfo info = dest.info();
@@ -310,43 +329,6 @@ void BufrInput::decode_compressed_number(Var& dest, uint32_t base, unsigned diff
 
         /* Create the new Var */
         dest.setd(dval);
-    }
-}
-
-void BufrInput::decode_compressed_number(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
-{
-    Var var(info);
-
-    // debug_dump_next_bits("DECODE NUMBER: ", 30);
-
-    // Data field base value
-    uint32_t base = get_bits(info->bit_len);
-
-    //TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, base);
-
-    /* Check if there are bits which are not 1 (that is, if the value is present) */
-    bool missing = (base == all_ones(info->bit_len));
-
-    /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, base, info.type);*/
-    //TRACE("datasec:decode_b_num:len %d base %d info-len %d info-desc %s\n", info->bit_len, base, info->bit_len, info->desc);
-
-    /* Store the variable that we found */
-
-    /* If compression is in use, then we just decoded the base value.  Now
-     * we need to decode all the offsets */
-
-    /* Decode the number of bits (encoded in 6 bits) that these difference
-     * values occupy */
-    uint32_t diffbits = get_bits(6);
-    if (missing && diffbits != 0)
-        error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
-
-    //TRACE("Compressed number, base value %d diff bits %d\n", base, diffbits);
-
-    for (unsigned i = 0; i < subsets; ++i)
-    {
-        decode_compressed_number(var, base, diffbits);
-        dest(i, move(var));
     }
 }
 
@@ -448,10 +430,6 @@ void BufrInput::decode_compressed_semantic_number(Var& dest, unsigned subsets)
 
 void BufrInput::decode_string(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
 {
-    /* Read a string */
-    Var var(info);
-    //size_t len = 0;
-
     char str[info->bit_len / 8 + 2];
     size_t len;
     bool missing = !decode_string(info->bit_len, str, len);
@@ -469,6 +447,8 @@ void BufrInput::decode_string(Varinfo info, unsigned subsets, std::function<void
 
     if (diffbits != 0)
     {
+        Var var(info);
+
         /* For compressed strings, the reference value must be all zeros */
         for (size_t i = 0; i < len; ++i)
             if (str[i] != 0)
@@ -498,13 +478,12 @@ void BufrInput::decode_string(Varinfo info, unsigned subsets, std::function<void
             dest(i, move(var));
         }
     } else {
-        /* Add the string to all the subsets */
+        Var var(info);
+        if (!missing) var.setc(str);
+
+        // Add the string to all the subsets
         for (unsigned i = 0; i < subsets; ++i)
-        {
-            // Set the variable value
-            if (!missing) var.setc(str);
             dest(i, Var(var));
-        }
     }
 }
 

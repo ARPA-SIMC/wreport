@@ -380,6 +380,32 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
     {
     }
 
+    template<typename Adder>
+    void decode_b_value(Varinfo info, Adder& dest)
+    {
+        switch (info->type)
+        {
+            case Vartype::String:
+                in.decode_string(info, subset_count, dest);
+                break;
+            case Vartype::Binary:
+                throw error_unimplemented("decode_b_binary TODO");
+            case Vartype::Integer:
+            case Vartype::Decimal:
+                if (associated_field.bit_count)
+                {
+                    in.decode_compressed_number(info, associated_field.bit_count, subset_count, [&](unsigned subset_no, Var&& var, uint32_t associated_field_val) {
+                        unique_ptr<Var> af(associated_field.make_attribute(associated_field_val));
+                        if (af.get()) var.seta(move(af));
+                        dest.add_var(subset_no, move(var));
+                    });
+                }
+                else
+                    in.decode_compressed_number(info, subset_count, dest);
+                break;
+        }
+    }
+
     void decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest)
     {
         switch (info->type)
@@ -440,9 +466,28 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
 
     void define_variable(Varinfo info) override
     {
-        decode_b_value(info, [&](unsigned idx, Var&& var){
-            output_bulletin.subsets[idx].store_variable(var);
-        });
+        struct Adder
+        {
+            Bulletin& out;
+            unsigned subset_count;
+            Adder(Bulletin& out, unsigned subset_count) : out(out), subset_count(subset_count) {}
+
+            void add_missing(Varinfo info)
+            {
+                for (unsigned i = 0; i < subset_count; ++i)
+                    out.subsets[i].store_variable_undef(info);
+            }
+            void add_same(const Var& var)
+            {
+                for (unsigned i = 0; i < subset_count; ++i)
+                    out.subsets[i].store_variable(Var(var));
+            }
+            void add_var(unsigned subset, Var&& var)
+            {
+                out.subsets[subset].store_variable(var);
+            }
+        } adder(output_bulletin, subset_count);
+        decode_b_value(info, adder);
     }
 
     void define_substituted_value(unsigned pos) override
