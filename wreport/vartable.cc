@@ -1,26 +1,20 @@
 /*
- * TODO:
- *  - Future optimizations for dba_vartable can make use of string tables to
- *    store varinfo descriptions and units instead of long fixed-length
- *    records.
- *     - The string table cannot grow dynamically or it will invalidate the
- *       string pointers
+ * Future optimizations for dba_vartable can make use of string tables to store
+ * varinfo descriptions and units instead of long fixed-length records.
+ * However, the string table cannot grow dynamically or it will invalidate the
+ * existing string pointers.
  */
 
-#include "config.h"
 #include "vartable.h"
 #include "tableinfo.h"
 #include "error.h"
 #include "internals/tabledir.h"
 #include <memory>
 #include <map>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
-#include <cctype>
 #include <cmath>
-#include <unistd.h>
-#include <limits.h>
+#include <climits>
+#include "config.h"
 
 
 // #define TRACE_LOADER
@@ -42,23 +36,47 @@ Vartable::~Vartable() {}
 
 namespace {
 
-// see http://stackoverflow.com/questions/1068849/how-do-i-determine-the-number-of-decimal-digits-of-an-integer-in-c
-// for benchmarks
-int countdigits(int n)
+unsigned digits_per_bits(unsigned bit_count)
 {
-	if (n < 0) n = (n == INT_MIN) ? INT_MAX : -n;
-	if (n < 10) return 1;
-	if (n < 100) return 2;
-	if (n < 1000) return 3;
-	if (n < 10000) return 4;
-	if (n < 100000) return 5;
-	if (n < 1000000) return 6;
-	if (n < 10000000) return 7;
-	if (n < 100000000) return 8;
-	if (n < 1000000000) return 9;
-	/*      2147483647 is 2^31-1 - add more ifs as needed
-	 *          and adjust this final return as well. */
-	return 10;
+    // for i in range(33): print("case {:2}: return {:2}; // {}".format(i, len(str(2**i)), 2**i))
+    switch (bit_count)
+    {
+        case  0: error_consistency::throwf("binary values 0 bits long are not supported");
+        case  1: return  1; // 2
+        case  2: return  1; // 4
+        case  3: return  1; // 8
+        case  4: return  2; // 16
+        case  5: return  2; // 32
+        case  6: return  2; // 64
+        case  7: return  3; // 128
+        case  8: return  3; // 256
+        case  9: return  3; // 512
+        case 10: return  4; // 1024
+        case 11: return  4; // 2048
+        case 12: return  4; // 4096
+        case 13: return  4; // 8192
+        case 14: return  5; // 16384
+        case 15: return  5; // 32768
+        case 16: return  5; // 65536
+        case 17: return  6; // 131072
+        case 18: return  6; // 262144
+        case 19: return  6; // 524288
+        case 20: return  7; // 1048576
+        case 21: return  7; // 2097152
+        case 22: return  7; // 4194304
+        case 23: return  7; // 8388608
+        case 24: return  8; // 16777216
+        case 25: return  8; // 33554432
+        case 26: return  8; // 67108864
+        case 27: return  9; // 134217728
+        case 28: return  9; // 268435456
+        case 29: return  9; // 536870912
+        case 30: return 10; // 1073741824
+        case 31: return 10; // 2147483648
+        case 32: return 10; // 4294967296
+        default:
+            error_consistency::throwf("binary values of more than 32 bits are not supported");
+    }
 }
 
 struct fd_closer
@@ -123,7 +141,7 @@ struct VartableEntry
         {
             case Vartype::Integer:
             case Vartype::Decimal:
-                varinfo.len = countdigits(1 << varinfo.bit_len);
+                varinfo.len = digits_per_bits(varinfo.bit_len);
                 break;
             case Vartype::String:
                 varinfo.len = varinfo.bit_len / 8;
@@ -433,71 +451,6 @@ struct CrexVartable : public VartableBase
         }
     }
 };
-
-
-#if 0
-std::pair<std::string, std::string> Vartable::find_table(const std::vector<std::string>& ids)
-{
-	static const char* exts[] = { ".txt", ".TXT", 0 };
-
-	// Build a list of table search paths
-	const char* dirlist[2] = { 0, 0 };
-	int envcount = 0;
-	if (char* env = getenv("WREPORT_EXTRA_TABLES"))
-		dirlist[envcount++] = env;
-	if (char* env = getenv("WREPORT_TABLES"))
-		dirlist[envcount++] = env;
-	else
-		dirlist[envcount++] = TABLE_DIR;
-
-	// For each search path
-	for (vector<string>::const_iterator id = ids.begin(); id != ids.end(); ++id)
-		for (int i = 0; i < envcount && dirlist[i]; ++i)
-		{
-			// Split on :
-			size_t beg = 0;
-			while (dirlist[i][beg])
-			{
-				size_t len = strcspn(dirlist[i] + beg, ":;");
-				if (len)
-				{
-					for (const char** ext = exts; *ext; ++ext)
-					{
-						string pathname = string(dirlist[i], beg, len) + "/" + *id + *ext;
-						TRACE("Trying pathname %s: ", pathname.c_str());
-						if (access(pathname.c_str(), R_OK) == 0)
-						{
-							TRACE("found.\n");
-							return make_pair(*id, pathname);
-						} else
-							TRACE("not found.\n");
-					}
-				}
-				beg = beg + len + strspn(dirlist[i] + beg + len, ":;");
-			}
-		}
-
-	if (ids.empty())
-		error_consistency::throwf("find_table called with no candidates");
-
-	string list;
-	if (ids.size() == 1)
-		list = ids[0];
-	else
-	{
-		list = "{" + ids[0];
-		for (size_t i = 1; i < ids.size(); ++i)
-			list += "," + ids[i];
-		list += "}";
-	}
-	if (envcount == 1)
-		error_notfound::throwf("Cannot find %s.{txt,TXT} after trying in %s",
-				list.c_str(), dirlist[0]);
-	else
-		error_notfound::throwf("Cannot find %s.{txt,TXT} after trying in %s and %s",
-				list.c_str(), dirlist[0], dirlist[1]);
-}
-#endif
 
 }
 
