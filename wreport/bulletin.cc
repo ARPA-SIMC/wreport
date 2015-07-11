@@ -415,9 +415,9 @@ bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname, long* off
     if (fread((char*)buf.data() + 4, 4, 1, fd) != 1)
     {
         if (fname)
-            error_system::throwf("reading BUFR section 0 from %s", fname);
+            error_system::throwf("cannot read BUFR section 0 from %s", fname);
         else
-            throw error_system("reading BUFR section 0 from");
+            throw error_system("cannot read BUFR section 0");
     }
 
     // Read the message length
@@ -436,10 +436,18 @@ bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname, long* off
     // Read the rest of the BUFR message
     if (fread((char*)buf.data() + 8, bufrlen - 8, 1, fd) != 1)
     {
-        if (fname)
-            error_system::throwf("reading BUFR message from %s", fname);
-        else
-            throw error_system("reading BUFR message");
+        if (ferror(fd))
+        {
+            if (fname)
+                error_system::throwf("cannot read BUFR message from %s", fname);
+            else
+                throw error_system("cannot read BUFR message");
+        } else {
+            if (fname)
+                error_consistency::throwf("cannot read BUFR message from %s: end of file reached", fname);
+            else
+                throw error_consistency("cannot read BUFR message: end of file reached");
+        }
     }
 
     return true;
@@ -450,9 +458,9 @@ void BufrBulletin::write(const std::string& buf, FILE* out, const char* fname)
     if (fwrite(buf.data(), buf.size(), 1, out) != 1)
     {
         if (fname)
-            error_system::throwf("%s: writing %zd bytes", fname, buf.size());
+            error_system::throwf("%s: cannot write %zd bytes", fname, buf.size());
         else
-            error_system::throwf("writing %zd bytes", buf.size());
+            error_system::throwf("cannot write %zd bytes", buf.size());
     }
 }
 
@@ -584,13 +592,13 @@ bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname, long* off
 
 			buf += (char)c;
 		}
-		if (errno != 0)
-		{
-			if (fname)
-				error_system::throwf("looking for end of CREX data in %s", fname);
-			else
-				throw error_system("looking for end of CREX data");
-		}
+        if (ferror(fd))
+        {
+            if (fname)
+                error_system::throwf("cannot find end of CREX data in %s", fname);
+            else
+                throw error_system("cannot find end of CREX data");
+        }
 
 		if (got != target_size)
 		{
@@ -606,20 +614,20 @@ bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname, long* off
 
 void CrexBulletin::write(const std::string& buf, FILE* out, const char* fname)
 {
-	if (fwrite(buf.data(), buf.size(), 1, out) != 1)
-	{
-		if (fname)
-			error_system::throwf("%s: writing %zd bytes", fname, buf.size());
-		else
-			error_system::throwf("writing %zd bytes", buf.size());
-	}
-	if (fputs("\r\r\n", out) == EOF)
-	{
-		if (fname)
-			error_system::throwf("writing CREX data on %s", fname);
-		else
-			throw error_system("writing CREX data");
-	}
+    if (fwrite(buf.data(), buf.size(), 1, out) != 1)
+    {
+        if (fname)
+            error_system::throwf("%s: cannot write %zd bytes", fname, buf.size());
+        else
+            error_system::throwf("cannot write %zd bytes", buf.size());
+    }
+    if (fputs("\r\r\n", out) == EOF)
+    {
+        if (fname)
+            error_system::throwf("cannot write CREX data on %s", fname);
+        else
+            throw error_system("cannot write CREX data");
+    }
 }
 
 }
