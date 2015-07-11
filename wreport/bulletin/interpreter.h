@@ -14,7 +14,6 @@ struct DTable;
 struct Var;
 
 namespace bulletin {
-struct Visitor;
 
 /**
  * Interpreter for data descriptor sections.
@@ -197,7 +196,7 @@ public:
 
 
 /**
- * opcode::Visitor that pretty-prints the opcodes using indentation to show
+ * Interpreter that pretty-prints the opcodes using indentation to show
  * structure
  */
 class Printer : public DDSInterpreter

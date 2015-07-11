@@ -65,6 +65,7 @@ void do_help(FILE* out)
         "                      \"B01019,B05001,B06001\")\n"
         "  -U,--unparsable     output a copy of the messages that cannot be parsed\n"
         "  -T,--tables         print the version of tables used by each bulletin\n"
+        "  -F,--features       print the features used by each bulletin\n"
 #ifndef HAS_GETOPT_LONG
         "NOTE: long options are not supported on this system\n"
 #endif
@@ -86,6 +87,7 @@ int main(int argc, char* argv[])
         {"verbose",    no_argument,       NULL, 'v'},
         {"unparsable", no_argument,       NULL, 'U'},
         {"tables",     no_argument,       NULL, 'T'},
+        {"features",   no_argument,       NULL, 'F'},
         {"help",       no_argument,       NULL, 'h'},
         {0, 0, 0, 0}
     };
@@ -99,10 +101,10 @@ int main(int argc, char* argv[])
         int option_index = 0;
 
 #ifdef HAS_GETOPT_LONG
-        int c = getopt_long(argc, argv, "cvUdsDihp:",
+        int c = getopt_long(argc, argv, "cdsDpivUTFh:",
                 long_options, &option_index);
 #else
-        int c = getopt(argc, argv, "cvUdsDihp:");
+        int c = getopt(argc, argv, "cdsDpivUTFh:");
 #endif
 
         // Detect the end of the options
@@ -123,6 +125,7 @@ int main(int argc, char* argv[])
             case 'i': options.action = INFO; break;
             case 'U': options.action = UNPARSABLE; break;
             case 'T': options.action = TABLES; break;
+            case 'F': options.action = FEATURES; break;
             case 'h': options.action = HELP; break;
             default:
                 fprintf(stderr, "unknown option character %c (%d)\n", c, c);
@@ -151,6 +154,7 @@ int main(int argc, char* argv[])
         case PRINT_VARS: handler.reset(new PrintVars(options.varcodes)); break;
         case UNPARSABLE: handler.reset(new CopyUnparsable(stdout, stderr)); break;
         case TABLES: handler.reset(new PrintTables(stdout)); break;
+        case FEATURES: handler.reset(new PrintFeatures(stdout)); break;
     }
 
     // Ensure we have some file to process
@@ -168,7 +172,12 @@ int main(int argc, char* argv[])
         while (optind < argc)
         {
             if (options.verbose) fprintf(stderr, "Reading from %s\n", argv[optind]);
-            reader(options, argv[optind++], *handler);
+            const char* fname = argv[optind++];
+            try {
+                reader(options, fname, *handler);
+            } catch (std::exception& e) {
+                fprintf(stderr, "%s:%s\n", fname, e.what());
+            }
         }
 
         handler->done();

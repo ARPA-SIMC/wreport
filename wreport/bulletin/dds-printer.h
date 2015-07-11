@@ -10,7 +10,7 @@ namespace wreport {
 namespace bulletin {
 
 /**
- * bulletin::Visitor that prints the bulletin contents and its structure
+ * Interpreter that prints the bulletin contents and its structure
  */
 class DDSPrinter : public UncompressedEncoder
 {

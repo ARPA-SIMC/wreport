@@ -38,6 +38,7 @@ enum Action {
     INFO,
     UNPARSABLE,
     TABLES,
+    FEATURES,
     HELP,
 };
 

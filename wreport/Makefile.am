@@ -24,6 +24,7 @@ nobase_dist_wreportinclude_HEADERS = \
 	bulletin/internals.h \
 	bulletin/dds-validator.h \
 	bulletin/dds-printer.h \
+	bulletin/dds-scanfeatures.h \
 	opcodes.h \
 	options.h \
 	subset.h \
@@ -67,6 +68,7 @@ libwreport_la_SOURCES = \
 	bulletin/internals.cc \
 	bulletin/dds-validator.cc \
 	bulletin/dds-printer.cc \
+	bulletin/dds-scanfeatures.cc \
 	bufr_decoder.cc \
 	bufr_encoder.cc \
 	crex_decoder.cc \

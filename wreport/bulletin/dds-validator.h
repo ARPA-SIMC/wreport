@@ -31,9 +31,9 @@ namespace wreport {
 namespace bulletin {
 
 /**
- * bulletin::Visitor that checks if the data that has been added to the
- * bulletin subsets can actualy be encoded matching the bulletin Data
- * Descriptor Section.
+ * Interpreter that checks if the data that has been added to the bulletin
+ * subsets can actualy be encoded matching the bulletin Data Descriptor
+ * Section.
  */
 class DDSValidator : public UncompressedEncoder
 {

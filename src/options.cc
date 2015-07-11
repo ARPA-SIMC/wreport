@@ -38,40 +38,56 @@ void Options::init_varcodes(const char* str)
 
 void BulletinHeadHandler::handle_raw_bufr(const std::string& raw_data, const char* fname, long offset)
 {
-    // Decode the raw data. fname and offset are optional and we pass
-    // them just to have nicer error messages
-    auto bulletin = BufrBulletin::decode_header(raw_data, fname, offset);
+    try {
+        // Decode the raw data. fname and offset are optional and we pass
+        // them just to have nicer error messages
+        auto bulletin = BufrBulletin::decode_header(raw_data, fname, offset);
 
-    // Do something with the decoded information
-    handle(*bulletin);
+        // Do something with the decoded information
+        handle(*bulletin);
+    } catch (std::exception& e) {
+        fprintf(stderr, "%s:%ld:%s\n", fname, offset, e.what());
+    }
 }
 
 void BulletinHeadHandler::handle_raw_crex(const std::string& raw_data, const char* fname, long offset)
 {
-    // Decode the raw data. fname and offset are optional and we pass
-    // them just to have nicer error messages
-    auto bulletin = CrexBulletin::decode(raw_data, fname, offset);
+    try {
+        // Decode the raw data. fname and offset are optional and we pass
+        // them just to have nicer error messages
+        auto bulletin = CrexBulletin::decode(raw_data, fname, offset);
 
-    // Do something with the decoded information
-    handle(*bulletin);
+        // Do something with the decoded information
+        handle(*bulletin);
+    } catch (std::exception& e) {
+        fprintf(stderr, "%s:%ld:%s\n", fname, offset, e.what());
+    }
 }
 
 void BulletinFullHandler::handle_raw_bufr(const std::string& raw_data, const char* fname, long offset)
 {
-    // Decode the raw data. fname and offset are optional and we pass
-    // them just to have nicer error messages
-    auto bulletin = BufrBulletin::decode(raw_data, fname, offset);
+    try {
+        // Decode the raw data. fname and offset are optional and we pass
+        // them just to have nicer error messages
+        auto bulletin = BufrBulletin::decode(raw_data, fname, offset);
 
-    // Do something with the decoded information
-    handle(*bulletin);
+        // Do something with the decoded information
+        handle(*bulletin);
+    } catch (std::exception& e) {
+        fprintf(stderr, "%s:%ld:%s\n", fname, offset, e.what());
+    }
 }
 
 void BulletinFullHandler::handle_raw_crex(const std::string& raw_data, const char* fname, long offset)
 {
-    // Decode the raw data. fname and offset are optional and we pass
-    // them just to have nicer error messages
-    auto bulletin = CrexBulletin::decode(raw_data, fname, offset);
+    try {
+        // Decode the raw data. fname and offset are optional and we pass
+        // them just to have nicer error messages
+        auto bulletin = CrexBulletin::decode(raw_data, fname, offset);
 
-    // Do something with the decoded information
-    handle(*bulletin);
+        // Do something with the decoded information
+        handle(*bulletin);
+    } catch (std::exception& e) {
+        fprintf(stderr, "%s:%ld:%s\n", fname, offset, e.what());
+    }
 }

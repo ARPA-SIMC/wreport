@@ -20,6 +20,7 @@
  */
 
 #include <wreport/bulletin.h>
+#include <wreport/bulletin/dds-scanfeatures.h>
 #include "options.h"
 #include <cstring>
 
@@ -96,5 +97,28 @@ struct PrintTables : public BulletinHeadHandler
             fprintf(out, "%s\t%zd\tunknown message type\n",
                     b.fname.c_str(), b.offset);
         }
+    }
+};
+
+struct PrintFeatures : public BulletinHeadHandler
+{
+    FILE* out;
+    PrintFeatures(FILE* out=stderr) : out(out) {}
+
+    /// Dump the contents of the Data Descriptor Section a message
+    void handle(wreport::Bulletin& b) override
+    {
+        bulletin::ScanFeatures scan(b.tables, b.datadesc);
+        scan.run();
+        fprintf(out, "%s:%zd:", b.fname.c_str(), b.offset);
+        bool first = true;
+        for (const auto& f: scan.features)
+            if (first)
+            {
+                fprintf(out, "%s", f.c_str());
+                first = false;
+            } else
+                fprintf(out, ",%s", f.c_str());
+        fprintf(out, "\n");
     }
 };
