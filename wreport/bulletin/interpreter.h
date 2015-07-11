@@ -93,14 +93,6 @@ public:
     virtual void c_modifier(Varcode code, Opcodes& next);
 
     /**
-     * Reuse last defined data present bitmap
-     *
-     * y is the Y value in the C modifier, currently defined as 0 for reusing
-     * the last defined bitmap, and 255 to cancel reuse of the last bitmap.
-     */
-    virtual void c_reuse_last_bitmap(Varcode code);
-
-    /**
      * Handle a replicated section
      *
      * @param code
@@ -242,12 +234,12 @@ public:
 
     void b_variable(Varcode code) override;
     void c_modifier(Varcode code, Opcodes& next) override;
-    void c_reuse_last_bitmap(Varcode code) override;
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
     void d_group_begin(Varcode code) override;
     void d_group_end(Varcode code) override;
 
     void define_variable(Varinfo info) override;
+    void define_bitmap(unsigned bitmap_size) override;
 };
 
 

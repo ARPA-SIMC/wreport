@@ -57,6 +57,9 @@ struct Bitmap
      * is present
      */
     unsigned next();
+
+    /// Reset the bitmap iterator, to reuse the bitmap another time
+    void reuse();
 };
 
 struct Bitmaps
@@ -73,9 +76,12 @@ struct Bitmaps
      */
     unsigned next_bitmap_anchor_point = 0;
 
-
     /// Currently active bitmap
     Bitmap* current = nullptr;
+
+    /// Last bitmap used
+    Bitmap* last = nullptr;
+
 
     Bitmaps() {}
     Bitmaps(const Bitmaps&) = delete;
@@ -83,6 +89,10 @@ struct Bitmaps
     Bitmaps& operator=(const Bitmaps&) = delete;
 
     void define(const Var& bitmap, const Subset& subset);
+
+    void reuse_last();
+
+    void discard_last();
 
     /**
      * Return the next variable offset for which the bitmap reports that data

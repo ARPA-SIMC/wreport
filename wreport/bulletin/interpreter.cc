@@ -311,15 +311,28 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
                     error_consistency::throwf("C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
             }
             break;
+        case 36:
+            /*
+             * Define data present bitmap.
+             *
+             * This operator defines the data present bitmap which follows for
+             * possible reuse; only one data present bitmap may be defined
+             * between this operator and the cancel use defined data present
+             * bitmap operator.
+             *
+             * If the bitmap will not be reused, this operator can be left out.
+             */
+            break;
         case 37:
             // Use defined data present bitmap
             switch (WR_VAR_Y(code))
             {
                 case 0: // Reuse last defined bitmap
-                    c_reuse_last_bitmap(true);
+                    bitmaps.reuse_last();
+                    bitmaps.pending_definitions = 0;
                     break;
-                case 255: // cancels reuse of the last defined bitmap
-                    c_reuse_last_bitmap(false);
+                case 255: // Cancels reuse of the last defined bitmap
+                    bitmaps.discard_last();
                     break;
                 default:
                     error_consistency::throwf("C modifier %d%02d%03d uses unsupported y=%03d",
@@ -351,8 +364,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
             */
     }
 }
-
-void DDSInterpreter::c_reuse_last_bitmap(Varcode code) {}
 
 void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
@@ -527,7 +538,20 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
                     fputs(" one substituted value\n", out);
                     break;
                 default:
-                    error_consistency::throwf("C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
+                    fprintf(out, "C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
+                    break;
+            }
+            break;
+        case 36:
+            fputs(" define data present bitmap for reuse\n", out);
+            break;
+        case 37:
+            // Use defined data present bitmap
+            switch (WR_VAR_Y(code))
+            {
+                case 0: fputs(" reuse last data present bitmap\n", out); break;
+                case 255: fputs(" cancel reuse of the last defined bitmap\n", out); break;
+                default: fprintf(out, "C modifier %d%02d%03d uses unsupported y=%03d", WR_VAR_FXY(code), WR_VAR_Y(code)); break;
             }
             break;
         default:
@@ -568,24 +592,11 @@ void Printer::d_group_end(Varcode code)
     indent -= indent_step;
 }
 
-void Printer::c_reuse_last_bitmap(Varcode code)
+void Printer::define_variable(Varinfo info)
 {
-    print_lead(code);
-    switch (WR_VAR_Y(code))
-    {
-        case 0:
-            fprintf(out, " reuse last data present bitmap\n");
-            break;
-        case 255:
-            fprintf(out, " cancel reuse of last data present bitmap\n");
-            break;
-        default:
-            fprintf(out, " unknown B37%03d reuse of last data present bitmap code\n", WR_VAR_Y(code));
-            break;
-    }
 }
 
-void Printer::define_variable(Varinfo info)
+void Printer::define_bitmap(unsigned bitmap_size)
 {
 }
 

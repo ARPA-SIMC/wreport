@@ -56,10 +56,16 @@ Bitmap::~Bitmap()
 bool Bitmap::eob() const { return iter == refs.rend(); }
 unsigned Bitmap::next() { unsigned res = *iter; ++iter; return res; }
 
+void Bitmap::reuse()
+{
+    iter = refs.rbegin();
+}
+
 
 Bitmaps::~Bitmaps()
 {
     delete current;
+    delete last;
 }
 
 unsigned Bitmaps::next()
@@ -69,8 +75,9 @@ unsigned Bitmaps::next()
     unsigned res = current->next();
     if (current->eob())
     {
-        delete current;
-        current = 0;
+        delete last;
+        last = current;
+        current = nullptr;
     }
     return res;
 }
@@ -79,6 +86,23 @@ void Bitmaps::define(const Var& bitmap, const Subset& subset)
 {
     delete current;
     current = new Bitmap(bitmap, subset, next_bitmap_anchor_point);
+}
+
+void Bitmaps::reuse_last()
+{
+// Only throw an error when the bitmap is actually used
+//    if (!last)
+//        throw error_consistency("cannot reuse bitmap, because no bitmap is currently defined");
+    delete current;
+    current = last;
+    last = nullptr;
+    if (current) current->reuse();
+}
+
+void Bitmaps::discard_last()
+{
+    delete last;
+    last = nullptr;
 }
 
 }
