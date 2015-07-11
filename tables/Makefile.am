@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in
 
-crexbtables = B000101.txt B000103.txt B000203.txt \
-crexdtables = D000101.txt D000103.txt D000203.txt \
+crexbtables = B000101.txt B000103.txt B000203.txt
+crexdtables = D000101.txt D000103.txt D000203.txt
 bufrbtables = B0000000000000012000.txt \
 	      B0000000000000013000.txt \
 	      B0000000000098013001.txt \

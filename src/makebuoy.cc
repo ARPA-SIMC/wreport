@@ -65,9 +65,7 @@ void do_makebuoy()
     // bulletin->update_sequence_number = 0;
 
     // Optional section
-    bulletin->optional_section_length = 4;
-    bulletin->optional_section = new char[4];
-    memcpy(bulletin->optional_section, "test", 4);
+    bulletin->optional_section = "test";
 
 
     // * Fill up data descriptor section
@@ -121,8 +119,7 @@ void do_makebuoy()
 
 
     // Encode the BUFR
-    string encoded;
-    bulletin->encode(encoded);
+    string encoded = bulletin->encode();
 
     // Output the BUFR
     if (fwrite(encoded.data(), encoded.size(), 1, stdout) != 1)
