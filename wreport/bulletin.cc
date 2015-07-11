@@ -3,27 +3,56 @@
 #include "tableinfo.h"
 #include "dtable.h"
 #include "bulletin/dds-printer.h"
-#include "bulletin/internals.h"
 #include "notes.h"
-#include <cstddef>
-#include <cstdlib>
-#include <cstring>
-#include <cerrno>
 #include <netinet/in.h>
-#include <config.h>
-
+#include "config.h"
 
 using namespace std;
 
 namespace wreport {
 
-namespace bulletin {
+namespace {
 
+bool seek_past_signature(FILE* fd, const char* sig, unsigned sig_len, const char* fname)
+{
+    unsigned got = 0;
+    int c;
+
+    errno = 0;
+
+    while (got < sig_len && (c = getc(fd)) != EOF)
+    {
+        if (c == sig[got])
+            got++;
+        else
+            got = 0;
+    }
+
+    if (errno != 0)
+    {
+        if (fname)
+            error_system::throwf("looking for start of %.4s data in %s:", sig, fname);
+        else
+            error_system::throwf("looking for start of %.4s data", sig);
+    }
+
+    if (got != sig_len)
+    {
+        /* End of file: return accordingly */
+        return false;
+    }
+    return true;
+}
 
 }
 
+
+/*
+ * Bulletin
+ */
+
 Bulletin::Bulletin() {}
-Bulletin::~Bulletin() { }
+Bulletin::~Bulletin() {}
 
 void Bulletin::clear()
 {
@@ -54,111 +83,6 @@ const Subset& Bulletin::subset(unsigned subsection) const
 	return subsets[subsection];
 }
 
-BufrCodecOptions::BufrCodecOptions()
-    : decode_adds_undef_attrs(false)
-{
-}
-
-std::unique_ptr<BufrCodecOptions> BufrCodecOptions::create()
-{
-    return unique_ptr<BufrCodecOptions>(new BufrCodecOptions);
-}
-
-BufrBulletin::BufrBulletin()
-{
-}
-
-std::unique_ptr<BufrBulletin> BufrBulletin::create()
-{
-    return unique_ptr<BufrBulletin>(new BufrBulletin);
-}
-
-BufrBulletin::~BufrBulletin()
-{
-}
-
-void BufrBulletin::clear()
-{
-    Bulletin::clear();
-    edition_number = 4;
-    master_table_number = 0;
-    master_table_version_number = 19;
-    master_table_version_number_local = 0;
-    compression = false;
-    optional_section.clear();
-}
-
-void BufrBulletin::load_tables()
-{
-    tables.load_bufr(BufrTableID(originating_centre, originating_subcentre, master_table_number, master_table_version_number, master_table_version_number_local));
-}
-
-/*
-implemented in bufr_decoder.cc
-void BufrBulletin::decode_header(const Rawmsg& raw)
-{
-}
-
-void BufrBulletin::decode(const Rawmsg& raw)
-{
-}
-
-implemented in bufr_encoder.cc
-void BufrBulletin::encode(std::string& buf) const
-{
-}
-*/
-
-CrexBulletin::CrexBulletin()
-{
-}
-
-std::unique_ptr<CrexBulletin> CrexBulletin::create()
-{
-    return unique_ptr<CrexBulletin>(new CrexBulletin);
-}
-
-
-void CrexBulletin::clear()
-{
-    Bulletin::clear();
-    edition_number = 2;
-    master_table_number = 0;
-    master_table_version_number = 19;
-    master_table_version_number_bufr = 19;
-    master_table_version_number_local = 0;
-    has_check_digit = false;
-}
-
-void CrexBulletin::load_tables()
-{
-//    tables.load_crex(CrexTableID(
-//                originating_centre, originating_subcentre,
-//                master_table_number, master_table_version_number,
-//                master_table_version_number_local, master_table_version_number_bufr));
-    tables.load_crex(CrexTableID(
-                edition_number,
-                originating_centre, originating_subcentre,
-                master_table_number, edition_number,
-                master_table_version_number_local, master_table_version_number_bufr));
-}
-
-/*
-implemented in crex_decoder.cc
-void CrexBulletin::decode_header(const Rawmsg& raw)
-{
-}
-
-void CrexBulletin::decode(const Rawmsg& raw)
-{
-}
-
-implemented in crex_encoder.cc
-void CrexBulletin::encode(std::string& buf) const
-{
-}
-*/
-
 void Bulletin::print(FILE* out) const
 {
     fprintf(out, "%s %hhu:%hhu:%hhu %hu:%hu %04hu-%02hu-%02hu %02hu:%02hu:%02hu %hhu %zd subsets\n",
@@ -168,23 +92,23 @@ void Bulletin::print(FILE* out) const
         rep_year, rep_month, rep_day, rep_hour, rep_minute, rep_second,
         update_sequence_number,
         subsets.size());
-	fprintf(out, " Tables: %s %s\n",
-		tables.btable ? tables.btable->pathname().c_str() : "(not loaded)",
-		tables.dtable ? tables.dtable->pathname().c_str() : "(not loaded)");
-	fprintf(out, " Data descriptors:\n");
-	for (vector<Varcode>::const_iterator i = datadesc.begin(); i != datadesc.end(); ++i)
-		fprintf(out, "  %d%02d%03d\n", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
-	print_details(out);
-	fprintf(out, " Variables:\n");
-	for (unsigned i = 0; i < subsets.size(); ++i)
-	{
-		const Subset& s = subset(i);
-		for (unsigned j = 0; j < s.size(); ++j)
-		{
-			fprintf(out, "  [%d][%d] ", i, j);
-			s[j].print(out);
-		}
-	}
+    fprintf(out, " Tables: %s %s\n",
+        tables.btable ? tables.btable->pathname().c_str() : "(not loaded)",
+        tables.dtable ? tables.dtable->pathname().c_str() : "(not loaded)");
+    fprintf(out, " Data descriptors:\n");
+    for (vector<Varcode>::const_iterator i = datadesc.begin(); i != datadesc.end(); ++i)
+        fprintf(out, "  %d%02d%03d\n", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
+    print_details(out);
+    fprintf(out, " Variables:\n");
+    for (unsigned i = 0; i < subsets.size(); ++i)
+    {
+        const Subset& s = subset(i);
+        for (unsigned j = 0; j < s.size(); ++j)
+        {
+            fprintf(out, "  [%d][%d] ", i, j);
+            s[j].print(out);
+        }
+    }
 }
 
 void Bulletin::print_structured(FILE* out) const
@@ -213,22 +137,6 @@ void Bulletin::print_structured(FILE* out) const
 }
 
 void Bulletin::print_details(FILE* out) const {}
-
-void BufrBulletin::print_details(FILE* out) const
-{
-    fprintf(out, " BUFR details: ed%hhu t%hhu:%hhu:%hhu %c osl%zd\n",
-            edition_number,
-            master_table_number, master_table_version_number, master_table_version_number_local,
-            compression ? 'c' : '-', optional_section.size());
-}
-
-void CrexBulletin::print_details(FILE* out) const
-{
-    fprintf(out, " CREX details: ed%hhu t%hhu:%hhu:%hhu:%hhu %c\n",
-            edition_number,
-            master_table_number, master_table_version_number, master_table_version_number_local, master_table_version_number_bufr,
-            has_check_digit ? 'C' : '-');
-}
 
 void Bulletin::print_datadesc(FILE* out, unsigned indent) const
 {
@@ -380,6 +288,60 @@ unsigned Bulletin::diff(const Bulletin& msg) const
 
 unsigned Bulletin::diff_details(const Bulletin& msg) const { return 0; }
 
+
+/*
+ * BufrCodecOptions
+ */
+
+BufrCodecOptions::BufrCodecOptions() {}
+
+std::unique_ptr<BufrCodecOptions> BufrCodecOptions::create()
+{
+    return unique_ptr<BufrCodecOptions>(new BufrCodecOptions);
+}
+
+
+/*
+ * BufrBulletin
+ */
+
+BufrBulletin::BufrBulletin()
+{
+}
+
+std::unique_ptr<BufrBulletin> BufrBulletin::create()
+{
+    return unique_ptr<BufrBulletin>(new BufrBulletin);
+}
+
+BufrBulletin::~BufrBulletin()
+{
+}
+
+void BufrBulletin::clear()
+{
+    Bulletin::clear();
+    edition_number = 4;
+    master_table_number = 0;
+    master_table_version_number = 19;
+    master_table_version_number_local = 0;
+    compression = false;
+    optional_section.clear();
+}
+
+void BufrBulletin::load_tables()
+{
+    tables.load_bufr(BufrTableID(originating_centre, originating_subcentre, master_table_number, master_table_version_number, master_table_version_number_local));
+}
+
+void BufrBulletin::print_details(FILE* out) const
+{
+    fprintf(out, " BUFR details: ed%hhu t%hhu:%hhu:%hhu %c osl%zd\n",
+            edition_number,
+            master_table_number, master_table_version_number, master_table_version_number_local,
+            compression ? 'c' : '-', optional_section.size());
+}
+
 unsigned BufrBulletin::diff_details(const Bulletin& bulletin) const
 {
     unsigned diffs = Bulletin::diff_details(bulletin);
@@ -434,6 +396,108 @@ unsigned BufrBulletin::diff_details(const Bulletin& bulletin) const
     return diffs;
 }
 
+bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname, long* offset)
+{
+    /// A BUFR message starts with "BUFR", then the message length encoded in 3 bytes
+
+    // Reset bufr_message data in case this message has been used before
+    buf.clear();
+
+    // Seek to start of BUFR data
+    if (!seek_past_signature(fd, "BUFR", 4, fname))
+        return false;
+    buf += "BUFR";
+    if (offset) *offset = ftell(fd) - 4;
+
+    // Read the remaining 4 bytes of section 0
+    buf.resize(8);
+    if (fread((char*)buf.data() + 4, 4, 1, fd) != 1)
+    {
+        if (fname)
+            error_system::throwf("reading BUFR section 0 from %s", fname);
+        else
+            throw error_system("reading BUFR section 0 from");
+    }
+
+    // Read the message length
+    int bufrlen = ntohl(*(uint32_t*)(buf.data()+4)) >> 8;
+    if (bufrlen < 12)
+    {
+        if (fname)
+            error_consistency::throwf("%s: the size declared by the BUFR message (%d) is less than the minimum of 12", fname, bufrlen);
+        else
+            error_consistency::throwf("the size declared by the BUFR message (%d) is less than the minimum of 12", bufrlen);
+    }
+
+    // Allocate enough space to fit the message
+    buf.resize(bufrlen);
+
+    // Read the rest of the BUFR message
+    if (fread((char*)buf.data() + 8, bufrlen - 8, 1, fd) != 1)
+    {
+        if (fname)
+            error_system::throwf("reading BUFR message from %s", fname);
+        else
+            throw error_system("reading BUFR message");
+    }
+
+    return true;
+}
+
+void BufrBulletin::write(const std::string& buf, FILE* out, const char* fname)
+{
+    if (fwrite(buf.data(), buf.size(), 1, out) != 1)
+    {
+        if (fname)
+            error_system::throwf("%s: writing %zd bytes", fname, buf.size());
+        else
+            error_system::throwf("writing %zd bytes", buf.size());
+    }
+}
+
+
+
+/*
+ * CrexBulletin
+ */
+
+CrexBulletin::CrexBulletin()
+{
+}
+
+std::unique_ptr<CrexBulletin> CrexBulletin::create()
+{
+    return unique_ptr<CrexBulletin>(new CrexBulletin);
+}
+
+void CrexBulletin::clear()
+{
+    Bulletin::clear();
+    edition_number = 2;
+    master_table_number = 0;
+    master_table_version_number = 19;
+    master_table_version_number_bufr = 19;
+    master_table_version_number_local = 0;
+    has_check_digit = false;
+}
+
+void CrexBulletin::load_tables()
+{
+    tables.load_crex(CrexTableID(
+                edition_number,
+                originating_centre, originating_subcentre,
+                master_table_number, edition_number,
+                master_table_version_number_local, master_table_version_number_bufr));
+}
+
+void CrexBulletin::print_details(FILE* out) const
+{
+    fprintf(out, " CREX details: ed%hhu t%hhu:%hhu:%hhu:%hhu %c\n",
+            edition_number,
+            master_table_number, master_table_version_number, master_table_version_number_local, master_table_version_number_bufr,
+            has_check_digit ? 'C' : '-');
+}
+
 unsigned CrexBulletin::diff_details(const Bulletin& bulletin) const
 {
     unsigned diffs = Bulletin::diff_details(bulletin);
@@ -480,113 +544,23 @@ unsigned CrexBulletin::diff_details(const Bulletin& bulletin) const
     return diffs;
 }
 
-static bool seek_past_signature(FILE* fd, const char* sig, unsigned sig_len, const char* fname)
-{
-	unsigned got = 0;
-	int c;
-
-	errno = 0;
-
-	while (got < sig_len && (c = getc(fd)) != EOF)
-	{
-		if (c == sig[got])
-			got++;
-		else
-			got = 0;
-	}
-
-	if (errno != 0)
-	{
-		if (fname)
-			error_system::throwf("looking for start of %.4s data in %s:", sig, fname);
-		else
-			error_system::throwf("looking for start of %.4s data", sig);
-	}
-	
-	if (got != sig_len)
-	{
-		/* End of file: return accordingly */
-		return false;
-	}
-	return true;
-}
-
-bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname, long* offset)
-{
-	/* A BUFR message is easy to just read: it starts with "BUFR", then the
-	 * message length encoded in 3 bytes */
-
-	// Reset bufr_message data in case this message has been used before
-	buf.clear();
-
-	/* Seek to start of BUFR data */
-	if (!seek_past_signature(fd, "BUFR", 4, fname))
-		return false;
-	buf += "BUFR";
-	if (offset) *offset = ftell(fd) - 4;
-
-	// Read the remaining 4 bytes of section 0
-	buf.resize(8);
-	if (fread((char*)buf.data() + 4, 4, 1, fd) != 1)
-	{
-		if (fname)
-			error_system::throwf("reading BUFR section 0 from %s", fname);
-		else
-			throw error_system("reading BUFR section 0 from");
-	}
-
-	/* Read the message length */
-	int bufrlen = ntohl(*(uint32_t*)(buf.data()+4)) >> 8;
-	if (bufrlen < 12)
-	{
-		if (fname)
-			error_consistency::throwf("%s: the size declared by the BUFR message (%d) is less than the minimum of 12", fname, bufrlen);
-		else
-			error_consistency::throwf("the size declared by the BUFR message (%d) is less than the minimum of 12", bufrlen);
-	}
-
-	/* Allocate enough space to fit the message */
-	buf.resize(bufrlen);
-
-	/* Read the rest of the BUFR message */
-	if (fread((char*)buf.data() + 8, bufrlen - 8, 1, fd) != 1)
-	{
-		if (fname)
-			error_system::throwf("reading BUFR message from %s", fname);
-		else
-			throw error_system("reading BUFR message");
-	}
-
-	return true;
-}
-
-void BufrBulletin::write(const std::string& buf, FILE* out, const char* fname)
-{
-	if (fwrite(buf.data(), buf.size(), 1, out) != 1)
-	{
-		if (fname)
-			error_system::throwf("%s: writing %zd bytes", fname, buf.size());
-		else
-			error_system::throwf("writing %zd bytes", buf.size());
-	}
-}
-
 bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname, long* offset)
 {
-/*
- * The CREX message starts with "CREX" and ends with "++\r\r\n7777".  Ideally
- * any combination of \r and \n should be supported.
- */
-	/* Reset crex_message data in case this message has been used before */
-	buf.clear();
+    /*
+     * A CREX message starts with "CREX" and ends with "++\r\r\n7777".  Ideally
+     * any combination of \r and \n should be supported.
+     */
 
-	/* Seek to start of CREX data */
+    // Reset crex_message data in case this message has been used before
+    buf.clear();
+
+    // Seek to start of CREX data
 	if (!seek_past_signature(fd, "CREX++", 6, fname))
 		return false;
 	buf += "CREX++";
 	if (offset) *offset = ftell(fd) - 6;
 
-	/* Read until "\+\+(\r|\n)+7777" */
+    // Read until "\+\+(\r|\n)+7777"
 	{
 		const char* target = "++\r\n7777";
 		static const int target_size = 8;
@@ -647,21 +621,4 @@ void CrexBulletin::write(const std::string& buf, FILE* out, const char* fname)
 	}
 }
 
-#if 0
-std::unique_ptr<Bulletin> Bulletin::create(dballe::Encoding encoding)
-{
-	std::unique_ptr<bufrex::Bulletin> res;
-	switch (encoding)
-	{
-		case BUFR: res.reset(new BufrBulletin); break;
-		case CREX: res.reset(new CrexBulletin); break;
-		default: error_consistency::throwf("the bufrex library does not support encoding %s (only BUFR and CREX are supported)",
-					 encoding_name(encoding));
-	}
-	return res;
 }
-#endif
-
-}
-
-/* vim:set ts=4 sw=4: */

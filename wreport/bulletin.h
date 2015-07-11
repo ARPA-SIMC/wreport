@@ -8,9 +8,6 @@
 #include <vector>
 #include <memory>
 
-/**
- * Main namespace
- */
 namespace wreport {
 struct DTable;
 
@@ -199,7 +196,7 @@ struct BufrCodecOptions
      * variable for which the bulletin provides attributes but they have an
      * missing value.
      */
-    bool decode_adds_undef_attrs;
+    bool decode_adds_undef_attrs = false;
 
     /**
      * Create a BufrCodecOptions
@@ -261,7 +258,8 @@ struct BufrBulletin : public Bulletin
      */
     std::string optional_section;
 
-	virtual ~BufrBulletin();
+
+    virtual ~BufrBulletin();
 
     void clear();
     const char* encoding_name() const throw () override { return "BUFR"; }
@@ -284,7 +282,7 @@ struct BufrBulletin : public Bulletin
 	 * @returns
 	 *   true if a message was found, false on EOF
 	 */
-	static bool read(FILE* in, std::string& buf, const char* fname = 0, long* offset = 0);
+    static bool read(FILE* in, std::string& buf, const char* fname=0, long* offset=0);
 
 	/**
 	 * Write an encoded BUFR message to a stream
@@ -296,7 +294,7 @@ struct BufrBulletin : public Bulletin
 	 * @param fname
 	 *   File name to use in error messages
 	 */
-	static void write(const std::string& buf, FILE* out, const char* fname = 0);
+    static void write(const std::string& buf, FILE* out, const char* fname=0);
 
     /**
      * To prevent breaking ABI if new members are added to bulletins, direct
@@ -368,9 +366,8 @@ protected:
     BufrBulletin();
 };
 
-/**
- * CREX bulletin implementation
- */
+
+/// CREX bulletin implementation
 struct CrexBulletin : public Bulletin
 {
     /// CREX Edition number
@@ -444,7 +441,7 @@ struct CrexBulletin : public Bulletin
 	 * @returns
 	 *   true if a message was found, false on EOF
 	 */
-	static bool read(FILE* in, std::string& buf, const char* fname = 0, long* offset = 0);
+    static bool read(FILE* in, std::string& buf, const char* fname=0, long* offset=0);
 
 	/**
 	 * Write an encoded BUFR message to a stream
@@ -456,7 +453,7 @@ struct CrexBulletin : public Bulletin
 	 * @param fname
 	 *   File name to use in error messages
 	 */
-	static void write(const std::string& buf, FILE* out, const char* fname = 0);
+    static void write(const std::string& buf, FILE* out, const char* fname=0);
 
     /**
      * To prevent breaking ABI if new members are added to bulletins, direct
@@ -499,11 +496,14 @@ protected:
 /**
  * The bulletin namespace contains bulletin implementation details, internals
  * and utility functions.
+ *
+ * The API and ABI of members of the bulletin namespace are not guaranteed to
+ * be stable, and can change in minor version changes. No part of the stable
+ * API/ABI introduce dependencies on unstable wreport API/ABI elements in the
+ * code using it.
  */
 namespace bulletin {
 }
 
 }
-
-/* vim:set ts=4 sw=4: */
 #endif
