@@ -47,7 +47,7 @@ void DDSValidator::check_fits(Varinfo info, const Var& var)
         case Vartype::String:
             break;
         case Vartype::Binary:
-            throw error_unimplemented("check_fits for binary variables");
+            break;
         case Vartype::Integer:
         case Vartype::Decimal:
         {
