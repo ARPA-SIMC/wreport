@@ -187,9 +187,7 @@ struct Bulletin
 };
 
 
-/**
- * Options used to configure BUFR decoding.
- */
+/// Options used to configure BUFR decoding
 struct BufrCodecOptions
 {
     /**
@@ -216,9 +214,7 @@ protected:
     BufrCodecOptions();
 };
 
-/**
- * BUFR bulletin implementation
- */
+/// BUFR bulletin implementation
 struct BufrBulletin : public Bulletin
 {
     /// BUFR edition number
@@ -264,18 +260,6 @@ struct BufrBulletin : public Bulletin
      * It is empty if the message does not contain an optional section.
      */
     std::string optional_section;
-
-    /**
-     * Options used to customise encoding or decoding.
-     *
-     * It is NULL by default, in which case default options are used.
-     *
-     * To configure it, set it to point to a BufrCodecOptions structure with
-     * the parameters you need. The caller is responsible for the memory
-     * management of the BufrCodecOptions structure.
-     */
-    const BufrCodecOptions* codec_options = nullptr;
-
 
 	virtual ~BufrBulletin();
 
@@ -335,6 +319,22 @@ struct BufrBulletin : public Bulletin
     static std::unique_ptr<BufrBulletin> decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0);
 
     /**
+     * Parse only the header of an encoded BUFR message
+     *
+     * @param buf
+     *   The buffer to decode
+     * @param opts
+     *   Options used to customise encoding or decoding.
+     * @param fname
+     *   The file name to use for error messages
+     * @param offset
+     *   The offset inside the file of the start of the bulletin, used for
+     *   error messages
+     * @returns The new bulletin with the decoded message
+     */
+    static std::unique_ptr<BufrBulletin> decode_header(const std::string& raw, const BufrCodecOptions& opts, const char* fname="(memory)", size_t offset=0);
+
+    /**
      * Parse an encoded BUFR message
      *
      * @param buf
@@ -347,6 +347,22 @@ struct BufrBulletin : public Bulletin
      * @returns The new bulletin with the decoded message
      */
     static std::unique_ptr<BufrBulletin> decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
+
+    /**
+     * Parse an encoded BUFR message
+     *
+     * @param buf
+     *   The buffer to decode
+     * @param opts
+     *   Options used to customise encoding or decoding.
+     * @param fname
+     *   The file name to use for error messages
+     * @param offset
+     *   The offset inside the file of the start of the bulletin, used for
+     *   error messages
+     * @returns The new bulletin with the decoded message
+     */
+    static std::unique_ptr<BufrBulletin> decode(const std::string& raw, const BufrCodecOptions& opts, const char* fname="(memory)", size_t offset=0);
 
 protected:
     BufrBulletin();

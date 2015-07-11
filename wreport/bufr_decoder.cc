@@ -34,19 +34,20 @@ struct Decoder
     /// Number of expected subsets (read in decode_header, used in decode_data)
     size_t expected_subsets;
     /// True if undefined attributes are added to the output, else false
-    bool conf_add_undef_attrs;
+    bool conf_add_undef_attrs = false;
     /// Optional section length decoded from the message
     unsigned optional_section_length = 0;
 
     Decoder(const std::string& buf, const char* fname, size_t offset, BufrBulletin& out)
-        : in(buf), out(out), conf_add_undef_attrs(false)
+        : in(buf), out(out)
     {
-        if (out.codec_options)
-        {
-            conf_add_undef_attrs = out.codec_options->decode_adds_undef_attrs;
-        }
         in.fname = fname;
         in.start_offset = offset;
+    }
+
+    void read_options(const BufrCodecOptions& opts)
+    {
+        conf_add_undef_attrs = opts.decode_adds_undef_attrs;
     }
 
     void decode_sec1ed3()
@@ -568,6 +569,29 @@ void Decoder::decode_data()
 
 }
 
+
+std::unique_ptr<BufrBulletin> BufrBulletin::decode_header(const std::string& buf, const BufrCodecOptions& opts, const char* fname, size_t offset)
+{
+    auto res = BufrBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    Decoder d(buf, fname, offset, *res);
+    d.read_options(opts);
+    d.decode_header();
+    return res;
+}
+
+std::unique_ptr<BufrBulletin> BufrBulletin::decode(const std::string& buf, const BufrCodecOptions& opts, const char* fname, size_t offset)
+{
+    auto res = BufrBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    Decoder d(buf, fname, offset, *res);
+    d.read_options(opts);
+    d.decode_header();
+    d.decode_data();
+    return res;
+}
 
 std::unique_ptr<BufrBulletin> BufrBulletin::decode_header(const std::string& buf, const char* fname, size_t offset)
 {
