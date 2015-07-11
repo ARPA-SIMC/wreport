@@ -1,34 +1,7 @@
-/*
- * wreport/subset - Data subset for BUFR and CREX messages
- *
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #ifndef WREPORT_SUBSET_H
 #define WREPORT_SUBSET_H
 
-/** @file
- * @ingroup bufrex
- * Handling of a BUFR/CREX data subset as a list of decoded variables.
- */
-
 #include <wreport/var.h>
-#include <wreport/vartable.h>
 #include <vector>
 
 namespace wreport {
@@ -39,7 +12,7 @@ struct Tables;
  */
 struct Subset : public std::vector<Var>
 {
-    // Tables used for creating variables in this subset
+    /// Tables used for creating variables in this subset
     const Tables* tables;
 
     /**
@@ -56,13 +29,7 @@ struct Subset : public std::vector<Var>
     }
     ~Subset();
     Subset& operator=(const Subset&) = default;
-    Subset& operator=(Subset&& s)
-    {
-        if (this == &s) return *this;
-        std::vector<Var>::operator=(s);
-        tables = s.tables;
-        return *this;
-    }
+    Subset& operator=(Subset&& s);
 
 	/// Store a decoded variable in the message, to be encoded later.
 	void store_variable(const Var& var);
@@ -165,6 +132,4 @@ protected:
 };
 
 }
-
-/* vim:set ts=4 sw=4: */
 #endif

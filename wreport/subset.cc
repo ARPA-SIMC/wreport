@@ -1,33 +1,9 @@
-/*
- * wreport/subset - Data subset for BUFR and CREX messages
- *
- * Copyright (C) 2005--2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
-#include <config.h>
-
 #include "subset.h"
 #include "tables.h"
+#include "vartable.h"
 #include "notes.h"
-
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cstring>
+#include "config.h"
 
 using namespace std;
 
@@ -37,7 +13,16 @@ Subset::Subset(const Tables& tables) : tables(&tables)
 {
     if (!tables.loaded()) throw error_consistency("BUFR/CREX tables not loaded");
 }
+
 Subset::~Subset() {}
+
+Subset& Subset::operator=(Subset&& s)
+{
+    if (this == &s) return *this;
+    std::vector<Var>::operator=(s);
+    tables = s.tables;
+    return *this;
+}
 
 void Subset::store_variable(const Var& var)
 {
@@ -83,11 +68,11 @@ void Subset::append_c_with_dpb(Varcode ccode, int count, const char* bitmap)
 {
     Varinfo info = tables->get_bitmap(ccode, bitmap);
 
-	/* Create the Var with the bitmap */
-	Var var(info, bitmap);
+    // Create the Var with the bitmap
+    Var var(info, bitmap);
 
-	/* Store the variable in the subset */
-	store_variable(var);
+    // Store the variable in the subset
+    store_variable(var);
 }
 
 int Subset::append_dpb(Varcode ccode, unsigned size, Varcode attr)
@@ -96,24 +81,16 @@ int Subset::append_dpb(Varcode ccode, unsigned size, Varcode attr)
 	size_t src, dst;
 	size_t count = 0;
 
-	/* Scan first 'size' variables checking for the presence of 'attr' */
-	for (src = 0, dst = 0; src < this->size() && dst < size; ++dst, ++src)
-	{
-		/* Skip extra, special vars */
-		while (src < this->size() && WR_VAR_F((*this)[src].code()) != 0)
-			++src;
+    // Scan first 'size' variables checking for the presence of 'attr'
+    for (src = 0, dst = 0; src < this->size() && dst < size; ++dst, ++src)
+    {
+        // Skip extra, special vars
+        while (src < this->size() && WR_VAR_F((*this)[src].code()) != 0)
+            ++src;
 
-#if 0
-		dba_varcode code = dba_var_code(subset->vars[i]);
-		/* Skip over special data like delayed repetition counts */
-		if (WR_VAR_F(code) != 0 ||
-		    (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 31))
-			continue;
-#endif
-
-		/* Check if the variable has the attribute we want */
-		if ((*this)[src].enqa(attr) == NULL)
-			bitmap[dst] = '-';
+        // Check if the variable has the attribute we want
+        if ((*this)[src].enqa(attr) == NULL)
+            bitmap[dst] = '-';
 		else
 		{
 			bitmap[dst] = '+';
@@ -137,45 +114,6 @@ void Subset::append_fixed_dpb(Varcode ccode, int size)
 
 	append_c_with_dpb(ccode, size, bitmap);
 }
-
-#if 0
-dba_err bufrex_subset_append_attrs(bufrex_subset subset, int size, dba_varcode attr)
-{
-	int i;
-	int repcount_idx;
-	int added = 0;
-
-	/* Add delayed repetition count with an initial value of 0, and mark its position */
-	bufrex_subset_store_variable_i(subset, WR_VAR(0, 31, 2), 0);
-	repcount_idx = subset->vars_count - 1;
-	
-	/* Scan first 'size' variables checking for the presence of 'attr' */
-	for (i = 0; i < subset->vars_count && size > 0; i++)
-	{
-		dba_var var_attr;
-
-#if 0
-		/* Skip over special data like delayed repetition counts */
-		if (WR_VAR_F(dba_var_code(subset->vars[i])) != 0)
-			continue;
-#endif
-
-		/* Check if the variable has the attribute we want */
-		DBA_RUN_OR_RETURN(dba_var_enqa(subset->vars[i], attr, &var_attr));
-		if (var_attr != NULL)
-		{
-			DBA_RUN_OR_RETURN(bufrex_subset_store_variable_var(subset, attr, var_attr));
-			added++;
-		}
-		size--;
-	}
-
-	/* Set the repetition count with the number of variables we added */
-	DBA_RUN_OR_RETURN(dba_var_seti(subset->vars[repcount_idx], added));
-
-	return dba_error_ok();
-}
-#endif
 
 void Subset::print(FILE* out) const
 {
@@ -212,5 +150,3 @@ unsigned Subset::diff(const Subset& s2) const
 }
 
 }
-
-/* vim:set ts=4 sw=4: */

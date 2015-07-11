@@ -211,6 +211,7 @@ protected:
     BufrCodecOptions();
 };
 
+
 /// BUFR bulletin implementation
 struct BufrBulletin : public Bulletin
 {
@@ -492,6 +493,7 @@ struct CrexBulletin : public Bulletin
 protected:
     CrexBulletin();
 };
+
 
 /**
  * The bulletin namespace contains bulletin implementation details, internals

@@ -1,5 +1,6 @@
 #include "test-utils-wreport.h"
 #include "interpreter.h"
+#include "wreport/vartable.h"
 #include "wreport/dtable.h"
 #include <wibble/string.h>
 

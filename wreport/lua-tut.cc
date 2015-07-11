@@ -19,7 +19,8 @@
 
 #include <test-utils-wreport.h>
 #include <test-utils-lua.h>
-#include <wreport/var.h>
+#include "vartable.h"
+#include "var.h"
 
 using namespace wreport;
 

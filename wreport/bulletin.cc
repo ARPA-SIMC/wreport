@@ -1,6 +1,7 @@
 #include "bulletin.h"
 #include "error.h"
 #include "tableinfo.h"
+#include "vartable.h"
 #include "dtable.h"
 #include "bulletin/dds-printer.h"
 #include "notes.h"
