@@ -7,6 +7,8 @@
 #include <string>
 
 namespace wreport {
+struct BufrTableID;
+struct CrexTableID;
 struct Vartable;
 struct DTable;
 

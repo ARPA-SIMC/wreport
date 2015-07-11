@@ -1,13 +1,9 @@
-#include "config.h"
-#include <iostream>
-#include <strings.h>
-#include <cstring>
-#include <cmath>
-#include <limits.h>
-#include <algorithm>
-#include <cstdio>
 #include "varinfo.h"
 #include "error.h"
+#include <cstring>
+#include <cmath>
+#include <climits>
+#include "config.h"
 
 using namespace std;
 
@@ -246,40 +242,6 @@ unsigned _Varinfo::encode_binary(double fval) const
         error_consistency::throwf("Cannot encode %01d%02d%03d %f to %d bits using scale %d and ref %d: encoding gives negative value %f",
                 WR_VAR_FXY(code), fval, bit_len, scale, bit_ref, res);
     return (unsigned)res;
-}
-
-bool BufrTableID::operator<(const BufrTableID& o) const
-{
-    if (originating_centre < o.originating_centre) return true;
-    if (originating_centre > o.originating_centre) return false;
-    if (originating_subcentre < o.originating_subcentre) return true;
-    if (originating_subcentre > o.originating_subcentre) return false;
-    if (master_table < o.master_table) return true;
-    if (master_table > o.master_table) return false;
-    if (master_table_version_number < o.master_table_version_number) return true;
-    if (master_table_version_number > o.master_table_version_number) return false;
-    if (master_table_version_number_local < o.master_table_version_number_local) return true;
-    if (master_table_version_number_local > o.master_table_version_number_local) return false;
-    return false;
-}
-
-bool CrexTableID::operator<(const CrexTableID& o) const
-{
-    if (edition_number < o.edition_number) return true;
-    if (edition_number > o.edition_number) return false;
-    if (originating_centre < o.originating_centre) return true;
-    if (originating_centre > o.originating_centre) return false;
-    if (originating_subcentre < o.originating_subcentre) return true;
-    if (originating_subcentre > o.originating_subcentre) return false;
-    if (master_table < o.master_table) return true;
-    if (master_table > o.master_table) return false;
-    if (master_table_version_number < o.master_table_version_number) return true;
-    if (master_table_version_number > o.master_table_version_number) return false;
-    if (master_table_version_number_local < o.master_table_version_number_local) return true;
-    if (master_table_version_number_local > o.master_table_version_number_local) return false;
-    if (master_table_version_number_bufr < o.master_table_version_number_bufr) return true;
-    if (master_table_version_number_bufr > o.master_table_version_number_bufr) return false;
-    return false;
 }
 
 }

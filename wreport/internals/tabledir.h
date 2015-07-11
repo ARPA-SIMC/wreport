@@ -1,7 +1,7 @@
 #ifndef WREPORT_TABLEDIR_H
 #define WREPORT_TABLEDIR_H
 
-#include <wreport/varinfo.h>
+#include <wreport/tableinfo.h>
 #include <string>
 #include <vector>
 
@@ -56,36 +56,61 @@ struct Dir
 {
     std::string pathname;
     time_t mtime;
-    std::vector<BufrTable> bufr_tables;
-    std::vector<CrexTable> crex_tables;
+    std::vector<Table*> tables;
 
     Dir(const std::string& pathname);
+    Dir(const Dir&) = delete;
+    Dir(Dir&&) = default;
     ~Dir();
+
+    Dir& operator=(const Dir&) = delete;
 
     /// Reread the directory contents if it has changed
     void refresh();
 };
 
+struct Query
+{
+    BufrTable* bufr_best = nullptr;
+    CrexTable* crex_best = nullptr;
+
+    void search(Dir& dir);
+
+    Table* result() const;
+
+    virtual bool is_acceptable(const BufrTableID& id) const = 0;
+    virtual bool is_acceptable(const CrexTableID& id) const = 0;
+    virtual BufrTable* choose_best(BufrTable& first, BufrTable& second) const = 0;
+    virtual CrexTable* choose_best(CrexTable& first, CrexTable& second) const = 0;
+    virtual Table* choose_best(BufrTable& first, CrexTable& second) const = 0;
+};
+
 /// Query for a BUFR table
-struct BufrQuery
+struct BufrQuery : public Query
 {
     BufrTableID id;
-    BufrTable* result;
 
     BufrQuery(const BufrTableID& id);
-    void search(Dir& dir);
-    bool is_better(const BufrTable& t);
+
+    bool is_acceptable(const BufrTableID& id) const override;
+    bool is_acceptable(const CrexTableID& id) const override;
+    BufrTable* choose_best(BufrTable& first, BufrTable& second) const override;
+    CrexTable* choose_best(CrexTable& first, CrexTable& second) const override;
+    Table* choose_best(BufrTable& first, CrexTable& second) const override;
 };
 
 /// Query for a CREX table
-struct CrexQuery
+struct CrexQuery : public Query
 {
     CrexTableID id;
-    CrexTable* result;
 
     CrexQuery(const CrexTableID& id);
-    void search(Dir& dir);
-    bool is_better(const CrexTable& t);
+
+    bool is_acceptable(const BufrTableID& id) const override;
+    bool is_acceptable(const CrexTableID& id) const override;
+    BufrTable* choose_best(BufrTable& first, BufrTable& second) const override;
+    CrexTable* choose_best(CrexTable& first, CrexTable& second) const override;
+    Table* choose_best(BufrTable& first, CrexTable& second) const override;
 };
 
 class Tabledir
@@ -108,16 +133,13 @@ public:
     void add_directory(const std::string& dir);
 
     /// Find a BUFR table
-    const tabledir::BufrTable* find_bufr(const BufrTableID& id);
+    const tabledir::Table* find_bufr(const BufrTableID& id);
 
     /// Find a CREX table
-    const tabledir::CrexTable* find_crex(const CrexTableID& id);
+    const tabledir::Table* find_crex(const CrexTableID& id);
 
-    /// Find a BUFR table by file name
-    const tabledir::BufrTable* find_bufr(const std::string& basename);
-
-    /// Find a CREX table by file name
-    const tabledir::CrexTable* find_crex(const std::string& basename);
+    /// Find a BUFR or CREX table by file name
+    const tabledir::Table* find(const std::string& basename);
 
     /// Get the default tabledir instance
     static Tabledir& get();

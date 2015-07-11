@@ -9,6 +9,7 @@
 
 #include "config.h"
 #include "vartable.h"
+#include "tableinfo.h"
 #include "error.h"
 #include "internals/tabledir.h"
 #include <memory>
@@ -546,14 +547,14 @@ const Vartable* Vartable::get_crex(const CrexTableID& id)
 const Vartable* Vartable::get_bufr(const std::string& basename)
 {
     auto tabledir = tabledir::Tabledir::get();
-    auto res = tabledir.find_bufr(basename);
+    auto res = tabledir.find(basename);
     return res->btable;
 }
 
 const Vartable* Vartable::get_crex(const std::string& basename)
 {
     auto tabledir = tabledir::Tabledir::get();
-    auto res = tabledir.find_crex(basename);
+    auto res = tabledir.find(basename);
     return res->btable;
 }
 

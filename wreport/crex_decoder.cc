@@ -45,6 +45,7 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
                     &(out.edition_number),
                     &(out.master_table_version_number)) != 3)
             error_consistency::throwf("Edition (%s) is not in format Ttteevv", edition);
+        out.master_table_version_number_bufr = out.master_table_version_number;
         TRACE(" -> edition %d\n", strtol(edition_number + 1, 0, 10));
     }
 

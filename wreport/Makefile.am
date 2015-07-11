@@ -29,6 +29,7 @@ nobase_dist_wreportinclude_HEADERS = \
 	subset.h \
 	internals/fs.h \
 	internals/tabledir.h \
+	tableinfo.h \
 	tables.h \
 	var.h \
 	varinfo.h \
@@ -47,14 +48,15 @@ libwreport_la_SOURCES = \
 	notes.cc \
 	uniconv.cc \
 	conv.cc \
-	internals/fs.cc \
-	internals/tabledir.cc \
+	tableinfo.cc \
 	varinfo.cc \
 	vartable.cc \
 	var.cc \
 	opcodes.cc \
 	dtable.cc \
 	tables.cc \
+	internals/fs.cc \
+	internals/tabledir.cc \
 	subset.cc \
 	buffers/bufr.cc \
 	buffers/crex.cc \
@@ -113,14 +115,16 @@ tut_test_SOURCES = \
 	options-tut.cc \
 	error-tut.cc \
 	conv-tut.cc \
-	internals/fs-tut.cc \
-	internals/tabledir-tut.cc \
+	tableinfo-tut.cc \
 	varinfo-tut.cc \
 	vartable-tut.cc \
 	var-tut.cc \
 	opcodes-tut.cc \
 	dtable-tut.cc \
 	tables-tut.cc \
+	internals/fs-tut.cc \
+	internals/tabledir-tut.cc \
+	subset-tut.cc \
 	bulletin-tut.cc \
 	bufr_decoder-tut.cc \
 	bufr_encoder-tut.cc \

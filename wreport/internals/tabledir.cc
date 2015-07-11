@@ -11,9 +11,6 @@
 #include <cstdio>
 #include <cerrno>
 
-// Uncomment to trace approximate table matching
-// #define TRACE_MATCH
-
 using namespace std;
 
 namespace wreport {
@@ -64,6 +61,8 @@ Dir::Dir(const std::string& pathname)
 
 Dir::~Dir()
 {
+    for (auto t: tables)
+        delete t;
 }
 
 // Reread the directory contents if it has changed
@@ -82,21 +81,21 @@ void Dir::refresh()
             {
                 int mt, ed, mtv;
                 if (sscanf(e.d_name, "B%02d%02d%02d", &mt, &ed, &mtv) == 3)
-                    crex_tables.push_back(CrexTable(CrexTableID(ed, 0xffff, 0xffff, mt, mtv, 0xff, 0xff), pathname, e.d_name));
+                    tables.push_back(new CrexTable(CrexTableID(ed, 0xffff, 0xffff, mt, mtv, 0xff, mtv), pathname, e.d_name));
                 break;
             }
             case 20: // B000000000001100.txt
             {
                 int ce, sc, mt, lt;
                 if (sscanf(e.d_name, "B00000%03d%03d%02d%02d", &sc, &ce, &mt, &lt) == 4)
-                    bufr_tables.push_back(BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
+                    tables.push_back(new BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
                 break;
             }
             case 24: // B0000000000085014000.txt
             {
                 int ce, sc, mt, lt, dummy;
                 if (sscanf(e.d_name, "B00%03d%04d%04d%03d%03d", &dummy, &sc, &ce, &mt, &lt) == 5)
-                    bufr_tables.push_back(BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
+                    tables.push_back(new BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
                 break;
             }
         }
@@ -105,176 +104,110 @@ void Dir::refresh()
 }
 
 
-BufrQuery::BufrQuery(const BufrTableID& id) : id(id), result(0)
+void Query::search(Dir& dir)
 {
-}
-
-void BufrQuery::search(Dir& dir)
-{
-    for (std::vector<BufrTable>::iterator i = dir.bufr_tables.begin(); i != dir.bufr_tables.end(); ++i)
-        if (is_better(*i))
-            result = &*i;
-}
-
-#ifdef TRACE_MATCH
-static inline void trace_state_bufr(const BufrTableID& id, BufrTable* result, const BufrTable& t)
-{
-    fprintf(stderr, "want %03hu:%02hu %02hhu:%02hhu:%02hhu, have %03hu:%02hu %02hhu:%02hhu:%02hhu, try %03hu:%02hu %02hhu:%02hhu:%02hhu: ",
-        id.originating_centre, id.originating_subcentre, id.master_table, id.master_table_version_number, id.master_table_version_number_local,
-        result ? result->id.originating_centre : -1, result ? result->id.originating_subcentre : -1,
-        result ? result->id.master_table : -1, result ? result->id.master_table_version_number : -1,
-        result ? result->id.master_table_version_number_local : -1,
-        t.id.originating_centre, t.id.originating_subcentre, t.id.master_table, t.id.master_table_version_number, t.id.master_table_version_number_local);
-}
-#define trace_state() trace_state_bufr(id, result, t)
-#define accept(...) { trace_state(); fputs("ok: ", stderr); fprintf(stderr, __VA_ARGS__); putc('\n', stderr); return true; }
-#define reject(...) { trace_state(); fputs("no: ", stderr); fprintf(stderr, __VA_ARGS__); putc('\n', stderr); return false; }
-#else
-#define accept(...) { return true; }
-#define reject(...) { return false; }
-#endif
-
-bool BufrQuery::is_better(const BufrTable& t)
-{
-    if (t.id.master_table != id.master_table)
-        reject("master table is different");
-
-    if (t.id.master_table_version_number < id.master_table_version_number)
-        reject("master table too old");
-
-    // Any other table will do if we have no result so far
-    if (!result)
-        accept("better than nothing");
-
-    if (result->id.master_table_version_number - id.master_table_version_number > t.id.master_table_version_number - id.master_table_version_number)
-        accept("closer to the master_table we want");
-
-    if (t.id.master_table_version_number != result->id.master_table_version_number)
-        reject("not better than the master table that we have");
-
-    if (result->id.originating_centre == id.originating_centre)
+    for (const auto& t : dir.tables)
     {
-        // If we already have the centre we want, only accept candidates
-        // from that centre
-        if (t.id.originating_centre != id.originating_centre)
-            reject("not the same centre");
-
-        // If both result and t have the same centre, keep going looking
-        // for the rest of the details
+        if (BufrTable* cur = dynamic_cast<BufrTable*>(t))
+        {
+            if (!is_acceptable(cur->id)) continue;
+            if (!bufr_best)
+                bufr_best = cur;
+            else
+                bufr_best = choose_best(*bufr_best, *cur);
+        }
+        else if (CrexTable* cur = dynamic_cast<CrexTable*>(t))
+        {
+            if (!is_acceptable(cur->id)) continue;
+            if (!crex_best)
+                crex_best = cur;
+            else
+                crex_best = choose_best(*crex_best, *cur);
+        }
+        else
+            error_consistency::throwf("candidate table is not a BUFR or CREX table");
     }
-    else if (result->id.originating_centre == 0)
-    {
-        // If we approximated to WMO and we find the exact centre we want,
-        // use it
-        if (t.id.originating_centre == id.originating_centre)
-            accept("exact match on the centre");
+}
 
-        // We have an approximate match, there is no point in looking for
-        // the rest of the details
-        reject("not an improvement on the centre");
-    }
+Table* Query::result() const
+{
+    if (!bufr_best)
+        if (!crex_best)
+            return nullptr;
+        else
+            return crex_best;
     else
-    {
-        if (t.id.originating_centre == id.originating_centre || t.id.originating_centre == 0)
-            accept("better than a random centre");
-
-        reject("not better than the current centre");
-    }
-
-    // Look for the closest match for the local table
-    if (result->id.master_table_version_number_local < id.master_table_version_number_local)
-    {
-        if (t.id.master_table_version_number_local > result->id.master_table_version_number_local)
-            accept("the current master table local version is lower than what we want: any higher one is better");
-        if (t.id.master_table_version_number_local < result->id.master_table_version_number_local)
-            reject("the master table local version is even lower than what we have");
-    } else if (result->id.master_table_version_number_local >= id.master_table_version_number_local) {
-        if (t.id.master_table_version_number_local < id.master_table_version_number_local)
-            reject("not better than the current master table local version");
-        if (result->id.master_table_version_number_local - id.master_table_version_number_local > t.id.master_table_version_number_local - id.master_table_version_number_local)
-            accept("closer to the master table local version we want");
-    }
-
-    // If we don't have the same local_table as the current result, no
-    // point in looking further
-    if (result->id.master_table_version_number_local != t.id.master_table_version_number_local)
-        reject("not better than the current local table");
-
-    // Finally, try to match the exact subcentre
-    if (t.id.originating_subcentre == id.originating_subcentre)
-        accept("exact match on subcentre");
-
-    reject("details are not better than what we have");
+        if (!crex_best)
+            return bufr_best;
+        else
+            return choose_best(*bufr_best, *crex_best);
 }
 
 
-CrexQuery::CrexQuery(const CrexTableID& id) : id(id), result(0)
+BufrQuery::BufrQuery(const BufrTableID& id) : id(id)
 {
 }
 
-void CrexQuery::search(Dir& dir)
+bool BufrQuery::is_acceptable(const BufrTableID& id) const
 {
-    for (std::vector<CrexTable>::iterator i = dir.crex_tables.begin(); i != dir.crex_tables.end(); ++i)
-        if (is_better(*i))
-            result = &*i;
+    return this->id.is_acceptable_replacement(id);
 }
 
-#ifdef TRACE_MATCH
-#undef trace_state
-static inline void trace_state_crex(const CrexTableID& id, CrexTable* result, const CrexTable& t)
+bool BufrQuery::is_acceptable(const CrexTableID& id) const
 {
-    fprintf(stderr, "want %02hu:%02hu %02hhu:%02hhu:%02hhu:%02hhu, have %02hu:%02hu %02hhu:%02hhu:%02hhu:%02hhu, try %02hu:%02hu %02hhu:%02hhu:%02hhu:%02hhu: ",
-        id.originating_centre, id.originating_subcentre, id.master_table,
-        id.master_table_version_number, id.master_table_version_number_local, id.master_table_version_number_bufr,
-        result ? result->id.originating_centre : -1, result ? result->id.originating_subcentre : -1,
-        result ? result->id.master_table : -1, result ? result->id.master_table_version_number : -1,
-        result ? result->id.master_table_version_number_local : -1, result ? result->id.master_table_version_number_bufr : -1,
-        t.id.originating_centre, t.id.originating_subcentre, t.id.master_table,
-        t.id.master_table_version_number,
-        t.id.master_table_version_number_local, t.id.master_table_version_number_bufr);
+    return this->id.is_acceptable_replacement(id);
 }
-#define trace_state() trace_state_crex(id, result, t)
-#endif
 
-bool CrexQuery::is_better(const CrexTable& t)
+BufrTable* BufrQuery::choose_best(BufrTable& first, BufrTable& second) const
 {
-    // Master table number must be the same
-    if (t.id.edition_number != id.edition_number)
-        reject("wrong edition number");
+    int cmp = id.closest_match(first.id, second.id);
+    return cmp <= 0 ? &first : &second;
+}
 
-    // Master table number must be the same
-    if (t.id.master_table != id.master_table)
-        reject("wrong master table number");
+CrexTable* BufrQuery::choose_best(CrexTable& first, CrexTable& second) const
+{
+    return nullptr;
+}
 
-    // Edition must be greater or equal to what we want
-    if (t.id.master_table_version_number < id.master_table_version_number)
-        reject("smaller than the master table version we want");
+Table* BufrQuery::choose_best(BufrTable& first, CrexTable& second) const
+{
+    return &first;
+}
 
-    // If we have no result so far, any random one will do
-    if (!result)
-        accept("better than nothing");
 
-    if (t.id.master_table_version_number - id.master_table_version_number < result->id.master_table_version_number - id.master_table_version_number)
-        accept("better than the master table version that we have");
+CrexQuery::CrexQuery(const CrexTableID& id) : id(id)
+{
+}
 
-    if (t.id.master_table_version_number != result->id.master_table_version_number)
-        reject("not better than the master table version that we have");
+bool CrexQuery::is_acceptable(const BufrTableID& id) const
+{
+    return this->id.is_acceptable_replacement(id);
+}
 
-    // Look for the closest match for the table
-    if (result->id.master_table_version_number_local < id.master_table_version_number_local)
-    {
-        if (t.id.master_table_version_number_local > result->id.master_table_version_number_local)
-            accept("the current master table local version is lower than what we want: any higher one is better");
-        if (t.id.master_table_version_number_local < result->id.master_table_version_number_local)
-            reject("the master table local version is even lower than what we have");
-    } else if (result->id.master_table_version_number_local >= id.master_table_version_number_local) {
-        if (t.id.master_table_version_number_local < id.master_table_version_number_local)
-            reject("not better than the current master table local version");
-        if (result->id.master_table_version_number_local - id.master_table_version_number_local > t.id.master_table_version_number_local - id.master_table_version_number_local)
-            accept("closer to the master table local version we want");
-    }
+bool CrexQuery::is_acceptable(const CrexTableID& id) const
+{
+    return this->id.is_acceptable_replacement(id);
+}
 
-    reject("details are not better than what we have");
+BufrTable* CrexQuery::choose_best(BufrTable& first, BufrTable& second) const
+{
+    int cmp = id.closest_match(first.id, second.id);
+    return cmp <= 0 ? &first : &second;
+}
+
+CrexTable* CrexQuery::choose_best(CrexTable& first, CrexTable& second) const
+{
+    int cmp = id.closest_match(first.id, second.id);
+    return cmp <= 0 ? &first : &second;
+}
+
+Table* CrexQuery::choose_best(BufrTable& first, CrexTable& second) const
+{
+    int cmp = id.closest_match(first.id, second.id);
+    if (cmp <= 0)
+        return &first;
+    else
+        return &second;
 }
 
 // Pack a BUFR request in a single unsigned
@@ -291,8 +224,8 @@ static inline unsigned pack_crex(int master_table_number, int edition, int table
 struct Index
 {
     vector<Dir> dirs;
-    map<BufrTableID, const BufrTable*> bufr_cache;
-    map<CrexTableID, const CrexTable*> crex_cache;
+    map<BufrTableID, const Table*> bufr_cache;
+    map<CrexTableID, const Table*> crex_cache;
 
     Index(const vector<string>& dirs)
     {
@@ -301,10 +234,10 @@ struct Index
             this->dirs.push_back(Dir(*i));
     }
 
-    const tabledir::BufrTable* find_bufr(const BufrTableID& id)
+    const tabledir::Table* find_bufr(const BufrTableID& id)
     {
         // First look it up in cache
-        map<BufrTableID, const BufrTable*>::const_iterator i = bufr_cache.find(id);
+        const auto i = bufr_cache.find(id);
         if (i != bufr_cache.end())
             return i->second;
 
@@ -313,23 +246,23 @@ struct Index
         for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
             query.search(*d);
 
-        if (query.result)
+        if (auto result = query.result())
         {
-            query.result->load_if_needed();
-            bufr_cache[id] = query.result;
+            result->load_if_needed();
+            bufr_cache[id] = result;
             notes::logf("Matched table %s for ce %hu sc %hu mt %hhu mtv %hhu mtlv %hhu",
-                    query.result->btable_id.c_str(),
+                    result->btable_id.c_str(),
                     id.originating_centre, id.originating_subcentre,
                     id.master_table, id.master_table_version_number, id.master_table_version_number_local);
+            return result;
         }
-
-        return query.result;
+        return nullptr;
     }
 
-    const tabledir::CrexTable* find_crex(const CrexTableID& id)
+    const tabledir::Table* find_crex(const CrexTableID& id)
     {
         // First look it up in cache
-        map<CrexTableID, const CrexTable*>::const_iterator i = crex_cache.find(id);
+        const auto i = crex_cache.find(id);
         if (i != crex_cache.end())
             return i->second;
 
@@ -338,39 +271,27 @@ struct Index
         for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
             query.search(*d);
 
-        if (query.result)
+        if (auto result = query.result())
         {
-            query.result->load_if_needed();
-            crex_cache[id] = query.result;
+            result->load_if_needed();
+            crex_cache[id] = result;
             notes::logf("Matched table %s for mt %hhu mtv %hhu mtlv %hhu",
-                    query.result->btable_id.c_str(),
+                    result->btable_id.c_str(),
                     id.master_table, id.master_table_version_number,
                     id.master_table_version_number_local);
+            return result;
         }
-
-        return query.result;
-    }
-
-    const tabledir::BufrTable* find_bufr(const std::string& basename)
-    {
-        for (auto& d: dirs)
-            for (auto& t: d.bufr_tables)
-                if (t.btable_id == basename)
-                {
-                    t.load_if_needed();
-                    return &t;
-                }
         return nullptr;
     }
 
-    const tabledir::CrexTable* find_crex(const std::string& basename)
+    const tabledir::Table* find(const std::string& basename)
     {
         for (auto& d: dirs)
-            for (auto& t: d.crex_tables)
-                if (t.btable_id == basename)
+            for (auto& t: d.tables)
+                if (t->btable_id == basename)
                 {
-                    t.load_if_needed();
-                    return &t;
+                    t->load_if_needed();
+                    return t;
                 }
         return nullptr;
     }
@@ -416,28 +337,22 @@ void Tabledir::add_directory(const std::string& dir)
     index = 0;
 }
 
-const tabledir::BufrTable* Tabledir::find_bufr(const BufrTableID& id)
+const tabledir::Table* Tabledir::find_bufr(const BufrTableID& id)
 {
     if (!index) index = new tabledir::Index(dirs);
     return index->find_bufr(id);
 }
 
-const tabledir::CrexTable* Tabledir::find_crex(const CrexTableID& id)
+const tabledir::Table* Tabledir::find_crex(const CrexTableID& id)
 {
     if (!index) index = new tabledir::Index(dirs);
     return index->find_crex(id);
 }
 
-const tabledir::BufrTable* Tabledir::find_bufr(const std::string& basename)
+const tabledir::Table* Tabledir::find(const std::string& basename)
 {
     if (!index) index = new tabledir::Index(dirs);
-    return index->find_bufr(basename);
-}
-
-const tabledir::CrexTable* Tabledir::find_crex(const std::string& basename)
-{
-    if (!index) index = new tabledir::Index(dirs);
-    return index->find_crex(basename);
+    return index->find(basename);
 }
 
 Tabledir& Tabledir::get()
