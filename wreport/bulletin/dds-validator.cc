@@ -93,6 +93,21 @@ unsigned DDSValidator::define_delayed_replication_factor(Varinfo info)
     return var.enqi();
 }
 
+unsigned DDSValidator::define_bitmap_delayed_replication_factor(Varinfo info)
+{
+    const Var& var = peek_var();
+    Var rep_var(info, (int)var.info()->len);
+    check_fits(info, rep_var);
+    return var.info()->len;
+}
+
+unsigned DDSValidator::define_associated_field_significance(Varinfo info)
+{
+    const Var& var = get_var();
+    check_fits(info, var);
+    return var.enq(63);
+}
+
 void DDSValidator::define_substituted_value(unsigned pos)
 {
     // Use the details of the corrisponding variable for decoding

@@ -84,6 +84,21 @@ unsigned DDSPrinter::define_delayed_replication_factor(Varinfo info)
     return var.enqi();
 }
 
+unsigned DDSPrinter::define_bitmap_delayed_replication_factor(Varinfo info)
+{
+    const Var& var = peek_var();
+    Var rep_var(info, (int)var.info()->len);
+    rep_var.print(out);
+    return var.info()->len;
+}
+
+unsigned DDSPrinter::define_associated_field_significance(Varinfo info)
+{
+    const Var& var = get_var();
+    var.print(out);
+    return var.enq(63);
+}
+
 void DDSPrinter::define_bitmap(unsigned bitmap_size)
 {
     UncompressedEncoder::define_bitmap(bitmap_size);
