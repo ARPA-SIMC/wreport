@@ -147,8 +147,7 @@ Var::Var(Varinfo info, const Var& var)
 
 Var& Var::operator=(const Var& var)
 {
-	// Deal with a = a;
-	if (&var == this) return *this;
+    if (&var == this) return *this;
 
 	// Copy info
 	m_info = var.m_info;
