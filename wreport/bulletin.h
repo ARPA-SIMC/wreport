@@ -147,32 +147,6 @@ struct Bulletin
 	/// Load a new set of tables to use for encoding this message
 	virtual void load_tables() = 0;
 
-	/**
-	 * Parse only the header of an encoded message
-	 *
-	 * @param buf
-	 *   The buffer to decode
-	 * @param fname
-	 *   The file name to use for error messages
-	 * @param offset
-	 *   The offset inside the file of the start of the bulletin, used for
-	 *   error messages
-	 */
-	virtual void decode_header(const std::string& buf, const char* fname="(memory)", size_t offset=0) = 0;
-
-	/**
-	 * Parse an encoded message
-	 *
-	 * @param buf
-	 *   The buffer to decode
-	 * @param fname
-	 *   The file name to use for error messages
-	 * @param offset
-	 *   The offset inside the file of the start of the bulletin, used for
-	 *   error messages
-	 */
-	virtual void decode(const std::string& buf, const char* fname="(memory)", size_t offset=0) = 0;
-
     /// Encode the message
     virtual std::string encode() const = 0;
 
@@ -308,8 +282,6 @@ struct BufrBulletin : public Bulletin
     void clear();
     const char* encoding_name() const throw () override { return "BUFR"; }
     void load_tables() override;
-    void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
-    void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
     std::string encode() const override;
     void print_details(FILE* out) const override;
     unsigned diff_details(const Bulletin& msg) const override;
@@ -347,6 +319,34 @@ struct BufrBulletin : public Bulletin
      * construction is discouraged in favour of an allocator function
      */
     static std::unique_ptr<BufrBulletin> create();
+
+    /**
+     * Parse only the header of an encoded BUFR message
+     *
+     * @param buf
+     *   The buffer to decode
+     * @param fname
+     *   The file name to use for error messages
+     * @param offset
+     *   The offset inside the file of the start of the bulletin, used for
+     *   error messages
+     * @returns The new bulletin with the decoded message
+     */
+    static std::unique_ptr<BufrBulletin> decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0);
+
+    /**
+     * Parse an encoded BUFR message
+     *
+     * @param buf
+     *   The buffer to decode
+     * @param fname
+     *   The file name to use for error messages
+     * @param offset
+     *   The offset inside the file of the start of the bulletin, used for
+     *   error messages
+     * @returns The new bulletin with the decoded message
+     */
+    static std::unique_ptr<BufrBulletin> decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
 
 protected:
     BufrBulletin();
@@ -410,8 +410,6 @@ struct CrexBulletin : public Bulletin
     void clear();
     const char* encoding_name() const throw () override { return "CREX"; }
     void load_tables() override;
-    void decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
-    void decode(const std::string& raw, const char* fname="(memory)", size_t offset=0) override;
     std::string encode() const override;
     void print_details(FILE* out) const override;
     unsigned diff_details(const Bulletin& msg) const override;
@@ -449,6 +447,34 @@ struct CrexBulletin : public Bulletin
      * construction is discouraged in favour of an allocator function
      */
     static std::unique_ptr<CrexBulletin> create();
+
+    /**
+     * Parse only the header of an encoded BUFR message
+     *
+     * @param buf
+     *   The buffer to decode
+     * @param fname
+     *   The file name to use for error messages
+     * @param offset
+     *   The offset inside the file of the start of the bulletin, used for
+     *   error messages
+     * @returns The new bulletin with the decoded message
+     */
+    static std::unique_ptr<CrexBulletin> decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0);
+
+    /**
+     * Parse an encoded BUFR message
+     *
+     * @param buf
+     *   The buffer to decode
+     * @param fname
+     *   The file name to use for error messages
+     * @param offset
+     *   The offset inside the file of the start of the bulletin, used for
+     *   error messages
+     * @returns The new bulletin with the decoded message
+     */
+    static std::unique_ptr<CrexBulletin> decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
 
 protected:
     CrexBulletin();

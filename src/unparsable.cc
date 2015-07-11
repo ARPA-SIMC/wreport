@@ -29,9 +29,8 @@ struct CopyUnparsable : public RawHandler
 
     virtual void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset)
     {
-        unique_ptr<Bulletin> bulletin(BufrBulletin::create());
         try {
-            bulletin->decode(raw_data, fname, offset);
+            BufrBulletin::decode(raw_data, fname, offset);
         } catch (std::exception& e) {
             if (log) fprintf(log, "%s\n", e.what());
             fwrite(raw_data.data(), raw_data.size(), 1, out);
@@ -41,9 +40,8 @@ struct CopyUnparsable : public RawHandler
 
     virtual void handle_raw_crex(const std::string& raw_data, const char* fname, long offset)
     {
-        unique_ptr<Bulletin> bulletin(CrexBulletin::create());
         try {
-            bulletin->decode(raw_data, fname, offset);
+            CrexBulletin::decode(raw_data, fname, offset);
         } catch (std::exception& e) {
             if (log) fprintf(log, "%s\n", e.what());
             fwrite(raw_data.data(), raw_data.size(), 1, out);

@@ -569,23 +569,25 @@ void Decoder::decode_data()
 }
 
 
-void BufrBulletin::decode_header(const std::string& buf, const char* fname, size_t offset)
+std::unique_ptr<BufrBulletin> BufrBulletin::decode_header(const std::string& buf, const char* fname, size_t offset)
 {
-    clear();
-    this->fname = fname;
-    this->offset = offset;
-    Decoder d(buf, fname, offset, *this);
+    auto res = BufrBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    Decoder d(buf, fname, offset, *res);
     d.decode_header();
+    return res;
 }
 
-void BufrBulletin::decode(const std::string& buf, const char* fname, size_t offset)
+std::unique_ptr<BufrBulletin> BufrBulletin::decode(const std::string& buf, const char* fname, size_t offset)
 {
-    clear();
-    this->fname = fname;
-    this->offset = offset;
-    Decoder d(buf, fname, offset, *this);
+    auto res = BufrBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    Decoder d(buf, fname, offset, *res);
     d.decode_header();
     d.decode_data();
+    return res;
 }
 
 }

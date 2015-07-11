@@ -15,13 +15,11 @@ struct TestData
 {
     string fname;
     string data;
-    Bltn* head_bulletin;
-    Bltn* data_bulletin;
+    Bltn* head_bulletin = nullptr;
+    Bltn* data_bulletin = nullptr;
 
     TestData(const std::string& fname, const std::string& data)
-        : fname(fname), data(data),
-          head_bulletin(Bltn::create().release()),
-          data_bulletin(Bltn::create().release())
+        : fname(fname), data(data)
     {
     }
     TestData(const TestData&) = delete;
@@ -36,6 +34,15 @@ struct TestData
         delete data_bulletin;
     }
     TestData& operator=(const TestData&) = delete;
+
+    void decode_header(const std::string& buf)
+    {
+        head_bulletin = Bltn::decode_header(buf).release();
+    }
+    void decode(const std::string& buf)
+    {
+        data_bulletin = Bltn::decode(buf).release();
+    }
 };
 
 template<typename Bltn>
@@ -102,36 +109,27 @@ struct BulletinBenchmark : Benchmark
     {
         decode_bufr_head.collect([&]() {
             for (auto& d: bufr_data)
-                d.head_bulletin->decode_header(d.data);
+                d.decode_header(d.data);
         });
         decode_bufr.collect([&]() {
             for (auto& d: bufr_data)
-            {
-                //fprintf(stderr, "data %s\n", d.fname.c_str());
-                d.data_bulletin->decode(d.data);
-            }
+                d.decode(d.data);
         });
         decode_crex_head.collect([&]() {
             for (auto& d: crex_data)
-                d.head_bulletin->decode_header(d.data);
+                d.decode_header(d.data);
         });
         decode_crex.collect([&]() {
             for (auto& d: crex_data)
-                d.data_bulletin->decode(d.data);
+                d.decode(d.data);
         });
         encode_bufr.collect([&]() {
             for (auto& d: bufr_data)
-            {
-                string out;
-                d.data_bulletin->encode(out);
-            }
+                d.data_bulletin->encode();
         });
         encode_crex.collect([&]() {
             for (auto& d: crex_data)
-            {
-                string out;
-                d.data_bulletin->encode(out);
-            }
+                d.data_bulletin->encode();
         });
     }
 } test("bulletin");

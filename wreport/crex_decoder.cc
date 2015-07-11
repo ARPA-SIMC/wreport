@@ -221,25 +221,25 @@ void decode_data(buffers::CrexInput& in, CrexBulletin& out)
 }
 }
 
-void CrexBulletin::decode_header(const std::string& buf, const char* fname, size_t offset)
+std::unique_ptr<CrexBulletin> CrexBulletin::decode_header(const std::string& buf, const char* fname, size_t offset)
 {
-    clear();
-    this->fname = fname;
-    this->offset = offset;
-
+    auto res = CrexBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
     buffers::CrexInput in(buf, fname, offset);
-    bulletin::decode_header(in, *this);
+    bulletin::decode_header(in, *res);
+    return res;
 }
 
-void CrexBulletin::decode(const std::string& buf, const char* fname, size_t offset)
+std::unique_ptr<CrexBulletin> CrexBulletin::decode(const std::string& buf, const char* fname, size_t offset)
 {
-    clear();
-    this->fname = fname;
-    this->offset = offset;
-
+    auto res = CrexBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
     buffers::CrexInput in(buf, fname, offset);
-    bulletin::decode_header(in, *this);
-    bulletin::decode_data(in, *this);
+    bulletin::decode_header(in, *res);
+    bulletin::decode_data(in, *res);
+    return res;
 }
 
 }

@@ -82,12 +82,7 @@ void to::test<1>()
         std::string raw1 = tests::slurpfile(*i);
 
         // Decode the original contents
-        unique_ptr<BufrBulletin> msg1(BufrBulletin::create());
-        try {
-            msg1->decode(raw1, i->c_str());
-        } catch (std::exception& e) {
-            throw tut::failure(*i + ": " + e.what());
-        }
+        unique_ptr<BufrBulletin> msg1 = wcallchecked(BufrBulletin::decode(raw1, i->c_str()));
 
         // Validate them
         validate(*msg1, *i);
@@ -111,8 +106,7 @@ void to::test<2>()
         std::string raw1 = tests::slurpfile(*i);
 
         // Decode the original contents
-        unique_ptr<CrexBulletin> msg1(CrexBulletin::create());
-        msg1->decode(raw1, i->c_str());
+        unique_ptr<CrexBulletin> msg1 = wcallchecked(CrexBulletin::decode(raw1, i->c_str()));
 
         // Validate them
         validate(*msg1, *i);

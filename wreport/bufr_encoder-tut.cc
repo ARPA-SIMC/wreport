@@ -93,10 +93,8 @@ std::vector<Test> tests {
         ensure(memfind(rmsg, "abcdefg       ", 14));
 
         // Decode the message and retest
-        unique_ptr<BufrBulletin> pmsg1(BufrBulletin::create());
-        BufrBulletin& msg1 = *pmsg1;
-        msg1.decode(rmsg);
-        test.run("reencoded", msg1);
+        auto msg1 = BufrBulletin::decode(rmsg);
+        test.run("reencoded", *msg1);
     }),
     Test("encode_optsec", [](Fixture& f) {
         // Encode a BUFR with an optional section
@@ -167,9 +165,8 @@ std::vector<Test> tests {
         ensure(memfind(rmsg, "abcdefg       ", 14));
 
         // Decode the message and retest
-        unique_ptr<BufrBulletin> pmsg1(BufrBulletin::create());
+        unique_ptr<BufrBulletin> pmsg1(BufrBulletin::decode(rmsg));
         BufrBulletin& msg1 = *pmsg1;
-        msg1.decode(rmsg);
 
         // Check that the optional section has been padded
         wassert(actual(msg1.optional_section.size()) == 6);

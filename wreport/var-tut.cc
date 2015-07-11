@@ -1,4 +1,4 @@
-#include <test-utils-wreport.h>
+#include "tests.h"
 #include <wreport/var.h>
 #include <wreport/vartable.h>
 #include <wreport/options.h>

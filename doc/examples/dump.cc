@@ -42,18 +42,15 @@ template<typename TYPE>
 void dump(FILE* in, const char* fname)
 {
 	try {
-		// Bulletin to use to store the decoded data
-		TYPE bulletin;
-
 		// Each bulletin type has a read function that reads the next
 		// message from any input stream into a string buffer
 		string buf;
 		while (TYPE::read(in, buf, fname))
 		{
-			// Decode the raw data filling in the bulletin
-			bulletin.decode(buf);
+			// Decode the raw data creating a new bulletin
+			unique_ptr<TYPE> bulletin = TYPE::decode(buf);
 			// Dump it all to stdout
-			bulletin.print(stdout);
+			bulletin->print(stdout);
 		}
 	} catch (std::exception& e) {
 		// Errors are reported through exceptions. All exceptions used

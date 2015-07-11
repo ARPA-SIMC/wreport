@@ -1,4 +1,4 @@
-#include "test-utils-wreport.h"
+#include "tests.h"
 #include "tables.h"
 #include "wreport/dtable.h"
 #include <wibble/string.h>

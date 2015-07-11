@@ -38,12 +38,9 @@ void Options::init_varcodes(const char* str)
 
 void BulletinHeadHandler::handle_raw_bufr(const std::string& raw_data, const char* fname, long offset)
 {
-    // Create a BUFR bulletin
-    std::unique_ptr<Bulletin> bulletin(BufrBulletin::create());
-
     // Decode the raw data. fname and offset are optional and we pass
     // them just to have nicer error messages
-    bulletin->decode_header(raw_data, fname, offset);
+    auto bulletin = BufrBulletin::decode_header(raw_data, fname, offset);
 
     // Do something with the decoded information
     handle(*bulletin);
@@ -51,12 +48,9 @@ void BulletinHeadHandler::handle_raw_bufr(const std::string& raw_data, const cha
 
 void BulletinHeadHandler::handle_raw_crex(const std::string& raw_data, const char* fname, long offset)
 {
-    // Create a CREX bulletin
-    std::unique_ptr<Bulletin> bulletin(CrexBulletin::create());
-
     // Decode the raw data. fname and offset are optional and we pass
     // them just to have nicer error messages
-    bulletin->decode(raw_data, fname, offset);
+    auto bulletin = CrexBulletin::decode(raw_data, fname, offset);
 
     // Do something with the decoded information
     handle(*bulletin);
@@ -64,12 +58,9 @@ void BulletinHeadHandler::handle_raw_crex(const std::string& raw_data, const cha
 
 void BulletinFullHandler::handle_raw_bufr(const std::string& raw_data, const char* fname, long offset)
 {
-    // Create a BUFR bulletin
-    std::unique_ptr<Bulletin> bulletin(BufrBulletin::create());
-
     // Decode the raw data. fname and offset are optional and we pass
     // them just to have nicer error messages
-    bulletin->decode(raw_data, fname, offset);
+    auto bulletin = BufrBulletin::decode(raw_data, fname, offset);
 
     // Do something with the decoded information
     handle(*bulletin);
@@ -77,12 +68,9 @@ void BulletinFullHandler::handle_raw_bufr(const std::string& raw_data, const cha
 
 void BulletinFullHandler::handle_raw_crex(const std::string& raw_data, const char* fname, long offset)
 {
-    // Create a CREX bulletin
-    std::unique_ptr<Bulletin> bulletin(CrexBulletin::create());
-
     // Decode the raw data. fname and offset are optional and we pass
     // them just to have nicer error messages
-    bulletin->decode(raw_data, fname, offset);
+    auto bulletin = CrexBulletin::decode(raw_data, fname, offset);
 
     // Do something with the decoded information
     handle(*bulletin);

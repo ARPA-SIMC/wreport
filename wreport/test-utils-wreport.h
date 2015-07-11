@@ -55,6 +55,22 @@ std::vector<std::string> all_test_files(const std::string& encoding);
 void track_bulletin(Bulletin& b, const char* tag, const char* fname);
 
 template<typename BULLETIN>
+std::unique_ptr<BULLETIN> decode_checked(const std::string& buf, const char* name)
+{
+    try {
+        return BULLETIN::decode(buf, name);
+    } catch (wreport::error_parse& e) {
+        try {
+            auto h = BULLETIN::decode_header(buf, name);
+            h->print_structured(stderr);
+        } catch (wreport::error& e) {
+            std::cerr << "Dump interrupted: " << e.what();
+        }
+        throw;
+    }
+}
+
+template<typename BULLETIN>
 struct TestCodec
 {
     std::string fname;
@@ -73,17 +89,7 @@ struct TestCodec
         std::string raw1 = wcallchecked(slurpfile(fname));
 
         test_info() << fname << ": decode original version";
-        auto msg1 = BULLETIN::create();
-        wrunchecked(try {
-            msg1->decode(raw1, fname.c_str());
-        } catch (wreport::error_parse& e) {
-            try {
-                msg1->print_structured(stderr);
-            } catch (wreport::error& e) {
-                std::cerr << "Dump interrupted: " << e.what();
-            }
-            throw;
-        });
+        auto msg1 = wcallchecked(decode_checked<BULLETIN>(raw1, fname.c_str()));
         wruntest(check_contents, *msg1);
 
         // Encode it again
@@ -92,8 +98,7 @@ struct TestCodec
 
         // Decode our encoder's output
         test_info() << fname << ": decode what we encoded";
-        auto msg2 = BULLETIN::create();
-        wrunchecked(msg2->decode(raw, fname.c_str()));
+        auto msg2 = wcallchecked(decode_checked<BULLETIN>(raw, fname.c_str()));
 
         // Test the decoded version
         wruntest(check_contents, *msg2);
@@ -131,25 +136,14 @@ struct MsgTester
         std::string raw1 = wcallchecked(slurpfile(name));
 
         // Decode the original contents
-        std::unique_ptr<BULLETIN> msg1 = BULLETIN::create();
-        wrunchecked(try {
-            msg1->decode(raw1, name);
-        } catch (wreport::error_parse& e) {
-            try {
-                msg1->print_structured(stderr);
-            } catch (wreport::error& e) {
-                std::cerr << "Dump interrupted: " << e.what();
-            }
-            throw;
-        });
+        auto msg1 = wcallchecked(decode_checked<BULLETIN>(raw1, name));
         (*this)("orig", *msg1);
 
         // Encode it again
         std::string raw = wcallchecked(msg1->encode());
 
         // Decode our encoder's output
-        std::unique_ptr<BULLETIN> msg2 = BULLETIN::create();
-        wrunchecked(msg2->decode(raw, name));
+        auto msg2 = wcallchecked(decode_checked<BULLETIN>(raw, name));
 
         // Test the decoded version
         (*this)("reencoded", *msg2);
