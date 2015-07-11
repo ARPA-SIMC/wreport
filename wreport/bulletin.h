@@ -286,11 +286,12 @@ struct BufrBulletin : public Bulletin
     /// Whether the message is compressed
     bool compression;
 
-	/** 0 if the BUFR message does not contain an optional section, else
-	 *  its length in bytes */
-	int optional_section_length;
-	/** Raw contents of the optional section */
-	char* optional_section;
+    /**
+     * Raw optional section of the message.
+     *
+     * It is empty if the message does not contain an optional section.
+     */
+    std::string optional_section;
 
     /**
      * Options used to customise encoding or decoding.

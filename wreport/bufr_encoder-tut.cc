@@ -135,9 +135,7 @@ std::vector<Test> tests {
         msg.master_table_version_number = 12;
         msg.master_table_version_number_local = 1;
         msg.compression = true;
-        msg.optional_section_length = 5;
-        msg.optional_section = new char[5];
-        strcpy(msg.optional_section, "Ciao");
+        msg.optional_section = string("Ciao", 5);
         msg.rep_year = 2008;
         msg.rep_month = 5;
         msg.rep_day = 3;
@@ -176,8 +174,8 @@ std::vector<Test> tests {
         msg1.decode(rmsg);
 
         // Check that the optional section has been padded
-        ensure_equals(msg1.optional_section_length, 6);
-        ensure_equals(memcmp(msg1.optional_section, "Ciao\0", 6), 0);
+        wassert(actual(msg1.optional_section.size()) == 6);
+        ensure_equals(memcmp(msg1.optional_section.data(), "Ciao\0", 6), 0);
 
         test.run("reencoded", msg1);
     }),

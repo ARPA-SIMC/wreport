@@ -65,7 +65,6 @@ std::unique_ptr<BufrCodecOptions> BufrCodecOptions::create()
 }
 
 BufrBulletin::BufrBulletin()
-    : optional_section_length(0), optional_section(0)
 {
 }
 
@@ -76,7 +75,6 @@ std::unique_ptr<BufrBulletin> BufrBulletin::create()
 
 BufrBulletin::~BufrBulletin()
 {
-    delete[] optional_section;
 }
 
 void BufrBulletin::clear()
@@ -87,9 +85,7 @@ void BufrBulletin::clear()
     master_table_version_number = 19;
     master_table_version_number_local = 0;
     compression = false;
-    optional_section_length = 0;
-    delete[] optional_section;
-    optional_section = nullptr;
+    optional_section.clear();
 }
 
 void BufrBulletin::load_tables()
@@ -220,10 +216,10 @@ void Bulletin::print_details(FILE* out) const {}
 
 void BufrBulletin::print_details(FILE* out) const
 {
-    fprintf(out, " BUFR details: ed%hhu t%hhu:%hhu:%hhu %c osl%d\n",
+    fprintf(out, " BUFR details: ed%hhu t%hhu:%hhu:%hhu %c osl%zd\n",
             edition_number,
             master_table_number, master_table_version_number, master_table_version_number_local,
-            compression ? 'c' : '-', optional_section_length);
+            compression ? 'c' : '-', optional_section.size());
 }
 
 void CrexBulletin::print_details(FILE* out) const
@@ -424,19 +420,16 @@ unsigned BufrBulletin::diff_details(const Bulletin& bulletin) const
     ++diffs;
     }
     */
-    if (optional_section_length != msg.optional_section_length)
+    if (optional_section.size() != msg.optional_section.size())
     {
-        notes::logf("BUFR optional section lenght (first is %d, second is %d)\n",
-                optional_section_length, msg.optional_section_length);
+        notes::logf("BUFR optional section lenght (first is %zd, second is %zd)\n",
+                optional_section.size(), msg.optional_section.size());
         ++diffs;
     }
-    if (optional_section_length != 0)
+    if (optional_section != msg.optional_section)
     {
-        if (memcmp(optional_section, msg.optional_section, optional_section_length) != 0)
-        {
-            notes::logf("BUFR optional section contents differ\n");
-            ++diffs;
-        }
+        notes::logf("BUFR optional section contents differ\n");
+        ++diffs;
     }
     return diffs;
 }

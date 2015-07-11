@@ -35,6 +35,8 @@ struct Decoder
     size_t expected_subsets;
     /// True if undefined attributes are added to the output, else false
     bool conf_add_undef_attrs;
+    /// Optional section length decoded from the message
+    unsigned optional_section_length = 0;
 
     Decoder(const std::string& buf, const char* fname, size_t offset, BufrBulletin& out)
         : in(buf), out(out), conf_add_undef_attrs(false)
@@ -55,9 +57,9 @@ struct Decoder
         // Once we know if the optional section is available, we can scan
         // section lengths for the rest of the message
         in.scan_other_sections(in.read_byte(1, 7) & 0x80);
-        out.optional_section_length = in.sec[3] - in.sec[2];
-        if (out.optional_section_length)
-            out.optional_section_length -= 4;
+        optional_section_length = in.sec[3] - in.sec[2];
+        if (optional_section_length)
+            optional_section_length -= 4;
         // subcentre in sec1[4]
         out.originating_subcentre = in.read_byte(1, 4);
         // centre in sec1[5]
@@ -98,9 +100,9 @@ struct Decoder
         // Once we know if the optional section is available, we can scan
         // section lengths for the rest of the message
         in.scan_other_sections(in.read_byte(1, 9) & 0x80);
-        out.optional_section_length = in.sec[3] - in.sec[2];
-        if (out.optional_section_length)
-            out.optional_section_length -= 4;
+        optional_section_length = in.sec[3] - in.sec[2];
+        if (optional_section_length)
+            optional_section_length -= 4;
         // category in sec1[10]
         out.data_category = in.read_byte(1, 10);
         // international data sub-category in sec1[11]
@@ -152,22 +154,20 @@ struct Decoder
                 error_consistency::throwf("BUFR edition is %d, but I can only decode 2, 3 and 4", out.edition_number);
         }
 
-        TRACE("BUFR:edition %d, optional section %db, update sequence number %d\n",
-                out.edition, out.optional_section_length, out.update_sequence_number);
+        TRACE("BUFR:edition %d, optional section %ub, update sequence number %d\n",
+                out.edition, optional_section_length, out.update_sequence_number);
         TRACE("     origin %d.%d tables %d.%d type %d.%d %04d-%02d-%02d %02d:%02d\n",
                 out.centre, out.subcentre,
                 out.master_table, out.local_table,
                 out.type, out.subtype,
                 out.rep_year, out.rep_month, out.rep_day, out.rep_hour, out.rep_minute);
 
-        /* Read BUFR section 2 (Optional section) */
-        if (out.optional_section_length > 0)
+        // Read BUFR section 2 (Optional section)
+        if (optional_section_length)
         {
-            out.optional_section_length = in.read_number(2, 0, 3) - 4;
-            out.optional_section = new char[out.optional_section_length];
-            if (out.optional_section == NULL)
-                throw error_alloc("allocating space for the optional section");
-            memcpy(out.optional_section, in.data + in.sec[2] + 4, out.optional_section_length);
+            out.optional_section = string(
+                    (const char*)in.data + in.sec[2] + 4,
+                    in.read_number(2, 0, 3) - 4);
         }
 
         /* Read BUFR section 3 (Data description section) */

@@ -179,7 +179,7 @@ void Encoder::encode_sec1ed3()
     out.append_byte(in.update_sequence_number);
     // Bit 1: 0 No optional section, 1 Optional section included
     // Bits 2 to 8 set to zero (reserved)
-    out.append_byte(in.optional_section_length ? 0x80 : 0);
+    out.append_byte(in.optional_section.empty() ? 0 : 0x80);
 
     // Data category (BUFR Table A)
     out.append_byte(in.data_category);
@@ -223,7 +223,7 @@ void Encoder::encode_sec1ed4()
     out.append_byte(in.update_sequence_number);
     // Bit 1: 0 No optional section, 1 Optional section included
     // Bits 2 to 8 set to zero (reserved)
-    out.append_byte(in.optional_section_length ? 0x80 : 0);
+    out.append_byte(in.optional_section.empty() ? 0 : 0x80);
 
     // Data category (BUFR Table A)
     out.append_byte(in.data_category);
@@ -257,21 +257,21 @@ void Encoder::encode_sec2()
     // Encode BUFR section 2 (Optional section)
     sec[2] = out.out.size();
 
-    if (in.optional_section_length)
+    if (!in.optional_section.empty())
     {
-        bool pad = in.optional_section_length % 2 == 1;
+        bool pad = in.optional_section.size() % 2 == 1;
 
         // Length of section
         if (pad)
-            out.add_bits(4 + in.optional_section_length + 1, 24);
+            out.add_bits(4 + in.optional_section.size() + 1, 24);
         else
-            out.add_bits(4 + in.optional_section_length, 24);
+            out.add_bits(4 + in.optional_section.size(), 24);
 
         // Set to 0 (reserved)
         out.append_byte(0);
 
         // Append the raw optional section data
-        out.raw_append(in.optional_section, in.optional_section_length);
+        out.raw_append(in.optional_section.data(), in.optional_section.size());
 
         // Pad to even number of bytes
         if (pad) out.append_byte(0);
