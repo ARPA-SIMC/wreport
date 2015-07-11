@@ -12,6 +12,7 @@ namespace wreport {
 Subset::Subset(const Tables& tables) : tables(&tables)
 {
     if (!tables.loaded()) throw error_consistency("BUFR/CREX tables not loaded");
+    reserve(128);
 }
 
 Subset::~Subset() {}
