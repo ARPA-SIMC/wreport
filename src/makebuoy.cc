@@ -32,15 +32,15 @@ void do_makebuoy()
     // * Fill up metadata
 
     // BUFR edition number
-    bulletin->edition = 4;
+    bulletin->edition_number = 4;
 
     // Master table number is 0 by default
     // bulletin->master_table_number = 0;
 
     // Data category information
-    bulletin->type = 1;
-    bulletin->subtype = 21;
-    bulletin->localsubtype = 255;
+    bulletin->data_category = 1;
+    bulletin->data_subcategory = 21;
+    bulletin->data_subcategory_local = 255;
 
     // Reference time
     bulletin->rep_year = 2011;
@@ -51,15 +51,15 @@ void do_makebuoy()
     bulletin->rep_second = 0;
 
     // Originating centre information
-    bulletin->centre = 98; // ECMWF
-    bulletin->subcentre = 0;
+    bulletin->originating_centre = 98; // ECMWF
+    bulletin->originating_subcentre = 0;
 
     // B table version used by the message
-    bulletin->master_table = 14;
-    bulletin->local_table = 0;
+    bulletin->master_table_version_number = 14;
+    bulletin->master_table_version_number_local = 0;
 
     // Compression is still not supported when encoding BUFR
-    bulletin->compression = 0;
+    bulletin->compression = false;
 
     // Update sequence number is 0 by default
     // bulletin->update_sequence_number = 0;

@@ -40,12 +40,12 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
     {
         char edition[11];
         in.read_word(edition, 11);
-        if (sscanf(edition, "T%02d%02d%02d",
+        if (sscanf(edition, "T%02hhu%02hhu%02hhu",
                     &(out.master_table_number),
-                    &(out.edition),
-                    &(out.table)) != 3)
+                    &(out.edition_number),
+                    &(out.master_table_version_number)) != 3)
             error_consistency::throwf("Edition (%s) is not in format Ttteevv", edition);
-        TRACE(" -> edition %d\n", strtol(edition + 1, 0, 10));
+        TRACE(" -> edition %d\n", strtol(edition_number + 1, 0, 10));
     }
 
     /* A<atable code> */
@@ -60,15 +60,15 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
         switch (strlen(atable)-1)
         {
             case 3:
-                out.type = val;
-                out.subtype = 255;
-                out.localsubtype = 0;
+                out.data_category = val;
+                out.data_subcategory = 0xff;
+                out.data_subcategory_local = 0;
                 TRACE(" -> category %d\n", strtol(atable, 0, 10));
                 break;
             case 6:
-                out.type = val / 1000;
-                out.subtype = 255;
-                out.localsubtype = val % 1000;
+                out.data_category = val / 1000;
+                out.data_subcategory = val % 1000;
+                out.data_subcategory_local = 0xff;
                 TRACE(" -> category %d, subcategory %d\n", val / 1000, val % 1000);
                 break;
             default:

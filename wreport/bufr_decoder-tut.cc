@@ -1,22 +1,3 @@
-/*
- * Copyright (C) 2005--2013  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include <test-utils-wreport.h>
 #include <functional>
 
@@ -64,10 +45,10 @@ std::vector<Test> make_tests()
 
 
     declare_test("bufr/bufr1", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 1);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 21);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 1);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 21);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -86,10 +67,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/bufr2", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 1);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 21);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 1);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 21);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -108,10 +89,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs0-1.22.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 0);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 1);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 0);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 1);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -136,10 +117,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs0-3.504.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 0);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 3);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 0);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 3);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -168,10 +149,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs1-9.2.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 1);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 9);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 1);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 9);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -188,10 +169,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs1-11.16.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 1);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 11);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 1);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 11);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -208,10 +189,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs1-13.36.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 1);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 13);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 1);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 13);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -225,10 +206,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs1-19.3.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 1);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 19);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 1);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 19);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -242,10 +223,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/synop-old-buoy.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 1);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 21);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 1);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 21);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -259,10 +240,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs2-101.16.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 2);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 101);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 2);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 101);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -276,10 +257,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs2-102.1.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 2);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 102);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 2);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 102);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -293,10 +274,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs2-91.2.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 2);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 91);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 2);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 91);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -310,10 +291,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/airep-old-4-142.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 4);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 142);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 4);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 142);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -327,10 +308,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs4-144.4.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 4);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 144);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 4);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 144);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -344,10 +325,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs4-145.4.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 4);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 145);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 4);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 145);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -361,10 +342,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs3-3.1.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 3);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 3);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 3);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 3);
         ensure_equals(msg.subsets.size(), 180);
 
         ensure_equals(msg.subset(0).size(), 127u);
@@ -374,10 +355,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/obs3-56.2.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 3);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 56);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 3);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 56);
         ensure_equals(msg.subsets.size(), 35u);
 
         ensure_equals(msg.subset(0).size(), 225u);
@@ -400,10 +381,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/ed4.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 8);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 171);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 8);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 171);
         ensure_equals(msg.subsets.size(), 128u);
 
         ensure_equals(msg.subset(0).size(), 26u);
@@ -413,10 +394,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/ed4date.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 8);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 171);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 8);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 171);
         ensure_equals(msg.subsets.size(), 128u);
 
         ensure_equals(msg.rep_year, 2000);
@@ -433,10 +414,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/ed2radar.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 2);
-        ensure_equals(msg.type, 6);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 0);
+        ensure_equals(msg.edition_number, 2);
+        ensure_equals(msg.data_category, 6);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 0);
         ensure_equals(msg.subsets.size(), 1u);
 
         ensure_equals(msg.rep_year, 2007);
@@ -451,10 +432,10 @@ std::vector<Test> make_tests()
 
     declare_test("bufr/ed4-compr-string.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
         // BUFR4 with compressed strings
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 0);
-        ensure_equals(msg.subtype, 2);
-        ensure_equals(msg.localsubtype, 0);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 0);
+        ensure_equals(msg.data_subcategory, 2);
+        ensure_equals(msg.data_subcategory_local, 0);
         ensure_equals(msg.subsets.size(), 5u);
 
         ensure_equals(msg.rep_year, 2009);
@@ -473,10 +454,10 @@ std::vector<Test> make_tests()
 
     declare_test("bufr/ed4-parseerror1.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
         // BUFR4 which gives a parse error
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 0);
-        ensure_equals(msg.subtype, 1);
-        ensure_equals(msg.localsubtype, 255);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 0);
+        ensure_equals(msg.data_subcategory, 1);
+        ensure_equals(msg.data_subcategory_local, 255);
         ensure_equals(msg.subsets.size(), 5u);
 
         ensure_equals(msg.rep_year, 2009);
@@ -495,10 +476,10 @@ std::vector<Test> make_tests()
 
     declare_test("bufr/ed4-empty.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
         // BUFR4 which does not give a parse error but looks empty
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 0);
-        ensure_equals(msg.subtype, 1);
-        ensure_equals(msg.localsubtype, 0);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 0);
+        ensure_equals(msg.data_subcategory, 1);
+        ensure_equals(msg.data_subcategory_local, 0);
         ensure_equals(msg.subsets.size(), 7u);
 
         ensure_equals(msg.rep_year, 2009);
@@ -535,10 +516,10 @@ std::vector<Test> make_tests()
 
     declare_test("bufr/segfault1.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
         // BUFR that gave segfault
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 2);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 101);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 2);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 101);
         ensure_equals(msg.subsets.size(), 1);
 
         const Subset& s = msg.subset(0);
@@ -584,10 +565,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/gps_zenith.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 0);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 14);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 0);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 14);
         ensure_equals(msg.subsets.size(), 94);
 
         const Subset& s = msg.subset(0);
@@ -598,10 +579,10 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/ascat1.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 12);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 223);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 12);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 223);
         ensure_equals(msg.subsets.size(), 1722);
 
         const Subset& s = msg.subset(0);
@@ -640,42 +621,42 @@ std::vector<Test> make_tests()
     });
 
     declare_test("bufr/gts-buoy1.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 3);
-        ensure_equals(msg.type, 1);
-        ensure_equals(msg.subtype, 255);
-        ensure_equals(msg.localsubtype, 0);
+        ensure_equals(msg.edition_number, 3);
+        ensure_equals(msg.data_category, 1);
+        ensure_equals(msg.data_subcategory, 255);
+        ensure_equals(msg.data_subcategory_local, 0);
         ensure_equals(msg.subsets.size(), 1);
     });
 
     declare_test("bufr/gts-synop-rad1.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 0);
-        ensure_equals(msg.subtype, 1);
-        ensure_equals(msg.localsubtype, 0);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 0);
+        ensure_equals(msg.data_subcategory, 1);
+        ensure_equals(msg.data_subcategory_local, 0);
         ensure_equals(msg.subsets.size(), 25);
     });
 
     declare_test("bufr/gts-synop-rad2.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 0);
-        ensure_equals(msg.subtype, 6);
-        ensure_equals(msg.localsubtype, 150);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 0);
+        ensure_equals(msg.data_subcategory, 6);
+        ensure_equals(msg.data_subcategory_local, 150);
         ensure_equals(msg.subsets.size(), 1);
     });
 
     declare_test("bufr/gts-synop-tchange.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 0);
-        ensure_equals(msg.subtype, 1);
-        ensure_equals(msg.localsubtype, 0);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 0);
+        ensure_equals(msg.data_subcategory, 1);
+        ensure_equals(msg.data_subcategory_local, 0);
         ensure_equals(msg.subsets.size(), 1);
     });
 
     declare_test("bufr/new-003.bufr", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {
-        ensure_equals(msg.edition, 4);
-        ensure_equals(msg.type, 2);
-        ensure_equals(msg.subtype, 10);
-        ensure_equals(msg.localsubtype, 1);
+        ensure_equals(msg.edition_number, 4);
+        ensure_equals(msg.data_category, 2);
+        ensure_equals(msg.data_subcategory, 10);
+        ensure_equals(msg.data_subcategory_local, 1);
         ensure_equals(msg.subsets.size(), 1);
     });
 
@@ -746,10 +727,10 @@ void to::test<24>()
 		void test(const BufrBulletin& msg)
 		{
 			/*
-			ensure_equals(msg.edition, 2);
-			ensure_equals(msg.type, 6);
-			ensure_equals(msg.subtype, 255);
-			ensure_equals(msg.localsubtype, 0);
+			ensure_equals(msg.edition_number, 2);
+			ensure_equals(msg.data_category, 6);
+			ensure_equals(msg.data_subcategory, 255);
+			ensure_equals(msg.data_subcategory_local, 0);
 			ensure_equals(msg.subsets.size(), 1u);
 
 			ensure_equals(msg.rep_year, 2007);

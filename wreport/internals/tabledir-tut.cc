@@ -98,18 +98,20 @@ std::vector<Test> tests {
         // Test CrexQuery
         using namespace wreport::tabledir;
 
-        CrexQueryTester qt(CrexTableID(0, 0, 0, 15, 3, 0));
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 3, 15, 3, 0))).isfalse());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 14, 0, 0))).isfalse());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 20, 0, 0))).istrue());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 21, 0, 0))).isfalse());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 15, 0, 0))).istrue());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 15, 0, 0))).isfalse());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 15, 1, 0))).istrue());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 15, 6, 0))).istrue());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 15, 8, 0))).isfalse());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 15, 5, 0))).istrue());
-        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 15, 3, 0))).istrue());
+        CrexQueryTester qt(CrexTableID(1, 0, 0, 0, 15, 3, 0));
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 3, 15, 3, 0))).isfalse());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 14, 0, 0))).isfalse());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 20, 0, 0))).istrue());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 21, 0, 0))).isfalse());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 15, 0, 0))).istrue());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 15, 0, 0))).isfalse());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 15, 1, 0))).istrue());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 15, 6, 0))).istrue());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 15, 8, 0))).isfalse());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 15, 5, 0))).istrue());
+        wassert(actual(qt.try_entry(CrexTableID(1, 0, 0, 0, 15, 3, 0))).istrue());
+        wassert(actual(qt.try_entry(CrexTableID(0, 0, 0, 0, 15, 3, 0))).isfalse());
+        wassert(actual(qt.try_entry(CrexTableID(2, 0, 0, 0, 15, 3, 0))).isfalse());
     }),
     Test("tabledir", [](Fixture& f) {
         // Test Tabledir
@@ -137,13 +139,13 @@ std::vector<Test> tests {
         wassert(actual((int)bt->id.master_table_version_number_local) == 1);
 
         /// Find a CREX table
-        ct = td.find_crex(CrexTableID(0, 0, 0, 15, 0, 0));
+        ct = td.find_crex(CrexTableID(1, 0, 0, 0, 3, 0, 0));
         wassert(actual(ct != 0).istrue());
-        wassert(actual(ct->id.originating_centre) == 0);
-        wassert(actual(ct->id.originating_subcentre) == 0);
-        wassert(actual(ct->id.master_table) == 0);
-        wassert(actual(ct->id.master_table_version_number) == 16);
-        wassert(actual(ct->id.master_table_version_number_local) == 0);
+        wassert(actual((int)ct->id.originating_centre) == 0xffff);
+        wassert(actual((int)ct->id.originating_subcentre) == 0xffff);
+        wassert(actual((int)ct->id.master_table) == 0);
+        wassert(actual((int)ct->id.master_table_version_number) == 3);
+        wassert(actual((int)ct->id.master_table_version_number_local) == 0xff);
     }),
 };
 

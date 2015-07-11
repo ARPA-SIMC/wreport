@@ -265,6 +265,8 @@ bool BufrTableID::operator<(const BufrTableID& o) const
 
 bool CrexTableID::operator<(const CrexTableID& o) const
 {
+    if (edition_number < o.edition_number) return true;
+    if (edition_number > o.edition_number) return false;
     if (originating_centre < o.originating_centre) return true;
     if (originating_centre > o.originating_centre) return false;
     if (originating_subcentre < o.originating_subcentre) return true;

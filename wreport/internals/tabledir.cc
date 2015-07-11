@@ -80,9 +80,9 @@ void Dir::refresh()
         {
             case 11: // B000203.txt
             {
-                int mt, lt;
-                if (sscanf(e.d_name, "B00%02d%02d", &mt, &lt) == 2)
-                    crex_tables.push_back(CrexTable(CrexTableID(0xffff, 0xffff, 0, mt, lt, 0xff), pathname, e.d_name));
+                int mt, ed, mtv;
+                if (sscanf(e.d_name, "B%02d%02d%02d", &mt, &ed, &mtv) == 3)
+                    crex_tables.push_back(CrexTable(CrexTableID(ed, 0xffff, 0xffff, mt, mtv, 0xff, 0xff), pathname, e.d_name));
                 break;
             }
             case 20: // B000000000001100.txt
@@ -239,8 +239,12 @@ static inline void trace_state_crex(const CrexTableID& id, CrexTable* result, co
 bool CrexQuery::is_better(const CrexTable& t)
 {
     // Master table number must be the same
+    if (t.id.edition_number != id.edition_number)
+        reject("wrong edition number");
+
+    // Master table number must be the same
     if (t.id.master_table != id.master_table)
-        reject("wrong master_table_number");
+        reject("wrong master table number");
 
     // Edition must be greater or equal to what we want
     if (t.id.master_table_version_number < id.master_table_version_number)

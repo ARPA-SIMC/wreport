@@ -20,4 +20,3 @@ std::vector<Test> tests {
 test_group newtg("buffers_bufr", tests);
 
 }
-

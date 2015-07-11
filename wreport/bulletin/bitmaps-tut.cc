@@ -23,5 +23,3 @@ std::vector<Test> tests {
 test_group newtg("bulletin_bitmaps", tests);
 
 }
-
-

@@ -301,6 +301,7 @@ struct BufrTableID
  */
 struct CrexTableID
 {
+    uint8_t edition_number = 0xff;
     uint16_t originating_centre = 0xffff;
     uint16_t originating_subcentre = 0xffff;
     uint8_t master_table = 0xff;
@@ -310,10 +311,10 @@ struct CrexTableID
 
     CrexTableID() {}
     CrexTableID(
-            uint16_t originating_centre, uint16_t originating_subcentre,
+            uint8_t edition_number, uint16_t originating_centre, uint16_t originating_subcentre,
             uint8_t master_table, uint8_t master_table_version_number,
             uint8_t master_table_version_number_local, uint8_t master_table_version_number_bufr)
-        : originating_centre(originating_centre), originating_subcentre(originating_subcentre),
+        : edition_number(edition_number), originating_centre(originating_centre), originating_subcentre(originating_subcentre),
           master_table(master_table), master_table_version_number(master_table_version_number),
           master_table_version_number_local(master_table_version_number_local),
           master_table_version_number_bufr(master_table_version_number_bufr) {}

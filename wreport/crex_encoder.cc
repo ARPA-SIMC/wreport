@@ -79,12 +79,19 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
 
 void encode_sec1(const CrexBulletin& in, buffers::CrexOutput out)
 {
-    out.raw_appendf("T%02d%02d%02d A%03d%03d",
-            in.master_table_number,
-            in.edition,
-            in.table,
-            in.type,
-            in.localsubtype);
+    if (in.data_subcategory == 0xff)
+        out.raw_appendf("T%02hhd%02hhd%02hhd A%03hhd",
+                in.master_table_number,
+                in.edition_number,
+                in.master_table_version_number,
+                in.data_category);
+    else
+        out.raw_appendf("T%02hhd%02hhd%02hhd A%03hhd%03hhd",
+                in.master_table_number,
+                in.edition_number,
+                in.master_table_version_number,
+                in.data_category,
+                in.data_subcategory);
 
     /* Encode the data descriptor section */
 

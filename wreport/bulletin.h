@@ -36,9 +36,9 @@ struct Bulletin
      *
      * If available, it will be used to generate better error messages.
      *
-     * If not available, it is NULL.
+     * If not available, it is empty.
      */
-    const char* fname;
+    std::string fname;
 
     /**
      * File offset of the start of the message.
@@ -47,31 +47,64 @@ struct Bulletin
      *
      * If not available, it is 0.
      */
-    size_t offset;
+    off_t offset = 0;
 
-	/** Message category */
-	int type;
-	/** International message subcategory */
-	int subtype;
-	/** Local message subcategory */
-	int localsubtype;
+    /// Data category (BUFR or CREX Table A)
+    uint8_t data_category = 0xff;
 
-	/** Edition number */
-	int edition;
+    /// International data sub-category (see Common Code table C-13)
+    uint8_t data_subcategory = 0xff;
 
-    /** Master table number */
-    int master_table_number;
+    /**
+     * Local data sub-category, defined locally by automatic data-processing
+     * (ADP) centres.
+     *
+     * Note: the local data sub-category is maintained for backwards
+     * compatibility with BUFR editions 0-3, since many ADP centres have made
+     * extensive use of such values in the past. The international data
+     * sub-category introduced with BUFR edition 4 is intended to provide a
+     * mechanism for better understanding of the overall nature and intent of
+     * messages exchanged between ADP centres. These two values (i.e. local
+     * sub-category and international sub-category) are intended to be
+     * supplementary to one another, so both may be used within a particular
+     * BUFR message.
+     */
+    uint8_t data_subcategory_local = 0xff;
 
-	/** Representative datetime for this data
-	 * @{ */
-	int rep_year;	/**< Year */
-	int rep_month;	/**< Month */
-	int rep_day;	/**< Day */
-	int rep_hour;	/**< Hour */
-	int rep_minute;	/**< Minute */
-	int rep_second;	/**< Second */
-	/** @} */
+    /**
+     * Identification of originating/generating centre (see Common Code table
+     * C-11)
+     */
+    uint16_t originating_centre = 0xffff;
 
+    /**
+     * Identification of originating/generating sub-centre (allocated by
+     * originating/generating centre - see Common Code table C-12)
+     */
+    uint16_t originating_subcentre = 0xffff;
+
+    /**
+     * Update sequence number (zero for original messages and for messages
+     * containing only delayed reports; incremented for the other updates)
+     */
+    uint8_t update_sequence_number = 0;
+
+    /**
+     * Most typical time for the BUFR message contents.
+     *
+     * When accuracy of the time does not define a time unit, then the value
+     * for this unit shall be set to zero (e.g. for a SYNOP observation at 09
+     * UTC, minute = 0, second = 0).
+     * @{ */
+    uint16_t rep_year = 0;
+    uint8_t rep_month = 0;
+    uint8_t rep_day = 0;
+    uint8_t rep_hour = 0;
+    uint8_t rep_minute = 0;
+    uint8_t rep_second = 0;
+    /** @} */
+
+    /// Varcode and opcode tables used for encoding or decoding
     Tables tables;
 
 	/** Parsed data descriptor section */
@@ -216,21 +249,43 @@ protected:
  */
 struct BufrBulletin : public Bulletin
 {
-	/** BUFR-specific encoding options */
+    /// BUFR edition number
+    uint8_t edition_number = 4;
 
-	/** Common Code table C-1 identifying the originating centre */
-	int centre;
-	/** Centre-specific subcentre code */
-	int subcentre;
-	/** Version number of master tables used */
-	int master_table;
-	/** Version number of local tables used to augment the master table */
-	int local_table;
+    /**
+     * BUFR Master table number.
+     *
+     * A master table may be defined for a scientific discipline other than meteorology.
+     * The current list of master tables, along with their associated values in
+     * octet 4, is as follows:
+     *
+     * \l 0: Meteorology maintained by the World Meteorological Organization (WMO)
+     * \l 10: Oceanography maintained by the Intergovernmental Oceanographic Commission (IOC) of UNESCO
+     */
+    uint8_t master_table_number = 0;
 
-	/** 1 if the BUFR message uses compression, else 0 */
-	int compression;
-	/** Update sequence number from octet 7 in section 1*/
-	int update_sequence_number;
+    /**
+     * Version number of BUFR master table used.
+     *
+     * See WMO Manual on Codes, Binary codes, FM94-XIV BUFR, Section 1
+     * Identification section, note 5, or FB95-XIV CREX, Specification of
+     * sections, note 3, for a list.
+     */
+    uint8_t master_table_version_number = 19;
+
+    /**
+     * Version number of local table used to augment the master table.
+     *
+     * Local tables shall define those parts of the master table which are
+     * reserved for local use, thus version numbers of local tables may be
+     * changed at will by the originating centre. If no local table is used,
+     * the version number of the local table shall be encoded as 0.
+     */
+    uint8_t master_table_version_number_local = 0;
+
+    /// Whether the message is compressed
+    bool compression;
+
 	/** 0 if the BUFR message does not contain an optional section, else
 	 *  its length in bytes */
 	int optional_section_length;
@@ -246,7 +301,7 @@ struct BufrBulletin : public Bulletin
      * the parameters you need. The caller is responsible for the memory
      * management of the BufrCodecOptions structure.
      */
-    const BufrCodecOptions* codec_options;
+    const BufrCodecOptions* codec_options = nullptr;
 
 
 	virtual ~BufrBulletin();
@@ -303,12 +358,55 @@ protected:
  */
 struct CrexBulletin : public Bulletin
 {
-	/** CREX-specific encoding options */
+    /// CREX Edition number
+    uint8_t edition_number = 2;
 
-	/** Table version number */
-	int table;
-	/** True if the CREX message uses the check digit feature */
-	bool has_check_digit;
+    /**
+     * CREX Master table number.
+     *
+     * A master table may be defined for a scientific discipline other than meteorology.
+     * The current list of master tables, along with their associated values in
+     * octet 4, is as follows:
+     *
+     * \l 0: Meteorology maintained by the World Meteorological Organization (WMO)
+     * \l 10: Oceanography maintained by the Intergovernmental Oceanographic Commission (IOC) of UNESCO
+     */
+    uint8_t master_table_number = 0;
+
+    /**
+     * CREX master table version number.
+     *
+     * See WMO Manual on Codes, FB95-XIV CREX, Specification of sections, note
+     * 3, for a list.
+     */
+    uint8_t master_table_version_number = 19;
+
+    /**
+     * BUFR master table version number.
+     *
+     * See WMO Manual on Codes, Binary codes, FM94-XIV BUFR, Section 1
+     * Identification section, note 5, for a list.
+     *
+     * FIXME: I could not find any reference to why CREX edition 2 has a
+     * separate field for BUFR master table version number but not for BUFR
+     * master table version, or why it needs to reference BUFR master tables at
+     * all.
+     */
+    uint8_t master_table_version_number_bufr = 19;
+
+    /**
+     * Version number of local table used to augment the master table.
+     *
+     * Local tables shall define those parts of the master table which are
+     * reserved for local use, thus version numbers of local tables may be
+     * changed at will by the originating centre. If no local table is used,
+     * the version number of the local table shall be encoded as 0.
+     */
+    uint8_t master_table_version_number_local = 0;
+
+    /// True if the CREX message uses the check digit feature
+    bool has_check_digit = false;
+
 
     void clear();
     const char* encoding_name() const throw () override { return "CREX"; }

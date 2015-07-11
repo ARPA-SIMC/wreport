@@ -142,7 +142,7 @@ struct Encoder
     {
         // Encode bufr section 0 (Indicator section)
         out.raw_append("BUFR\0\0\0", 7);
-        out.append_byte(in.edition);
+        out.append_byte(in.edition_number);
 
         TRACE("sec0 ends at %zd\n", out.out.size());
     }
@@ -172,9 +172,9 @@ void Encoder::encode_sec1ed3()
     // Master table number
     out.append_byte(in.master_table_number);
     // Originating/generating sub-centre (defined by Originating/generating centre)
-    out.append_byte(in.subcentre);
+    out.append_byte(in.originating_subcentre);
     // Originating/generating centre (Common Code tableC-1)
-    out.append_byte(in.centre);
+    out.append_byte(in.originating_centre);
     // Update sequence number (zero for original BUFR messages; incremented for updates)
     out.append_byte(in.update_sequence_number);
     // Bit 1: 0 No optional section, 1 Optional section included
@@ -182,13 +182,13 @@ void Encoder::encode_sec1ed3()
     out.append_byte(in.optional_section_length ? 0x80 : 0);
 
     // Data category (BUFR Table A)
-    out.append_byte(in.type);
+    out.append_byte(in.data_category);
     // Data sub-category (defined by local ADP centres)
-    out.append_byte(in.localsubtype);
+    out.append_byte(in.data_subcategory_local);
     // Version number of master tables used (currently 9 for WMO FM 94 BUFR tables)
-    out.append_byte(in.master_table);
+    out.append_byte(in.master_table_version_number);
     // Version number of local tables used to augment the master table in use
-    out.append_byte(in.local_table);
+    out.append_byte(in.master_table_version_number_local);
 
     // Year of century
     out.append_byte(in.rep_year == 2000 ? 100 : (in.rep_year % 100));
@@ -216,9 +216,9 @@ void Encoder::encode_sec1ed4()
     // Master table number
     out.append_byte(0);
     // Originating/generating centre (Common Code tableC-1)
-    out.append_short(in.centre);
+    out.append_short(in.originating_centre);
     // Originating/generating sub-centre (defined by Originating/generating centre)
-    out.append_short(in.subcentre);
+    out.append_short(in.originating_subcentre);
     // Update sequence number (zero for original BUFR messages; incremented for updates)
     out.append_byte(in.update_sequence_number);
     // Bit 1: 0 No optional section, 1 Optional section included
@@ -226,15 +226,15 @@ void Encoder::encode_sec1ed4()
     out.append_byte(in.optional_section_length ? 0x80 : 0);
 
     // Data category (BUFR Table A)
-    out.append_byte(in.type);
+    out.append_byte(in.data_category);
     // International data sub-category
-    out.append_byte(in.subtype);
+    out.append_byte(in.data_subcategory);
     // Local subcategory (defined by local ADP centres)
-    out.append_byte(in.localsubtype);
+    out.append_byte(in.data_subcategory_local);
     // Version number of master tables used (currently 9 for WMO FM 94 BUFR tables)
-    out.append_byte(in.master_table);
+    out.append_byte(in.master_table_version_number);
     // Version number of local tables used to augment the master table in use
-    out.append_byte(in.local_table);
+    out.append_byte(in.master_table_version_number_local);
 
     // Year of century
     out.append_short(in.rep_year);
@@ -354,13 +354,13 @@ void BufrBulletin::encode(std::string& buf) const
 
     e.encode_sec0();
 
-    switch (edition)
+    switch (edition_number)
     {
         case 2:
         case 3: e.encode_sec1ed3(); break;
         case 4: e.encode_sec1ed4(); break;
         default:
-            error_unimplemented::throwf("Encoding BUFR edition %d is not implemented", edition);
+            error_unimplemented::throwf("Encoding BUFR edition %d is not implemented", edition_number);
     }
 
     e.encode_sec2();

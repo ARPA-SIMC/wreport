@@ -72,13 +72,13 @@ struct PrintTables : public BulletinHeadHandler
         {
             if (!header_printed)
             {
-                fprintf(out, "%-*s\tOffset\tCentre\tSubc.\tMaster\tLocal\n", (int)strlen(b.fname), "Filename");
+                fprintf(out, "%-*s\tOffset\tCentre\tSubc.\tMaster\tLocal\n", (int)b.fname.size(), "Filename");
                 header_printed = true;
             }
             fprintf(out, "%s\t%zd\t%d\t%d\t%d\t%d\n",
-                    b.fname, b.offset,
-                    m->centre, m->subcentre,
-                    m->master_table, m->local_table);
+                    b.fname.c_str(), b.offset,
+                    m->originating_centre, m->originating_subcentre,
+                    m->master_table_version_number, m->master_table_version_number_local);
         }
         else if (const CrexBulletin* m = dynamic_cast<const CrexBulletin*>(&b))
         {
@@ -88,13 +88,13 @@ struct PrintTables : public BulletinHeadHandler
                 header_printed = true;
             }
             fprintf(out, "%s\t%zd\t%d\t%d\t%d\n",
-                    b.fname, b.offset,
-                    m->master_table_number, m->edition, m->table);
+                    b.fname.c_str(), b.offset,
+                    m->master_table_number, m->edition_number, m->master_table_version_number);
         }
         else
         {
             fprintf(out, "%s\t%zd\tunknown message type\n",
-                    b.fname, b.offset);
+                    b.fname.c_str(), b.offset);
         }
     }
 };

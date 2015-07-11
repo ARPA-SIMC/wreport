@@ -59,16 +59,16 @@ struct Decoder
         if (out.optional_section_length)
             out.optional_section_length -= 4;
         // subcentre in sec1[4]
-        out.subcentre = in.read_byte(1, 4);
+        out.originating_subcentre = in.read_byte(1, 4);
         // centre in sec1[5]
-        out.centre = in.read_byte(1, 5);
+        out.originating_centre = in.read_byte(1, 5);
         // Update sequence number sec1[6]
         out.update_sequence_number = in.read_byte(1, 6);
-        out.master_table = in.read_byte(1, 10);
-        out.local_table = in.read_byte(1, 11);
-        out.type = in.read_byte(1, 8);
-        out.subtype = 255;
-        out.localsubtype = in.read_byte(1, 9);
+        out.master_table_version_number = in.read_byte(1, 10);
+        out.master_table_version_number_local = in.read_byte(1, 11);
+        out.data_category = in.read_byte(1, 8);
+        out.data_subcategory = 0xff;
+        out.data_subcategory_local = in.read_byte(1, 9);
 
         out.rep_year = in.read_byte(1, 12);
         // Fix the century with a bit of euristics
@@ -89,9 +89,9 @@ struct Decoder
         // master table number in sec1[3]
         out.master_table_number = in.read_byte(1, 3);
         // centre in sec1[4-5]
-        out.centre = in.read_number(1, 4, 2);
+        out.originating_centre = in.read_number(1, 4, 2);
         // subcentre in sec1[6-7]
-        out.subcentre = in.read_number(1, 6, 2);
+        out.originating_subcentre = in.read_number(1, 6, 2);
         // update sequence number sec1[8]
         out.update_sequence_number = in.read_byte(1, 8);
         // has_optional in sec1[9]
@@ -102,15 +102,15 @@ struct Decoder
         if (out.optional_section_length)
             out.optional_section_length -= 4;
         // category in sec1[10]
-        out.type = in.read_byte(1, 10);
+        out.data_category = in.read_byte(1, 10);
         // international data sub-category in sec1[11]
-        out.subtype = in.read_byte(1, 11);
+        out.data_subcategory = in.read_byte(1, 11);
         // local data sub-category in sec1[12]
-        out.localsubtype = in.read_byte(1, 12);
+        out.data_subcategory_local = in.read_byte(1, 12);
         // version number of master table in sec1[13]
-        out.master_table = in.read_byte(1, 13);
+        out.master_table_version_number = in.read_byte(1, 13);
         // version number of local table in sec1[14]
-        out.local_table = in.read_byte(1, 14);
+        out.master_table_version_number_local = in.read_byte(1, 14);
         // year in sec1[15-16]
         out.rep_year = in.read_number(1, 15, 2);
         // month in sec1[17]
@@ -133,23 +133,23 @@ struct Decoder
             in.parse_error(0, 0, "data does not start with BUFR header (\"%.4s\" was read instead)", in.data + in.sec[0]);
 
         // Check the BUFR edition number
-        out.edition = in.read_byte(0, 7);
-        if (out.edition != 2 && out.edition != 3 && out.edition != 4)
-            in.parse_error(0, 7, "Only BUFR edition 3 and 4 are supported (this message is edition %d)", out.edition);
+        out.edition_number = in.read_byte(0, 7);
+        if (out.edition_number != 2 && out.edition_number != 3 && out.edition_number != 4)
+            in.parse_error(0, 7, "Only BUFR edition 2, 3, and 4 are supported (this message is edition %d)", out.edition_number);
 
         // Looks like a BUFR, scan section starts
         in.scan_lead_sections();
 
         // Read bufr section 1 (Identification section)
-        in.check_available_data(1, 0, out.edition == 4 ? 22 : 18, "section 1 of BUFR message (identification section)");
+        in.check_available_data(1, 0, out.edition_number == 4 ? 22 : 18, "section 1 of BUFR message (identification section)");
 
-        switch (out.edition)
+        switch (out.edition_number)
         {
             case 2: decode_sec1ed3(); break;
             case 3: decode_sec1ed3(); break;
             case 4: decode_sec1ed4(); break;
             default:
-                error_consistency::throwf("BUFR edition is %d, but I can only decode 2, 3 and 4", out.edition);
+                error_consistency::throwf("BUFR edition is %d, but I can only decode 2, 3 and 4", out.edition_number);
         }
 
         TRACE("BUFR:edition %d, optional section %db, update sequence number %d\n",

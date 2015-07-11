@@ -1,38 +1,16 @@
-/*
- * wreport/bulletin - Decoded weather bulletin
- *
- * Copyright (C) 2005--2015  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
-#include <config.h>
-
+#include "bulletin.h"
 #include "error.h"
 #include "dtable.h"
-#include "bulletin.h"
 #include "bulletin/dds-printer.h"
 #include "bulletin/internals.h"
 #include "notes.h"
-
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
 #include <netinet/in.h>
+#include <config.h>
+
 
 using namespace std;
 
@@ -43,18 +21,21 @@ namespace bulletin {
 
 }
 
-Bulletin::Bulletin() : fname(0), offset(0) {}
+Bulletin::Bulletin() {}
 Bulletin::~Bulletin() { }
 
 void Bulletin::clear()
 {
+    fname.clear();
+    offset = 0;
+    data_category = data_subcategory = data_subcategory_local = 0xff;
+    originating_centre = originating_subcentre = 0xffff;
+    update_sequence_number = 0;
+    rep_year = 0;
+    rep_month = rep_day = rep_hour = rep_minute = rep_second = 0;
+    tables.clear();
     datadesc.clear();
     subsets.clear();
-    fname = 0;
-    offset = 0;
-    type = subtype = localsubtype = edition = master_table_number = 0;
-    rep_year = rep_month = rep_day = rep_hour = rep_minute = rep_second = 0;
-    tables.clear();
 }
 
 Subset& Bulletin::obtain_subset(unsigned subsection)
@@ -83,7 +64,7 @@ std::unique_ptr<BufrCodecOptions> BufrCodecOptions::create()
 }
 
 BufrBulletin::BufrBulletin()
-    : optional_section_length(0), optional_section(0), codec_options(0)
+    : optional_section_length(0), optional_section(0)
 {
 }
 
@@ -99,16 +80,20 @@ BufrBulletin::~BufrBulletin()
 
 void BufrBulletin::clear()
 {
-	Bulletin::clear();
-	centre = subcentre = master_table = local_table = 0;
-	compression = update_sequence_number = optional_section_length = 0;
-	if (optional_section) delete[] optional_section;
-	optional_section = 0;
+    Bulletin::clear();
+    edition_number = 4;
+    master_table_number = 0;
+    master_table_version_number = 19;
+    master_table_version_number_local = 0;
+    compression = false;
+    optional_section_length = 0;
+    delete[] optional_section;
+    optional_section = nullptr;
 }
 
 void BufrBulletin::load_tables()
 {
-    tables.load_bufr(centre, subcentre, master_table, local_table);
+    tables.load_bufr(BufrTableID(originating_centre, originating_subcentre, master_table_number, master_table_version_number, master_table_version_number_local));
 }
 
 /*
@@ -140,13 +125,25 @@ std::unique_ptr<CrexBulletin> CrexBulletin::create()
 void CrexBulletin::clear()
 {
     Bulletin::clear();
-    table = 0;
+    edition_number = 2;
+    master_table_number = 0;
+    master_table_version_number = 19;
+    master_table_version_number_bufr = 19;
+    master_table_version_number_local = 0;
     has_check_digit = false;
 }
 
 void CrexBulletin::load_tables()
 {
-    tables.load_crex(master_table_number, edition, table);
+//    tables.load_crex(CrexTableID(
+//                originating_centre, originating_subcentre,
+//                master_table_number, master_table_version_number,
+//                master_table_version_number_local, master_table_version_number_bufr));
+    tables.load_crex(CrexTableID(
+                edition_number,
+                originating_centre, originating_subcentre,
+                master_table_number, edition_number,
+                master_table_version_number_local, master_table_version_number_bufr));
 }
 
 /*
@@ -167,11 +164,13 @@ void CrexBulletin::encode(std::string& buf) const
 
 void Bulletin::print(FILE* out) const
 {
-	fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
-		encoding_name(), edition,
-		type, subtype, localsubtype,
-		rep_year, rep_month, rep_day, rep_hour, rep_minute, rep_second,
-		subsets.size());
+    fprintf(out, "%s %hhu:%hhu:%hhu %hu:%hu %04hu-%02hu-%02hu %02hu:%02hu:%02hu %hhu %zd subsets\n",
+        encoding_name(),
+        data_category, data_subcategory, data_subcategory_local,
+        originating_centre, originating_subcentre,
+        rep_year, rep_month, rep_day, rep_hour, rep_minute, rep_second,
+        update_sequence_number,
+        subsets.size());
 	fprintf(out, " Tables: %s %s\n",
 		tables.btable ? tables.btable->pathname().c_str() : "(not loaded)",
 		tables.dtable ? tables.dtable->pathname().c_str() : "(not loaded)");
@@ -193,11 +192,13 @@ void Bulletin::print(FILE* out) const
 
 void Bulletin::print_structured(FILE* out) const
 {
-    fprintf(out, "%s ed%d %d:%d:%d %04d-%02d-%02d %02d:%02d:%02d %zd subsets\n",
-            encoding_name(), edition,
-            type, subtype, localsubtype,
-            rep_year, rep_month, rep_day, rep_hour, rep_minute, rep_second,
-            subsets.size());
+    fprintf(out, "%s %hhu:%hhu:%hhu %hu:%hu %04hu-%02hu-%02hu %02hu:%02hu:%02hu %hhu %zd subsets\n",
+        encoding_name(),
+        data_category, data_subcategory, data_subcategory_local,
+        originating_centre, originating_subcentre,
+        rep_year, rep_month, rep_day, rep_hour, rep_minute, rep_second,
+        update_sequence_number,
+        subsets.size());
     fprintf(out, " Tables: %s %s\n",
             tables.btable ? tables.btable->pathname().c_str() : "(not loaded)",
             tables.dtable ? tables.dtable->pathname().c_str() : "(not loaded)");
@@ -218,14 +219,18 @@ void Bulletin::print_details(FILE* out) const {}
 
 void BufrBulletin::print_details(FILE* out) const
 {
-	fprintf(out, " BUFR details: c%d/%d mt%d lt%d co%d usn%d osl%d\n",
-			centre, subcentre, master_table, local_table,
-			compression, update_sequence_number, optional_section_length);
+    fprintf(out, " BUFR details: ed%hhu t%hhu:%hhu:%hhu %c osl%d\n",
+            edition_number,
+            master_table_number, master_table_version_number, master_table_version_number_local,
+            compression ? 'c' : '-', optional_section_length);
 }
 
 void CrexBulletin::print_details(FILE* out) const
 {
-	fprintf(out, " CREX details: T%02d%02d%02d cd%d\n", master_table_number, edition, table, (int)has_check_digit);
+    fprintf(out, " CREX details: ed%hhu t%hhu:%hhu:%hhu:%hhu %c\n",
+            edition_number,
+            master_table_number, master_table_version_number, master_table_version_number_local, master_table_version_number_bufr,
+            has_check_digit ? 'C' : '-');
 }
 
 void Bulletin::print_datadesc(FILE* out, unsigned indent) const
@@ -246,72 +251,79 @@ unsigned Bulletin::diff(const Bulletin& msg) const
         ++diffs;
     } else
         diffs += diff_details(msg);
-    if (master_table_number != msg.master_table_number)
+    if (data_category != msg.data_category)
     {
-        notes::logf("Master tables numbers differ (first is %d, second is %d)\n",
-                master_table_number, msg.master_table_number);
+        notes::logf("Data categories differ (first is %hhu, second is %hhu)\n",
+                data_category, msg.data_category);
         ++diffs;
     }
-    if (type != msg.type)
+    if (data_subcategory != msg.data_subcategory)
     {
-        notes::logf("Template types differ (first is %d, second is %d)\n",
-                type, msg.type);
+        notes::logf("Data subcategories differ (first is %hhu, second is %hhu)\n",
+                data_subcategory, msg.data_subcategory);
         ++diffs;
     }
-    if (subtype != msg.subtype)
+    if (data_subcategory_local != msg.data_subcategory_local)
     {
-        notes::logf("Template subtypes differ (first is %d, second is %d)\n",
-                subtype, msg.subtype);
+        notes::logf("Data local subcategories differ (first is %hhu, second is %hhu)\n",
+                data_subcategory_local, msg.data_subcategory_local);
         ++diffs;
     }
-    if (localsubtype != msg.localsubtype)
+    if (originating_centre != msg.originating_centre)
     {
-        notes::logf("Template local subtypes differ (first is %d, second is %d)\n",
-                localsubtype, msg.localsubtype);
+        notes::logf("Originating centres differ (first is %hu, second is %hu)\n",
+                originating_centre, msg.originating_centre);
         ++diffs;
     }
-    if (edition != msg.edition)
+    if (originating_subcentre != msg.originating_subcentre)
     {
-        notes::logf("Edition numbers differ (first is %d, second is %d)\n",
-                edition, msg.edition);
+        notes::logf("Originating subcentres differ (first is %hu, second is %hu)\n",
+                originating_subcentre, msg.originating_subcentre);
+        ++diffs;
+    }
+    if (update_sequence_number != msg.update_sequence_number)
+    {
+        notes::logf("Update sequence numbers differ (first is %hhu, second is %hhu)\n",
+                update_sequence_number, msg.update_sequence_number);
         ++diffs;
     }
     if (rep_year != msg.rep_year)
     {
-        notes::logf("Reference years differ (first is %d, second is %d)\n",
+        notes::logf("Reference years differ (first is %hu, second is %hu)\n",
                 rep_year, msg.rep_year);
         ++diffs;
     }
     if (rep_month != msg.rep_month)
     {
-        notes::logf("Reference months differ (first is %d, second is %d)\n",
+        notes::logf("Reference months differ (first is %hhu, second is %hhu)\n",
                 rep_month, msg.rep_month);
         ++diffs;
     }
     if (rep_day != msg.rep_day)
     {
-        notes::logf("Reference days differ (first is %d, second is %d)\n",
+        notes::logf("Reference days differ (first is %hhu, second is %hhu)\n",
                 rep_day, msg.rep_day);
         ++diffs;
     }
     if (rep_hour != msg.rep_hour)
     {
-        notes::logf("Reference hours differ (first is %d, second is %d)\n",
+        notes::logf("Reference hours differ (first is %hhu, second is %hhu)\n",
                 rep_hour, msg.rep_hour);
         ++diffs;
     }
     if (rep_minute != msg.rep_minute)
     {
-        notes::logf("Reference minutes differ (first is %d, second is %d)\n",
+        notes::logf("Reference minutes differ (first is %hhu, second is %hhu)\n",
                 rep_minute, msg.rep_minute);
         ++diffs;
     }
     if (rep_second != msg.rep_second)
     {
-        notes::logf("Reference seconds differ (first is %d, second is %d)\n",
+        notes::logf("Reference seconds differ (first is %hhu, second is %hhu)\n",
                 rep_second, msg.rep_second);
         ++diffs;
     }
+
     if (tables.btable == NULL && msg.tables.btable != NULL)
     {
         notes::logf("First message did not load B btables, second message has %s\n",
@@ -326,6 +338,7 @@ unsigned Bulletin::diff(const Bulletin& msg) const
                 tables.btable->pathname().c_str(), msg.tables.btable->pathname().c_str());
         ++diffs;
     }
+
     if (tables.dtable == NULL && msg.tables.dtable != NULL)
     {
         notes::logf("First message did not load B dtable, second message has %s\n",
@@ -370,34 +383,35 @@ unsigned Bulletin::diff(const Bulletin& msg) const
 
 unsigned Bulletin::diff_details(const Bulletin& msg) const { return 0; }
 
-unsigned BufrBulletin::diff_details(const Bulletin& msg) const
+unsigned BufrBulletin::diff_details(const Bulletin& bulletin) const
 {
-    unsigned diffs = Bulletin::diff_details(msg);
-    const BufrBulletin* m = dynamic_cast<const BufrBulletin*>(&msg);
-    if (!m) throw error_consistency("BufrBulletin::diff_details called with a non-BufrBulletin argument");
+    unsigned diffs = Bulletin::diff_details(bulletin);
+    const BufrBulletin* bb = dynamic_cast<const BufrBulletin*>(&bulletin);
+    if (!bb) throw error_consistency("BufrBulletin::diff_details called with a non-BufrBulletin argument");
+    const BufrBulletin& msg = *bb;
 
-    if (centre != m->centre)
+    if (edition_number != msg.edition_number)
     {
-        notes::logf("BUFR centres differ (first is %d, second is %d)\n",
-                centre, m->centre);
+        notes::logf("BUFR edition numbers differ (first is %hhu, second is %hhu)\n",
+                edition_number, msg.edition_number);
         ++diffs;
     }
-    if (subcentre != m->subcentre)
+    if (master_table_number != msg.master_table_number)
     {
-        notes::logf("BUFR subcentres differ (first is %d, second is %d)\n",
-                subcentre, m->subcentre);
+        notes::logf("BUFR master table numbers differ (first is %hhu, second is %hhu)\n",
+                master_table_number, msg.master_table_number);
         ++diffs;
     }
-    if (master_table != m->master_table)
+    if (master_table_version_number != msg.master_table_version_number)
     {
-        notes::logf("BUFR master tables differ (first is %d, second is %d)\n",
-                master_table, m->master_table);
+        notes::logf("BUFR master table version numbers differ (first is %hhu, second is %hhu)\n",
+                master_table_version_number, msg.master_table_version_number);
         ++diffs;
     }
-    if (local_table != m->local_table)
+    if (master_table_version_number_local != msg.master_table_version_number_local)
     {
-        notes::logf("BUFR local tables differ (first is %d, second is %d)\n",
-                local_table, m->local_table);
+        notes::logf("BUFR master table local version numbers differ (first is %hhu, second is %hhu)\n",
+                master_table_version_number_local, msg.master_table_version_number_local);
         ++diffs;
     }
     /*
@@ -409,21 +423,15 @@ unsigned BufrBulletin::diff_details(const Bulletin& msg) const
     ++diffs;
     }
     */
-    if (update_sequence_number != m->update_sequence_number)
-    {
-        notes::logf("BUFR update sequence numbers differ (first is %d, second is %d)\n",
-                update_sequence_number, m->update_sequence_number);
-        ++diffs;
-    }
-    if (optional_section_length != m->optional_section_length)
+    if (optional_section_length != msg.optional_section_length)
     {
         notes::logf("BUFR optional section lenght (first is %d, second is %d)\n",
-                optional_section_length, m->optional_section_length);
+                optional_section_length, msg.optional_section_length);
         ++diffs;
     }
     if (optional_section_length != 0)
     {
-        if (memcmp(optional_section, m->optional_section, optional_section_length) != 0)
+        if (memcmp(optional_section, msg.optional_section, optional_section_length) != 0)
         {
             notes::logf("BUFR optional section contents differ\n");
             ++diffs;
@@ -432,22 +440,47 @@ unsigned BufrBulletin::diff_details(const Bulletin& msg) const
     return diffs;
 }
 
-unsigned CrexBulletin::diff_details(const Bulletin& msg) const
+unsigned CrexBulletin::diff_details(const Bulletin& bulletin) const
 {
-    unsigned diffs = Bulletin::diff_details(msg);
-    const CrexBulletin* m = dynamic_cast<const CrexBulletin*>(&msg);
-    if (!m) throw error_consistency("CrexBulletin::diff_details called with a non-CrexBulletin argument");
+    unsigned diffs = Bulletin::diff_details(bulletin);
+    const CrexBulletin* cb = dynamic_cast<const CrexBulletin*>(&bulletin);
+    if (!cb) throw error_consistency("CrexBulletin::diff_details called with a non-CrexBulletin argument");
+    const CrexBulletin& msg = *cb;
 
-    if (table != m->table)
+    if (edition_number != msg.edition_number)
     {
-        notes::logf("CREX local tables differ (first is %d, second is %d)\n",
-                table, m->table);
+        notes::logf("CREX edition numbers differ (first is %hhu, second is %hhu)\n",
+                edition_number, msg.edition_number);
         ++diffs;
     }
-    if (has_check_digit != m->has_check_digit)
+    if (master_table_number != msg.master_table_number)
+    {
+        notes::logf("CREX master table numbers differ (first is %hhu, second is %hhu)\n",
+                master_table_number, msg.master_table_number);
+        ++diffs;
+    }
+    if (master_table_version_number != msg.master_table_version_number)
+    {
+        notes::logf("CREX master table version numbers differ (first is %hhu, second is %hhu)\n",
+                master_table_version_number, msg.master_table_version_number);
+        ++diffs;
+    }
+    if (master_table_version_number_local != msg.master_table_version_number_local)
+    {
+        notes::logf("CREX master table local version numbers differ (first is %hhu, second is %hhu)\n",
+                master_table_version_number_local, msg.master_table_version_number_local);
+        ++diffs;
+    }
+    if (master_table_version_number != msg.master_table_version_number)
+    {
+        notes::logf("BUFR master table version numbers differ (first is %hhu, second is %hhu)\n",
+                master_table_version_number_bufr, msg.master_table_version_number_bufr);
+        ++diffs;
+    }
+    if (has_check_digit != msg.has_check_digit)
     {
         notes::logf("CREX has_check_digit differ (first is %d, second is %d)\n",
-                (int)has_check_digit, (int)m->has_check_digit);
+                (int)has_check_digit, (int)msg.has_check_digit);
         ++diffs;
     }
     return diffs;
