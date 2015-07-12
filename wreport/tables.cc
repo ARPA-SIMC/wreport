@@ -1,6 +1,8 @@
 #include "tables.h"
 #include "error.h"
 #include "internals/tabledir.h"
+#include "vartable.h"
+#include "dtable.h"
 
 using namespace std;
 
@@ -50,28 +52,28 @@ void Tables::clear()
 
 void Tables::load_bufr(const BufrTableID& id)
 {
-    auto tabledir = tabledir::Tabledir::get();
+    auto& tabledir = tabledir::Tabledir::get();
     auto t = tabledir.find_bufr(id);
     if (!t)
         error_notfound::throwf("BUFR table for center %hu:%hu table %hhu:%hhu:%hhu not found",
                 id.originating_centre, id.originating_subcentre,
                 id.master_table, id.master_table_version_number,
                 id.master_table_version_number_local);
-    btable = t->btable;
-    dtable = t->dtable;
+    btable = Vartable::load_bufr(t->btable_pathname);
+    dtable = DTable::load_bufr(t->dtable_pathname);
 }
 
 void Tables::load_crex(const CrexTableID& id)
 {
-    auto tabledir = tabledir::Tabledir::get();
+    auto& tabledir = tabledir::Tabledir::get();
     auto t = tabledir.find_crex(id);
     if (!t)
         error_notfound::throwf("CREX table for center %hu:%hu table %hhu:%hhu:%hhu:%hhu not found",
                 id.originating_centre, id.originating_subcentre,
                 id.master_table, id.master_table_version_number,
                 id.master_table_version_number_local, id.master_table_version_number_bufr);
-    btable = t->btable;
-    dtable = t->dtable;
+    btable = Vartable::load_crex(t->btable_pathname);
+    dtable = DTable::load_crex(t->dtable_pathname);
 }
 
 Varinfo Tables::get_bitmap(Varcode code, const std::string& bitmap) const

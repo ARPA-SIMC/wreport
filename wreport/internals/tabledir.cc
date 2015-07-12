@@ -17,7 +17,6 @@ namespace wreport {
 namespace tabledir {
 
 Table::Table(const std::string& dirname, const std::string& filename)
-    : btable(0), dtable(0)
 {
     // Build IDs to look up pre-built tables
     size_t extpos = filename.rfind('.');
@@ -29,27 +28,10 @@ Table::Table(const std::string& dirname, const std::string& filename)
         btable_id = filename.substr(0, extpos);
         dtable_id = btable_id;
     }
-    btable_id[0] = 'B';
     dtable_id[0] = 'D';
 
-    btable_pathname = dirname + "/B" + filename.substr(1);
+    btable_pathname = dirname + "/" + filename;
     dtable_pathname = dirname + "/D" + filename.substr(1);
-}
-
-void BufrTable::load_if_needed()
-{
-    if (!btable)
-        btable = Vartable::load_bufr(btable_pathname);
-    if (!dtable)
-        dtable = DTable::load_bufr(dtable_pathname);
-}
-
-void CrexTable::load_if_needed()
-{
-    if (!btable)
-        btable = Vartable::load_crex(btable_pathname);
-    if (!dtable)
-        dtable = DTable::load_crex(dtable_pathname);
 }
 
 
@@ -75,29 +57,48 @@ void Dir::refresh()
     if (mtime >= st.st_mtime) return;
     for (auto& e: reader)
     {
-        switch (strlen(e.d_name))
+        size_t name_len = strlen(e.d_name);
+
+        // Look for a .txt extension
+        if (name_len < 5) continue;
+        if (strcmp(e.d_name + name_len - 4, ".txt") != 0) continue;
+
+        switch (e.d_name[0])
         {
-            case 11: // B000203.txt
-            {
-                int mt, ed, mtv;
-                if (sscanf(e.d_name, "B%02d%02d%02d", &mt, &ed, &mtv) == 3)
-                    tables.push_back(new CrexTable(CrexTableID(ed, 0xffff, 0xffff, mt, mtv, 0xff, mtv), pathname, e.d_name));
+            case 'B':
+                switch (strlen(e.d_name))
+                {
+                    case 11: // B000203.txt
+                    {
+                        int mt, ed, mtv;
+                        if (sscanf(e.d_name, "B%02d%02d%02d", &mt, &ed, &mtv) == 3)
+                            tables.push_back(new CrexTable(CrexTableID(ed, 0xffff, 0xffff, mt, mtv, 0xff, mtv), pathname, e.d_name));
+                        break;
+                    }
+                    case 20: // B000000000001100.txt
+                    {
+                        int ce, sc, mt, lt;
+                        if (sscanf(e.d_name, "B00000%03d%03d%02d%02d", &sc, &ce, &mt, &lt) == 4)
+                            tables.push_back(new BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
+                        break;
+                    }
+                    case 24: // B0000000000085014000.txt
+                    {
+                        int ce, sc, mt, lt, dummy;
+                        if (sscanf(e.d_name, "B00%03d%04d%04d%03d%03d", &dummy, &sc, &ce, &mt, &lt) == 5)
+                            tables.push_back(new BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
+                        break;
+                    }
+                }
                 break;
-            }
-            case 20: // B000000000001100.txt
-            {
-                int ce, sc, mt, lt;
-                if (sscanf(e.d_name, "B00000%03d%03d%02d%02d", &sc, &ce, &mt, &lt) == 4)
-                    tables.push_back(new BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
+            case 'D':
+                // Skip D tables
                 break;
-            }
-            case 24: // B0000000000085014000.txt
-            {
-                int ce, sc, mt, lt, dummy;
-                if (sscanf(e.d_name, "B00%03d%04d%04d%03d%03d", &dummy, &sc, &ce, &mt, &lt) == 5)
-                    tables.push_back(new BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
+            default:
+                // Add all the rest as raw tables, that will be skipped by BUFR
+                // and CREX searches but that are still reachable by basename
+                tables.push_back(new Table(pathname, e.d_name));
                 break;
-            }
         }
     }
     mtime = st.st_mtime;
@@ -124,8 +125,7 @@ void Query::search(Dir& dir)
             else
                 crex_best = choose_best(*crex_best, *cur);
         }
-        else
-            error_consistency::throwf("candidate table is not a BUFR or CREX table");
+        // Ignore other kinds of tables
     }
 }
 
@@ -248,7 +248,6 @@ struct Index
 
         if (auto result = query.result())
         {
-            result->load_if_needed();
             bufr_cache[id] = result;
             notes::logf("Matched table %s for ce %hu sc %hu mt %hhu mtv %hhu mtlv %hhu",
                     result->btable_id.c_str(),
@@ -273,7 +272,6 @@ struct Index
 
         if (auto result = query.result())
         {
-            result->load_if_needed();
             crex_cache[id] = result;
             notes::logf("Matched table %s for mt %hhu mtv %hhu mtlv %hhu",
                     result->btable_id.c_str(),
@@ -289,10 +287,7 @@ struct Index
         for (auto& d: dirs)
             for (auto& t: d.tables)
                 if (t->btable_id == basename)
-                {
-                    t->load_if_needed();
                     return t;
-                }
         return nullptr;
     }
 };

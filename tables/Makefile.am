@@ -75,4 +75,4 @@ D0000000000085014000.txt: D0000000000085014001.txt
 
 CLEANFILES = $(generated_tables)
 
-EXTRA_DIST = $(crexbtables) $(crexdtables) $(bufrbtables) $(bufrdtables)
+EXTRA_DIST = $(crexbtables) $(crexdtables) $(bufrbtables) $(bufrdtables) test.txt

@@ -1,7 +1,7 @@
 #include "tests.h"
-#include <wreport/var.h>
-#include <wreport/vartable.h>
-#include <wreport/options.h>
+#include "var.h"
+#include "vartable.h"
+#include "options.h"
 #include <cmath>
 #include <cstring>
 
@@ -329,6 +329,31 @@ std::vector<Test> tests {
         var.seti(-10800); wassert(actual(var.enqc()) == "-10800");
         var.seti(-11000000); wassert(actual(var.enqc()) == "-11000000");
         var.seti(-2147483647); wassert(actual(var.enqc()) == "-2147483647");
+    }),
+    Test("setd", [](Fixture& f) {
+        _Varinfo vi;
+        vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 2, 5, 0, 16);
+        Var var(&vi);
+        var.setd(0);
+        wassert(actual(var.enqc()) == "0");
+        wassert(actual(var.enqi()) == 0);
+        wassert(actual(var.enqd()) == 0.0);
+        var.setd(1);
+        wassert(actual(var.enqc()) == "100");
+        wassert(actual(var.enqi()) == 100);
+        wassert(actual(var.enqd()) == 1.0);
+        var.setd(100);
+        wassert(actual(var.enqc()) == "10000");
+        wassert(actual(var.enqi()) == 10000);
+        wassert(actual(var.enqd()) == 100.0);
+        var.setd(1.5);
+        wassert(actual(var.enqc()) == "150");
+        wassert(actual(var.enqi()) == 150);
+        wassert(actual(var.enqd()) == 1.5);
+        var.setd(1.234567890);
+        wassert(actual(var.enqc()) == "123");
+        wassert(actual(var.enqi()) == 123);
+        wassert(actual(var.enqd()) == 1.23);
     }),
     Test("setc", [](Fixture& f) {
         _Varinfo vi;

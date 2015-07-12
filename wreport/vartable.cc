@@ -485,30 +485,40 @@ const Vartable* Vartable::load_crex(const std::string& pathname)
 
 const Vartable* Vartable::get_bufr(const BufrTableID& id)
 {
-    auto tabledir = tabledir::Tabledir::get();
+    auto& tabledir = tabledir::Tabledir::get();
     auto res = tabledir.find_bufr(id);
-    return res->btable;
+    if (!res) error_notfound::throwf("BUFR table for centre %hu:%hu and tables %hhu:%hhu:%hhu not found",
+            id.originating_centre, id.originating_subcentre,
+            id.master_table, id.master_table_version_number, id.master_table_version_number_local);
+    return load_bufr(res->btable_pathname);
 }
 
 const Vartable* Vartable::get_crex(const CrexTableID& id)
 {
-    auto tabledir = tabledir::Tabledir::get();
+    auto& tabledir = tabledir::Tabledir::get();
     auto res = tabledir.find_crex(id);
-    return res->btable;
+    if (!res) error_notfound::throwf("CREX table for centre %hu:%hu and tables %hhu:%hhu:%hhu:%hhu not found",
+            id.originating_centre, id.originating_subcentre,
+            id.master_table, id.master_table_version_number,
+            id.master_table_version_number_local,
+            id.master_table_version_number_bufr);
+    return load_crex(res->btable_pathname);
 }
 
 const Vartable* Vartable::get_bufr(const std::string& basename)
 {
-    auto tabledir = tabledir::Tabledir::get();
+    auto& tabledir = tabledir::Tabledir::get();
     auto res = tabledir.find(basename);
-    return res->btable;
+    if (!res) error_notfound::throwf("BUFR table %s not found", basename.c_str());
+    return load_bufr(res->btable_pathname);
 }
 
 const Vartable* Vartable::get_crex(const std::string& basename)
 {
-    auto tabledir = tabledir::Tabledir::get();
+    auto& tabledir = tabledir::Tabledir::get();
     auto res = tabledir.find(basename);
-    return res->btable;
+    if (!res) error_notfound::throwf("CREX table %s not found", basename.c_str());
+    return load_crex(res->btable_pathname);
 }
 
 

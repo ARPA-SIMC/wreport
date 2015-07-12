@@ -302,6 +302,7 @@ struct TestVarEqual
     void check(WIBBLE_TEST_LOCPRM) const;
 };
 
+/// Check that \a actual's value is \a expected
 template<typename Val>
 struct TestVarValueEqual
 {
@@ -309,9 +310,22 @@ struct TestVarValueEqual
     Val expected;
     bool inverted;
 
-    TestVarValueEqual(const Var& actual, const Val& expected, bool inverted=false)
+    TestVarValueEqual(const Var& actual, Val expected, bool inverted=false)
         : actual(actual), expected(expected), inverted(inverted) {}
     TestVarValueEqual operator!() { return TestVarValueEqual<Val>(actual, expected, !inverted); }
+
+    void check(WIBBLE_TEST_LOCPRM) const;
+};
+
+/// Check that \a actual's value is defined
+struct TestVarDefined
+{
+    Var actual;
+    bool inverted;
+
+    TestVarDefined(const Var& actual, bool inverted=false)
+        : actual(actual), inverted(inverted) {}
+    TestVarDefined operator!() { return TestVarDefined(actual, !inverted); }
 
     void check(WIBBLE_TEST_LOCPRM) const;
 };
@@ -323,9 +337,11 @@ struct ActualVar : public wibble::tests::Actual<Var>
     TestVarEqual operator==(const Var& expected) const { return TestVarEqual(actual, expected); }
     TestVarEqual operator!=(const Var& expected) const { return TestVarEqual(actual, expected, true); }
     template<typename Val>
-    TestVarValueEqual<Val> operator==(const Val& expected) const { return TestVarValueEqual<Val>(actual, expected); }
+    TestVarValueEqual<Val> operator==(Val expected) const { return TestVarValueEqual<Val>(actual, expected); }
     template<typename Val>
-    TestVarValueEqual<Val> operator!=(const Val& expected) const { return TestVarValueEqual<Val>(actual, expected, true); }
+    TestVarValueEqual<Val> operator!=(Val expected) const { return TestVarValueEqual<Val>(actual, expected, true); }
+    TestVarDefined is_def() const { return TestVarDefined(actual); }
+    TestVarDefined is_undef() const { return TestVarDefined(actual, true); }
 };
 
 }

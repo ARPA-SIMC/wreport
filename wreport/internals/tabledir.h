@@ -14,18 +14,13 @@ struct Index;
 
 struct Table
 {
-    const Vartable* btable;
     std::string btable_id;
     std::string btable_pathname;
-    const DTable* dtable;
     std::string dtable_id;
     std::string dtable_pathname;
 
     Table(const std::string& dirname, const std::string& filename);
     virtual ~Table() {}
-
-    /// Load btable and dtable if they have not been loaded yet
-    virtual void load_if_needed() = 0;
 };
 
 /// Information about a version of a BUFR table
@@ -35,8 +30,6 @@ struct BufrTable : Table
 
     BufrTable(const BufrTableID& id, const std::string& dirname, const std::string& filename)
         : Table(dirname, filename), id(id) {}
-
-    void load_if_needed() override;
 };
 
 /// Information about a version of a CREX table
@@ -46,8 +39,6 @@ struct CrexTable : Table
 
     CrexTable(const CrexTableID& id, const std::string& dirname, const std::string& filename)
         : Table(dirname, filename), id(id) {}
-
-    void load_if_needed() override;
 };
 
 
@@ -121,7 +112,10 @@ protected:
 
 public:
     Tabledir();
+    Tabledir(const Tabledir&) = delete;
     ~Tabledir();
+
+    Tabledir& operator=(const Tabledir&) = delete;
 
     /**
      * Add the default directories according to compile-time and environment

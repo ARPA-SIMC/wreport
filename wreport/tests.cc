@@ -1,26 +1,6 @@
-/*
- * wreport/tests - Wibble test suite functions to work with wreport types
- *
- * Copyright (C) 2013  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include "tests.h"
 #include "wreport/var.h"
+#include <cstring>
 #include <fnmatch.h>
 #include <sstream>
 
@@ -137,19 +117,33 @@ void TestVarEqual::check(WIBBLE_TEST_LOCPRM) const
 
 }
 
+namespace {
+
+template<typename T>
+bool equals(T a, T b)
+{
+    return a == b;
+}
+bool equals(const char* a, const char* b)
+{
+    return strcmp(a, b) == 0;
+}
+
+}
+
 template<typename Val>
 void TestVarValueEqual<Val>::check(WIBBLE_TEST_LOCPRM) const
 {
     if (!inverted)
     {
-        if (actual.enq<Val>() != expected)
+        if (!equals(actual.enq<Val>(), expected))
         {
             std::stringstream ss;
             ss << "actual variable value is " << actual.format() << " (" << actual.enq<Val>() << ") instead of " << expected;
             wibble_test_location.fail_test(ss.str());
         }
     } else {
-        if (actual.enq<Val>() == expected)
+        if (equals(actual.enq<Val>(), expected))
         {
             std::stringstream ss;
             ss << "actual variable value is " << actual.format() << " while it should be something else";
@@ -158,9 +152,30 @@ void TestVarValueEqual<Val>::check(WIBBLE_TEST_LOCPRM) const
     }
 }
 
+void TestVarDefined::check(WIBBLE_TEST_LOCPRM) const
+{
+    if (!inverted)
+    {
+        if (!actual.isset())
+        {
+            std::stringstream ss;
+            ss << "actual variable is unset, but it should not be";
+            wibble_test_location.fail_test(ss.str());
+        }
+    } else {
+        if (actual.isset())
+        {
+            std::stringstream ss;
+            ss << "actual variable value is " << actual.format() << ", but it should be unset";
+            wibble_test_location.fail_test(ss.str());
+        }
+    }
+}
+
 template class TestVarValueEqual<int>;
 template class TestVarValueEqual<double>;
 template class TestVarValueEqual<char*>;
+template class TestVarValueEqual<char const*>;
 template class TestVarValueEqual<std::string>;
 
 }

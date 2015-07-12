@@ -1,5 +1,6 @@
 #include "test-utils-wreport.h"
 #include "tabledir.h"
+#include "vartable.h"
 #include <set>
 
 using namespace wibble::tests;
@@ -30,7 +31,7 @@ std::vector<Test> tests {
         // Test Tabledir
 
         // Get the default Tabledir
-        auto td = tabledir::Tabledir::get();
+        auto& td = tabledir::Tabledir::get();
 
         const tabledir::Table* t;
         const tabledir::BufrTable* bt;
@@ -56,6 +57,18 @@ std::vector<Test> tests {
         wassert(actual((int)bt->id.master_table_version_number) == 6);
         wassert(actual((int)bt->id.master_table_version_number_local) == 1);
 
+        t = td.find_bufr(BufrTableID(0, 0, 0, 24, 0));
+        wassert(actual(t != 0).istrue());
+        bt = dynamic_cast<const tabledir::BufrTable*>(t);
+        wassert(actual(bt != 0).istrue());
+        wassert(actual((int)bt->id.originating_centre) == 0);
+        wassert(actual((int)bt->id.originating_subcentre) == 0);
+        wassert(actual((int)bt->id.master_table) == 0);
+        wassert(actual((int)bt->id.master_table_version_number) == 24);
+        wassert(actual((int)bt->id.master_table_version_number_local) == 0);
+        const Vartable* vt = Vartable::load_bufr(t->btable_pathname);
+        wassert(actual(vt->query(WR_VAR(0, 12, 101))->unit) == "K");
+
         /// Find a CREX table
         t = td.find_crex(CrexTableID(1, 0, 0, 0, 3, 0, 3));
         wassert(actual(t != 0).istrue());
@@ -66,6 +79,24 @@ std::vector<Test> tests {
         wassert(actual((int)ct->id.master_table) == 0);
         wassert(actual((int)ct->id.master_table_version_number) == 3);
         wassert(actual((int)ct->id.master_table_version_number_local) == 0xff);
+        wassert(actual((int)ct->id.master_table_version_number_bufr) == 3);
+
+        /// Find a CREX table from BUFR
+        t = td.find_crex(CrexTableID(1, 0, 0, 0, 24, 0, 24));
+        wassert(actual(t != 0).istrue());
+        bt = dynamic_cast<const tabledir::BufrTable*>(t);
+        wassert(actual(bt != 0).istrue());
+        wassert(actual((int)bt->id.originating_centre) == 0);
+        wassert(actual((int)bt->id.originating_subcentre) == 0);
+        wassert(actual((int)bt->id.master_table) == 0);
+        wassert(actual((int)bt->id.master_table_version_number) == 24);
+        wassert(actual((int)bt->id.master_table_version_number_local) == 0);
+        vt = Vartable::load_crex(t->btable_pathname);
+        wassert(actual(vt->query(WR_VAR(0, 12, 101))->unit) == "C");
+
+        // Find a non-BUFR non-CREX table by name
+        t = td.find("test");
+        wassert(actual(t != 0).istrue());
     }),
 };
 
