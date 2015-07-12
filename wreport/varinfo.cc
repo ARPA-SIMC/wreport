@@ -9,6 +9,18 @@ using namespace std;
 
 namespace wreport {
 
+const char* vartype_format(Vartype type)
+{
+    switch (type)
+    {
+        case Vartype::Binary: return "binary";
+        case Vartype::String: return "string";
+        case Vartype::Integer: return "integer";
+        case Vartype::Decimal: return "decimal";
+    }
+    return "unknown";
+}
+
 static int intexp10(unsigned x)
 {
 	switch (x)

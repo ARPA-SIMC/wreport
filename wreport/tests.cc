@@ -58,7 +58,6 @@ bool test_can_run(const std::string& group_name, const std::string& test_name)
 }
 
 
-#ifdef wassert
 namespace {
 void compare_values(WIBBLE_TEST_LOCPRM, const Var& avar, const Var& evar, const std::string& name)
 {
@@ -137,7 +136,32 @@ void TestVarEqual::check(WIBBLE_TEST_LOCPRM) const
     }
 
 }
-#endif
+
+template<typename Val>
+void TestVarValueEqual<Val>::check(WIBBLE_TEST_LOCPRM) const
+{
+    if (!inverted)
+    {
+        if (actual.enq<Val>() != expected)
+        {
+            std::stringstream ss;
+            ss << "actual variable value is " << actual.format() << " (" << actual.enq<Val>() << ") instead of " << expected;
+            wibble_test_location.fail_test(ss.str());
+        }
+    } else {
+        if (actual.enq<Val>() == expected)
+        {
+            std::stringstream ss;
+            ss << "actual variable value is " << actual.format() << " while it should be something else";
+            wibble_test_location.fail_test(ss.str());
+        }
+    }
+}
+
+template class TestVarValueEqual<int>;
+template class TestVarValueEqual<double>;
+template class TestVarValueEqual<char*>;
+template class TestVarValueEqual<std::string>;
 
 }
 }

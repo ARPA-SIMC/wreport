@@ -34,7 +34,7 @@ std::vector<Test> tests {
             wassert(actual(var.code()) == WR_VAR(0, 6, 1));
             wassert(actual(var.info()->code) == WR_VAR(0, 6, 1));
             wassert(actual(var.isset()).istrue());
-            ensure_var_equals(var, 123);
+            wassert(actual(var) == 123);
             var.seti(-123);
             ensure_var_equals(var, -123);
         }
@@ -208,7 +208,7 @@ std::vector<Test> tests {
             string f = var.format("");
             Var var1(info);
             var1.setf(f.c_str());
-            ensure(var == var1);
+            wassert(actual(var) == var1);
         }
 
         // String
@@ -218,7 +218,7 @@ std::vector<Test> tests {
             string f = var.format("");
             Var var1(info);
             var1.setf(f.c_str());
-            ensure(var == var1);
+            wassert(actual(var) == var1);
         }
 
         // Integer
@@ -228,7 +228,7 @@ std::vector<Test> tests {
             string f = var.format("");
             Var var1(info);
             var1.setf(f.c_str());
-            ensure(var == var1);
+            wassert(actual(var) == var1);
         }
 
         // Double
@@ -236,9 +236,10 @@ std::vector<Test> tests {
             Varinfo info = table->query(WR_VAR(0, 5, 1));
             Var var(info, 12.345);
             string f = var.format("");
+            wassert(actual(f) == "12.34500");
             Var var1(info);
             var1.setf(f.c_str());
-            ensure(var == var1);
+            wassert(actual(var) == var1);
         }
     }),
     Test("truncation", [](Fixture& f) {
@@ -328,6 +329,43 @@ std::vector<Test> tests {
         var.seti(-11000000); wassert(actual(var.enqc()) == "-11000000");
         var.seti(-2147483647); wassert(actual(var.enqc()) == "-2147483647");
     }),
+    Test("setc", [](Fixture& f) {
+        _Varinfo vi;
+        vi.set_string(WR_VAR(0, 0, 0), "TEST", 5);
+        Var var(&vi);
+        var.setc(""); wassert(actual(var.enqc()) == "");
+        var.setc("ciao"); wassert(actual(var.enqc()) == "ciao");
+        var.setc("ciao!"); wassert(actual(var.enqc()) == "ciao!");
+        var.setc("ciaone"); wassert(actual(var.enqc()) == "ciaon");
+
+        Var var1(&vi, var);
+        wassert(actual(var1.enqc()) == "ciaon");
+
+        Var var2(var);
+        wassert(actual(var2.enqc()) == "ciaon");
+
+        Var var3(move(var2));
+        wassert(actual(var3.enqc()) == "ciaon");
+    }),
+    Test("sets", [](Fixture& f) {
+        _Varinfo vi;
+        vi.set_string(WR_VAR(0, 0, 0), "TEST", 5);
+        Var var(&vi);
+        var.sets(""); wassert(actual(var.enqc()) == "");
+        var.sets("ciao"); wassert(actual(var.enqc()) == "ciao");
+        var.sets("ciao!"); wassert(actual(var.enqc()) == "ciao!");
+        var.sets("ciaone"); wassert(actual(var.enqc()) == "ciaon");
+
+        Var var1(&vi, var);
+        wassert(actual(var1.enqc()) == "ciaon");
+
+        Var var2(var);
+        wassert(actual(var2.enqc()) == "ciaon");
+
+        Var var3(move(var2));
+        wassert(actual(var3.enqc()) == "ciaon");
+    }),
+
 #if 0
 // FIXME: this rounding bias doesn't seem to be fixable at this stage
 // Test geopotential conversions

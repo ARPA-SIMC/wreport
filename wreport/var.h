@@ -40,13 +40,26 @@ protected:
      * For binary values, it is a raw buffer where the first m_info->bit_len
      * bits are the binary value, and the rest is set to 0.
      */
-    char* m_value;
+    union {
+        int32_t i;
+        double d;
+        char* c;
+    } m_value;
 
 	/// Attribute list (ordered by Varcode)
 	Var* m_attrs;
 
     /// Make sure that m_value is allocated. It does nothing if it already is.
     void allocate();
+
+    /// Copy the value from var. var is assumed to have the same varinfo as us.
+    void copy_value(const Var& var);
+    /// Move the value from var. var is assumed to have the same varinfo as us. var is left unset.
+    void move_value(Var& var);
+    void assign_i_checked(int32_t val);
+    void assign_d_checked(double val);
+    void assign_b_checked(uint8_t* val, unsigned size);
+    void assign_c_checked(const char* val, unsigned size);
 
 public:
 	/// Create a new Var, with undefined value

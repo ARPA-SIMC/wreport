@@ -113,6 +113,7 @@ Varcode descriptor_code(const char* desc);
  */
 typedef short unsigned int Alteration;
 
+
 /// Variable type
 enum class Vartype : unsigned
 {
@@ -125,6 +126,10 @@ enum class Vartype : unsigned
     // Opaque binary value
     Binary,
 };
+
+
+/// Return a string description of a Vartype
+const char* vartype_format(Vartype type);
 
 
 /**

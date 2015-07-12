@@ -88,58 +88,50 @@ unsigned str_to_unsigned(const char *str)
 namespace wreport {
 
 Var::Var(Varinfo info)
-    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value{}, m_attrs(nullptr)
 {
 }
 
 Var::Var(Varinfo info, int val)
-    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value{}, m_attrs(nullptr)
 {
     seti(val);
 }
 
 Var::Var(Varinfo info, double val)
-    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value{}, m_attrs(nullptr)
 {
     setd(val);
 }
 
 Var::Var(Varinfo info, const char* val)
-    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value{}, m_attrs(nullptr)
 {
     setc(val);
 }
 
 Var::Var(Varinfo info, const std::string& val)
-    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value{}, m_attrs(nullptr)
 {
     sets(val);
 }
 
 Var::Var(const Var& var)
-    : m_info(var.m_info), m_isset(var.m_isset), m_value(nullptr), m_attrs(nullptr)
+    : m_info(var.m_info), m_isset(false), m_value{}, m_attrs(nullptr)
 {
-    // We are initialized as unset
-    if (m_isset)
-    {
-        // We share the same varinfo, so we can just copy m_value as it is
-        allocate();
-        memcpy(m_value, var.m_value, m_info->len + 2);
-    }
+    copy_value(var);
     setattrs(var);
 }
 
 Var::Var(Var&& var)
-    : m_info(var.m_info), m_isset(var.m_isset), m_value(var.m_value), m_attrs(var.m_attrs)
+    : m_info(var.m_info), m_isset(false), m_value{}, m_attrs(var.m_attrs)
 {
-    // Unset the source variable
-    var.m_isset = false;
-    var.m_value = nullptr;
+    move_value(var);
     var.m_attrs = nullptr;
 }
 
 Var::Var(Varinfo info, const Var& var)
-    : m_info(info), m_isset(false), m_value(nullptr), m_attrs(nullptr)
+    : m_info(info), m_isset(false), m_value{}, m_attrs(nullptr)
 {
     setval(var);
     setattrs(var);
@@ -153,13 +145,7 @@ Var& Var::operator=(const Var& var)
 	m_info = var.m_info;
 
     // Copy value
-    m_isset = var.m_isset;
-    if (m_isset)
-    {
-        allocate();
-        // Since we share the Varinfo, we can just copy the buffer
-        memcpy(m_value, var.m_value, m_info->len + 1);
-    }
+    copy_value(var);
 
     // Copy attributes
     setattrs(var);
@@ -169,12 +155,8 @@ Var& Var::operator=(const Var& var)
 Var& Var::operator=(Var&& var)
 {
     if (&var == this) return *this;
-    delete[] m_value;
+    move_value(var);
     delete m_attrs;
-    m_isset = var.m_isset;
-    var.m_isset = false;
-    m_value = var.m_value;
-    var.m_value = nullptr;
     m_attrs = var.m_attrs;
     var.m_attrs = nullptr;
     return *this;
@@ -182,7 +164,16 @@ Var& Var::operator=(Var&& var)
 
 Var::~Var()
 {
-    delete[] m_value;
+    switch (m_info->type)
+    {
+        case Vartype::Binary:
+        case Vartype::String:
+            delete[] m_value.c;
+            break;
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            break;
+    }
     delete m_attrs;
 }
 
@@ -197,6 +188,61 @@ bool Var::operator==(const Var& var) const
     return *m_attrs == *var.m_attrs;
 }
 
+void Var::allocate()
+{
+    if (!m_value.c && !(m_value.c = new char[m_info->len + 1]))
+        throw error_alloc("allocating space for Var value");
+}
+
+void Var::copy_value(const Var& var)
+{
+    m_isset = var.m_isset;
+    if (!m_isset) return;
+
+    switch (m_info->type)
+    {
+        case Vartype::Binary:
+            allocate();
+            memcpy(m_value.c, var.m_value.c, m_info->len);
+            break;
+        case Vartype::String:
+            allocate();
+            memcpy(m_value.c, var.m_value.c, m_info->len + 1);
+            break;
+        case Vartype::Integer:
+            m_value.i = var.m_value.i;
+            break;
+        case Vartype::Decimal:
+            m_value.d = var.m_value.d;
+            break;
+    }
+}
+
+void Var::move_value(Var& var)
+{
+    m_isset = var.m_isset;
+    if (!m_isset) return;
+
+    switch (m_info->type)
+    {
+        case Vartype::Binary:
+        case Vartype::String:
+            if (m_value.c) delete[] m_value.c;
+            m_value.c = var.m_value.c;
+            var.m_value.c = nullptr;
+            var.m_isset = false;
+            break;
+        case Vartype::Integer:
+            m_value.i = var.m_value.i;
+            var.m_isset = false;
+            break;
+        case Vartype::Decimal:
+            m_value.d = var.m_value.d;
+            var.m_isset = false;
+            break;
+    }
+}
+
 bool Var::value_equals(const Var& var) const
 {
     if (!m_isset && !var.m_isset) return true;
@@ -206,21 +252,13 @@ bool Var::value_equals(const Var& var) const
     switch (m_info->type)
     {
         case Vartype::Binary:
-            return memcmp(m_value, var.m_value, m_info->len) == 0;
+            return memcmp(m_value.c, var.m_value.c, m_info->len) == 0;
         case Vartype::String:
-            return strcmp(m_value, var.m_value) == 0;
+            return strcmp(m_value.c, var.m_value.c) == 0;
         case Vartype::Integer:
+            return m_value.i == var.m_value.i;
         case Vartype::Decimal:
-        {
-            // In FC12 [g++ (GCC) 4.4.4 20100630 (Red Hat 4.4.4-10)], for obscure
-            // reasons we cannot compare the two enqd()s directly: the test fails
-            // even if they have the same values.  Assigning them to doubles first
-            // works. WTH?
-            double a = enqd();
-            double b = var.enqd();
-            return a == b;
-                //(enqd() == var.enqd())
-        }
+            return m_value.d == var.m_value.d;
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
@@ -245,11 +283,9 @@ int Var::enqi() const
             error_type::throwf("enqi: %01d%02d%03d (%s) is an opaque binary",
                     WR_VAR_FXY(m_info->code), m_info->desc);
         case Vartype::Integer:
+            return m_value.i;
         case Vartype::Decimal:
-            if (m_value[0] == '-')
-                return -str_to_unsigned(m_value + 1);
-            else
-                return str_to_unsigned(m_value);
+            return m_info->encode_decimal(m_value.d);
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
@@ -268,35 +304,127 @@ double Var::enqd() const
             error_type::throwf("enqd: %01d%02d%03d (%s) is an opaque binary",
                     WR_VAR_FXY(m_info->code), m_info->desc);
         case Vartype::Integer:
-            if (m_value[0] == '-')
-                return -str_to_unsigned(m_value + 1);
-            else
-                return str_to_unsigned(m_value);
+            return m_value.i;
         case Vartype::Decimal:
-        {
-            int dec;
-            if (m_value[0] == '-')
-                dec = -str_to_unsigned(m_value + 1);
-            else
-                dec = str_to_unsigned(m_value);
-            return m_info->decode_decimal(dec);
-        }
+            return m_value.d;
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
 
+static inline void int32_to_str(int32_t val, char* buf, unsigned size)
+{
+    char* dest = buf;
+    --size; // Account for the trailing 0
+    uint32_t dec;
+    if (val < 0)
+    {
+        dec = -val;
+        buf[0] = '-';
+        ++dest;
+        --size;
+    } else
+        dec = val;
+
+    unsigned digits = count_digits(dec);
+    if (digits > size)
+        error_consistency::throwf("Value %u does not fit in %d digits", (unsigned)dec, size);
+    uint32_to_str(dec, digits, dest);
+    dest[digits] = 0;
+}
+
 const char* Var::enqc() const
 {
+    static const unsigned buf_size = 20;
+    static thread_local char buf[buf_size];
     if (!m_isset)
         error_notfound::throwf("enqc: %01d%02d%03d (%s) is not defined",
                 WR_VAR_FXY(m_info->code), m_info->desc);
-    return m_value;
+    switch (m_info->type)
+    {
+        case Vartype::String:
+        case Vartype::Binary:
+            return m_value.c;
+        case Vartype::Integer:
+            int32_to_str(m_value.i, buf, buf_size);
+            return buf;
+        case Vartype::Decimal:
+            int32_to_str(m_info->encode_decimal(m_value.d), buf, buf_size);
+            return buf;
+    }
+    error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
 
-void Var::allocate()
+void Var::assign_i_checked(int32_t val)
 {
-    if (!m_value && !(m_value = new char[m_info->len + 2]))
-        throw error_alloc("allocating space for Var value");
+    // Guard against overflows
+    if (val < m_info->imin || val > m_info->imax)
+    {
+        unset();
+        if (options::var_silent_domain_errors)
+            return;
+        error_domain::throwf("Value %i is outside the range [%i,%i] for %01d%02d%03d (%s)",
+                (int)val, m_info->imin, m_info->imax, WR_VAR_FXY(m_info->code), m_info->desc);
+    }
+    m_value.i = val;
+    m_isset = true;
+}
+
+void Var::assign_d_checked(double val)
+{
+    // Guard against NaNs
+    if (std::isnan(val))
+    {
+        unset();
+        if (options::var_silent_domain_errors)
+            return;
+        error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
+                val, m_info->dmin, m_info->dmax,
+                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
+    }
+
+    // Guard against overflows
+    if (val < m_info->dmin || val > m_info->dmax)
+    {
+        unset();
+        if (options::var_silent_domain_errors)
+            return;
+        error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
+                val, m_info->dmin, m_info->dmax,
+                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
+    }
+    m_value.d = val;
+    m_isset = true;
+}
+
+void Var::assign_b_checked(uint8_t* val, unsigned size)
+{
+    allocate();
+    if (size < m_info->len)
+    {
+        // If val is too short, copy it and zero pad the rest
+        memcpy(m_value.c, val, size);
+        for (unsigned i = size; i < m_info->len; ++i)
+            m_value.c[i] = 0;
+    } else {
+        memcpy(m_value.c, val, m_info->len);
+        if (m_info->bit_len % 8)
+            m_value.c[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
+    }
+    m_isset = true;
+}
+
+void Var::assign_c_checked(const char* val, unsigned size)
+{
+    allocate();
+    if (size < m_info->len)
+    {
+        strncpy(m_value.c, val, size);
+        m_value.c[size] = 0;
+    } else {
+        strncpy(m_value.c, val, m_info->len);
+        m_value.c[m_info->len] = 0;
+    }
+    m_isset = true;
 }
 
 void Var::seti(int val)
@@ -309,44 +437,8 @@ void Var::seti(int val)
         case Vartype::Binary:
             error_type::throwf("seti: %01d%02d%03d (%s) is an opaque binary",
                     WR_VAR_FXY(m_info->code), m_info->desc);
-        case Vartype::Integer:
-        case Vartype::Decimal:
-            // Guard against overflows
-            if (val < m_info->imin || val > m_info->imax)
-            {
-                unset();
-                if (options::var_silent_domain_errors)
-                    return;
-                error_domain::throwf("Value %i is outside the range [%i,%i] for %01d%02d%03d (%s)",
-                        val, m_info->imin, m_info->imax, WR_VAR_FXY(m_info->code), m_info->desc);
-            }
-
-            // Ensure that we have a buffer allocated
-            allocate();
-
-            // Set the value
-            if (val < 0)
-            {
-                uint32_t dec = -val;
-                unsigned digits = count_digits(dec);
-                if (digits > m_info->len)
-                    error_consistency::throwf("Value %d to be encoded in %01d%02d%03d does not fit in %d digits",
-                            val, WR_VAR_FXY(m_info->code), m_info->len);
-                m_value[0] = '-';
-                uint32_to_str(dec, digits, m_value + 1);
-                m_value[digits + 1] = 0;
-            } else {
-                uint32_t dec = val;
-                unsigned digits = count_digits(dec);
-                if (digits > m_info->len)
-                    error_consistency::throwf("Value %d to be encoded in %01d%02d%03d does not fit in %d digits",
-                            val, WR_VAR_FXY(m_info->code), m_info->len);
-                uint32_to_str(dec, digits, m_value);
-                m_value[digits] = 0;
-            }
-            m_isset = true;
-            /*snprintf(var->value, var->info->len + 2, "%d", val);*/
-            break;
+        case Vartype::Integer: assign_i_checked(val); break;
+        case Vartype::Decimal: assign_d_checked(m_info->decode_decimal(val)); break;
     }
 }
 
@@ -360,96 +452,28 @@ void Var::setd(double val)
         case Vartype::Binary:
             error_type::throwf("seti: %01d%02d%03d (%s) is an opaque binary",
                     WR_VAR_FXY(m_info->code), m_info->desc);
-        case Vartype::Integer:
-            // TODO: shortcut without encode_decimal instead of falling into
-            // the Decimal case
-        case Vartype::Decimal:
-            /* Guard against NaNs */
-            if (std::isnan(val))
-            {
-                unset();
-                if (options::var_silent_domain_errors)
-                    return;
-                error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
-                        val, m_info->dmin, m_info->dmax,
-                        WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
-            }
-
-            /* Guard against overflows */
-            if (val < m_info->dmin || val > m_info->dmax)
-            {
-                unset();
-                if (options::var_silent_domain_errors)
-                    return;
-                error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
-                        val, m_info->dmin, m_info->dmax,
-                        WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
-            }
-
-            // Ensure that we have a buffer allocated
-            allocate();
-
-            // Set the value
-            int sdec = m_info->encode_decimal(val);
-            if (sdec < 0)
-            {
-                uint32_t dec = -sdec;
-                unsigned digits = count_digits(dec);
-                if (digits > m_info->len)
-                    error_consistency::throwf("Value %g gets encoded in %01d%02d%03d as %d, which does not fit in %d digits",
-                            val, WR_VAR_FXY(m_info->code), sdec, m_info->len);
-                m_value[0] = '-';
-                uint32_to_str(dec, digits, m_value + 1);
-                m_value[digits + 1] = 0;
-            } else {
-                uint32_t dec = sdec;
-                unsigned digits = count_digits(dec);
-                if (digits > m_info->len)
-                    error_consistency::throwf("Value %g gets encoded in %01d%02d%03d as %d, which does not fit in %d digits",
-                            val, WR_VAR_FXY(m_info->code), sdec, m_info->len);
-                uint32_to_str(dec, digits, m_value);
-                m_value[digits] = 0;
-            }
-            m_isset = true;
-            /*snprintf(var->value, var->info->len + 2, "%ld", (long)dba_var_encode_int(val, var->info));*/
-            break;
+        case Vartype::Integer: assign_i_checked(lround(val)); break;
+        case Vartype::Decimal: assign_d_checked(val); break;
     }
 }
 
 void Var::setc(const char* val)
 {
-    // Allocate storage for the value
-    allocate();
-
     switch (m_info->type)
     {
-        case Vartype::String:
+        case Vartype::String: assign_c_checked(val, m_info->len); break;
+        case Vartype::Binary: assign_b_checked((uint8_t*)val, m_info->len); break;
         case Vartype::Integer:
-        case Vartype::Decimal: {
-            // Guard against overflows
-            unsigned len = strlen(val);
-            /* Tweak the length to account for the extra leading '-' allowed for
-            * negative numeric values */
-            if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
-                --len;
-            if (len > m_info->len)
-            {
-                unset();
-                if (options::var_silent_domain_errors)
-                    return;
-                error_domain::throwf("Value \"%s\" is too long for B%02d%03d (%s): maximum length is %d",
-                        val, WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc, m_info->len);
-            }
-            strncpy(m_value, val, m_info->len + 1);
-            m_value[m_info->len + 1] = 0;
-            m_isset = true;
+            if (*val == '-')
+                assign_i_checked(-str_to_unsigned(val + 1));
+            else
+                assign_i_checked(str_to_unsigned(val));
             break;
-        }
-        case Vartype::Binary:
-            memcpy(m_value, val, m_info->len);
-            if (m_info->bit_len % 8)
-                m_value[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
-            m_isset = true;
+        case Vartype::Decimal:
+            if (*val == '-')
+                assign_d_checked(m_info->decode_decimal(-str_to_unsigned(val + 1)));
+            else
+                assign_d_checked(m_info->decode_decimal(str_to_unsigned(val)));
             break;
     }
 }
@@ -464,81 +488,28 @@ void Var::setc_truncate(const char* val)
         case Vartype::Decimal:
             error_type::throwf("setc_truncate: %01d%02d%03d (%s) is a decimal",
                     WR_VAR_FXY(m_info->code), m_info->desc);
-        case Vartype::String:
-        {
-            // Allocate space for the value
-            allocate();
-
-            /* Guard against overflows */
-            unsigned len = strlen(val);
-            /* Tweak the length to account for the extra leading '-' allowed for
-            * negative numeric values */
-            if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
-                --len;
-            strncpy(m_value, val, m_info->len);
-            m_value[m_info->len] = 0;
-            if (len > m_info->len)
-                m_value[m_info->len - 1] = '>';
-            m_isset = true;
-            break;
-        }
-        case Vartype::Binary:
-        {
-            // Allocate space for the value
-            allocate();
-
-            // Copy binary data normally
-            memcpy(m_value, val, m_info->len);
-            if (m_info->bit_len % 8)
-                m_value[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
-            m_isset = true;
-            break;
-        }
+        case Vartype::String: assign_c_checked(val, strlen(val)); break;
+        case Vartype::Binary: assign_b_checked((uint8_t*)val, m_info->len); break;
     }
 }
 
 void Var::sets(const std::string& val)
 {
-    // Allocate storage for the value
-    allocate();
-
     switch (m_info->type)
     {
-        case Vartype::String:
+        case Vartype::String: assign_c_checked(val.c_str(), val.size()); break;
+        case Vartype::Binary: assign_b_checked((uint8_t*)val.c_str(), val.size()); break;
         case Vartype::Integer:
-        case Vartype::Decimal: {
-            // Guard against overflows
-            size_t len = val.size();
-            /* Tweak the length to account for the extra leading '-' allowed for
-             * negative numeric values */
-            if (m_info->type == Vartype::String && m_info->type != Vartype::Binary && val[0] == '-')
-                --len;
-            if (len > m_info->len)
-            {
-                unset();
-                if (options::var_silent_domain_errors)
-                    return;
-                error_domain::throwf("Value \"%s\" is too long for B%02d%03d (%s): maximum length is %d",
-                        val.c_str(), WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc, m_info->len);
-            }
-            strncpy(m_value, val.c_str(), m_info->len + 1);
-            m_value[m_info->len + 1] = 0;
-            m_isset = true;
+            if (val[0] == '-')
+                assign_i_checked(-str_to_unsigned(val.c_str() + 1));
+            else
+                assign_i_checked(str_to_unsigned(val.c_str()));
             break;
-        }
-        case Vartype::Binary:
-            if (val.size() < m_info->len)
-            {
-                // If val is too short, copy it and zero pad the rest
-                memcpy(m_value, val.data(), val.size());
-                for (unsigned i = val.size(); i < m_info->len; ++i)
-                    m_value[i] = 0;
-            } else {
-                memcpy(m_value, val.data(), m_info->len);
-                if (m_info->bit_len % 8)
-                    m_value[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
-            }
-            m_isset = true;
+        case Vartype::Decimal:
+            if (val[0] == '-')
+                assign_d_checked(m_info->decode_decimal(-str_to_unsigned(val.c_str() + 1)));
+            else
+                assign_d_checked(m_info->decode_decimal(str_to_unsigned(val.c_str())));
             break;
     }
 }
@@ -554,10 +525,8 @@ void Var::setf(const char* val)
 
     switch (m_info->type)
     {
-        case Vartype::String:
-            // If we're a string, the formatted value is just the string itself
-            setc(val);
-            break;
+        // If we're a string, the formatted value is just the string itself
+        case Vartype::String: assign_c_checked(val, m_info->len); break;
         case Vartype::Binary:
             // If we are a binary, we need to convert from hex to binary first
 #warning TODO: implement this
@@ -652,31 +621,8 @@ void Var::setval(const Var& src)
     }
     switch (m_info->type)
     {
-        case Vartype::String:
-            if (src.info()->len < m_info->len)
-            {
-                allocate();
-                // Fill only the first src.info()->len bytes, and 0-pad the
-                // rest
-                memcpy(m_value, src.m_value, src.info()->len + 2);
-                for (unsigned i = src.info()->len; i < m_info->len; ++i)
-                    m_value[i] = 0;
-                m_isset = true;
-            } else
-                setc_truncate(src.m_value);
-            break;
-        case Vartype::Binary:
-            if (src.info()->len < m_info->len)
-            {
-                allocate();
-                memcpy(m_value, src.m_value, src.m_info->len);
-                for (unsigned i = src.m_info->len; i < m_info->len; ++i)
-                    m_value[i] = 0;
-                m_isset = true;
-            }
-            else
-                setc_truncate(src.m_value);
-            break;
+        case Vartype::String: assign_c_checked(src.enqc(), m_info->len); break;
+        case Vartype::Binary: assign_b_checked((uint8_t*)src.enqc(), m_info->len); break;
         case Vartype::Integer:
         case Vartype::Decimal:
             /// Convert and set the new value
@@ -703,13 +649,12 @@ std::string Var::format(const char* ifundef) const
             for (unsigned i = 0; i < info()->len; ++i)
             {
                 char buf[4];
-                snprintf(buf, 4, "%02X", ((const unsigned char*)m_value)[i]);
+                snprintf(buf, 4, "%02hhX", ((uint8_t*)m_value.c)[i]);
                 res += buf;
             }
             return res;
         }
-        case Vartype::String:
-            return m_value;
+        case Vartype::String: return m_value.c;
         case Vartype::Integer:
         case Vartype::Decimal: {
             Varinfo i = info();
@@ -742,11 +687,12 @@ void Var::print_without_attrs(FILE* out) const
             fprintf(out, "(printing binary values not yet implemented)\n");
             break;
         case Vartype::String:
+            fprintf(out, "%s\n", m_value.c);
         case Vartype::Integer:
-            fprintf(out, "%s\n", m_value);
+            fprintf(out, "%d\n", m_value.i);
             break;
         case Vartype::Decimal:
-            fprintf(out, "%.*f\n", m_info->scale > 0 ? m_info->scale : 0, enqd());
+            fprintf(out, "%.*f\n", m_info->scale > 0 ? m_info->scale : 0, m_value.d);
             break;
     }
 }
@@ -786,6 +732,7 @@ void Var::print(std::ostream& out) const
 
 unsigned Var::diff(const Var& var) const
 {
+#warning TODO: alterations are not taken into account
     if (code() != var.code())
     {
         notes::logf("varcodes differ: first is %d%02d%03d'%s', second is %d%02d%03d'%s'\n",
@@ -798,15 +745,19 @@ unsigned Var::diff(const Var& var) const
     if (!isset())
     {
         notes::logf("[%d%02d%03d %s] first value is NULL, second value is %s\n",
-                WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-                var.m_value);
+                WR_VAR_FXY(code()), m_info->desc, var.enqc());
         return 1;
     }
     if (!var.isset())
     {
         notes::logf("[%d%02d%03d %s] first value is %s, second value is NULL\n",
-                WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-                m_value);
+                WR_VAR_FXY(code()), m_info->desc, enqc());
+        return 1;
+    }
+    if (m_info->type != var.m_info->type)
+    {
+        notes::logf("[%d%02d%03d %s] first variable has type %s, second has type %s\n",
+                WR_VAR_FXY(code()), m_info->desc, vartype_format(m_info->type), vartype_format(var.m_info->type));
         return 1;
     }
     switch (m_info->type)
@@ -815,36 +766,40 @@ unsigned Var::diff(const Var& var) const
             if (m_info->bit_len != var.info()->bit_len)
             {
                 notes::logf("[%d%02d%03d %s] binary values differ: first is %u bits, second is %u bits\n",
-                        WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
+                        WR_VAR_FXY(code()), m_info->desc,
                         m_info->bit_len, var.info()->bit_len);
                 return 1;
             }
-            if (memcmp(m_value, var.m_value, m_info->len) != 0)
+            if (memcmp(m_value.c, var.m_value.c, m_info->len) != 0)
             {
                 string dump1 = format();
                 string dump2 = var.format();
                 notes::logf("[%d%02d%03d %s] binary values differ: first is \"%s\", second is \"%s\"\n",
-                        WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc, dump1.c_str(), dump2.c_str());
+                        WR_VAR_FXY(code()), m_info->desc, dump1.c_str(), dump2.c_str());
                 return 1;
             }
             break;
         case Vartype::String:
-            if (strcmp(m_value, var.m_value) != 0)
+            if (strcmp(m_value.c, var.m_value.c) != 0)
             {
                 notes::logf("[%d%02d%03d %s] values differ: first is \"%s\", second is \"%s\"\n",
-                        WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-                        m_value, var.m_value);
+                        WR_VAR_FXY(code()), m_info->desc, m_value.c, var.m_value.c);
                 return 1;
             }
             break;
         case Vartype::Integer:
+            if (m_value.i != var.m_value.i)
+            {
+                notes::logf("[%d%02d%03d %s] values differ: first is %d, second is %d\n",
+                        WR_VAR_FXY(code()), m_info->desc, m_value.i, var.m_value.i);
+                return 1;
+            }
+            break;
         case Vartype::Decimal:
-            double val1 = enqd(), val2 = var.enqd();
-            if (val1 != val2)
+            if (m_value.d != var.m_value.d)
             {
                 notes::logf("[%d%02d%03d %s] values differ: first is %f, second is %f\n",
-                        WR_VAR_F(code()), WR_VAR_X(code()), WR_VAR_Y(code()), m_info->desc,
-                        val1, val2);
+                        WR_VAR_FXY(code()), m_info->desc, m_value.d, var.m_value.d);
                 return 1;
             }
             break;

@@ -212,8 +212,7 @@ std::vector<Test> tests {
             s.store_variable_d(WR_VAR(0, 1, 1), -1.0);
             ensure(false);
         } catch (error_domain& e) {
-            ensure_contains(e.what(), "B01001");
-
+            ensure_contains(e.what(), "001001");
         }
 
 #if 0
