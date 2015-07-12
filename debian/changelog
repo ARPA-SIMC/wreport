@@ -1,3 +1,11 @@
+wreport (3.0-1) UNRELEASED; urgency=medium
+
+  * New major upstream version
+     - Big refactoring, API and ABI changed, increased soname
+     - Requires C++11
+
+ -- Enrico Zini <enrico@enricozini.org>  Mon, 30 Mar 2015 15:32:49 +0200
+
 wreport (2.15-1) UNRELEASED; urgency=medium
 
   * New upstream version

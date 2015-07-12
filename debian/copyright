@@ -1,13 +1,8 @@
-This package was debianized by Enrico Zini <enrico@debian.org> on
-Tue Sep 14 18:51:10 CEST 2010.
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: wreport
+Upstream-Contact: Enrico Zini <enrico@enricozini.org>
+Source: http://sourceforge.net/projects/wreport/
 
-Home page: http://www.smr.arpa.emr.it/software/DBalle.html
-
-Upstream Author: Enrico Zini <enrico@debian.org>
-
-Copyright (C) 2005--2010 ARPA-SIM <urpsim@smr.arpa.emr.it>
-
-License:
-
-This software is distributed under the GNU General Public License version 2,
-which can be found at /usr/share/common-licenses/GPL-2.
+Files: *
+Copyright (C) 2005--2015 ARPA-SIM <urpsim@smr.arpa.emr.it>
+License: GPL-2+

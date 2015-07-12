@@ -14,7 +14,7 @@ Vcs-Svn: https://svn.smr.arpa.emr.it/dballe/wreport/trunk
 Package: libwreport-dev
 Section: libdevel
 Architecture: any
-Depends: libwreport2 (= ${binary:Version}), ${misc:Depends}
+Depends: libwreport3 (= ${binary:Version}), ${misc:Depends}
 Recommends: pkg-config
 Description: library for working with weather reports
  libwreport is a C++ library for working with weather reports.
@@ -43,7 +43,7 @@ Description: documentation for libwreport
  .
  This is the documentation for the library.
 
-Package: libwreport2
+Package: libwreport3
 Section: libs
 Architecture: any
 Multi-Arch: same
