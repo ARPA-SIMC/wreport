@@ -349,20 +349,19 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
         // Store the bitmap
         Var bmp(info, buf);
 
-        // Add var to subset(s)
-        output_subset.store_variable(bmp);
-        const Var& res = output_subset.back();
-
         // Bitmap will stay set as a reference to the variable to use as the
         // current bitmap. The subset(s) are taking care of memory managing it.
 
         IFTRACE {
             TRACE("Decoded bitmap count %u: ", bitmap_size);
-            res.print(stderr);
+            bmp.print(stderr);
             TRACE("\n");
         }
 
-        bitmaps.define(res, output_subset);
+        bitmaps.define(bmp, output_subset, output_subset.size());
+
+        // Add var to subset(s)
+        output_subset.store_variable(move(bmp));
     }
 };
 
@@ -556,7 +555,7 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
             TRACE("\n");
         }
 
-        bitmaps.define(move(bmp), output_bulletin.subset(0));
+        bitmaps.define(move(bmp), output_bulletin.subset(0), output_bulletin.subset(0).size());
     }
 };
 

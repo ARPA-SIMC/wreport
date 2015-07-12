@@ -53,7 +53,7 @@ void UncompressedEncoder::define_bitmap(unsigned bitmap_size)
     if (WR_VAR_F(var.code()) != 2)
         error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
                 current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-    bitmaps.define(var, current_subset);
+    bitmaps.define(var, current_subset, current_var);
 }
 
 

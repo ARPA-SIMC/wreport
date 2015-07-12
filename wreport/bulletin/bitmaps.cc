@@ -82,10 +82,10 @@ unsigned Bitmaps::next()
     return res;
 }
 
-void Bitmaps::define(const Var& bitmap, const Subset& subset)
+void Bitmaps::define(const Var& bitmap, const Subset& subset, unsigned anchor_point)
 {
     delete current;
-    current = new Bitmap(bitmap, subset, next_bitmap_anchor_point);
+    current = new Bitmap(bitmap, subset, anchor_point);
 }
 
 void Bitmaps::reuse_last()

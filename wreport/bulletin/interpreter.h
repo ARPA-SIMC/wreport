@@ -239,6 +239,7 @@ public:
 
     void define_variable(Varinfo info) override;
     void define_bitmap(unsigned bitmap_size) override;
+    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
 };
 
 

@@ -107,7 +107,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
         for (unsigned i = 0; i < bitmap_size; ++i)
             ob.add_bits(var.enqc()[i] == '+' ? 0 : 1, 1);
 
-        bitmaps.define(var, current_subset);
+        bitmaps.define(var, current_subset, current_var);
     }
     void define_raw_character_data(Varcode code) override
     {

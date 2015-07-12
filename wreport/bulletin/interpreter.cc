@@ -125,7 +125,6 @@ void DDSInterpreter::b_variable(Varcode code)
         TRACE("b_variable variable %01d%02d%03d\n",
                 WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
         define_variable(info);
-        ++bitmaps.next_bitmap_anchor_point;
     }
 }
 
@@ -188,7 +187,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
 
                 // Get the value for B31021, defaulting to 63 if missing
                 associated_field.significance = define_associated_field_significance(info);
-                ++bitmaps.next_bitmap_anchor_point;
             }
             associated_field.bit_count = nbits;
             break;
@@ -231,7 +229,6 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
                     Varinfo info = tables.get_unknown(desc_code, nbits);
                     define_variable(info);
                 }
-                ++bitmaps.next_bitmap_anchor_point;
             }
             break;
         }
@@ -384,7 +381,6 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
     {
         Varinfo info = tables.btable->query(delayed_code);
         count = define_delayed_replication_factor(info);
-        ++bitmaps.next_bitmap_anchor_point;
     }
     IFTRACE {
         TRACE("visitor r_replication %d items %d times%s\n", WR_VAR_X(code), count, delayed_code ? " (delayed)" : "");
@@ -419,7 +415,6 @@ void DDSInterpreter::r_bitmap(Varcode code, Varcode delayed_code, const Opcodes&
     {
         Varinfo rep_info = tables.btable->query(delayed_code);
         count = define_bitmap_delayed_replication_factor(rep_info);
-        ++bitmaps.next_bitmap_anchor_point;
     }
 
     define_bitmap(count);
@@ -598,6 +593,11 @@ void Printer::define_variable(Varinfo info)
 
 void Printer::define_bitmap(unsigned bitmap_size)
 {
+}
+
+unsigned Printer::define_bitmap_delayed_replication_factor(Varinfo info)
+{
+    return 0;
 }
 
 }
