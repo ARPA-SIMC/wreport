@@ -46,6 +46,18 @@ struct Bulletin
      */
     off_t offset = 0;
 
+    /**
+     * BUFR Master table number.
+     *
+     * A master table may be defined for a scientific discipline other than meteorology.
+     * The current list of master tables, along with their associated values in
+     * octet 4, is as follows:
+     *
+     * \l 0: Meteorology maintained by the World Meteorological Organization (WMO)
+     * \l 10: Oceanography maintained by the Intergovernmental Oceanographic Commission (IOC) of UNESCO
+     */
+    uint8_t master_table_number = 0;
+
     /// Data category (BUFR or CREX Table A)
     uint8_t data_category = 0xff;
 
@@ -219,18 +231,6 @@ struct BufrBulletin : public Bulletin
     uint8_t edition_number = 4;
 
     /**
-     * BUFR Master table number.
-     *
-     * A master table may be defined for a scientific discipline other than meteorology.
-     * The current list of master tables, along with their associated values in
-     * octet 4, is as follows:
-     *
-     * \l 0: Meteorology maintained by the World Meteorological Organization (WMO)
-     * \l 10: Oceanography maintained by the Intergovernmental Oceanographic Commission (IOC) of UNESCO
-     */
-    uint8_t master_table_number = 0;
-
-    /**
      * Version number of BUFR master table used.
      *
      * See WMO Manual on Codes, Binary codes, FM94-XIV BUFR, Section 1
@@ -373,18 +373,6 @@ struct CrexBulletin : public Bulletin
 {
     /// CREX Edition number
     uint8_t edition_number = 2;
-
-    /**
-     * CREX Master table number.
-     *
-     * A master table may be defined for a scientific discipline other than meteorology.
-     * The current list of master tables, along with their associated values in
-     * octet 4, is as follows:
-     *
-     * \l 0: Meteorology maintained by the World Meteorological Organization (WMO)
-     * \l 10: Oceanography maintained by the Intergovernmental Oceanographic Commission (IOC) of UNESCO
-     */
-    uint8_t master_table_number = 0;
 
     /**
      * CREX master table version number.

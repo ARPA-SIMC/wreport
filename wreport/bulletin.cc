@@ -59,6 +59,7 @@ void Bulletin::clear()
 {
     fname.clear();
     offset = 0;
+    master_table_number = 0;
     data_category = data_subcategory = data_subcategory_local = 0xff;
     originating_centre = originating_subcentre = 0xffff;
     update_sequence_number = 0;
@@ -157,6 +158,12 @@ unsigned Bulletin::diff(const Bulletin& msg) const
         ++diffs;
     } else
         diffs += diff_details(msg);
+    if (master_table_number != msg.master_table_number)
+    {
+        notes::logf("MAster table numbers differ (first is %hhu, second is %hhu)\n",
+                master_table_number, msg.master_table_number);
+        ++diffs;
+    }
     if (data_category != msg.data_category)
     {
         notes::logf("Data categories differ (first is %hhu, second is %hhu)\n",
@@ -323,7 +330,6 @@ void BufrBulletin::clear()
 {
     Bulletin::clear();
     edition_number = 4;
-    master_table_number = 0;
     master_table_version_number = 19;
     master_table_version_number_local = 0;
     compression = false;
@@ -354,12 +360,6 @@ unsigned BufrBulletin::diff_details(const Bulletin& bulletin) const
     {
         notes::logf("BUFR edition numbers differ (first is %hhu, second is %hhu)\n",
                 edition_number, msg.edition_number);
-        ++diffs;
-    }
-    if (master_table_number != msg.master_table_number)
-    {
-        notes::logf("BUFR master table numbers differ (first is %hhu, second is %hhu)\n",
-                master_table_number, msg.master_table_number);
         ++diffs;
     }
     if (master_table_version_number != msg.master_table_version_number)
@@ -483,7 +483,6 @@ void CrexBulletin::clear()
 {
     Bulletin::clear();
     edition_number = 2;
-    master_table_number = 0;
     master_table_version_number = 19;
     master_table_version_number_bufr = 19;
     master_table_version_number_local = 0;
@@ -518,12 +517,6 @@ unsigned CrexBulletin::diff_details(const Bulletin& bulletin) const
     {
         notes::logf("CREX edition numbers differ (first is %hhu, second is %hhu)\n",
                 edition_number, msg.edition_number);
-        ++diffs;
-    }
-    if (master_table_number != msg.master_table_number)
-    {
-        notes::logf("CREX master table numbers differ (first is %hhu, second is %hhu)\n",
-                master_table_number, msg.master_table_number);
         ++diffs;
     }
     if (master_table_version_number != msg.master_table_version_number)
