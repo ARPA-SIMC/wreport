@@ -441,7 +441,7 @@ void Var::assign_d_checked(double val)
                 val, m_info->dmin, m_info->dmax,
                 WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
     }
-    m_value.d = val;
+    m_value.d = m_info->round_decimal(val);
     m_isset = true;
 }
 

@@ -238,6 +238,16 @@ int _Varinfo::encode_decimal(double fval) const
         return (int)rint(fval);
 }
 
+double _Varinfo::round_decimal(double val) const
+{
+    if (scale > 0)
+        return round(val * scales[scale]) / scales[scale];
+    else if (scale < 0)
+        return round(val / scales[-scale]) * scales[-scale];
+    else
+        return round(val);
+}
+
 unsigned _Varinfo::encode_binary(double fval) const
 {
     if (bit_len == 0)

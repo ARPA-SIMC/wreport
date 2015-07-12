@@ -198,6 +198,11 @@ struct _Varinfo
     int encode_decimal(double fval) const;
 
     /**
+     * Round val so that it only fits the significant digits given in scale
+     */
+    double round_decimal(double val) const;
+
+    /**
      * Encode a double value into a positive integer value using Varinfo binary
      * encoding informations (bit_ref and scale)
      *
