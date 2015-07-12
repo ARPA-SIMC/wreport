@@ -141,6 +141,9 @@ public:
 	/// Get the value as a string
 	const char* enqc() const;
 
+    /// Get the value as a std::string
+    std::string enqs() const;
+
 	/// Templated version of enq
 	template<typename T>
 	T enq() const
@@ -337,7 +340,7 @@ template<> inline int Var::enq() const { return enqi(); }
 template<> inline float Var::enq() const { return (float)enqd(); }
 template<> inline double Var::enq() const { return enqd(); }
 template<> inline const char* Var::enq() const { return enqc(); }
-template<> inline std::string Var::enq() const { return enqc(); }
+template<> inline std::string Var::enq() const { return enqs(); }
 
 
 }

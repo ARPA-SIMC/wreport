@@ -332,6 +332,24 @@ static inline void int32_to_str(int32_t val, char* buf, unsigned size)
     dest[digits] = 0;
 }
 
+static inline std::string int32_to_stdstr(int32_t val)
+{
+    std::string res;
+    res.reserve(10);
+    uint32_t dec;
+    if (val < 0)
+    {
+        dec = -val;
+        res += '-';
+    } else
+        dec = val;
+
+    unsigned digits = count_digits(dec);
+    res.resize(res.size() + digits);
+    uint32_to_str(dec, digits, (char*)res.data());
+    return res;
+}
+
 const char* Var::enqc() const
 {
     static const unsigned buf_size = 20;
@@ -350,6 +368,26 @@ const char* Var::enqc() const
         case Vartype::Decimal:
             int32_to_str(m_info->encode_decimal(m_value.d), buf, buf_size);
             return buf;
+        }
+    }
+    error_consistency::throwf("unknown variable type %d", (int)m_info->type);
+}
+
+std::string Var::enqs() const
+{
+    if (!m_isset)
+        error_notfound::throwf("enqs: %01d%02d%03d (%s) is not defined",
+                WR_VAR_FXY(m_info->code), m_info->desc);
+
+    switch (m_info->type)
+    {
+        case Vartype::String:
+        case Vartype::Binary:
+            return m_value.c;
+        case Vartype::Integer:
+            return int32_to_stdstr(m_value.i);
+        case Vartype::Decimal:
+            return int32_to_stdstr(m_info->encode_decimal(m_value.d));
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }

@@ -193,9 +193,10 @@ std::vector<Test> tests {
         ensure_equals(string(var.enq("foo")), "foo");
 
         var.set(1.0);
-        ensure_equals(var.enq<double>(), 1.0);
-        ensure_equals(var.enq<int>(), 100);
-        ensure_equals(string(var.enq<const char*>()), "100");
+        wassert(actual(var.enq<double>()) == 1.0);
+        wassert(actual(var.enq<int>()) == 100);
+        wassert(actual(var.enq<const char*>()) == "100");
+        wassert(actual(var.enq<string>()) == "100");
     }),
     Test("format", [](Fixture& f) {
         // Test formatting and reparsing
