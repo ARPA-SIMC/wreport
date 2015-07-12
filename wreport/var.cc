@@ -353,19 +353,30 @@ static inline std::string int32_to_stdstr(int32_t val)
 const char* Var::enqc() const
 {
     static const unsigned buf_size = 20;
-    static thread_local char buf[buf_size];
+    static thread_local char* tl_buf = 0;
+
     if (!m_isset)
         error_notfound::throwf("enqc: %01d%02d%03d (%s) is not defined",
                 WR_VAR_FXY(m_info->code), m_info->desc);
+
     switch (m_info->type)
     {
         case Vartype::String:
         case Vartype::Binary:
             return m_value.c;
-        case Vartype::Integer:
+        case Vartype::Integer: {
+            // Access tl_buf just once, to prevent a lot of calls to __tls_get_addr
+            char* buf = tl_buf;
+            if (!buf) buf = tl_buf = new char[buf_size];
+
             int32_to_str(m_value.i, buf, buf_size);
             return buf;
-        case Vartype::Decimal:
+        }
+        case Vartype::Decimal: {
+            // Access tl_buf just once, to prevent a lot of calls to __tls_get_addr
+            char* buf = tl_buf;
+            if (!buf) buf = tl_buf = new char[buf_size];
+
             int32_to_str(m_info->encode_decimal(m_value.d), buf, buf_size);
             return buf;
         }
