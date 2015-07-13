@@ -716,32 +716,31 @@ std::string Var::format(const char* ifundef) const
 }
 
 
-void Var::print_without_attrs(FILE* out) const
+void Var::print_without_attrs(FILE* out, const char* end) const
 {
-	// Print info
-	fprintf(out, "%d%02d%03d %-.64s(%s): ",
-			WR_VAR_F(m_info->code), WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code),
-			m_info->desc, m_info->unit);
+    // Print info
+    fprintf(out, "%01d%02d%03d %-.64s(%s): ", WR_VAR_FXY(m_info->code), m_info->desc, m_info->unit);
 
     // Print value
     if (!isset())
     {
-        fprintf(out, "(undef)\n");
+        fprintf(out, "(undef)%s", end);
         return;
     }
     switch (m_info->type)
     {
         case Vartype::Binary:
 #warning TODO: implement this
-            fprintf(out, "(printing binary values not yet implemented)\n");
+            fprintf(out, "(printing binary values not yet implemented)%s", end);
             break;
         case Vartype::String:
-            fprintf(out, "%s\n", m_value.c);
+            fprintf(out, "%s%s", m_value.c, end);
+            break;
         case Vartype::Integer:
-            fprintf(out, "%d\n", m_value.i);
+            fprintf(out, "%d%s", m_value.i, end);
             break;
         case Vartype::Decimal:
-            fprintf(out, "%.*f\n", m_info->scale > 0 ? m_info->scale : 0, m_value.d);
+            fprintf(out, "%.*f%s", m_info->scale > 0 ? m_info->scale : 0, m_value.d, end);
             break;
     }
 }

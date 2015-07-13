@@ -293,13 +293,13 @@ public:
      */
     void print(std::ostream& out) const;
 
-	/**
-	 * Print the variable to an output stream, without its attributes
-	 *
-	 * @param out
-	 *   The output stream to use for printing
-	 */
-	void print_without_attrs(FILE* out) const;
+    /**
+     * Print the variable to an output stream, without its attributes
+     *
+     * @param out
+     *   The output stream to use for printing
+     */
+    void print_without_attrs(FILE* out, const char* end="\n") const;
 
     /**
      * Print the variable to an output stream, without its attributes
