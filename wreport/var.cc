@@ -725,6 +725,9 @@ void Var::print_without_attrs(FILE* out, const char* end) const
 
     // Print value
     format(out, "(undef)");
+
+    // Print terminator
+    fputs(end, out);
 }
 
 void Var::print_without_attrs(std::ostream& out) const
