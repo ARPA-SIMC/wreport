@@ -90,7 +90,7 @@ std::vector<Test> tests {
 
             // Setc with truncation
             var.setc_truncate("Budapest Pestszentlorinc-kulterulet");
-            ensure_var_equals(var, "Budapest Pestszentl>");
+            ensure_var_equals(var, "Budapest Pestszentlo");
 
             // ensure that setc would complain for the length
             try {
@@ -258,7 +258,7 @@ std::vector<Test> tests {
         // Try to fit it into a normal variable
         Var norm(info);
         norm.set(ext);
-        ensure_var_equals(norm, "Budapest Pestszentl>");
+        ensure_var_equals(norm, "Budapest Pestszentlo");
     }),
     Test("domain", [](Fixture& f) {
         // Test domain erros and var_silent_domain_errors
