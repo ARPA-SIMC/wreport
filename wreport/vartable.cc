@@ -306,6 +306,15 @@ struct VartableBase : public Vartable
 
         return &(start->alterations->varinfo);
     }
+
+    bool iterate(std::function<bool(Varinfo)> dest) const override
+    {
+        for (const auto& entry: entries)
+            for (const VartableEntry* e = &entry; e; e = e->alterations)
+                if (!dest(&(e->varinfo)))
+                    return false;
+        return true;
+    }
 };
 
 struct BufrVartable : public VartableBase

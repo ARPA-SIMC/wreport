@@ -2,8 +2,8 @@
 #define WREPORT_VARTABLE_H
 
 #include <wreport/varinfo.h>
-#include <vector>
 #include <string>
+#include <functional>
 
 namespace wreport {
 struct BufrTableID;
@@ -62,6 +62,15 @@ struct Vartable
      *   copied around and does not need to be deallocated.
      */
     virtual Varinfo query_altered(Varcode code, int new_scale, unsigned new_bit_len) const = 0;
+
+    /**
+     * Iterate the whole contents of the table.
+     *
+     * Return false from dest to stop iteration.
+     *
+     * @returns true if iteration ended normally, false if dest returned false.
+     */
+    virtual bool iterate(std::function<bool(Varinfo)> dest) const = 0;
 
     /**
      * Return a BUFR vartable, by file name.
