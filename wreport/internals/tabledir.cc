@@ -72,7 +72,7 @@ void Dir::refresh()
                     {
                         int mt, ed, mtv;
                         if (sscanf(e.d_name, "B%02d%02d%02d", &mt, &ed, &mtv) == 3)
-                            tables.push_back(new CrexTable(CrexTableID(ed, 0xffff, 0xffff, mt, mtv, 0xff, mtv), pathname, e.d_name));
+                            tables.push_back(new CrexTable(CrexTableID(ed, 0, 0, mt, mtv, 0, 0), pathname, e.d_name));
                         break;
                     }
                     case 20: // B000000000001100.txt

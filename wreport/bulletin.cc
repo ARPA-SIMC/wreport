@@ -494,8 +494,11 @@ void CrexBulletin::load_tables()
     tables.load_crex(CrexTableID(
                 edition_number,
                 originating_centre, originating_subcentre,
-                master_table_number, edition_number,
-                master_table_version_number_local, master_table_version_number_bufr));
+                master_table_number,
+                master_table_version_number,
+                master_table_version_number_bufr,
+                master_table_version_number_local
+                ));
 }
 
 void CrexBulletin::print_details(FILE* out) const

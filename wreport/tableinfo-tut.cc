@@ -69,21 +69,21 @@ std::vector<Test> tests {
     }),
     Test("crextableid", [](Fixture& f) {
         // Test CrexTableID comparisons
-        CompareTester<CrexTableID> ct(CrexTableID(1, 98, 0, 0, 15, 3, 0));
-        wassert(actual(ct(CrexTableID(0,  0, 0, 0,  0, 0,  0), CrexTableID(1,  0, 0, 3, 15, 3, 15))) == "none");
-        wassert(actual(ct(CrexTableID(1,  0, 0, 3, 15, 3, 15), CrexTableID(1,  0, 0, 0, 14, 0, 14))) == "none");
-        wassert(actual(ct(CrexTableID(1,  0, 0, 3, 15, 3, 15), CrexTableID(1,  0, 0, 0, 20, 0, 20))) == "secondonly");
-        wassert(actual(ct(CrexTableID(1,  0, 0, 0, 20, 0, 20), CrexTableID(1,  0, 0, 0, 21, 0, 21))) == "first");
-        wassert(actual(ct(CrexTableID(1,  0, 0, 0, 20, 0, 20), CrexTableID(1,  0, 0, 0, 15, 0, 15))) == "second");
-        wassert(actual(ct(CrexTableID(1,  0, 0, 0, 15, 0, 15), CrexTableID(1,  0, 0, 0, 15, 0, 15))) == "same");
-        wassert(actual(ct(CrexTableID(1,  0, 0, 0, 15, 0, 15), CrexTableID(1, 98, 0, 0, 15, 0, 15))) == "second");
-        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 0, 15), CrexTableID(1, 98, 0, 0, 15, 1, 15))) == "second");
-        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 1, 15), CrexTableID(1, 98, 0, 0, 15, 6, 15))) == "second");
-        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 6, 15), CrexTableID(1, 98, 0, 0, 15, 8, 15))) == "first");
-        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 6, 15), CrexTableID(1, 98, 0, 0, 15, 5, 15))) == "second");
-        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 5, 15), CrexTableID(1, 98, 0, 0, 15, 3, 15))) == "second");
-        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 3, 15), CrexTableID(0, 98, 0, 0, 15, 3, 15))) == "firstonly");
-        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 3, 15), CrexTableID(2, 98, 0, 0, 15, 3, 15))) == "firstonly");
+        CompareTester<CrexTableID> ct(CrexTableID(1, 98, 0, 0, 15, 0, 3));
+        wassert(actual(ct(CrexTableID(0,  0, 0, 0,  0,  0, 0), CrexTableID(1,  0, 0, 3, 15, 15, 3))) == "none");
+        wassert(actual(ct(CrexTableID(1,  0, 0, 3, 15, 15, 3), CrexTableID(1,  0, 0, 0, 14, 14, 0))) == "none");
+        wassert(actual(ct(CrexTableID(1,  0, 0, 3, 15, 15, 3), CrexTableID(1,  0, 0, 0, 20, 20, 0))) == "secondonly");
+        wassert(actual(ct(CrexTableID(1,  0, 0, 0, 20, 20, 0), CrexTableID(1,  0, 0, 0, 21, 21, 0))) == "first");
+        wassert(actual(ct(CrexTableID(1,  0, 0, 0, 20, 20, 0), CrexTableID(1,  0, 0, 0, 15, 15, 0))) == "second");
+        wassert(actual(ct(CrexTableID(1,  0, 0, 0, 15, 15, 0), CrexTableID(1,  0, 0, 0, 15, 15, 0))) == "same");
+        wassert(actual(ct(CrexTableID(1,  0, 0, 0, 15, 15, 0), CrexTableID(1, 98, 0, 0, 15, 15, 0))) == "second");
+        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 15, 0), CrexTableID(1, 98, 0, 0, 15, 15, 1))) == "second");
+        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 15, 1), CrexTableID(1, 98, 0, 0, 15, 15, 6))) == "second");
+        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 15, 6), CrexTableID(1, 98, 0, 0, 15, 15, 8))) == "first");
+        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 15, 6), CrexTableID(1, 98, 0, 0, 15, 15, 5))) == "second");
+        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 15, 5), CrexTableID(1, 98, 0, 0, 15, 15, 3))) == "second");
+        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 15, 3), CrexTableID(0, 98, 0, 0, 15, 15, 3))) == "firstonly");
+        wassert(actual(ct(CrexTableID(1, 98, 0, 0, 15, 15, 3), CrexTableID(2, 98, 0, 0, 15, 15, 3))) == "firstonly");
     }),
 };
 

@@ -47,18 +47,24 @@ struct CrexTableID
     uint16_t originating_subcentre = 0xffff;
     uint8_t master_table = 0xff;
     uint8_t master_table_version_number = 0xff;
-    uint8_t master_table_version_number_local = 0xff;
     uint8_t master_table_version_number_bufr = 0xff;
+    uint8_t master_table_version_number_local = 0xff;
 
     CrexTableID() {}
     CrexTableID(
-            uint8_t edition_number, uint16_t originating_centre, uint16_t originating_subcentre,
-            uint8_t master_table, uint8_t master_table_version_number,
-            uint8_t master_table_version_number_local, uint8_t master_table_version_number_bufr)
-        : edition_number(edition_number), originating_centre(originating_centre), originating_subcentre(originating_subcentre),
-          master_table(master_table), master_table_version_number(master_table_version_number),
-          master_table_version_number_local(master_table_version_number_local),
-          master_table_version_number_bufr(master_table_version_number_bufr) {}
+            uint8_t edition_number,
+            uint16_t originating_centre, uint16_t originating_subcentre,
+            uint8_t master_table,
+            uint8_t master_table_version_number,
+            uint8_t master_table_version_number_bufr,
+            uint8_t master_table_version_number_local
+            )
+        : edition_number(edition_number),
+          originating_centre(originating_centre), originating_subcentre(originating_subcentre),
+          master_table(master_table),
+          master_table_version_number(master_table_version_number),
+          master_table_version_number_bufr(master_table_version_number_bufr),
+          master_table_version_number_local(master_table_version_number_local) {}
 
     bool operator<(const CrexTableID& o) const;
 
