@@ -54,7 +54,7 @@ namespace wreport {
 /**
  * Holds the WMO variable code of a variable
  */
-typedef short unsigned int Varcode;
+typedef uint16_t Varcode;
 
 /// Format a varcode into a string
 std::string varcode_format(Varcode code);
@@ -104,14 +104,6 @@ std::string varcode_format(Varcode code);
  *   The short integer code that can be queried with the WR_GET_* macros
  */
 Varcode descriptor_code(const char* desc);
-
-
-/**
- * Describes how a wreport::Varinfo has been altered: it is used for supporting
- * variables coming from BUFR and CREX messages that use C codes to alter
- * variable information.
- */
-typedef short unsigned int Alteration;
 
 
 /// Variable type

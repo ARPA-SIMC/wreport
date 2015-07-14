@@ -20,6 +20,7 @@ std::vector<Test> tests {
     Test("create", [](Fixture& f) {
         // Test variable creation
         const Vartable* table = Vartable::get_bufr("B0000000000000014000");
+        // LONGITUDE (HIGH ACCURACY) 5 decimal digits, -18000000 bit_ref, 26 bits
         Varinfo info = table->query(WR_VAR(0, 6, 1));
 
         {

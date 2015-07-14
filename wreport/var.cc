@@ -210,10 +210,8 @@ void Var::copy_value(const Var& var)
             memcpy(m_value.c, var.m_value.c, m_info->len + 1);
             break;
         case Vartype::Integer:
-            m_value.i = var.m_value.i;
-            break;
         case Vartype::Decimal:
-            m_value.d = var.m_value.d;
+            m_value.i = var.m_value.i;
             break;
     }
 }
@@ -233,11 +231,8 @@ void Var::move_value(Var& var)
             var.m_isset = false;
             break;
         case Vartype::Integer:
-            m_value.i = var.m_value.i;
-            var.m_isset = false;
-            break;
         case Vartype::Decimal:
-            m_value.d = var.m_value.d;
+            m_value.i = var.m_value.i;
             var.m_isset = false;
             break;
     }
@@ -256,9 +251,8 @@ bool Var::value_equals(const Var& var) const
         case Vartype::String:
             return strcmp(m_value.c, var.m_value.c) == 0;
         case Vartype::Integer:
-            return m_value.i == var.m_value.i;
         case Vartype::Decimal:
-            return m_value.d == var.m_value.d;
+            return m_value.i == var.m_value.i;
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
@@ -283,9 +277,8 @@ int Var::enqi() const
             error_type::throwf("enqi: %01d%02d%03d (%s) is an opaque binary",
                     WR_VAR_FXY(m_info->code), m_info->desc);
         case Vartype::Integer:
-            return m_value.i;
         case Vartype::Decimal:
-            return m_info->encode_decimal(m_value.d);
+            return m_value.i;
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
@@ -306,7 +299,7 @@ double Var::enqd() const
         case Vartype::Integer:
             return m_value.i;
         case Vartype::Decimal:
-            return m_value.d;
+            return m_info->decode_decimal(m_value.i);
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
@@ -364,20 +357,13 @@ const char* Var::enqc() const
         case Vartype::String:
         case Vartype::Binary:
             return m_value.c;
-        case Vartype::Integer: {
-            // Access tl_buf just once, to prevent a lot of calls to __tls_get_addr
-            char* buf = tl_buf;
-            if (!buf) buf = tl_buf = new char[buf_size];
-
-            int32_to_str(m_value.i, buf, buf_size);
-            return buf;
-        }
+        case Vartype::Integer:
         case Vartype::Decimal: {
             // Access tl_buf just once, to prevent a lot of calls to __tls_get_addr
             char* buf = tl_buf;
             if (!buf) buf = tl_buf = new char[buf_size];
 
-            int32_to_str(m_info->encode_decimal(m_value.d), buf, buf_size);
+            int32_to_str(m_value.i, buf, buf_size);
             return buf;
         }
     }
@@ -396,9 +382,8 @@ std::string Var::enqs() const
         case Vartype::Binary:
             return m_value.c;
         case Vartype::Integer:
-            return int32_to_stdstr(m_value.i);
         case Vartype::Decimal:
-            return int32_to_stdstr(m_info->encode_decimal(m_value.d));
+            return int32_to_stdstr(m_value.i);
     }
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
@@ -441,7 +426,7 @@ void Var::assign_d_checked(double val)
                 val, m_info->dmin, m_info->dmax,
                 WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
     }
-    m_value.d = m_info->round_decimal(val);
+    m_value.i = m_info->encode_decimal(val);
     m_isset = true;
 }
 
@@ -486,8 +471,10 @@ void Var::seti(int val)
         case Vartype::Binary:
             error_type::throwf("seti: %01d%02d%03d (%s) is an opaque binary",
                     WR_VAR_FXY(m_info->code), m_info->desc);
-        case Vartype::Integer: assign_i_checked(val); break;
-        case Vartype::Decimal: assign_d_checked(m_info->decode_decimal(val)); break;
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            assign_i_checked(val);
+            break;
     }
 }
 
@@ -512,17 +499,12 @@ void Var::setc(const char* val)
     {
         case Vartype::String: assign_c_checked(val, m_info->len); break;
         case Vartype::Binary: assign_b_checked((uint8_t*)val, m_info->len); break;
+        case Vartype::Decimal:
         case Vartype::Integer:
             if (*val == '-')
                 assign_i_checked(-str_to_unsigned(val + 1));
             else
                 assign_i_checked(str_to_unsigned(val));
-            break;
-        case Vartype::Decimal:
-            if (*val == '-')
-                assign_d_checked(m_info->decode_decimal(-str_to_unsigned(val + 1)));
-            else
-                assign_d_checked(m_info->decode_decimal(str_to_unsigned(val)));
             break;
     }
 }
@@ -549,16 +531,11 @@ void Var::sets(const std::string& val)
         case Vartype::String: assign_c_checked(val.c_str(), val.size()); break;
         case Vartype::Binary: assign_b_checked((uint8_t*)val.c_str(), val.size()); break;
         case Vartype::Integer:
+        case Vartype::Decimal:
             if (val[0] == '-')
                 assign_i_checked(-str_to_unsigned(val.c_str() + 1));
             else
                 assign_i_checked(str_to_unsigned(val.c_str()));
-            break;
-        case Vartype::Decimal:
-            if (val[0] == '-')
-                assign_d_checked(m_info->decode_decimal(-str_to_unsigned(val.c_str() + 1)));
-            else
-                assign_d_checked(m_info->decode_decimal(str_to_unsigned(val.c_str())));
             break;
     }
 }
@@ -715,6 +692,31 @@ std::string Var::format(const char* ifundef) const
     error_consistency::throwf("unknown variable type %d", (int)m_info->type);
 }
 
+void Var::format(FILE* out, const char* ifundef) const
+{
+    if (!isset())
+    {
+        fputs(ifundef, out);
+        return;
+    }
+    switch (m_info->type)
+    {
+        case Vartype::Binary:
+            for (unsigned i = 0; i < info()->len; ++i)
+                fprintf(out, "%02hhX", ((uint8_t*)m_value.c)[i]);
+            return;
+        case Vartype::String:
+            fputs(m_value.c, out);
+            return;
+        case Vartype::Integer:
+        case Vartype::Decimal: {
+            Varinfo i = info();
+            fprintf(out, "%.*f", i->scale > 0 ? i->scale : 0, enqd());
+            return;
+        }
+    }
+    error_consistency::throwf("unknown variable type %d", (int)m_info->type);
+}
 
 void Var::print_without_attrs(FILE* out, const char* end) const
 {
@@ -722,27 +724,7 @@ void Var::print_without_attrs(FILE* out, const char* end) const
     fprintf(out, "%01d%02d%03d %-.64s(%s): ", WR_VAR_FXY(m_info->code), m_info->desc, m_info->unit);
 
     // Print value
-    if (!isset())
-    {
-        fprintf(out, "(undef)%s", end);
-        return;
-    }
-    switch (m_info->type)
-    {
-        case Vartype::Binary:
-#warning TODO: implement this
-            fprintf(out, "(printing binary values not yet implemented)%s", end);
-            break;
-        case Vartype::String:
-            fprintf(out, "%s%s", m_value.c, end);
-            break;
-        case Vartype::Integer:
-            fprintf(out, "%d%s", m_value.i, end);
-            break;
-        case Vartype::Decimal:
-            fprintf(out, "%.*f%s", m_info->scale > 0 ? m_info->scale : 0, m_value.d, end);
-            break;
-    }
+    format(out, "(undef)");
 }
 
 void Var::print_without_attrs(std::ostream& out) const
@@ -844,10 +826,12 @@ unsigned Var::diff(const Var& var) const
             }
             break;
         case Vartype::Decimal:
-            if (m_value.d != var.m_value.d)
+            if (m_value.i != var.m_value.i)
             {
                 notes::logf("[%d%02d%03d %s] values differ: first is %f, second is %f\n",
-                        WR_VAR_FXY(code()), m_info->desc, m_value.d, var.m_value.d);
+                        WR_VAR_FXY(code()), m_info->desc,
+                        m_info->decode_decimal(m_value.i),
+                        m_info->decode_decimal(var.m_value.i));
                 return 1;
             }
             break;

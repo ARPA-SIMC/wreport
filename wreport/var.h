@@ -42,7 +42,6 @@ protected:
      */
     union {
         int32_t i;
-        double d;
         char* c;
     } m_value;
 
@@ -269,13 +268,16 @@ public:
 	 */
 	const Var* next_attr() const;
 
-	/**
-	 * Create a formatted string representation of the variable value
-	 *
-	 * @param ifundef
-	 *   String to use if the variable is undefiend
-	 */
-	std::string format(const char* ifundef = "(undef)") const;
+    /**
+     * Create a formatted string representation of the variable value
+     *
+     * @param ifundef
+     *   String to use if the variable is undefiend
+     */
+    std::string format(const char* ifundef="") const;
+
+    /// Write the formatted value of this variable to an output stream
+    void format(FILE* out, const char* ifundef="") const;
 
 	/**
 	 * Print the variable to an output stream
@@ -342,7 +344,5 @@ template<> inline double Var::enq() const { return enqd(); }
 template<> inline const char* Var::enq() const { return enqc(); }
 template<> inline std::string Var::enq() const { return enqs(); }
 
-
 }
-
 #endif
