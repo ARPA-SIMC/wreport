@@ -11,29 +11,23 @@ class Varinfo(unittest.TestCase):
     def testEmptyVarinfo(self):
         self.assertRaises(NotImplementedError, wreport.Varinfo)
 
-    def testQueryLocal(self):
-        info = wreport.varinfo("t")
-        self.assertEqual(info.unit, "K")
-
     def testData(self):
-        info = wreport.varinfo("B01001")
+        table = wreport.Vartable.get_bufr(master_table_version_number=24)
+        info = table["B01001"]
         self.assertEqual(info.code, "B01001")
-        self.assertEqual(info.desc, "WMO BLOCK NUMBER")
+        self.assertEqual(info.desc, "WMO block number")
         self.assertEqual(info.unit, "NUMERIC")
         self.assertEqual(info.scale, 0)
-        self.assertEqual(info.ref, 0)
         self.assertEqual(info.len, 3)
-        self.assertEqual(info.is_string, False)
+        self.assertEqual(info.bit_ref, 0)
+        self.assertEqual(info.bit_len, 7)
+        self.assertEqual(info.type, "integer")
 
     def testStringification(self):
-        info = wreport.varinfo("B01001")
+        table = wreport.Vartable.get_bufr(master_table_version_number=24)
+        info = table["B01001"]
         self.assertTrue(str(info).startswith("B01001"))
         self.assertTrue(repr(info).startswith("Varinfo('B01001"))
-
-    def testFromAlias(self):
-        info = wreport.varinfo("t")
-        self.assertEqual(info.var, "B12101")
-
 
 if __name__ == "__main__":
     from testlib import main

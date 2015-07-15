@@ -59,7 +59,10 @@ static PyObject* dpy_Varinfo_str(dpy_Varinfo* self)
 
 static PyObject* dpy_Varinfo_repr(dpy_Varinfo* self)
 {
-    return PyUnicode_FromString(varcode_format(self->info->code).c_str());
+    std::string res = "Varinfo('";
+    res += varcode_format(self->info->code);
+    res += "')";
+    return PyUnicode_FromString(res.c_str());
 }
 
 
