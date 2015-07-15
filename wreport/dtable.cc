@@ -87,8 +87,8 @@ struct DTableBase : public DTable
                 if (!varcodes.empty())
                     entries.push_back(Entry(dcode, begin, varcodes.size()));
                 begin = varcodes.size();
-                dcode = descriptor_code(line + 1);
-                varcodes.push_back(descriptor_code(line + 11));
+                dcode = varcode_parse(line + 1);
+                varcodes.push_back(varcode_parse(line + 11));
 
                 // fprintf(stderr, "Debug: D%05d %d entries\n", dcode, nentries);
             }
@@ -104,7 +104,7 @@ struct DTableBase : public DTable
                     error_parse::throwf(pathname.c_str(), line_no, "too many entries found (expected %d)", nentries_check);
 
                 // Finally append the code
-                varcodes.push_back(descriptor_code(line + 11));
+                varcodes.push_back(varcode_parse(line + 11));
             }
             else
                 error_parse::throwf(pathname.c_str(), line_no, "unrecognized line: \"%s\"", line);

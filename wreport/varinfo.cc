@@ -3,6 +3,7 @@
 #include <cstring>
 #include <cmath>
 #include <climits>
+#include <cctype>
 #include "config.h"
 
 using namespace std;
@@ -40,25 +41,36 @@ static int intexp10(unsigned x)
 	}
 }
 
-Varcode descriptor_code(const char* entry)
+Varcode varcode_parse(const char* entry)
 {
-	int res = 0;
-	switch (entry[0])
-	{
-		case 'B':
-		case '0':
-			res = 0; break;
-		case 'R':
-		case '1':
-			res = 1 << 14; break;
-		case 'C':
-		case '2':
-			res = 2 << 14; break;
-		case 'D':
-		case '3':
-			res = 3 << 14; break;
-	}
-	return res | WR_STRING_TO_VAR(entry+1);
+    if (!entry)
+        throw error_consistency("cannot parse a Varcode out of a NULL");
+    if (!entry[0])
+        throw error_consistency("cannot parse a Varcode out of an empty string");
+
+    Varcode res = 0;
+    switch (entry[0])
+    {
+        case 'B':
+        case '0':
+            res = 0; break;
+        case 'R':
+        case '1':
+            res = WR_VAR_F(1); break;
+        case 'C':
+        case '2':
+            res = WR_VAR_F(2); break;
+        case 'D':
+        case '3':
+            res = WR_VAR_F(3); break;
+    }
+
+    // Ensure that B is followed by 5 integers
+    for (unsigned i = 1; i < 6; ++i)
+        if (entry[i] and !isdigit(entry[i]))
+            error_consistency::throwf("cannot parse a Varcode out of '%s'", entry);
+
+    return res | WR_STRING_TO_VAR(entry + 1);
 }
 
 std::string varcode_format(Varcode code)

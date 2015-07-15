@@ -30,7 +30,7 @@ void Options::init_varcodes(const char* str)
     varcodes.clear();
     while (str && *str && strlen(str) >= 6)
     {
-        varcodes.push_back(descriptor_code(str));
+        varcodes.push_back(varcode_parse(str));
         str = strchr(str, ',');
         if (str && *str) ++str;
     }

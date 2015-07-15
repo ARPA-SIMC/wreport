@@ -33,7 +33,7 @@ namespace wreport {
  * wreport::Vartable and wreport::Varinfo have special memory management: they are never
  * deallocated.  This is a precise design choice to speed up passing and
  * copying wreport::Varinfo values, that are used very intensely as they accompany
- * all the physical values processed by DB-All.e and its components.
+ * all the physical values processed by wreport.
  * This behaviour should not be a cause of memory leaks, since a software would
  * only need to access a limited amount of B tables during its lifetime.
  *
@@ -43,7 +43,7 @@ namespace wreport {
  * \li \b F (2 bits) identifies the type of table entry represented by the
  * dba_varcode, and is always 0 for B tables.  Different values are only used
  * during encoding and decoding of BUFR and CREX messages and are not in use in
- * other parts of DB-All.e.
+ * other parts of wreport.
  * \li \b X (6 bits) identifies a section of the table.
  * \li \b Y (8 bits) identifies the value within the section.  
  *
@@ -103,7 +103,7 @@ std::string varcode_format(Varcode code);
  * @return
  *   The short integer code that can be queried with the WR_GET_* macros
  */
-Varcode descriptor_code(const char* desc);
+Varcode varcode_parse(const char* desc);
 
 
 /// Variable type

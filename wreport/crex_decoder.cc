@@ -86,7 +86,7 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
         if (*in.cur == 'B' || *in.cur == 'R' || *in.cur == 'C' || *in.cur == 'D')
         {
             in.check_available_data(6, "one data descriptor");
-            out.datadesc.push_back(descriptor_code(in.cur));
+            out.datadesc.push_back(varcode_parse(in.cur));
             in.skip_data_and_spaces(6);
         }
         else if (*in.cur == 'E')
