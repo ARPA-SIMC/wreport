@@ -56,13 +56,13 @@ Varcode varcode_parse(const char* entry)
             res = 0; break;
         case 'R':
         case '1':
-            res = WR_VAR_F(1); break;
+            res = 1 << 14; break;
         case 'C':
         case '2':
-            res = WR_VAR_F(2); break;
+            res = 2 << 14; break;
         case 'D':
         case '3':
-            res = WR_VAR_F(3); break;
+            res = 3 << 14; break;
     }
 
     // Ensure that B is followed by 5 integers
@@ -70,7 +70,7 @@ Varcode varcode_parse(const char* entry)
         if (entry[i] and !isdigit(entry[i]))
             error_consistency::throwf("cannot parse a Varcode out of '%s'", entry);
 
-    return res | WR_STRING_TO_VAR(entry + 1);
+    return res + WR_STRING_TO_VAR(entry + 1);
 }
 
 std::string varcode_format(Varcode code)
