@@ -1,0 +1,273 @@
+#!/usr/bin/python
+# coding: utf-8
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import os
+os.environ["DBALLE_BUILDING_DOCS"]="true"
+
+try:
+    import rpy_options
+    rpy_options.set_options(VERBOSE=False)
+except ImportError:
+    pass
+import sys
+import inspect
+import dballe
+import dballe.volnd
+import dballe.rconvert
+
+def print_indented(spaces, *args):
+    "Print a string, indented by the given number of spaces"
+    for s in args:
+        for line in s.split("\n"):
+            for i in range(1,spaces):
+                sys.stdout.write(" ")
+            sys.stdout.write(line)
+            sys.stdout.write("\n")
+
+c_argspecs = {
+    "dballe.varinfo": "(varcode)",
+    "dballe.var": "(varcode[, default])",
+    "dballe.describe_level": "(ltype1=None, l1=None, ltype2=None, l2=None)",
+    "dballe.describe_trange": "(pind=None, p1=None, p2=None)",
+    "Var.enqi": "()",
+    "Var.enqc": "()",
+    "Var.enqd": "()",
+    "Var.enq": "()",
+    "Var.get": "(default=None)",
+    "Var.format": "(default='')",
+    "Record.clear": "()",
+    "Record.clear_vars": "()",
+    "Record.get": "(key, default=None)",
+    "Record.copy": "()",
+    "Record.key": "(key)",
+    "Record.var": "(key)",
+    "Record.keys": "()",
+    "Record.items": "()",
+    "Record.varitems": "()",
+    "Record.vars": "()",
+    "Record.update": "(\*\*kwargs)",
+    "Record.date_extremes": "()",
+    "Record.set_station_context": "()",
+    "Record.set_from_string": "(str)",
+    "DB.connect": "(dsn, user='', password='')",
+    "DB.connect_from_file": "(filename)",
+    "DB.connect_from_url": "(url)",
+    "DB.connect_test": "()",
+    "DB.is_url": "(string)",
+    "DB.disappear": "()",
+    "DB.reset": "([repinfo_filename])",
+    "DB.insert": "(record, can_replace=False, can_add_stations=False)",
+    "DB.remove": "(query)",
+    "DB.vacuum": "()",
+    "DB.query_reports": "(query)",
+    "DB.query_stations": "(query)",
+    "DB.query_levels": "(query)",
+    "DB.query_tranges": "(query)",
+    "DB.query_variable_types": "(query)",
+    "DB.query_summary": "(query)",
+    "DB.query_data": "(query)",
+    "DB.query_datetime_extremes": "(query)",
+    "DB.attr_insert": "(varcode, attrs, reference_id=None, replace=True)",
+    "DB.attr_remove": "(varcode, reference_id, attrs=None)",
+    "DB.query_attrs": "(varcode, reference_id, attrs=None)",
+    "DB.load": "(file)",
+    "DB.export_to_file": "(query, format, filename, generic=False)",
+    "Cursor.next": "()",
+    "Cursor.query_attrs": "(attrs=None)",
+}
+
+def document_class(cls):
+    name = cls.__name__
+    print()
+    print("dballe.{}".format(name))
+    print("-" * (len(name) + 7))
+    print()
+    print(inspect.getdoc(cls))
+    print()
+    print("Members")
+    print("```````")
+    document_members(cls)
+
+def document(obj):
+    if obj.__doc__ == None: return
+
+    if inspect.ismodule(obj):
+        print_indented(0, inspect.getdoc(obj))
+        print
+    elif inspect.isroutine(obj) and inspect.isfunction(obj):
+        # A Python function
+        print_indented(2, '``'+obj.__name__ + inspect.formatargspec(*inspect.getargspec(obj))+"``")
+        print_indented(4, inspect.getdoc(obj))
+    else:
+        print_indented(2, obj.__name__)
+        print_indented(4, inspect.getdoc(obj))
+
+def document_members(cls):
+    # List and classify members
+    member_vars = []
+    member_funcs = []
+
+    for name, m in inspect.getmembers(cls):
+        if name[0] == '_': continue
+        fullname = cls.__name__ + "." + name
+        if inspect.isroutine(m) and (inspect.isfunction(m) or fullname in c_argspecs):
+            member_funcs.append((fullname, name, m))
+        elif inspect.isclass(m) or inspect.ismodule(m):
+            pass
+        elif m.__class__.__name__ == "_Feature":
+            pass
+        else:
+            member_vars.append((fullname, name, m))
+
+    member_vars.sort()
+    member_funcs.sort()
+
+    # Document vars and get/setters
+    for fullname, name, m in member_vars:
+        print(".. _{}.{}:".format(cls.__name__, name))
+    for fullname, name, m in member_funcs:
+        print(".. _{}.{}():".format(cls.__name__, name))
+    print()
+    for fullname, name, m in member_vars:
+        print_indented(2, name)
+        print_indented(4, inspect.getdoc(m))
+
+    # Document functions
+    for fullname, name, m in member_funcs:
+        argspec = c_argspecs.get(fullname, None)
+        if argspec is None:
+            if inspect.isfunction(m):
+                argspec = inspect.formatargspec(*inspect.getargspec(m))
+            else:
+                argspec = ""
+        print_indented(2, name + argspec)
+        print_indented(4, inspect.getdoc(m))
+
+
+print("""===================================
+README for DB-All.e Python bindings
+===================================
+
+The DB-All.e Python bindings provide 2 levels of access to a DB-All.e database:
+a complete API similar to the Fortran and C++ API, and a high-level API called
+volnd that allows to automatically export matrices of data out of the database.
+
+.. contents::
+
+The DB-All.e API
+================
+
+The 'dballe' module has a few global methods:
+""")
+
+document_members(dballe)
+
+print("""
+and several classes, documented in their own sections.
+""")
+
+document_class(dballe.Var)
+document_class(dballe.Varinfo)
+document_class(dballe.Vartable)
+document_class(dballe.Record)
+
+print("""
+dballe.DB
+---------
+
+a DB is used to access the database.
+
+Its members are:
+""")
+
+document_members(dballe.DB)
+
+print("""
+
+Examples:
+
+::
+
+    # Connect to a database and run a query
+    db = dballe.DB.connect_from_file("db.sqlite")
+    query = dballe.Record(latmin=44.0, latmax=45.0, lonmin=11.0, lonmax=12.0)
+
+    # The result is a dballe.Cursor, which can be iterated to get results as
+    # dballe.Record objects.
+    # The results always point to the same Record to avoid creating a new one
+    # for every iteration: if you need to store them, use Record.copy()
+    for rec in db.query_data(query):
+        print rec["lat"], rec["lon"], rec["var"], rec.var().format("undefined")
+
+    # Insert 2 new variables in the database
+    rec = dballe.Record(
+        lat=44.5, lon=11.4,
+        level=(1,),
+        trange=(254,),
+        date=datetime.datetime(2013, 4, 25, 12, 0, 0),
+        B11101=22.4,
+        B12103=17.2,
+    )
+    db.insert(rec)
+
+
+dballe.Cursor
+-------------
+
+a Cursor is the result of database queries. It is generally not used explicitly
+and just iterated, but it does have a few members:
+""")
+
+document_members(dballe.Cursor)
+
+print("""
+The volnd API
+=============
+""")
+
+document(dballe.volnd)
+
+print("""
+This is the list of dimensions supported by dballe.volnd:
+""")
+
+document (dballe.volnd.AnaIndex)
+document (dballe.volnd.NetworkIndex)
+document (dballe.volnd.LevelIndex)
+document (dballe.volnd.TimeRangeIndex)
+document (dballe.volnd.DateTimeIndex)
+document (dballe.volnd.IntervalIndex)
+
+print("""
+The data object used by ``AnaIndex`` is:
+""")
+
+document (dballe.volnd.AnaIndexEntry)
+
+print("""
+The extraction is done using the dballe.volnd.read function:
+""")
+
+document (dballe.volnd.read)
+
+print("""
+The result of dballe.volnd.read is a dict mapping output variable names to a
+dballe.volnd.Data object with the results.  All the Data objects share their
+indexes unless the *xxx*-Index definitions have been created with
+``shared=False``.
+
+This is the dballe.volnd.Data class documentation:
+""")
+
+document (dballe.volnd.Data)
+
+print("""
+The methods of dballe.volnd.Data are:
+""")
+
+document_members(dballe.volnd.Data)
+

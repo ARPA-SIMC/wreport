@@ -6,6 +6,9 @@ SUBDIRS = wreport src tables testdata
 if DO_DOCS
 SUBDIRS += doc
 endif
+if PYTHON
+SUBDIRS += python
+endif
 SUBDIRS += .
 
 pkgconfigdir = $(libdir)/pkgconfig

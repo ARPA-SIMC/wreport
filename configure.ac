@@ -22,10 +22,17 @@ AC_ARG_ENABLE([docs],
 
 AC_ARG_ENABLE([doxy-undoc-warnings],
     [AS_HELP_STRING(
-	[--enable-doxy-undoc-warnings],
+    [--enable-doxy-undoc-warnings],
         [enable building of the documentation])],
     [],
     [enable_doxy_undoc_warnings="no"])
+
+AC_ARG_ENABLE([python],
+    [AS_HELP_STRING(
+        [--enable-python],
+        [build Python bindings])],
+    [],
+    [enable_python="yes"])
 
 dnl To use subdirs
 AC_PROG_MAKE_SET
@@ -112,6 +119,23 @@ then
 fi
 AM_CONDITIONAL([LUA], [test x"$have_lua" = x"yes"])
 
+dnl Check for python
+if test x$enable_python = xyes
+then
+    dnl Check for python
+    AM_PATH_PYTHON([], [], [enable_python=no])
+fi
+if test x$enable_python = xyes
+then
+    PYTHON_CFLAGS=`unset CFLAGS; $PYTHON-config --cflags`
+    AC_SUBST(PYTHON_CFLAGS)
+    AC_DEFINE(HAVE_PYTHON,[],[Have Python bindings])
+fi
+AM_CONDITIONAL([PYTHON], [test x"$enable_python" = x"yes"])
+
+AC_CHECK_PROG(have_rst2html, rst2html, yes, no)
+AM_CONDITIONAL([HAVE_RST2HTML], [test x$have_rst2html = xyes])
+
 dnl Check for wibble
 PKG_CHECK_EXISTS([libwibble], [have_wibble=yes], [have_wibble=no])
 if test x$have_wibble = xyes
@@ -187,6 +211,7 @@ Makefile
 wreport/Makefile
 src/Makefile
 tables/Makefile
+python/Makefile
 testdata/Makefile
 doc/Makefile
 doc/libwreport.dox
@@ -199,7 +224,9 @@ AC_OUTPUT
 AC_MSG_NOTICE([
 ===================================================
 $PACKAGE_NAME-$PACKAGE_VERSION configuration:
-AS_HELP_STRING([lua bindings:], [$have_lua])
+AS_HELP_STRING([lua:], [$have_lua])
+AS_HELP_STRING([python:], [$enable_python])
+AS_HELP_STRING([rst2html:], [$have_rst2html])
 AS_HELP_STRING([tests:], [$enable_tests])
 AS_HELP_STRING([documentation:], [$enable_docs])
 ===================================================])
