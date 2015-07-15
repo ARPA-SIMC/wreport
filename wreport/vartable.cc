@@ -498,7 +498,7 @@ const Vartable* Vartable::get_bufr(const BufrTableID& id)
     auto res = tabledir.find_bufr(id);
     if (!res) error_notfound::throwf("BUFR table for centre %hu:%hu and tables %hhu:%hhu:%hhu not found",
             id.originating_centre, id.originating_subcentre,
-            id.master_table, id.master_table_version_number, id.master_table_version_number_local);
+            id.master_table_number, id.master_table_version_number, id.master_table_version_number_local);
     return load_bufr(res->btable_pathname);
 }
 
@@ -508,7 +508,7 @@ const Vartable* Vartable::get_crex(const CrexTableID& id)
     auto res = tabledir.find_crex(id);
     if (!res) error_notfound::throwf("CREX table for centre %hu:%hu and tables %hhu:%hhu:%hhu:%hhu not found",
             id.originating_centre, id.originating_subcentre,
-            id.master_table, id.master_table_version_number,
+            id.master_table_number, id.master_table_version_number,
             id.master_table_version_number_local,
             id.master_table_version_number_bufr);
     return load_crex(res->btable_pathname);

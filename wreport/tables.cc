@@ -57,7 +57,7 @@ void Tables::load_bufr(const BufrTableID& id)
     if (!t)
         error_notfound::throwf("BUFR table for center %hu:%hu table %hhu:%hhu:%hhu not found",
                 id.originating_centre, id.originating_subcentre,
-                id.master_table, id.master_table_version_number,
+                id.master_table_number, id.master_table_version_number,
                 id.master_table_version_number_local);
     btable = Vartable::load_bufr(t->btable_pathname);
     dtable = DTable::load_bufr(t->dtable_pathname);
@@ -70,7 +70,7 @@ void Tables::load_crex(const CrexTableID& id)
     if (!t)
         error_notfound::throwf("CREX table for center %hu:%hu table %hhu:%hhu:%hhu:%hhu not found",
                 id.originating_centre, id.originating_subcentre,
-                id.master_table, id.master_table_version_number,
+                id.master_table_number, id.master_table_version_number,
                 id.master_table_version_number_local, id.master_table_version_number_bufr);
     btable = Vartable::load_crex(t->btable_pathname);
     dtable = DTable::load_crex(t->dtable_pathname);

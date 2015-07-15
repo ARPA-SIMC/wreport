@@ -6,7 +6,6 @@ from __future__ import print_function
 from __future__ import unicode_literals
 import wreport
 import unittest
-from six import string_types
 
 class Varinfo(unittest.TestCase):
     def testEmptyVarinfo(self):
@@ -18,7 +17,7 @@ class Varinfo(unittest.TestCase):
 
     def testData(self):
         info = wreport.varinfo("B01001")
-        self.assertEqual(info.var, "B01001")
+        self.assertEqual(info.code, "B01001")
         self.assertEqual(info.desc, "WMO BLOCK NUMBER")
         self.assertEqual(info.unit, "NUMERIC")
         self.assertEqual(info.scale, 0)
@@ -38,4 +37,4 @@ class Varinfo(unittest.TestCase):
 
 if __name__ == "__main__":
     from testlib import main
-    main("test_varinfo")
+    main("varinfo")

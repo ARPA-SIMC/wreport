@@ -25,6 +25,8 @@ PyAPI_DATA(PyTypeObject) dpy_Vartable_Type;
 namespace wreport {
 namespace python {
 
+dpy_Vartable* vartable_create(const wreport::Vartable* table);
+
 void register_vartable(PyObject* m);
 
 }

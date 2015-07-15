@@ -33,14 +33,14 @@ std::vector<Test> tests {
         ensure_equals(WR_STRING_TO_VAR("00000"), WR_VAR(0, 0, 0));
         ensure_equals(WR_STRING_TO_VAR("63255"), WR_VAR(0, 63, 255));
 
-        ensure_equals(descriptor_code("B12345"), WR_VAR(0, 12, 345));
-        ensure_equals(descriptor_code("R00345"), WR_VAR(1, 0, 345));
-        ensure_equals(descriptor_code("C00000"), WR_VAR(2, 0, 0));
-        ensure_equals(descriptor_code("D63255"), WR_VAR(3, 63, 255));
-        ensure_equals(descriptor_code("012345"), WR_VAR(0, 12, 345));
-        ensure_equals(descriptor_code("100345"), WR_VAR(1, 0, 345));
-        ensure_equals(descriptor_code("200000"), WR_VAR(2, 0, 0));
-        ensure_equals(descriptor_code("363255"), WR_VAR(3, 63, 255));
+        ensure_equals(varcode_parse("B12345"), WR_VAR(0, 12, 345));
+        ensure_equals(varcode_parse("R00345"), WR_VAR(1, 0, 345));
+        ensure_equals(varcode_parse("C00000"), WR_VAR(2, 0, 0));
+        ensure_equals(varcode_parse("D63255"), WR_VAR(3, 63, 255));
+        ensure_equals(varcode_parse("012345"), WR_VAR(0, 12, 345));
+        ensure_equals(varcode_parse("100345"), WR_VAR(1, 0, 345));
+        ensure_equals(varcode_parse("200000"), WR_VAR(2, 0, 0));
+        ensure_equals(varcode_parse("363255"), WR_VAR(3, 63, 255));
 
         ensure_equals(varcode_format(WR_VAR(0, 1, 2)), "B01002");
         ensure_equals(varcode_format(WR_VAR(1, 1, 2)), "R01002");

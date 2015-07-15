@@ -210,17 +210,6 @@ Table* CrexQuery::choose_best(BufrTable& first, CrexTable& second) const
         return &second;
 }
 
-// Pack a BUFR request in a single unsigned
-static inline unsigned pack_bufr(int centre, int subcentre, int master_table, int local_table)
-{
-    return (centre << 24) | (subcentre << 16) | (master_table << 8) | local_table;
-}
-// Pack a CREX request in a single unsigned
-static inline unsigned pack_crex(int master_table_number, int edition, int table)
-{
-    return (master_table_number << 16) | (edition << 8) | table;
-}
-
 struct Index
 {
     vector<Dir> dirs;
@@ -252,7 +241,7 @@ struct Index
             notes::logf("Matched table %s for ce %hu sc %hu mt %hhu mtv %hhu mtlv %hhu",
                     result->btable_id.c_str(),
                     id.originating_centre, id.originating_subcentre,
-                    id.master_table, id.master_table_version_number, id.master_table_version_number_local);
+                    id.master_table_number, id.master_table_version_number, id.master_table_version_number_local);
             return result;
         }
         return nullptr;
@@ -275,7 +264,7 @@ struct Index
             crex_cache[id] = result;
             notes::logf("Matched table %s for mt %hhu mtv %hhu mtlv %hhu",
                     result->btable_id.c_str(),
-                    id.master_table, id.master_table_version_number,
+                    id.master_table_number, id.master_table_version_number,
                     id.master_table_version_number_local);
             return result;
         }

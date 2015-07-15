@@ -14,8 +14,8 @@ bool BufrTableID::operator<(const BufrTableID& o) const
     if (originating_centre > o.originating_centre) return false;
     if (originating_subcentre < o.originating_subcentre) return true;
     if (originating_subcentre > o.originating_subcentre) return false;
-    if (master_table < o.master_table) return true;
-    if (master_table > o.master_table) return false;
+    if (master_table_number < o.master_table_number) return true;
+    if (master_table_number > o.master_table_number) return false;
     if (master_table_version_number < o.master_table_version_number) return true;
     if (master_table_version_number > o.master_table_version_number) return false;
     if (master_table_version_number_local < o.master_table_version_number_local) return true;
@@ -25,7 +25,7 @@ bool BufrTableID::operator<(const BufrTableID& o) const
 
 bool BufrTableID::is_acceptable_replacement(const BufrTableID& id) const
 {
-    if (id.master_table != master_table)
+    if (id.master_table_number != master_table_number)
         return false;
     if (id.master_table_version_number < master_table_version_number)
         return false;
@@ -227,7 +227,7 @@ void BufrTableID::print(FILE* out) const
 {
     fprintf(out, "BUFR(%03hu:%02hu, %02hhu:%02hhu:%02hhu)",
         originating_centre, originating_subcentre,
-        master_table, master_table_version_number,
+        master_table_number, master_table_version_number,
         master_table_version_number_local);
 }
 
@@ -240,8 +240,8 @@ bool CrexTableID::operator<(const CrexTableID& o) const
     if (originating_centre > o.originating_centre) return false;
     if (originating_subcentre < o.originating_subcentre) return true;
     if (originating_subcentre > o.originating_subcentre) return false;
-    if (master_table < o.master_table) return true;
-    if (master_table > o.master_table) return false;
+    if (master_table_number < o.master_table_number) return true;
+    if (master_table_number > o.master_table_number) return false;
     if (master_table_version_number < o.master_table_version_number) return true;
     if (master_table_version_number > o.master_table_version_number) return false;
     if (master_table_version_number_local < o.master_table_version_number_local) return true;
@@ -254,7 +254,7 @@ bool CrexTableID::operator<(const CrexTableID& o) const
 bool CrexTableID::is_acceptable_replacement(const BufrTableID& id) const
 {
     // Master table number must be the same
-    if (id.master_table != master_table)
+    if (id.master_table_number != master_table_number)
         return false;
 
     // Edition must be greater or equal to what we want
@@ -271,7 +271,7 @@ bool CrexTableID::is_acceptable_replacement(const CrexTableID& id) const
         return false;
 
     // Master table number must be the same
-    if (id.master_table != master_table)
+    if (id.master_table_number != master_table_number)
         return false;
 
     // Master table version number most be greater or equal than what we want
@@ -341,7 +341,7 @@ void CrexTableID::print(FILE* out) const
 {
     fprintf(stderr, "CREX(%02hhu, %02hu:%02hu, %02hhu:%02hhu:%02hhu:%02hhu)",
         edition_number, originating_centre, originating_subcentre,
-        master_table, master_table_version_number,
+        master_table_number, master_table_version_number,
         master_table_version_number_local,
         master_table_version_number_bufr);
 }

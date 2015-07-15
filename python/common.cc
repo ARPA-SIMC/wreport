@@ -199,20 +199,5 @@ int object_repr(PyObject* o, std::string& out)
     return 0;
 }
 
-void common_init()
-{
-    /*
-     * PyDateTimeAPI, that is used by all the PyDate* and PyTime* macros, is
-     * defined as a static variable defaulting to NULL, and it needs to be
-     * initialized on each and every C file where it is used.
-     *
-     * Therefore, we need to have a common_init() to call from all
-     * initialization functions. *sigh*
-     */
-    if (PyDateTimeAPI)
-        return;
-    PyDateTime_IMPORT;
-}
-
 }
 }

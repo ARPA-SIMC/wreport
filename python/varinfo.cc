@@ -116,11 +116,11 @@ PyTypeObject dpy_Varinfo_Type = {
 namespace wreport {
 namespace python {
 
-dpy_Varinfo* varinfo_create(const Varinfo& v)
+dpy_Varinfo* varinfo_create(Varinfo v)
 {
     dpy_Varinfo* result = PyObject_New(dpy_Varinfo, &dpy_Varinfo_Type);
     if (!result) return NULL;
-    new (&result->info) Varinfo(v);
+    result->info = v;
     return result;
 }
 

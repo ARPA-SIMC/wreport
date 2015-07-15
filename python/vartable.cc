@@ -2,6 +2,7 @@
 #include "varinfo.h"
 #include "common.h"
 #include <wreport/vartable.h>
+#include <wreport/tableinfo.h>
 
 using namespace std;
 using namespace wreport;
@@ -11,13 +12,16 @@ using namespace wreport;
 extern "C" {
 
 static PyObject* dpy_Vartable_get(PyTypeObject *type, PyObject *args, PyObject *kw);
-static PyObject* dpy_Vartable_query(dpy_Vartable *self, PyObject *args, PyObject *kw);
 
-static PyMethodDef dpy_Vartable_methods[] = {
-    {"query", (PyCFunction)dpy_Vartable_query, METH_VARARGS, "Query the table, returning a Varinfo object or raising an exception" },
-    {NULL}
-};
+static int dpy_Vartable_init(dpy_Vartable* self, PyObject* args, PyObject* kw)
+{
+    // People should not invoke Varinfo() as a constructor, but if they do,
+    // this is better than a segfault later on
+    PyErr_SetString(PyExc_NotImplementedError, "Vartable objects cannot be constructed explicitly");
+    return -1;
+}
 
+#if 0
 static int dpy_Vartable_init(dpy_Vartable* self, PyObject* args, PyObject* kw)
 {
     const char* table_name = 0;
@@ -30,14 +34,15 @@ static int dpy_Vartable_init(dpy_Vartable* self, PyObject* args, PyObject* kw)
         return 0;
     } WREPORT_CATCH_RETURN_INT
 }
+#endif
 
-static PyObject* dpy_Vartable_id(dpy_Vartable* self, void* closure)
+static PyObject* dpy_Vartable_pathname(dpy_Vartable* self, void* closure)
 {
     return PyUnicode_FromString(self->table->pathname().c_str());
 }
 
 static PyGetSetDef dpy_Vartable_getsetters[] = {
-    {"id", (getter)dpy_Vartable_id, NULL, "name of the table", NULL},
+    {"pathname", (getter)dpy_Vartable_pathname, NULL, "name of the table", NULL},
     {NULL}
 };
 
@@ -106,6 +111,150 @@ static int dpy_Vartable_contains(dpy_Vartable* self, PyObject *value)
     } WREPORT_CATCH_RETURN_INT
 }
 
+static PyObject* dpy_Vartable_load_bufr(PyTypeObject *type, PyObject *args)
+{
+    const char* pathname;
+    if (!PyArg_ParseTuple(args, "s", &pathname))
+        return nullptr;
+
+    try {
+        return (PyObject*)vartable_create(Vartable::load_bufr(pathname));
+    } WREPORT_CATCH_RETURN_PYO
+}
+
+static PyObject* dpy_Vartable_load_crex(PyTypeObject *type, PyObject *args)
+{
+    const char* pathname;
+    if (!PyArg_ParseTuple(args, "s", &pathname))
+        return nullptr;
+
+    try {
+        return (PyObject*)vartable_create(Vartable::load_crex(pathname));
+    } WREPORT_CATCH_RETURN_PYO
+}
+
+static PyObject* dpy_Vartable_get_bufr(PyTypeObject *type, PyObject *args, PyObject* kw)
+{
+    static const char* kwlist[] = {
+        "basename", "originating_centre", "originating_subcentre",
+        "master_table_number", "master_table_version_number",
+        "master_table_version_number_local", NULL };
+    const char* basename = nullptr;
+    int originating_centre = 0;
+    int originating_subcentre = 0;
+    int master_table_number = 0;
+    int master_table_version_number = -1;
+    int master_table_version_number_local = 0;
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|siiiii",
+                const_cast<char**>(kwlist), &basename,
+                &originating_centre, &originating_subcentre,
+                &master_table_number, &master_table_version_number,
+                &master_table_version_number_local))
+        return nullptr;
+
+    if (basename)
+        try {
+            return (PyObject*)vartable_create(Vartable::get_bufr(basename));
+        } WREPORT_CATCH_RETURN_PYO
+
+    if (master_table_version_number == -1)
+        PyErr_SetString(PyExc_ValueError, "Please pass either basename or master_table_version_number");
+
+    BufrTableID id(
+        originating_centre, originating_subcentre, master_table_number,
+        master_table_version_number, master_table_version_number_local);
+
+    try {
+        return (PyObject*)vartable_create(Vartable::get_bufr(id));
+    } WREPORT_CATCH_RETURN_PYO
+}
+
+static PyObject* dpy_Vartable_get_crex(PyTypeObject *type, PyObject *args, PyObject* kw)
+{
+    static const char* kwlist[] = {
+        "basename", "edition_number", "originating_centre", "originating_subcentre",
+        "master_table_number", "master_table_version_number",
+        "master_table_version_number_bufr",
+        "master_table_version_number_local", NULL };
+    const char* basename = nullptr;
+    int edition_number = 2;
+    int originating_centre = 0;
+    int originating_subcentre = 0;
+    int master_table_number = 0;
+    int master_table_version_number = -1;
+    int master_table_version_number_bufr = -1;
+    int master_table_version_number_local = 0;
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|siiiiiii",
+                const_cast<char**>(kwlist), &basename,
+                &edition_number, &originating_centre, &originating_subcentre,
+                &master_table_number, &master_table_version_number,
+                &master_table_version_number_bufr,
+                &master_table_version_number_local))
+        return nullptr;
+
+    if (basename)
+        try {
+            return (PyObject*)vartable_create(Vartable::get_crex(basename));
+        } WREPORT_CATCH_RETURN_PYO
+
+    if (master_table_version_number == -1 && master_table_version_number_bufr == -1)
+        PyErr_SetString(PyExc_ValueError, "Please pass at least one of basename, master_table_version_number, or master_table_version_number_bufr");
+
+    CrexTableID id(
+        edition_number, originating_centre, originating_subcentre, master_table_number,
+        master_table_version_number == -1 ? 0xff : master_table_version_number,
+        master_table_version_number_bufr == -1 ? 0xff : master_table_version_number_bufr,
+        master_table_version_number_local);
+
+    try {
+        return (PyObject*)vartable_create(Vartable::get_crex(id));
+    } WREPORT_CATCH_RETURN_PYO
+}
+
+static PyMethodDef dpy_Vartable_methods[] = {
+    {"load_bufr", (PyCFunction)dpy_Vartable_load_bufr, METH_VARARGS | METH_CLASS,
+        R"(
+            Vartable.load_bufr(pathname) -> wreport.Vartable
+
+            Load BUFR information from a Table B file and return it as a
+            wreport.Vartable.
+        )" },
+    {"load_crex", (PyCFunction)dpy_Vartable_load_crex, METH_VARARGS | METH_CLASS,
+        R"(
+            Vartable.load_crex(pathname) -> wreport.Vartable
+
+            Load CREX information from a Table B file and return it as a
+            wreport.Vartable.
+        )" },
+    {"get_bufr", (PyCFunction)dpy_Vartable_get_bufr, METH_VARARGS | METH_KEYWORDS | METH_CLASS,
+        R"(
+            Vartable.get_bufr(basename=None, originating_centre=0, originating_subcentre=0,
+                    master_table_number=0, master_table_version_number=None,
+                    master_table_version_number_local=0) -> wreport.Vartable
+
+            Look up a table B file using the information given, then load BUFR
+            information from it.
+
+            You need to provide either basename or master_table_version_number.
+        )" },
+    {"get_crex", (PyCFunction)dpy_Vartable_get_crex, METH_VARARGS | METH_KEYWORDS | METH_CLASS,
+        R"(
+            Vartable.get_crex(basename=None, edition_number=2,
+                    originating_centre=0, originating_subcentre=0,
+                    master_table_number=0, master_table_version_number=None,
+                    master_table_version_number_bufr=None,
+                    master_table_version_number_local=0) -> wreport.Vartable
+
+            Look up a table B file using the information given, then load CREX
+            information from it.
+
+            You need to provide either basename or master_table_version_number
+            or master_table_version_number_bufr.
+        )" },
+    {NULL}
+};
+
+
 static PySequenceMethods dpy_Vartable_sequence = {
     (lenfunc)dpy_Vartable_len,        // sq_length
     0,                                // sq_concat
@@ -125,7 +274,7 @@ static PyMappingMethods dpy_Vartable_mapping = {
 
 PyTypeObject dpy_Vartable_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "dballe.Vartable",         // tp_name
+    "wreport.Vartable",         // tp_name
     sizeof(dpy_Vartable),  // tp_basicsize
     0,                         // tp_itemsize
     0,                         // tp_dealloc
@@ -151,7 +300,7 @@ PyTypeObject dpy_Vartable_Type = {
         file installed in wreport's data directory (normally,
         ``/usr/share/wreport/``)::
 
-            table = dballe.Vartable("B0000000000000023000")
+            table = wreport.Vartable("B0000000000000023000")
             print(table["B12101"].desc)
 
             for i in table:
@@ -176,25 +325,18 @@ PyTypeObject dpy_Vartable_Type = {
     0,                         // tp_new
 };
 
-static PyObject* dpy_Vartable_query(dpy_Vartable *self, PyObject *args, PyObject *kw)
-{
-    const char* varname = 0;
-    if (!self->table)
-    {
-        PyErr_SetString(PyExc_KeyError, "table is empty");
-        return NULL;
-    }
-    if (!PyArg_ParseTuple(args, "s", &varname))
-        return NULL;
-    try {
-        return (PyObject*)varinfo_create(self->table->query(varcode_parse(varname)));
-    } WREPORT_CATCH_RETURN_PYO
 }
 
-}
-
-namespace dballe {
+namespace wreport {
 namespace python {
+
+dpy_Vartable* vartable_create(const wreport::Vartable* table)
+{
+    dpy_Vartable* result = PyObject_New(dpy_Vartable, &dpy_Vartable_Type);
+    if (!result) return nullptr;
+    result->table = table;
+    return result;
+}
 
 void register_vartable(PyObject* m)
 {

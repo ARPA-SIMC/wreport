@@ -22,7 +22,7 @@ PyAPI_DATA(PyTypeObject) dpy_Varinfo_Type;
 namespace wreport {
 namespace python {
 
-dpy_Varinfo* varinfo_create(const wreport::Varinfo& v);
+dpy_Varinfo* varinfo_create(wreport::Varinfo v);
 
 void register_varinfo(PyObject* m);
 

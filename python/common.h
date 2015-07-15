@@ -129,13 +129,6 @@ int file_get_fileno(PyObject* o);
  */
 PyObject* file_get_data(PyObject* o, char*&buf, Py_ssize_t& len);
 
-/**
- * Initialize the python bits to use used by the common functions.
- *
- * This can be called multiple times and will execute only once.
- */
-void common_init();
-
 }
 }
 #endif
