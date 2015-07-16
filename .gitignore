@@ -41,8 +41,15 @@ Makefile
 /debian/*.debhelper
 /debian/libwreport-dev/
 /debian/libwreport-doc/
-/debian/libwreport2/
+/debian/libwreport3/
 /debian/tmp/
 /debian/wreport-common/
+/debian/python3-wreport/
+/debian/python-wreport/
+/debian/autoreconf*
 /src/wrep
 /src/examples
+/python/_wreport.so
+/python/python-wreport.html
+/python/python-wreport.rst
+/py-compile
