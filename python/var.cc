@@ -16,6 +16,47 @@ extern "C" {
 
 static _Varinfo dummy_var;
 
+static wrpy_Var* wrpy_var_create(const wreport::Varinfo& v)
+{
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
+    if (!result) return NULL;
+    new (&result->var) Var(v);
+    return result;
+}
+
+static wrpy_Var* wrpy_var_create_i(const wreport::Varinfo& v, int val)
+{
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
+    if (!result) return NULL;
+    new (&result->var) Var(v, val);
+    return result;
+}
+
+static wrpy_Var* wrpy_var_create_d(const wreport::Varinfo& v, double val)
+{
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
+    if (!result) return NULL;
+    new (&result->var) Var(v, val);
+    return result;
+}
+
+static wrpy_Var* wrpy_var_create_c(const wreport::Varinfo& v, const char* val)
+{
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
+    if (!result) return NULL;
+    new (&result->var) Var(v, val);
+    return result;
+}
+
+static wrpy_Var* wrpy_var_create_copy(const wreport::Var& v)
+{
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
+    if (!result) return NULL;
+    new (&result->var) Var(v);
+    return result;
+}
+
+
 static PyObject* wrpy_Var_code(wrpy_Var* self, void* closure)
 {
     return wrpy_varcode_format(self->var.code());
@@ -272,10 +313,18 @@ PyTypeObject wrpy_Var_Type = {
     0,                         // tp_new
 };
 
+static wrpy_c_api c_api;
+
 }
 
 namespace wreport {
 namespace python {
+
+wrpy_Var* var_create(const wreport::Varinfo& v) { return wrpy_var_create(v); }
+wrpy_Var* var_create(const wreport::Varinfo& v, int val) { return wrpy_var_create_i(v, val); }
+wrpy_Var* var_create(const wreport::Varinfo& v, double val) { return wrpy_var_create_d(v, val); }
+wrpy_Var* var_create(const wreport::Varinfo& v, const char* val) { return wrpy_var_create_c(v, val); }
+wrpy_Var* var_create(const wreport::Var& v) { return wrpy_var_create_copy(v); }
 
 PyObject* var_value_to_python(const wreport::Var& v)
 {
@@ -325,56 +374,31 @@ int var_value_from_python(PyObject* o, wreport::Var& var)
     } WREPORT_CATCH_RETURN_INT
 }
 
-wrpy_Var* var_create(const wreport::Varinfo& v)
-{
-    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
-    if (!result) return NULL;
-    new (&result->var) Var(v);
-    return result;
-}
-
-wrpy_Var* var_create(const wreport::Varinfo& v, int val)
-{
-    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
-    if (!result) return NULL;
-    new (&result->var) Var(v, val);
-    return result;
-}
-
-wrpy_Var* var_create(const wreport::Varinfo& v, double val)
-{
-    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
-    if (!result) return NULL;
-    new (&result->var) Var(v, val);
-    return result;
-}
-
-wrpy_Var* var_create(const wreport::Varinfo& v, const char* val)
-{
-    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
-    if (!result) return NULL;
-    new (&result->var) Var(v, val);
-    return result;
-}
-
-wrpy_Var* var_create(const wreport::Var& v)
-{
-    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
-    if (!result) return NULL;
-    new (&result->var) Var(v);
-    return result;
-}
-
-void register_var(PyObject* m)
+int register_var(PyObject* m)
 {
     dummy_var.set_bufr(0, "Invalid variable", "?", 0, 1, 0, 1);
 
     wrpy_Var_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&wrpy_Var_Type) < 0)
-        return;
+        return 0;
+
+    // Initialize the C api struct
+    c_api.var_create = wrpy_var_create;
+    c_api.var_create_i = wrpy_var_create_i;
+    c_api.var_create_d = wrpy_var_create_d;
+    c_api.var_create_c = wrpy_var_create_c;
+    c_api.var_create_copy = wrpy_var_create_copy;
+
+    // Create a Capsule containing the API struct's address
+    pyo_unique_ptr c_api_object(PyCapsule_New((void *)&c_api, "wreport._C_API_Var", nullptr));
+    if (!c_api_object)
+        return -1;
+
+    if (PyModule_AddObject(m, "_C_API_Var", c_api_object.release()))
+        return -1;
 
     Py_INCREF(&wrpy_Var_Type);
-    PyModule_AddObject(m, "Var", (PyObject*)&wrpy_Var_Type);
+    return PyModule_AddObject(m, "Var", (PyObject*)&wrpy_Var_Type);
 }
 
 }

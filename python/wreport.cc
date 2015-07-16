@@ -120,7 +120,12 @@ PyMODINIT_FUNC init_wreport(void)
 
     register_vartable(m);
     register_varinfo(m);
+#if PY_MAJOR_VERSION >= 3
+    if (register_var(m))
+        return nullptr;
+#else
     register_var(m);
+#endif
 
 #if PY_MAJOR_VERSION >= 3
     return m;
