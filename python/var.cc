@@ -89,12 +89,36 @@ static PyObject* dpy_Var_format(dpy_Var* self, PyObject* args, PyObject* kw)
 }
 
 static PyMethodDef dpy_Var_methods[] = {
-    {"enqi", (PyCFunction)dpy_Var_enqi, METH_NOARGS, "get the value of the variable, as an int" },
-    {"enqd", (PyCFunction)dpy_Var_enqd, METH_NOARGS, "get the value of the variable, as a float" },
-    {"enqc", (PyCFunction)dpy_Var_enqc, METH_NOARGS, "get the value of the variable, as a str" },
-    {"enq", (PyCFunction)dpy_Var_enq, METH_NOARGS, "get the value of the variable, as int, float or str according the variable definition" },
-    {"get", (PyCFunction)dpy_Var_get, METH_VARARGS | METH_KEYWORDS, "get the value of the variable, with a default if it is unset" },
-    {"format", (PyCFunction)dpy_Var_format, METH_VARARGS | METH_KEYWORDS, "format the value of the variable to a string" },
+    {"enqi", (PyCFunction)dpy_Var_enqi, METH_NOARGS, R"(
+        enqi() -> long
+
+        get the value of the variable, as an int
+    )" },
+    {"enqd", (PyCFunction)dpy_Var_enqd, METH_NOARGS, R"(
+        enqd() -> float
+
+        get the value of the variable, as a float
+    )" },
+    {"enqc", (PyCFunction)dpy_Var_enqc, METH_NOARGS, R"(
+        enqc() -> str
+
+        get the value of the variable, as a str
+    )" },
+    {"enq", (PyCFunction)dpy_Var_enq, METH_NOARGS, R"(
+        enq() -> str|float|long
+
+        get the value of the variable, as int, float or str according the variable definition
+    )" },
+    {"get", (PyCFunction)dpy_Var_get, METH_VARARGS | METH_KEYWORDS, R"(
+        get(default=None) -> str|float|long|default
+
+        get the value of the variable, with a default if it is unset
+    )" },
+    {"format", (PyCFunction)dpy_Var_format, METH_VARARGS | METH_KEYWORDS, R"(
+        format(default="") -> str
+
+        return a string with the formatted value of the variable
+    )" },
     {NULL}
 };
 
@@ -220,13 +244,12 @@ PyTypeObject dpy_Var_Type = {
         a `wreport.Varinfo`_ with all available information (description, unit,
         precision, ...) related to it.
 
-        Var objects cannot be created directly, and need to be instantiated via
-        a `wreport.Vartable`_ object. To create a Var using the default DB-All.e
-        vartable, use the method `wreport.var()`_.
+        Var objects can be created from a `wreport.Varinfo`_ object, and an
+        optional value. Omitting the value creates an unset variable.
 
         Examples::
 
-            v = wreport.var("B12101", 32.5)
+            v = wreport.Var(table["B12101"], 32.5)
             # v.info returns detailed informations about the variable in a Varinfo object.
             print("%s: %s %s %s" % (v.code, str(v), v.info.unit, v.info.desc))
     )",                        // tp_doc

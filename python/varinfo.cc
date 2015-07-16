@@ -91,9 +91,8 @@ PyTypeObject dpy_Varinfo_Type = {
     Varinfo object holds all possible information about a variable, such as its
     measurement unit, description and number of significant digits.
 
-    Varinfo objects cannot be instantiated directly, but then can be created
-    from `wreport.Vartable`_ objects, or using the `wreport.varinfo()`_ function.
-    function.
+    Varinfo objects cannot be instantiated directly, and are created by
+    querying `wreport.Vartable`_ objects.
     )",                        // tp_doc
     0,                         // tp_traverse
     0,                         // tp_clear
