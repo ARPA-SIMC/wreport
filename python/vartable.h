@@ -12,20 +12,20 @@ extern "C" {
 typedef struct {
     PyObject_HEAD
     const wreport::Vartable* table;
-} dpy_Vartable;
+} wrpy_Vartable;
 
-PyAPI_DATA(PyTypeObject) dpy_Vartable_Type;
+PyAPI_DATA(PyTypeObject) wrpy_Vartable_Type;
 
-#define dpy_Vartable_Check(ob) \
-    (Py_TYPE(ob) == &dpy_Vartable_Type || \
-     PyType_IsSubtype(Py_TYPE(ob), &dpy_Vartable_Type))
+#define wrpy_Vartable_Check(ob) \
+    (Py_TYPE(ob) == &wrpy_Vartable_Type || \
+     PyType_IsSubtype(Py_TYPE(ob), &wrpy_Vartable_Type))
 
 }
 
 namespace wreport {
 namespace python {
 
-dpy_Vartable* vartable_create(const wreport::Vartable* table);
+wrpy_Vartable* vartable_create(const wreport::Vartable* table);
 
 void register_vartable(PyObject* m);
 

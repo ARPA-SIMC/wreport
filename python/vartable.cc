@@ -11,9 +11,9 @@ using namespace wreport;
 
 extern "C" {
 
-static PyObject* dpy_Vartable_get(PyTypeObject *type, PyObject *args, PyObject *kw);
+static PyObject* wrpy_Vartable_get(PyTypeObject *type, PyObject *args, PyObject *kw);
 
-static int dpy_Vartable_init(dpy_Vartable* self, PyObject* args, PyObject* kw)
+static int wrpy_Vartable_init(wrpy_Vartable* self, PyObject* args, PyObject* kw)
 {
     // People should not invoke Varinfo() as a constructor, but if they do,
     // this is better than a segfault later on
@@ -22,7 +22,7 @@ static int dpy_Vartable_init(dpy_Vartable* self, PyObject* args, PyObject* kw)
 }
 
 #if 0
-static int dpy_Vartable_init(dpy_Vartable* self, PyObject* args, PyObject* kw)
+static int wrpy_Vartable_init(wrpy_Vartable* self, PyObject* args, PyObject* kw)
 {
     const char* table_name = 0;
     if (!PyArg_ParseTuple(args, "s", &table_name))
@@ -36,33 +36,33 @@ static int dpy_Vartable_init(dpy_Vartable* self, PyObject* args, PyObject* kw)
 }
 #endif
 
-static PyObject* dpy_Vartable_pathname(dpy_Vartable* self, void* closure)
+static PyObject* wrpy_Vartable_pathname(wrpy_Vartable* self, void* closure)
 {
     return PyUnicode_FromString(self->table->pathname().c_str());
 }
 
-static PyGetSetDef dpy_Vartable_getsetters[] = {
-    {"pathname", (getter)dpy_Vartable_pathname, NULL, "name of the table", NULL},
+static PyGetSetDef wrpy_Vartable_getsetters[] = {
+    {"pathname", (getter)wrpy_Vartable_pathname, NULL, "name of the table", NULL},
     {NULL}
 };
 
-static PyObject* dpy_Vartable_str(dpy_Vartable* self)
+static PyObject* wrpy_Vartable_str(wrpy_Vartable* self)
 {
     return PyUnicode_FromString(self->table->pathname().c_str());
 }
 
-static PyObject* dpy_Vartable_repr(dpy_Vartable* self)
+static PyObject* wrpy_Vartable_repr(wrpy_Vartable* self)
 {
     return PyUnicode_FromFormat("Vartable('%s')", self->table->pathname().c_str());
 }
 
-static int dpy_Vartable_len(dpy_Vartable* self)
+static int wrpy_Vartable_len(wrpy_Vartable* self)
 {
     // TODO return self->table->size();
     return 0;
 }
 
-static PyObject* dpy_Vartable_item(dpy_Vartable* self, Py_ssize_t i)
+static PyObject* wrpy_Vartable_item(wrpy_Vartable* self, Py_ssize_t i)
 {
 #if 0
     // We can cast to size_t: since we provide sq_length, i is supposed to
@@ -79,7 +79,7 @@ static PyObject* dpy_Vartable_item(dpy_Vartable* self, Py_ssize_t i)
     Py_RETURN_NONE;
 }
 
-static PyObject* dpy_Vartable_getitem(dpy_Vartable* self, PyObject* key)
+static PyObject* wrpy_Vartable_getitem(wrpy_Vartable* self, PyObject* key)
 {
 #if 0
     if (PyIndex_Check(key)) {
@@ -88,7 +88,7 @@ static PyObject* dpy_Vartable_getitem(dpy_Vartable* self, PyObject* key)
             return NULL;
         if (i < 0)
             i += self->table->size();
-        return dpy_Vartable_item(self, i);
+        return wrpy_Vartable_item(self, i);
     }
 #endif
 
@@ -101,7 +101,7 @@ static PyObject* dpy_Vartable_getitem(dpy_Vartable* self, PyObject* key)
     } WREPORT_CATCH_RETURN_PYO
 }
 
-static int dpy_Vartable_contains(dpy_Vartable* self, PyObject *value)
+static int wrpy_Vartable_contains(wrpy_Vartable* self, PyObject *value)
 {
     string varname;
     if (string_from_python(value, varname))
@@ -111,7 +111,7 @@ static int dpy_Vartable_contains(dpy_Vartable* self, PyObject *value)
     } WREPORT_CATCH_RETURN_INT
 }
 
-static PyObject* dpy_Vartable_load_bufr(PyTypeObject *type, PyObject *args)
+static PyObject* wrpy_Vartable_load_bufr(PyTypeObject *type, PyObject *args)
 {
     const char* pathname;
     if (!PyArg_ParseTuple(args, "s", &pathname))
@@ -122,7 +122,7 @@ static PyObject* dpy_Vartable_load_bufr(PyTypeObject *type, PyObject *args)
     } WREPORT_CATCH_RETURN_PYO
 }
 
-static PyObject* dpy_Vartable_load_crex(PyTypeObject *type, PyObject *args)
+static PyObject* wrpy_Vartable_load_crex(PyTypeObject *type, PyObject *args)
 {
     const char* pathname;
     if (!PyArg_ParseTuple(args, "s", &pathname))
@@ -133,7 +133,7 @@ static PyObject* dpy_Vartable_load_crex(PyTypeObject *type, PyObject *args)
     } WREPORT_CATCH_RETURN_PYO
 }
 
-static PyObject* dpy_Vartable_get_bufr(PyTypeObject *type, PyObject *args, PyObject* kw)
+static PyObject* wrpy_Vartable_get_bufr(PyTypeObject *type, PyObject *args, PyObject* kw)
 {
     static const char* kwlist[] = {
         "basename", "originating_centre", "originating_subcentre",
@@ -169,7 +169,7 @@ static PyObject* dpy_Vartable_get_bufr(PyTypeObject *type, PyObject *args, PyObj
     } WREPORT_CATCH_RETURN_PYO
 }
 
-static PyObject* dpy_Vartable_get_crex(PyTypeObject *type, PyObject *args, PyObject* kw)
+static PyObject* wrpy_Vartable_get_crex(PyTypeObject *type, PyObject *args, PyObject* kw)
 {
     static const char* kwlist[] = {
         "basename", "edition_number", "originating_centre", "originating_subcentre",
@@ -211,22 +211,22 @@ static PyObject* dpy_Vartable_get_crex(PyTypeObject *type, PyObject *args, PyObj
     } WREPORT_CATCH_RETURN_PYO
 }
 
-static PyMethodDef dpy_Vartable_methods[] = {
-    {"load_bufr", (PyCFunction)dpy_Vartable_load_bufr, METH_VARARGS | METH_CLASS,
+static PyMethodDef wrpy_Vartable_methods[] = {
+    {"load_bufr", (PyCFunction)wrpy_Vartable_load_bufr, METH_VARARGS | METH_CLASS,
         R"(
             Vartable.load_bufr(pathname) -> wreport.Vartable
 
             Load BUFR information from a Table B file and return it as a
             wreport.Vartable.
         )" },
-    {"load_crex", (PyCFunction)dpy_Vartable_load_crex, METH_VARARGS | METH_CLASS,
+    {"load_crex", (PyCFunction)wrpy_Vartable_load_crex, METH_VARARGS | METH_CLASS,
         R"(
             Vartable.load_crex(pathname) -> wreport.Vartable
 
             Load CREX information from a Table B file and return it as a
             wreport.Vartable.
         )" },
-    {"get_bufr", (PyCFunction)dpy_Vartable_get_bufr, METH_VARARGS | METH_KEYWORDS | METH_CLASS,
+    {"get_bufr", (PyCFunction)wrpy_Vartable_get_bufr, METH_VARARGS | METH_KEYWORDS | METH_CLASS,
         R"(
             Vartable.get_bufr(basename=None, originating_centre=0, originating_subcentre=0,
                     master_table_number=0, master_table_version_number=None,
@@ -237,7 +237,7 @@ static PyMethodDef dpy_Vartable_methods[] = {
 
             You need to provide either basename or master_table_version_number.
         )" },
-    {"get_crex", (PyCFunction)dpy_Vartable_get_crex, METH_VARARGS | METH_KEYWORDS | METH_CLASS,
+    {"get_crex", (PyCFunction)wrpy_Vartable_get_crex, METH_VARARGS | METH_KEYWORDS | METH_CLASS,
         R"(
             Vartable.get_crex(basename=None, edition_number=2,
                     originating_centre=0, originating_subcentre=0,
@@ -255,40 +255,40 @@ static PyMethodDef dpy_Vartable_methods[] = {
 };
 
 
-static PySequenceMethods dpy_Vartable_sequence = {
-    (lenfunc)dpy_Vartable_len,        // sq_length
+static PySequenceMethods wrpy_Vartable_sequence = {
+    (lenfunc)wrpy_Vartable_len,        // sq_length
     0,                                // sq_concat
     0,                                // sq_repeat
-    (ssizeargfunc)dpy_Vartable_item,  // sq_item
+    (ssizeargfunc)wrpy_Vartable_item,  // sq_item
     0,                                // sq_slice
     0,                                // sq_ass_item
     0,                                // sq_ass_slice
-    (objobjproc)dpy_Vartable_contains, // sq_contains
+    (objobjproc)wrpy_Vartable_contains, // sq_contains
 };
 
-static PyMappingMethods dpy_Vartable_mapping = {
-    (lenfunc)dpy_Vartable_len,         // __len__
-    (binaryfunc)dpy_Vartable_getitem,  // __getitem__
+static PyMappingMethods wrpy_Vartable_mapping = {
+    (lenfunc)wrpy_Vartable_len,         // __len__
+    (binaryfunc)wrpy_Vartable_getitem,  // __getitem__
     0,                // __setitem__
 };
 
-PyTypeObject dpy_Vartable_Type = {
+PyTypeObject wrpy_Vartable_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "wreport.Vartable",         // tp_name
-    sizeof(dpy_Vartable),  // tp_basicsize
+    sizeof(wrpy_Vartable),  // tp_basicsize
     0,                         // tp_itemsize
     0,                         // tp_dealloc
     0,                         // tp_print
     0,                         // tp_getattr
     0,                         // tp_setattr
     0,                         // tp_compare
-    (reprfunc)dpy_Vartable_repr, // tp_repr
+    (reprfunc)wrpy_Vartable_repr, // tp_repr
     0,                         // tp_as_number
-    &dpy_Vartable_sequence,    // tp_as_sequence
-    &dpy_Vartable_mapping,     // tp_as_mapping
+    &wrpy_Vartable_sequence,    // tp_as_sequence
+    &wrpy_Vartable_mapping,     // tp_as_mapping
     0,                         // tp_hash
     0,                         // tp_call
-    (reprfunc)dpy_Vartable_str, // tp_str
+    (reprfunc)wrpy_Vartable_str, // tp_str
     0,                         // tp_getattro
     0,                         // tp_setattro
     0,                         // tp_as_buffer
@@ -312,15 +312,15 @@ PyTypeObject dpy_Vartable_Type = {
     0,                         // tp_weaklistoffset
     0,                         // tp_iter
     0,                         // tp_iternext
-    dpy_Vartable_methods,      // tp_methods
+    wrpy_Vartable_methods,      // tp_methods
     0,                         // tp_members
-    dpy_Vartable_getsetters,   // tp_getset
+    wrpy_Vartable_getsetters,   // tp_getset
     0,                         // tp_base
     0,                         // tp_dict
     0,                         // tp_descr_get
     0,                         // tp_descr_set
     0,                         // tp_dictoffset
-    (initproc)dpy_Vartable_init, // tp_init
+    (initproc)wrpy_Vartable_init, // tp_init
     0,                         // tp_alloc
     0,                         // tp_new
 };
@@ -330,9 +330,9 @@ PyTypeObject dpy_Vartable_Type = {
 namespace wreport {
 namespace python {
 
-dpy_Vartable* vartable_create(const wreport::Vartable* table)
+wrpy_Vartable* vartable_create(const wreport::Vartable* table)
 {
-    dpy_Vartable* result = PyObject_New(dpy_Vartable, &dpy_Vartable_Type);
+    wrpy_Vartable* result = PyObject_New(wrpy_Vartable, &wrpy_Vartable_Type);
     if (!result) return nullptr;
     result->table = table;
     return result;
@@ -340,12 +340,12 @@ dpy_Vartable* vartable_create(const wreport::Vartable* table)
 
 void register_vartable(PyObject* m)
 {
-    dpy_Vartable_Type.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&dpy_Vartable_Type) < 0)
+    wrpy_Vartable_Type.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&wrpy_Vartable_Type) < 0)
         return;
 
-    Py_INCREF(&dpy_Vartable_Type);
-    PyModule_AddObject(m, "Vartable", (PyObject*)&dpy_Vartable_Type);
+    Py_INCREF(&wrpy_Vartable_Type);
+    PyModule_AddObject(m, "Vartable", (PyObject*)&wrpy_Vartable_Type);
 }
 
 }

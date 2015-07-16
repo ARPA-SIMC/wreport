@@ -16,54 +16,54 @@ extern "C" {
 
 static _Varinfo dummy_var;
 
-static PyObject* dpy_Var_code(dpy_Var* self, void* closure)
+static PyObject* wrpy_Var_code(wrpy_Var* self, void* closure)
 {
     return wrpy_varcode_format(self->var.code());
 }
-static PyObject* dpy_Var_isset(dpy_Var* self, void* closure) {
+static PyObject* wrpy_Var_isset(wrpy_Var* self, void* closure) {
     if (self->var.isset())
         Py_RETURN_TRUE;
     else
         Py_RETURN_FALSE;
 }
-static PyObject* dpy_Var_info(dpy_Var* self, void* closure) {
+static PyObject* wrpy_Var_info(wrpy_Var* self, void* closure) {
     return (PyObject*)varinfo_create(self->var.info());
 }
 
-static PyGetSetDef dpy_Var_getsetters[] = {
-    {"code", (getter)dpy_Var_code, NULL, "variable code", NULL },
-    {"isset", (getter)dpy_Var_isset, NULL, "true if the value is set", NULL },
-    {"info", (getter)dpy_Var_info, NULL, "Varinfo for this variable", NULL },
+static PyGetSetDef wrpy_Var_getsetters[] = {
+    {"code", (getter)wrpy_Var_code, NULL, "variable code", NULL },
+    {"isset", (getter)wrpy_Var_isset, NULL, "true if the value is set", NULL },
+    {"info", (getter)wrpy_Var_info, NULL, "Varinfo for this variable", NULL },
     {NULL}
 };
 
-static PyObject* dpy_Var_enqi(dpy_Var* self)
+static PyObject* wrpy_Var_enqi(wrpy_Var* self)
 {
     try {
         return PyInt_FromLong(self->var.enqi());
     } WREPORT_CATCH_RETURN_PYO
 }
 
-static PyObject* dpy_Var_enqd(dpy_Var* self)
+static PyObject* wrpy_Var_enqd(wrpy_Var* self)
 {
     try {
         return PyFloat_FromDouble(self->var.enqd());
     } WREPORT_CATCH_RETURN_PYO
 }
 
-static PyObject* dpy_Var_enqc(dpy_Var* self)
+static PyObject* wrpy_Var_enqc(wrpy_Var* self)
 {
     try {
         return PyUnicode_FromString(self->var.enqc());
     } WREPORT_CATCH_RETURN_PYO
 }
 
-static PyObject* dpy_Var_enq(dpy_Var* self)
+static PyObject* wrpy_Var_enq(wrpy_Var* self)
 {
     return var_value_to_python(self->var);
 }
 
-static PyObject* dpy_Var_get(dpy_Var* self, PyObject* args, PyObject* kw)
+static PyObject* wrpy_Var_get(wrpy_Var* self, PyObject* args, PyObject* kw)
 {
     static char* kwlist[] = { "default", NULL };
     PyObject* def = Py_None;
@@ -78,7 +78,7 @@ static PyObject* dpy_Var_get(dpy_Var* self, PyObject* args, PyObject* kw)
     }
 }
 
-static PyObject* dpy_Var_format(dpy_Var* self, PyObject* args, PyObject* kw)
+static PyObject* wrpy_Var_format(wrpy_Var* self, PyObject* args, PyObject* kw)
 {
     static char* kwlist[] = { "default", NULL };
     const char* def = "";
@@ -88,33 +88,33 @@ static PyObject* dpy_Var_format(dpy_Var* self, PyObject* args, PyObject* kw)
     return PyUnicode_FromString(f.c_str());
 }
 
-static PyMethodDef dpy_Var_methods[] = {
-    {"enqi", (PyCFunction)dpy_Var_enqi, METH_NOARGS, R"(
+static PyMethodDef wrpy_Var_methods[] = {
+    {"enqi", (PyCFunction)wrpy_Var_enqi, METH_NOARGS, R"(
         enqi() -> long
 
         get the value of the variable, as an int
     )" },
-    {"enqd", (PyCFunction)dpy_Var_enqd, METH_NOARGS, R"(
+    {"enqd", (PyCFunction)wrpy_Var_enqd, METH_NOARGS, R"(
         enqd() -> float
 
         get the value of the variable, as a float
     )" },
-    {"enqc", (PyCFunction)dpy_Var_enqc, METH_NOARGS, R"(
+    {"enqc", (PyCFunction)wrpy_Var_enqc, METH_NOARGS, R"(
         enqc() -> str
 
         get the value of the variable, as a str
     )" },
-    {"enq", (PyCFunction)dpy_Var_enq, METH_NOARGS, R"(
+    {"enq", (PyCFunction)wrpy_Var_enq, METH_NOARGS, R"(
         enq() -> str|float|long
 
         get the value of the variable, as int, float or str according the variable definition
     )" },
-    {"get", (PyCFunction)dpy_Var_get, METH_VARARGS | METH_KEYWORDS, R"(
+    {"get", (PyCFunction)wrpy_Var_get, METH_VARARGS | METH_KEYWORDS, R"(
         get(default=None) -> str|float|long|default
 
         get the value of the variable, with a default if it is unset
     )" },
-    {"format", (PyCFunction)dpy_Var_format, METH_VARARGS | METH_KEYWORDS, R"(
+    {"format", (PyCFunction)wrpy_Var_format, METH_VARARGS | METH_KEYWORDS, R"(
         format(default="") -> str
 
         return a string with the formatted value of the variable
@@ -122,7 +122,7 @@ static PyMethodDef dpy_Var_methods[] = {
     {NULL}
 };
 
-static int dpy_Var_init(dpy_Var* self, PyObject* args, PyObject* kw)
+static int wrpy_Var_init(wrpy_Var* self, PyObject* args, PyObject* kw)
 {
     PyObject* varinfo_or_var = nullptr;
     PyObject* val = nullptr;
@@ -130,22 +130,22 @@ static int dpy_Var_init(dpy_Var* self, PyObject* args, PyObject* kw)
         return -1;
 
     try {
-        if (dpy_Varinfo_Check(varinfo_or_var))
+        if (wrpy_Varinfo_Check(varinfo_or_var))
         {
             if (val == nullptr)
             {
-                new (&self->var) Var(((const dpy_Varinfo*)varinfo_or_var)->info);
+                new (&self->var) Var(((const wrpy_Varinfo*)varinfo_or_var)->info);
                 return 0;
             }
             else
             {
-                new (&self->var) Var(((const dpy_Varinfo*)varinfo_or_var)->info);
+                new (&self->var) Var(((const wrpy_Varinfo*)varinfo_or_var)->info);
                 return var_value_from_python(val, self->var);
             }
         }
-        else if (dpy_Var_Check(varinfo_or_var))
+        else if (wrpy_Var_Check(varinfo_or_var))
         {
-            new (&self->var) Var(((const dpy_Var*)varinfo_or_var)->var);
+            new (&self->var) Var(((const wrpy_Var*)varinfo_or_var)->var);
             return 0;
         }
         else
@@ -157,19 +157,19 @@ static int dpy_Var_init(dpy_Var* self, PyObject* args, PyObject* kw)
     } WREPORT_CATCH_RETURN_INT
 }
 
-static void dpy_Var_dealloc(dpy_Var* self)
+static void wrpy_Var_dealloc(wrpy_Var* self)
 {
     // Explicitly call destructor
     self->var.~Var();
 }
 
-static PyObject* dpy_Var_str(dpy_Var* self)
+static PyObject* wrpy_Var_str(wrpy_Var* self)
 {
     std::string f = self->var.format("None");
     return PyUnicode_FromString(f.c_str());
 }
 
-static PyObject* dpy_Var_repr(dpy_Var* self)
+static PyObject* wrpy_Var_repr(wrpy_Var* self)
 {
     string res = "Var('";
     res += varcode_format(self->var.code());
@@ -192,13 +192,13 @@ static PyObject* dpy_Var_repr(dpy_Var* self)
     return PyUnicode_FromString(res.c_str());
 }
 
-static PyObject* dpy_Var_richcompare(dpy_Var* a, dpy_Var* b, int op)
+static PyObject* wrpy_Var_richcompare(wrpy_Var* a, wrpy_Var* b, int op)
 {
     PyObject *result;
     bool cmp;
 
     // Make sure both arguments are Vars.
-    if (!(dpy_Var_Check(a) && dpy_Var_Check(b))) {
+    if (!(wrpy_Var_Check(a) && wrpy_Var_Check(b))) {
         result = Py_NotImplemented;
         goto out;
     }
@@ -218,23 +218,23 @@ out:
 }
 
 
-PyTypeObject dpy_Var_Type = {
+PyTypeObject wrpy_Var_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "wreport.Var",              // tp_name
-    sizeof(dpy_Var),           // tp_basicsize
+    sizeof(wrpy_Var),           // tp_basicsize
     0,                         // tp_itemsize
-    (destructor)dpy_Var_dealloc, // tp_dealloc
+    (destructor)wrpy_Var_dealloc, // tp_dealloc
     0,                         // tp_print
     0,                         // tp_getattr
     0,                         // tp_setattr
     0,                         // tp_compare
-    (reprfunc)dpy_Var_repr,    // tp_repr
+    (reprfunc)wrpy_Var_repr,    // tp_repr
     0,                         // tp_as_number
     0,                         // tp_as_sequence
     0,                         // tp_as_mapping
     0,                         // tp_hash
     0,                         // tp_call
-    (reprfunc)dpy_Var_str,     // tp_str
+    (reprfunc)wrpy_Var_str,     // tp_str
     0,                         // tp_getattro
     0,                         // tp_setattro
     0,                         // tp_as_buffer
@@ -255,19 +255,19 @@ PyTypeObject dpy_Var_Type = {
     )",                        // tp_doc
     0,                         // tp_traverse
     0,                         // tp_clear
-    (richcmpfunc)dpy_Var_richcompare, // tp_richcompare
+    (richcmpfunc)wrpy_Var_richcompare, // tp_richcompare
     0,                         // tp_weaklistoffset
     0,                         // tp_iter
     0,                         // tp_iternext
-    dpy_Var_methods,           // tp_methods
+    wrpy_Var_methods,           // tp_methods
     0,                         // tp_members
-    dpy_Var_getsetters,        // tp_getset
+    wrpy_Var_getsetters,        // tp_getset
     0,                         // tp_base
     0,                         // tp_dict
     0,                         // tp_descr_get
     0,                         // tp_descr_set
     0,                         // tp_dictoffset
-    (initproc)dpy_Var_init,    // tp_init
+    (initproc)wrpy_Var_init,    // tp_init
     0,                         // tp_alloc
     0,                         // tp_new
 };
@@ -325,41 +325,41 @@ int var_value_from_python(PyObject* o, wreport::Var& var)
     } WREPORT_CATCH_RETURN_INT
 }
 
-dpy_Var* var_create(const wreport::Varinfo& v)
+wrpy_Var* var_create(const wreport::Varinfo& v)
 {
-    dpy_Var* result = PyObject_New(dpy_Var, &dpy_Var_Type);
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return NULL;
     new (&result->var) Var(v);
     return result;
 }
 
-dpy_Var* var_create(const wreport::Varinfo& v, int val)
+wrpy_Var* var_create(const wreport::Varinfo& v, int val)
 {
-    dpy_Var* result = PyObject_New(dpy_Var, &dpy_Var_Type);
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return NULL;
     new (&result->var) Var(v, val);
     return result;
 }
 
-dpy_Var* var_create(const wreport::Varinfo& v, double val)
+wrpy_Var* var_create(const wreport::Varinfo& v, double val)
 {
-    dpy_Var* result = PyObject_New(dpy_Var, &dpy_Var_Type);
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return NULL;
     new (&result->var) Var(v, val);
     return result;
 }
 
-dpy_Var* var_create(const wreport::Varinfo& v, const char* val)
+wrpy_Var* var_create(const wreport::Varinfo& v, const char* val)
 {
-    dpy_Var* result = PyObject_New(dpy_Var, &dpy_Var_Type);
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return NULL;
     new (&result->var) Var(v, val);
     return result;
 }
 
-dpy_Var* var_create(const wreport::Var& v)
+wrpy_Var* var_create(const wreport::Var& v)
 {
-    dpy_Var* result = PyObject_New(dpy_Var, &dpy_Var_Type);
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return NULL;
     new (&result->var) Var(v);
     return result;
@@ -369,12 +369,12 @@ void register_var(PyObject* m)
 {
     dummy_var.set_bufr(0, "Invalid variable", "?", 0, 1, 0, 1);
 
-    dpy_Var_Type.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&dpy_Var_Type) < 0)
+    wrpy_Var_Type.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&wrpy_Var_Type) < 0)
         return;
 
-    Py_INCREF(&dpy_Var_Type);
-    PyModule_AddObject(m, "Var", (PyObject*)&dpy_Var_Type);
+    Py_INCREF(&wrpy_Var_Type);
+    PyModule_AddObject(m, "Var", (PyObject*)&wrpy_Var_Type);
 }
 
 }

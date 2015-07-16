@@ -13,38 +13,38 @@ using namespace wreport;
 
 extern "C" {
 
-static PyMethodDef dpy_Varinfo_methods[] = {
+static PyMethodDef wrpy_Varinfo_methods[] = {
     {NULL}
 };
 
-static PyObject* dpy_Varinfo_type(dpy_Varinfo *self, void* closure)
+static PyObject* wrpy_Varinfo_type(wrpy_Varinfo *self, void* closure)
 {
     return PyUnicode_FromString(vartype_format(self->info->type));
 }
-static PyObject* dpy_Varinfo_code(dpy_Varinfo *self, void* closure)
+static PyObject* wrpy_Varinfo_code(wrpy_Varinfo *self, void* closure)
 {
     return wrpy_varcode_format(self->info->code);
 }
-static PyObject* dpy_Varinfo_len(dpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->len); }
-static PyObject* dpy_Varinfo_unit(dpy_Varinfo* self, void* closure) { return PyUnicode_FromString(self->info->unit); }
-static PyObject* dpy_Varinfo_desc(dpy_Varinfo* self, void* closure) { return PyUnicode_FromString(self->info->desc); }
-static PyObject* dpy_Varinfo_scale(dpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->scale); }
-static PyObject* dpy_Varinfo_bit_ref(dpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->bit_ref); }
-static PyObject* dpy_Varinfo_bit_len(dpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->bit_len); }
+static PyObject* wrpy_Varinfo_len(wrpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->len); }
+static PyObject* wrpy_Varinfo_unit(wrpy_Varinfo* self, void* closure) { return PyUnicode_FromString(self->info->unit); }
+static PyObject* wrpy_Varinfo_desc(wrpy_Varinfo* self, void* closure) { return PyUnicode_FromString(self->info->desc); }
+static PyObject* wrpy_Varinfo_scale(wrpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->scale); }
+static PyObject* wrpy_Varinfo_bit_ref(wrpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->bit_ref); }
+static PyObject* wrpy_Varinfo_bit_len(wrpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->bit_len); }
 
-static PyGetSetDef dpy_Varinfo_getsetters[] = {
-    {"type", (getter)dpy_Varinfo_type, NULL, "return a string describing the type of the variable (string, binary, integer, decimal)", NULL },
-    {"code", (getter)dpy_Varinfo_code, NULL, "variable code", NULL },
-    {"len", (getter)dpy_Varinfo_len, NULL, "number of significant digits", NULL},
-    {"unit", (getter)dpy_Varinfo_unit, NULL, "measurement unit", NULL},
-    {"desc", (getter)dpy_Varinfo_desc, NULL, "description", NULL},
-    {"scale", (getter)dpy_Varinfo_scale, NULL, "scale of the value as a power of 10", NULL},
-    {"bit_ref", (getter)dpy_Varinfo_bit_ref, NULL, "reference value added after scaling, for BUFR decoding", NULL},
-    {"bit_len", (getter)dpy_Varinfo_bit_len, NULL, "number of bits used to encode the value in BUFR", NULL},
+static PyGetSetDef wrpy_Varinfo_getsetters[] = {
+    {"type", (getter)wrpy_Varinfo_type, NULL, "return a string describing the type of the variable (string, binary, integer, decimal)", NULL },
+    {"code", (getter)wrpy_Varinfo_code, NULL, "variable code", NULL },
+    {"len", (getter)wrpy_Varinfo_len, NULL, "number of significant digits", NULL},
+    {"unit", (getter)wrpy_Varinfo_unit, NULL, "measurement unit", NULL},
+    {"desc", (getter)wrpy_Varinfo_desc, NULL, "description", NULL},
+    {"scale", (getter)wrpy_Varinfo_scale, NULL, "scale of the value as a power of 10", NULL},
+    {"bit_ref", (getter)wrpy_Varinfo_bit_ref, NULL, "reference value added after scaling, for BUFR decoding", NULL},
+    {"bit_len", (getter)wrpy_Varinfo_bit_len, NULL, "number of bits used to encode the value in BUFR", NULL},
     {NULL}
 };
 
-static int dpy_Varinfo_init(dpy_Varinfo* self, PyObject* args, PyObject* kw)
+static int wrpy_Varinfo_init(wrpy_Varinfo* self, PyObject* args, PyObject* kw)
 {
     // People should not invoke Varinfo() as a constructor, but if they do,
     // this is better than a segfault later on
@@ -52,12 +52,12 @@ static int dpy_Varinfo_init(dpy_Varinfo* self, PyObject* args, PyObject* kw)
     return -1;
 }
 
-static PyObject* dpy_Varinfo_str(dpy_Varinfo* self)
+static PyObject* wrpy_Varinfo_str(wrpy_Varinfo* self)
 {
     return wrpy_varcode_format(self->info->code);
 }
 
-static PyObject* dpy_Varinfo_repr(dpy_Varinfo* self)
+static PyObject* wrpy_Varinfo_repr(wrpy_Varinfo* self)
 {
     std::string res = "Varinfo('";
     res += varcode_format(self->info->code);
@@ -66,23 +66,23 @@ static PyObject* dpy_Varinfo_repr(dpy_Varinfo* self)
 }
 
 
-PyTypeObject dpy_Varinfo_Type = {
+PyTypeObject wrpy_Varinfo_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "wreport.Varinfo",         // tp_name
-    sizeof(dpy_Varinfo),       // tp_basicsize
+    sizeof(wrpy_Varinfo),       // tp_basicsize
     0,                         // tp_itemsize
     0,                         // tp_dealloc
     0,                         // tp_print
     0,                         // tp_getattr
     0,                         // tp_setattr
     0,                         // tp_compare
-    (reprfunc)dpy_Varinfo_repr, // tp_repr
+    (reprfunc)wrpy_Varinfo_repr, // tp_repr
     0,                         // tp_as_number
     0,                         // tp_as_sequence
     0,                         // tp_as_mapping
     0,                         // tp_hash
     0,                         // tp_call
-    (reprfunc)dpy_Varinfo_str, // tp_str
+    (reprfunc)wrpy_Varinfo_str, // tp_str
     0,                         // tp_getattro
     0,                         // tp_setattro
     0,                         // tp_as_buffer
@@ -100,15 +100,15 @@ PyTypeObject dpy_Varinfo_Type = {
     0,                         // tp_weaklistoffset
     0,                         // tp_iter
     0,                         // tp_iternext
-    dpy_Varinfo_methods,       // tp_methods
+    wrpy_Varinfo_methods,       // tp_methods
     0,                         // tp_members
-    dpy_Varinfo_getsetters,    // tp_getset
+    wrpy_Varinfo_getsetters,    // tp_getset
     0,                         // tp_base
     0,                         // tp_dict
     0,                         // tp_descr_get
     0,                         // tp_descr_set
     0,                         // tp_dictoffset
-    (initproc)dpy_Varinfo_init, // tp_init
+    (initproc)wrpy_Varinfo_init, // tp_init
     0,                         // tp_alloc
     0,                         // tp_new
 };
@@ -118,9 +118,9 @@ PyTypeObject dpy_Varinfo_Type = {
 namespace wreport {
 namespace python {
 
-dpy_Varinfo* varinfo_create(Varinfo v)
+wrpy_Varinfo* varinfo_create(Varinfo v)
 {
-    dpy_Varinfo* result = PyObject_New(dpy_Varinfo, &dpy_Varinfo_Type);
+    wrpy_Varinfo* result = PyObject_New(wrpy_Varinfo, &wrpy_Varinfo_Type);
     if (!result) return NULL;
     result->info = v;
     return result;
@@ -128,12 +128,12 @@ dpy_Varinfo* varinfo_create(Varinfo v)
 
 void register_varinfo(PyObject* m)
 {
-    dpy_Varinfo_Type.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&dpy_Varinfo_Type) < 0)
+    wrpy_Varinfo_Type.tp_new = PyType_GenericNew;
+    if (PyType_Ready(&wrpy_Varinfo_Type) < 0)
         return;
 
-    Py_INCREF(&dpy_Varinfo_Type);
-    PyModule_AddObject(m, "Varinfo", (PyObject*)&dpy_Varinfo_Type);
+    Py_INCREF(&wrpy_Varinfo_Type);
+    PyModule_AddObject(m, "Varinfo", (PyObject*)&wrpy_Varinfo_Type);
 }
 
 }
