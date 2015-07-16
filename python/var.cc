@@ -3,6 +3,7 @@
 #include "varinfo.h"
 
 #if PY_MAJOR_VERSION >= 3
+    #define PyInt_Check PyLong_Check
     #define PyInt_FromLong PyLong_FromLong
     #define PyInt_AsLong PyLong_AsLong
 #endif
@@ -13,9 +14,11 @@ using namespace wreport;
 
 extern "C" {
 
+static _Varinfo dummy_var;
+
 static PyObject* dpy_Var_code(dpy_Var* self, void* closure)
 {
-    return format_varcode(self->var.code());
+    return wrpy_varcode_format(self->var.code());
 }
 static PyObject* dpy_Var_isset(dpy_Var* self, void* closure) {
     if (self->var.isset())
@@ -97,10 +100,37 @@ static PyMethodDef dpy_Var_methods[] = {
 
 static int dpy_Var_init(dpy_Var* self, PyObject* args, PyObject* kw)
 {
-    // People should not invoke Var() as a constructor, but if they do,
-    // this is better than a segfault later on
-    PyErr_SetString(PyExc_NotImplementedError, "Var objects cannot be constructed explicitly");
-    return -1;
+    PyObject* varinfo_or_var = nullptr;
+    PyObject* val = nullptr;
+    if (!PyArg_ParseTuple(args, "O|O", &varinfo_or_var, &val))
+        return -1;
+
+    try {
+        if (dpy_Varinfo_Check(varinfo_or_var))
+        {
+            if (val == nullptr)
+            {
+                new (&self->var) Var(((const dpy_Varinfo*)varinfo_or_var)->info);
+                return 0;
+            }
+            else
+            {
+                new (&self->var) Var(((const dpy_Varinfo*)varinfo_or_var)->info);
+                return var_value_from_python(val, self->var);
+            }
+        }
+        else if (dpy_Var_Check(varinfo_or_var))
+        {
+            new (&self->var) Var(((const dpy_Var*)varinfo_or_var)->var);
+            return 0;
+        }
+        else
+        {
+            new (&self->var) Var(&dummy_var);
+            PyErr_SetString(PyExc_ValueError, "First argument to wreport.Var should be wreport.Varinfo or wreport.Var");
+            return -1;
+        }
+    } WREPORT_CATCH_RETURN_INT
 }
 
 static void dpy_Var_dealloc(dpy_Var* self)
@@ -119,11 +149,50 @@ static PyObject* dpy_Var_repr(dpy_Var* self)
 {
     string res = "Var('";
     res += varcode_format(self->var.code());
-    res += "', '";
-    res += self->var.format("None");
-    res += "')";
+    res += "', ";
+    if (self->var.isset())
+        switch (self->var.info()->type)
+        {
+            case Vartype::String:
+            case Vartype::Binary:
+                res += "'" + self->var.format() + "'";
+                break;
+            case Vartype::Integer:
+            case Vartype::Decimal:
+                res += self->var.format();
+                break;
+        }
+    else
+        res += "None";
+    res += ")";
     return PyUnicode_FromString(res.c_str());
 }
+
+static PyObject* dpy_Var_richcompare(dpy_Var* a, dpy_Var* b, int op)
+{
+    PyObject *result;
+    bool cmp;
+
+    // Make sure both arguments are Vars.
+    if (!(dpy_Var_Check(a) && dpy_Var_Check(b))) {
+        result = Py_NotImplemented;
+        goto out;
+    }
+
+    switch (op) {
+        case Py_EQ: cmp = a->var == b->var; break;
+        case Py_NE: cmp = a->var != b->var; break;
+        default:
+            result = Py_NotImplemented;
+            goto out;
+    }
+    result = cmp ? Py_True : Py_False;
+
+out:
+    Py_INCREF(result);
+    return result;
+}
+
 
 PyTypeObject dpy_Var_Type = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -163,7 +232,7 @@ PyTypeObject dpy_Var_Type = {
     )",                        // tp_doc
     0,                         // tp_traverse
     0,                         // tp_clear
-    0,                         // tp_richcompare
+    (richcmpfunc)dpy_Var_richcompare, // tp_richcompare
     0,                         // tp_weaklistoffset
     0,                         // tp_iter
     0,                         // tp_iternext
@@ -200,11 +269,37 @@ PyObject* var_value_to_python(const wreport::Var& v)
                 return PyFloat_FromDouble(v.enqd());
         }
         Py_RETURN_TRUE;
-    } catch (wreport::error& e) {
-        return raise_wreport_exception(e);
-    } catch (std::exception& se) {
-        return raise_std_exception(se);
-    }
+    } WREPORT_CATCH_RETURN_PYO
+}
+
+int var_value_from_python(PyObject* o, wreport::Var& var)
+{
+    try {
+        if (PyInt_Check(o))
+        {
+            var.seti(PyInt_AsLong(o));
+        } else if (PyFloat_Check(o)) {
+            var.setd(PyFloat_AsDouble(o));
+        } else if (PyBytes_Check(o)) {
+            var.setc(PyBytes_AsString(o));
+        } else if (PyUnicode_Check(o)) {
+            string val;
+            if (string_from_python(o, val))
+                return -1;
+            var.sets(val);
+        } else {
+            string repr;
+            if (object_repr(o, repr))
+                return -1;
+            string type_repr;
+            if (object_repr((PyObject*)o->ob_type, type_repr))
+                return -1;
+            string errmsg = "Value " + repr + " must be an instance of int, long, float, str, bytes, or unicode, instead of " + type_repr;
+            PyErr_SetString(PyExc_TypeError, errmsg.c_str());
+            return -1;
+        }
+        return 0;
+    } WREPORT_CATCH_RETURN_INT
 }
 
 dpy_Var* var_create(const wreport::Varinfo& v)
@@ -249,6 +344,8 @@ dpy_Var* var_create(const wreport::Var& v)
 
 void register_var(PyObject* m)
 {
+    dummy_var.set_bufr(0, "Invalid variable", "?", 0, 1, 0, 1);
+
     dpy_Var_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&dpy_Var_Type) < 0)
         return;

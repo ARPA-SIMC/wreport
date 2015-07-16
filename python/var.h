@@ -22,6 +22,7 @@ namespace wreport {
 namespace python {
 
 PyObject* var_value_to_python(const wreport::Var& v);
+int var_value_from_python(PyObject* o, wreport::Var& var);
 
 dpy_Var* var_create(const wreport::Varinfo& v);
 dpy_Var* var_create(const wreport::Varinfo& v, int val);

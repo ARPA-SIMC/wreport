@@ -13,7 +13,7 @@ using namespace wreport;
 namespace wreport {
 namespace python {
 
-PyObject* format_varcode(wreport::Varcode code)
+PyObject* wrpy_varcode_format(wreport::Varcode code)
 {
     char buf[7];
     snprintf(buf, 7, "%c%02d%03d",
@@ -189,11 +189,10 @@ PyObject* file_get_data(PyObject* o, char*&buf, Py_ssize_t& len)
 
 int object_repr(PyObject* o, std::string& out)
 {
-    pyo_unique_ptr fileno_repr(PyObject_Repr(o));
-    if (!fileno_repr) return -1;
+    pyo_unique_ptr repr(PyObject_Repr(o));
+    if (!repr) return -1;
 
-    std::string name;
-    if (string_from_python(fileno_repr, name))
+    if (string_from_python(repr, out))
         return -1;
 
     return 0;

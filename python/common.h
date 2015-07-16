@@ -56,7 +56,7 @@ typedef py_unique_ptr<PyObject> pyo_unique_ptr;
 /**
  * Return a python string representing a varcode
  */
-PyObject* format_varcode(wreport::Varcode code);
+PyObject* wrpy_varcode_format(wreport::Varcode code);
 
 /// Given a wreport exception, set the Python error indicator appropriately.
 void set_wreport_exception(const wreport::error& e);

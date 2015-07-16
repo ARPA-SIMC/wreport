@@ -23,7 +23,7 @@ static PyObject* dpy_Varinfo_type(dpy_Varinfo *self, void* closure)
 }
 static PyObject* dpy_Varinfo_code(dpy_Varinfo *self, void* closure)
 {
-    return PyUnicode_FromString(varcode_format(self->info->code).c_str());
+    return wrpy_varcode_format(self->info->code);
 }
 static PyObject* dpy_Varinfo_len(dpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->len); }
 static PyObject* dpy_Varinfo_unit(dpy_Varinfo* self, void* closure) { return PyUnicode_FromString(self->info->unit); }
@@ -54,7 +54,7 @@ static int dpy_Varinfo_init(dpy_Varinfo* self, PyObject* args, PyObject* kw)
 
 static PyObject* dpy_Varinfo_str(dpy_Varinfo* self)
 {
-    return format_varcode(self->info->code);
+    return wrpy_varcode_format(self->info->code);
 }
 
 static PyObject* dpy_Varinfo_repr(dpy_Varinfo* self)
