@@ -25,23 +25,32 @@ trap cleanup EXIT
 # Try to debug the libtool executable, if present
 DIR=`dirname $CMD`
 BASE=`basename $CMD`
-if [ ! -z "$DEBUGGER" ] && [ -x $DIR/.libs/lt-$BASE ]
+if [ "${BASE##*.}" = "py" ]
 then
-	echo "Running $DEBUGGER $DIR/.libs/lt-$BASE $ARGS"
-	RES=0
-	if ! $DEBUGGER $DIR/.libs/lt-$BASE $ARGS
-	then
-		RES=$?
-		echo "Failed with result $RES"
-	fi
+    CMD="$PYTHON $CMD"
+fi
+if [ ! -z "$DEBUGGER" ]
+then
+    if [ -x $DIR/.libs/lt-$BASE ]
+    then
+        CMD="$DIR/.libs/lt-$BASE"
+    fi
+
+        echo "Running $DEBUGGER $CMD $ARGS"
+        RES=0
+        if ! $DEBUGGER $CMD $ARGS
+        then
+                RES=$?
+                echo "Failed with result $RES"
+        fi
 else
-	echo "Running $DEBUGGER $CMD $ARGS"
-	RES=0
-	if !  $DEBUGGER $CMD $ARGS
-	then
-		RES=$?
-		echo "Failed with result $RES"
-	fi
+        echo "Running $CMD $ARGS"
+        RES=0
+        if ! $CMD $ARGS
+        then
+                RES=$?
+                echo "Failed with result $RES"
+        fi
 fi
 
 

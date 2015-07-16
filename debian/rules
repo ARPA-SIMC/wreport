@@ -3,13 +3,29 @@
 VERSION=$(shell debian/vercheck)
 RELEASE_PACKAGE=wreport
 
-
 %:
-	dh $@ --with autoreconf
+	dh $@ --with autoreconf,python2,python3
 
 override_dh_fixperms:
 	dh_fixperms
 	test -e /usr/bin/dh_buildinfo && dh_buildinfo
+
+override_dh_auto_install:
+	dh_auto_install
+	# Build and install the python bindings for each different python version
+	for ver in `pyversions -vr`; do \
+		dh_auto_configure -- PYTHON=/usr/bin/python$$ver ; \
+		make clean -C python ; \
+		make install -C python DESTDIR=`pwd`/debian/tmp ; \
+	done
+	# Build and install the python bindings for each different python version
+	for ver in `py3versions -vr`; do \
+		dh_auto_configure -- PYTHON=/usr/bin/python$$ver ; \
+		make clean -C python ; \
+		make install -C python DESTDIR=`pwd`/debian/tmp ; \
+	done
+	# Remove python modules .la files
+	rm -f debian/tmp/usr/lib/python*/dist-packages/*.la
 
 vercheck:
 	debian/vercheck > /dev/null
