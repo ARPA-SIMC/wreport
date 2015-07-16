@@ -3,28 +3,10 @@
 
 #include <Python.h>
 #include <wreport/var.h>
+#include "wreport.h"
 
 extern "C" {
-
-typedef struct {
-    PyObject_HEAD
-    wreport::Var var;
-} wrpy_Var;
-
-PyAPI_DATA(PyTypeObject) wrpy_Var_Type;
-
-#define wrpy_Var_Check(ob) \
-    (Py_TYPE(ob) == &wrpy_Var_Type || \
-     PyType_IsSubtype(Py_TYPE(ob), &wrpy_Var_Type))
-
-struct wrpy_c_api {
-    wrpy_Var* (*var_create)(const wreport::Varinfo&);
-    wrpy_Var* (*var_create_i)(const wreport::Varinfo&, int);
-    wrpy_Var* (*var_create_d)(const wreport::Varinfo&, double);
-    wrpy_Var* (*var_create_c)(const wreport::Varinfo&, const char*);
-    wrpy_Var* (*var_create_copy)(const wreport::Var&);
-};
-
+struct wrpy_c_api;
 }
 
 namespace wreport {
@@ -39,7 +21,7 @@ wrpy_Var* var_create(const wreport::Var& v);
 PyObject* var_value_to_python(const wreport::Var& v);
 int var_value_from_python(PyObject* o, wreport::Var& var);
 
-int register_var(PyObject* m);
+int register_var(PyObject* m, wrpy_c_api& c_c_api);
 
 }
 }

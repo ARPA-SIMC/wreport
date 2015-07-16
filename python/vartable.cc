@@ -338,14 +338,17 @@ wrpy_Vartable* vartable_create(const wreport::Vartable* table)
     return result;
 }
 
-void register_vartable(PyObject* m)
+int register_vartable(PyObject* m, wrpy_c_api& c_api)
 {
     wrpy_Vartable_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&wrpy_Vartable_Type) < 0)
-        return;
+        return 0;
+
+    // Initialize the C api struct
+    c_api.vartable_create = vartable_create;
 
     Py_INCREF(&wrpy_Vartable_Type);
-    PyModule_AddObject(m, "Vartable", (PyObject*)&wrpy_Vartable_Type);
+    return PyModule_AddObject(m, "Vartable", (PyObject*)&wrpy_Vartable_Type);
 }
 
 }

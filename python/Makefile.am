@@ -7,7 +7,8 @@ TESTS_ENVIRONMENT = $(top_srcdir)/testenv
 python_tests = test-varinfo.py test-vartable.py test-var.py
 
 pythonincludedir = $(includedir)/wreport/python
-nobase_dist_pythoninclude_HEADERS = \
+nobase_dist_pythoninclude_HEADERS = wreport.h
+EXTRA_DIST = \
     doc-wreport \
     common.h \
     vartable.h \
@@ -46,7 +47,7 @@ python-wreport.html: python-wreport.rst
 clean-local:
 	rm -f *.pyc wreport/*.pyc _wreport.so
 
-EXTRA_DIST = doc-wreport testlib.py $(python_tests)
+EXTRA_DIST += testlib.py $(python_tests)
 
 AM_CPPFLAGS = -I/usr/include/python$(PYTHON_VERSION) -I$(top_srcdir)
 

@@ -126,14 +126,17 @@ wrpy_Varinfo* varinfo_create(Varinfo v)
     return result;
 }
 
-void register_varinfo(PyObject* m)
+int register_varinfo(PyObject* m, wrpy_c_api& c_api)
 {
     wrpy_Varinfo_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&wrpy_Varinfo_Type) < 0)
-        return;
+        return 0;
+
+    // Initialize the C api struct
+    c_api.varinfo_create = varinfo_create;
 
     Py_INCREF(&wrpy_Varinfo_Type);
-    PyModule_AddObject(m, "Varinfo", (PyObject*)&wrpy_Varinfo_Type);
+    return PyModule_AddObject(m, "Varinfo", (PyObject*)&wrpy_Varinfo_Type);
 }
 
 }

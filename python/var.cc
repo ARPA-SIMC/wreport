@@ -1,6 +1,7 @@
 #include "var.h"
 #include "common.h"
 #include "varinfo.h"
+#include "wreport.h"
 
 #if PY_MAJOR_VERSION >= 3
     #define PyInt_Check PyLong_Check
@@ -313,8 +314,6 @@ PyTypeObject wrpy_Var_Type = {
     0,                         // tp_new
 };
 
-static wrpy_c_api c_api;
-
 }
 
 namespace wreport {
@@ -374,7 +373,7 @@ int var_value_from_python(PyObject* o, wreport::Var& var)
     } WREPORT_CATCH_RETURN_INT
 }
 
-int register_var(PyObject* m)
+int register_var(PyObject* m, wrpy_c_api& c_api)
 {
     dummy_var.set_bufr(0, "Invalid variable", "?", 0, 1, 0, 1);
 
@@ -388,14 +387,8 @@ int register_var(PyObject* m)
     c_api.var_create_d = wrpy_var_create_d;
     c_api.var_create_c = wrpy_var_create_c;
     c_api.var_create_copy = wrpy_var_create_copy;
-
-    // Create a Capsule containing the API struct's address
-    pyo_unique_ptr c_api_object(PyCapsule_New((void *)&c_api, "wreport._C_API_Var", nullptr));
-    if (!c_api_object)
-        return -1;
-
-    if (PyModule_AddObject(m, "_C_API_Var", c_api_object.release()))
-        return -1;
+    c_api.var_value_to_python = var_value_to_python;
+    c_api.var_value_from_python = var_value_from_python;
 
     Py_INCREF(&wrpy_Var_Type);
     return PyModule_AddObject(m, "Var", (PyObject*)&wrpy_Var_Type);

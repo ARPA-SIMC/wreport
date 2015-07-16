@@ -4,6 +4,7 @@
 #include "vartable.h"
 #include "varinfo.h"
 #include "var.h"
+#include "wreport.h"
 
 #if PY_MAJOR_VERSION >= 3
     #define PyInt_FromLong PyLong_FromLong
@@ -109,6 +110,9 @@ PyMODINIT_FUNC init_wreport(void)
 {
     using namespace wreport::python;
 
+static wrpy_c_api c_api;
+    memset(&c_api, 0, sizeof(wrpy_c_api));
+
     PyObject* m;
 
 #if PY_MAJOR_VERSION >= 3
@@ -118,13 +122,30 @@ PyMODINIT_FUNC init_wreport(void)
             "wreport Python library.");
 #endif
 
-    register_vartable(m);
-    register_varinfo(m);
 #if PY_MAJOR_VERSION >= 3
-    if (register_var(m))
+    if (register_varinfo(m, c_api))
+        return nullptr;
+    if (register_vartable(m, c_api))
+        return nullptr;
+    if (register_var(m, c_api))
         return nullptr;
 #else
-    register_var(m);
+    register_vartable(m, c_api);
+    register_varinfo(m, c_api);
+    register_var(m, c_api);
+#endif
+
+    // Create a Capsule containing the API struct's address
+    pyo_unique_ptr c_api_object(PyCapsule_New((void *)&c_api, "_wreport._C_API", nullptr));
+#if PY_MAJOR_VERSION >= 3
+    if (!c_api_object)
+        return nullptr;
+#endif
+
+    int res = PyModule_AddObject(m, "_C_API", c_api_object.release());
+#if PY_MAJOR_VERSION >= 3
+    if (res)
+        return nullptr;
 #endif
 
 #if PY_MAJOR_VERSION >= 3
