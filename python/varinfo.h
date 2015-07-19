@@ -3,7 +3,7 @@
 
 #include <Python.h>
 #include <wreport/varinfo.h>
-#include "wreport.h"
+#include <wreport/python.h>
 
 namespace wreport {
 namespace python {

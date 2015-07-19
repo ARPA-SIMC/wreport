@@ -40,6 +40,9 @@ nobase_dist_wreportinclude_HEADERS = \
 if WIBBLE
 nobase_dist_wreportinclude_HEADERS += tests.h
 endif
+if PYTHON
+nobase_dist_wreportinclude_HEADERS += python.h
+endif
 
 lib_LTLIBRARIES = libwreport.la
 libwreport_la_LIBADD =

@@ -1,6 +1,5 @@
 #include "common.h"
 #include <Python.h>
-#include <datetime.h>
 
 #if PY_MAJOR_VERSION >= 3
     #define PyInt_FromLong PyLong_FromLong

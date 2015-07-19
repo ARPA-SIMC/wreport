@@ -1,7 +1,6 @@
 #include "var.h"
 #include "common.h"
 #include "varinfo.h"
-#include "wreport.h"
 
 #if PY_MAJOR_VERSION >= 3
     #define PyInt_Check PyLong_Check

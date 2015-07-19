@@ -2,7 +2,7 @@
 #define WREPORT_PYTHON_VARTABLE_H
 
 #include <Python.h>
-#include "wreport.h"
+#include <wreport/python.h>
 
 namespace wreport {
 namespace python {

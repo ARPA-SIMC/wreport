@@ -7,7 +7,6 @@ TESTS_ENVIRONMENT = $(top_srcdir)/testenv
 python_tests = test-varinfo.py test-vartable.py test-var.py
 
 pythonincludedir = $(includedir)/wreport/python
-nobase_dist_pythoninclude_HEADERS = wreport.h
 EXTRA_DIST = \
     doc-wreport \
     common.h \

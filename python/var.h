@@ -3,11 +3,7 @@
 
 #include <Python.h>
 #include <wreport/var.h>
-#include "wreport.h"
-
-extern "C" {
-struct wrpy_c_api;
-}
+#include <wreport/python.h>
 
 namespace wreport {
 namespace python {

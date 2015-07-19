@@ -4,7 +4,6 @@
 #include "vartable.h"
 #include "varinfo.h"
 #include "var.h"
-#include "wreport.h"
 
 #if PY_MAJOR_VERSION >= 3
     #define PyInt_FromLong PyLong_FromLong
