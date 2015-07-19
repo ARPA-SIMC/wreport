@@ -22,6 +22,15 @@ const char* vartype_format(Vartype type)
     return "unknown";
 }
 
+Vartype vartype_parse(const char* s)
+{
+    if (strcmp(s, "string") == 0) return Vartype::String;
+    if (strcmp(s, "decimal") == 0) return Vartype::Decimal;
+    if (strcmp(s, "integer") == 0) return Vartype::Integer;
+    if (strcmp(s, "binary") == 0) return Vartype::Binary;
+    error_consistency::throwf("cannot parse Vartype '%s'", s);
+}
+
 static int intexp10(unsigned x)
 {
 	switch (x)

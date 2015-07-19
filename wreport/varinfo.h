@@ -123,6 +123,9 @@ enum class Vartype : unsigned
 /// Return a string description of a Vartype
 const char* vartype_format(Vartype type);
 
+/// Return a Vartype from its string description
+Vartype vartype_parse(const char* s);
+
 
 /**
  * Information about a variable.
