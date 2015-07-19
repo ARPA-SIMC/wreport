@@ -49,6 +49,14 @@ static wrpy_Var* wrpy_var_create_c(const wreport::Varinfo& v, const char* val)
     return result;
 }
 
+static wrpy_Var* wrpy_var_create_s(const wreport::Varinfo& v, const std::string& val)
+{
+    wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
+    if (!result) return NULL;
+    new (&result->var) Var(v, val);
+    return result;
+}
+
 static wrpy_Var* wrpy_var_create_copy(const wreport::Var& v)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
@@ -386,6 +394,7 @@ int register_var(PyObject* m, wrpy_c_api& c_api)
     c_api.var_create_i = wrpy_var_create_i;
     c_api.var_create_d = wrpy_var_create_d;
     c_api.var_create_c = wrpy_var_create_c;
+    c_api.var_create_s = wrpy_var_create_s;
     c_api.var_create_copy = wrpy_var_create_copy;
     c_api.var_value_to_python = var_value_to_python;
     c_api.var_value_from_python = var_value_from_python;
