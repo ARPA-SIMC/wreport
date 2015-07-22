@@ -26,15 +26,10 @@ void DDSPrinter::print_context(Varcode code, unsigned var_pos)
     fprintf(out, "%01d%02d%03d: ", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
-void DDSPrinter::d_group_begin(Varcode code)
+void DDSPrinter::run_d_expansion(Varcode code)
 {
-    UncompressedEncoder::d_group_begin(code);
     stack.push_back(code);
-}
-
-void DDSPrinter::d_group_end(Varcode code)
-{
-    UncompressedEncoder::d_group_end(code);
+    UncompressedEncoder::run_d_expansion(code);
     stack.pop_back();
 }
 

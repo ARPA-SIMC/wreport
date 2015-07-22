@@ -44,8 +44,7 @@ public:
     void define_raw_character_data(Varcode code) override;
 
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
-    void d_group_begin(Varcode code) override;
-    void d_group_end(Varcode code) override;
+    void run_d_expansion(Varcode code) override;
 };
 
 }

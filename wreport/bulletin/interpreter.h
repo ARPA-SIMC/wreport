@@ -110,20 +110,30 @@ public:
     virtual void r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
 
     /**
-     * Notify the start of a D group
+     * Executes a repetition of the opcodes on top of the stack.
      *
-     * @param code
-     *   The D code that is being expanded
+     * By default it just calls run(), but it can be overridden to execute
+     * operations before and after.
+     *
+     * @param cur
+     *   The 0-based index of the current repetition
+     *
+     * @param total
+     *   The total number of repetitions
      */
-    virtual void d_group_begin(Varcode code);
+    virtual void run_r_repetition(unsigned cur, unsigned total);
 
     /**
-     * Notify the end of a D group
+     * Executes the expansion of \a code, which has been put on top of the
+     * opcode stack.
+     *
+     * By default it just calls run(), but it can be overridden to execute
+     * operations before and after.
      *
      * @param code
-     *   The D code that has just been expanded
+     *   The D code that is being run
      */
-    virtual void d_group_end(Varcode code);
+    virtual void run_d_expansion(Varcode code);
 
     /**
      * Request processing of a data present bitmap.
@@ -234,9 +244,7 @@ public:
     void b_variable(Varcode code) override;
     void c_modifier(Varcode code, Opcodes& next) override;
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
-    void d_group_begin(Varcode code) override;
-    void d_group_end(Varcode code) override;
-
+    void run_d_expansion(Varcode code) override;
     void define_variable(Varinfo info) override;
     void define_bitmap(unsigned bitmap_size) override;
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;

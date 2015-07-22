@@ -36,7 +36,11 @@ struct VisitCounter : public bulletin::DDSInterpreter
         run();
         opcode_stack.pop();
     }
-    void d_group_begin(Varcode code) override { ++count_d; }
+    void run_d_expansion(Varcode code) override
+    {
+        ++count_d;
+        bulletin::DDSInterpreter::run_d_expansion(code);
+    }
 };
 
 typedef test_group<> test_group;

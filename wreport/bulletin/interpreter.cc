@@ -58,11 +58,9 @@ void DDSInterpreter::run()
                 break;
             case 3:
             {
-                d_group_begin(cur);
                 opcode_stack.push(tables.dtable->query(cur));
-                run();
+                run_d_expansion(cur);
                 opcode_stack.pop();
-                d_group_end(cur);
                 break;
             }
             default:
@@ -393,9 +391,14 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
     for (unsigned i = 0; i < count; ++i)
     {
         opcode_stack.push(ops);
-        run();
+        run_r_repetition(i, count);
         opcode_stack.pop();
     }
+}
+
+void DDSInterpreter::run_r_repetition(unsigned cur, unsigned total)
+{
+    run();
 }
 
 void DDSInterpreter::r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
@@ -421,8 +424,10 @@ void DDSInterpreter::r_bitmap(Varcode code, Varcode delayed_code, const Opcodes&
     bitmaps.pending_definitions = 0;
 }
 
-void DDSInterpreter::d_group_begin(Varcode code) {}
-void DDSInterpreter::d_group_end(Varcode code) {}
+void DDSInterpreter::run_d_expansion(Varcode code)
+{
+    run();
+}
 
 void DDSInterpreter::define_bitmap(unsigned bitmap_size)
 {
@@ -574,16 +579,12 @@ void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
     indent -= indent_step;
 }
 
-void Printer::d_group_begin(Varcode code)
+void Printer::run_d_expansion(Varcode code)
 {
     print_lead(code);
     fputs(" (group)\n", out);
-
     indent += indent_step;
-}
-
-void Printer::d_group_end(Varcode code)
-{
+    DDSInterpreter::run_d_expansion(code);
     indent -= indent_step;
 }
 
