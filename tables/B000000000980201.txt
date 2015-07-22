@@ -74,6 +74,7 @@
  002061 AIRCRAFT NAVIGATIONAL SYSTEM                                     CODE TABLE   2061          0            0   3  
  002062 TYPE OF AIRCRAFT DATA RELAY SYSTEM                               CODE TABLE   2062          0            0   4  
  002063 AIRCRAFT ROLL ANGLE                                              DEGREE                     2       -18000  16  
+ 002064 AIRCRAFT ROLL ANGLE QUALITY                                      CODE TABLE 002064          0            0   2
  002070 ORIGINAL SPECIFICATION OF LATITUDE/LONGITUDE                     CODE TABLE   2070          0            0   4  
  002101 TYPE OF ANTENNA                                                  CODE TABLE   2101          0            0   4  
  002102 ANTENNA HEIGHT ABOVE TOWER BASE                                  M                          0            0   8  
@@ -243,6 +244,7 @@
  011051 STANDARD DEVIATION W COMPONENT                                   M/S                        1            0   8  
  011061 ABSOLUTE WIND SHEAR IN 1 KM LAYER BELOW                          M/S                        1            0  12  
  011062 ABSOLUTE WIND SHEAR IN 1 KM LAYER ABOVE                          M/S                        1            0  12  
+ 011076 PEAK TURBULENCE INTENSITY (EDDY DISSIPATION RATE)                m**(2/3)/S                 2            0   8
  011192 U - COMPONENT AT 10 M                                            M/S                        1        -4096  13  
  011193 V - COMPONENT AT 10 M                                            M/S                        1        -4096  13  
  011194 W - COMPONENT AT 10 M                                            M/S                        1        -4096  13  
