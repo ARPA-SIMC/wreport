@@ -290,7 +290,7 @@ struct BufrBulletin : public Bulletin
 	 * @returns
 	 *   true if a message was found, false on EOF
 	 */
-    static bool read(FILE* in, std::string& buf, const char* fname=0, long* offset=0);
+    static bool read(FILE* in, std::string& buf, const char* fname=0, off_t* offset=0);
 
 	/**
 	 * Write an encoded BUFR message to a stream
@@ -437,7 +437,7 @@ struct CrexBulletin : public Bulletin
 	 * @returns
 	 *   true if a message was found, false on EOF
 	 */
-    static bool read(FILE* in, std::string& buf, const char* fname=0, long* offset=0);
+    static bool read(FILE* in, std::string& buf, const char* fname=0, off_t* offset=0);
 
 	/**
 	 * Write an encoded BUFR message to a stream
