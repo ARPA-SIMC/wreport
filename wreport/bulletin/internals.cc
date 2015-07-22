@@ -56,6 +56,48 @@ void UncompressedEncoder::define_bitmap(unsigned bitmap_size)
     bitmaps.define(var, current_subset, current_var);
 }
 
+void UncompressedEncoder::encode_var(Varinfo info, const Var& var)
+{
+    throw error_unimplemented("encode_var not implemented in this interpreter");
+}
+
+void UncompressedEncoder::encode_associated_field(const Var& var)
+{
+}
+
+void UncompressedEncoder::define_variable(Varinfo info)
+{
+    const Var& var = get_var();
+
+    // Deal with an associated field
+    if (associated_field.bit_count)
+        encode_associated_field(var);
+
+    encode_var(info, var);
+}
+
+unsigned UncompressedEncoder::define_delayed_replication_factor(Varinfo info)
+{
+    const Var& var = get_var();
+    encode_var(info, var);
+    return var.enqi();
+}
+
+unsigned UncompressedEncoder::define_associated_field_significance(Varinfo info)
+{
+    const Var& var = get_var();
+    encode_var(info, var);
+    return var.enq(63);
+}
+
+unsigned UncompressedEncoder::define_bitmap_delayed_replication_factor(Varinfo info)
+{
+    const Var& var = peek_var();
+    Var rep_var(info, (int)var.info()->len);
+    encode_var(info, rep_var);
+    return var.info()->len;
+}
+
 
 UncompressedDecoder::UncompressedDecoder(Bulletin& bulletin, unsigned subset_no)
     : Interpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_no))

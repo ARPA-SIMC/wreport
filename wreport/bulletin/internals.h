@@ -39,6 +39,31 @@ struct UncompressedEncoder : public bulletin::Interpreter
     const Var& get_var(unsigned pos) const;
 
     void define_bitmap(unsigned bitmap_size) override;
+
+    void define_variable(Varinfo info) override;
+    unsigned define_delayed_replication_factor(Varinfo info) override;
+    unsigned define_associated_field_significance(Varinfo info) override;
+    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
+
+    /**
+     * Encode a variable.
+     *
+     * By default, this raises error_unimplemented. For decoders that encode
+     * normal variables, delayed replication factors, bitmap delayed
+     * replication factors, and associated field significances in the same way,
+     * can just override this method and use the default define_*
+     * implementations.
+     */
+    virtual void encode_var(Varinfo info, const Var& var);
+
+    /**
+     * Encode an attribute for an associated field.
+     *
+     * Var is the variable that the associated field refers to. The actual
+     * value of the associated field can be looked up using the functions in
+     * this->associated_field.
+     */
+    virtual void encode_associated_field(const Var& var);
 };
 
 struct UncompressedDecoder : public bulletin::Interpreter

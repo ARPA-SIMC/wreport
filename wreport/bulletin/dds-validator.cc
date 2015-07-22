@@ -73,39 +73,9 @@ void DDSValidator::check_attr(Varinfo info, unsigned var_pos)
         check_fits(info, *a);
 }
 
-void DDSValidator::define_variable(Varinfo info)
+void DDSValidator::encode_var(Varinfo info, const Var& var)
 {
-    const Var& var = get_var();
-
-    if (associated_field.bit_count)
-    {
-        const Var& var = get_var(current_var);
-        /*const Var* att =*/ associated_field.get_attribute(var);
-    }
-
     check_fits(info, var);
-}
-
-unsigned DDSValidator::define_delayed_replication_factor(Varinfo info)
-{
-    const Var& var = get_var();
-    check_fits(info, var);
-    return var.enqi();
-}
-
-unsigned DDSValidator::define_bitmap_delayed_replication_factor(Varinfo info)
-{
-    const Var& var = peek_var();
-    Var rep_var(info, (int)var.info()->len);
-    check_fits(info, rep_var);
-    return var.info()->len;
-}
-
-unsigned DDSValidator::define_associated_field_significance(Varinfo info)
-{
-    const Var& var = get_var();
-    check_fits(info, var);
-    return var.enq(63);
 }
 
 void DDSValidator::define_substituted_value(unsigned pos)

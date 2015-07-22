@@ -52,46 +52,21 @@ void DDSPrinter::print_attr(Varinfo info, unsigned var_pos)
         fprintf(out, "(undef)");
 }
 
-void DDSPrinter::define_variable(Varinfo info)
+void DDSPrinter::encode_associated_field(const Var& var)
 {
-    const Var& var = get_var();
+    print_context(var.info(), current_var);
 
-    if (associated_field.bit_count)
-    {
-        print_context(var.info(), current_var);
+    const Var* att = associated_field.get_attribute(var);
+    if (att)
+        att->print(out);
+    else
+        fprintf(out, "associated field with significance %d is not present", associated_field.significance);
+}
 
-        const Var* att = associated_field.get_attribute(var);
-        if (att)
-            att->print(out);
-        else
-            fprintf(out, "associated field with significance %d is not present", associated_field.significance);
-    }
-
+void DDSPrinter::encode_var(Varinfo info, const Var& var)
+{
     print_context(info, current_var);
-
     var.print(out);
-}
-
-unsigned DDSPrinter::define_delayed_replication_factor(Varinfo info)
-{
-    const Var& var = get_var();
-    var.print(out);
-    return var.enqi();
-}
-
-unsigned DDSPrinter::define_bitmap_delayed_replication_factor(Varinfo info)
-{
-    const Var& var = peek_var();
-    Var rep_var(info, (int)var.info()->len);
-    rep_var.print(out);
-    return var.info()->len;
-}
-
-unsigned DDSPrinter::define_associated_field_significance(Varinfo info)
-{
-    const Var& var = get_var();
-    var.print(out);
-    return var.enq(63);
 }
 
 void DDSPrinter::define_bitmap(unsigned bitmap_size)

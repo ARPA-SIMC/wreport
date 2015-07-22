@@ -35,13 +35,11 @@ public:
     virtual ~DDSPrinter();
 
     void define_bitmap(unsigned bitmap_size) override;
-    void define_variable(Varinfo info) override;
-    unsigned define_delayed_replication_factor(Varinfo info) override;
-    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
-    unsigned define_associated_field_significance(Varinfo info) override;
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;
     void define_raw_character_data(Varcode code) override;
+    void encode_var(Varinfo info, const Var& var) override;
+    void encode_associated_field(const Var& var) override;
 
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
     void run_d_expansion(Varcode code) override;

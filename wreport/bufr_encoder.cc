@@ -51,41 +51,21 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
         else
             ob.append_missing(info);
     }
-    void define_variable(Varinfo info) override
-    {
-        const Var& var = get_var();
 
-        // Deal with an associated field
-        if (associated_field.bit_count)
-        {
-            const Var* att = associated_field.get_attribute(var);
-            if (att && att->isset())
-                ob.add_bits(att->enqi(), associated_field.bit_count);
-            else
-                ob.append_missing(associated_field.bit_count);
-        }
+    void encode_associated_field(const Var& var) override
+    {
+        const Var* att = associated_field.get_attribute(var);
+        if (att && att->isset())
+            ob.add_bits(att->enqi(), associated_field.bit_count);
+        else
+            ob.append_missing(associated_field.bit_count);
+    }
 
+    void encode_var(Varinfo info, const Var& var) override
+    {
         ob.append_var(info, var);
     }
-    unsigned define_delayed_replication_factor(Varinfo info) override
-    {
-        const Var& var = get_var();
-        ob.append_var(info, var);
-        return var.enqi();
-    }
-    unsigned define_associated_field_significance(Varinfo info) override
-    {
-        const Var& var = get_var();
-        ob.append_var(info, var);
-        return var.enq(63);
-    }
-    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override
-    {
-        const Var& var = peek_var();
-        Var rep_var(info, (int)var.info()->len);
-        ob.append_var(info, rep_var);
-        return var.info()->len;
-    }
+
     void define_bitmap(unsigned bitmap_size) override
     {
         const Var& var = get_var();
