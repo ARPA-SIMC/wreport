@@ -95,7 +95,7 @@ Varinfo Tables::get_bitmap(Varcode code, const std::string& bitmap) const
 
 Varinfo Tables::get_chardata(Varcode code, unsigned len) const
 {
-    auto res = chardata_table.find(len);
+    auto res = chardata_table.find(code);
     if (res != chardata_table.end())
     {
         if (res->second.code != code)
@@ -104,7 +104,7 @@ Varinfo Tables::get_chardata(Varcode code, unsigned len) const
         return &(res->second);
     }
 
-    auto new_entry = chardata_table.emplace(make_pair(len, _Varinfo()));
+    auto new_entry = chardata_table.emplace(make_pair(code, _Varinfo()));
     _Varinfo& vi = new_entry.first->second;
     vi.set_string(code, "CHARACTER DATA", len);
     return &vi;
