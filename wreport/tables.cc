@@ -93,20 +93,20 @@ Varinfo Tables::get_bitmap(Varcode code, const std::string& bitmap) const
     return &vi;
 }
 
-Varinfo Tables::get_chardata(Varcode code, const std::string& chardata) const
+Varinfo Tables::get_chardata(Varcode code, unsigned len) const
 {
-    auto res = chardata_table.find(chardata);
+    auto res = chardata_table.find(len);
     if (res != chardata_table.end())
     {
         if (res->second.code != code)
-            error_consistency::throwf("Character data '%s' has been requested with varcode %01d%02d%03d but it already exists as %01d%02d%03d",
-                    chardata.c_str(), WR_VAR_FXY(code), WR_VAR_FXY(res->second.code));
+            error_consistency::throwf("Character data with length %u has been requested with varcode %01d%02d%03d but it already exists as %01d%02d%03d",
+                    len, WR_VAR_FXY(code), WR_VAR_FXY(res->second.code));
         return &(res->second);
     }
 
-    auto new_entry = chardata_table.emplace(make_pair(chardata, _Varinfo()));
+    auto new_entry = chardata_table.emplace(make_pair(len, _Varinfo()));
     _Varinfo& vi = new_entry.first->second;
-    vi.set_string(code, "CHARACTER DATA", chardata.size());
+    vi.set_string(code, "CHARACTER DATA", len);
     return &vi;
 }
 

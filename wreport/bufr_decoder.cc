@@ -305,7 +305,7 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
         // Add as C variable to the subset
 
         // Create a single use varinfo to store the bitmap
-        Varinfo info = tables.get_chardata(code, buf);
+        Varinfo info = tables.get_chardata(code, cdatalen);
 
         // Store the character data
         Var cdata(info, buf);
