@@ -22,7 +22,7 @@ namespace bulletin {
  * anything. To provide actual functionality, subclass the interpreter and
  * override the various virtual methods.
  */
-struct DDSInterpreter
+struct Interpreter
 {
     const Tables& tables;
     std::stack<Opcodes> opcode_stack;
@@ -56,18 +56,11 @@ protected:
     Varinfo get_varinfo(Varcode code);
 
 public:
-    DDSInterpreter(const Tables& tables, const Opcodes& opcodes)
-        : tables(tables), associated_field(*tables.btable)
-    {
-        opcode_stack.push(opcodes);
-    }
+    Interpreter(const Tables& tables, const Opcodes& opcodes);
+    virtual ~Interpreter();
 
-    virtual ~DDSInterpreter()
-    {
-    }
-
-    DDSInterpreter(const DDSInterpreter&) = delete;
-    DDSInterpreter& operator=(const DDSInterpreter&) = delete;
+    Interpreter(const Interpreter&) = delete;
+    Interpreter& operator=(const Interpreter&) = delete;
 
     /// Run the interpreter
     void run();
@@ -209,7 +202,7 @@ public:
  * Interpreter that pretty-prints the opcodes using indentation to show
  * structure
  */
-class Printer : public DDSInterpreter
+class Printer : public Interpreter
 {
 protected:
     /**

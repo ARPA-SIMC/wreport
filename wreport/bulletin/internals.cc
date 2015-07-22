@@ -21,7 +21,7 @@ namespace wreport {
 namespace bulletin {
 
 UncompressedEncoder::UncompressedEncoder(const Bulletin& bulletin, unsigned subset_no)
-    : DDSInterpreter(bulletin.tables, bulletin.datadesc), current_subset(bulletin.subset(subset_no))
+    : Interpreter(bulletin.tables, bulletin.datadesc), current_subset(bulletin.subset(subset_no))
 {
 }
 
@@ -58,7 +58,7 @@ void UncompressedEncoder::define_bitmap(unsigned bitmap_size)
 
 
 UncompressedDecoder::UncompressedDecoder(Bulletin& bulletin, unsigned subset_no)
-    : DDSInterpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_no))
+    : Interpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_no))
 {
 }
 
@@ -68,7 +68,7 @@ UncompressedDecoder::~UncompressedDecoder()
 
 
 CompressedDecoder::CompressedDecoder(Bulletin& bulletin)
-    : DDSInterpreter(bulletin.tables, bulletin.datadesc), output_bulletin(bulletin)
+    : Interpreter(bulletin.tables, bulletin.datadesc), output_bulletin(bulletin)
 {
     TRACE("parser: start on compressed bulletin\n");
 }

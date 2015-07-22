@@ -4,7 +4,7 @@ namespace wreport {
 namespace bulletin {
 
 ScanFeatures::ScanFeatures(const Tables& tables, const Opcodes& opcodes)
-    : DDSInterpreter(tables, opcodes)
+    : Interpreter(tables, opcodes)
 {
 }
 
@@ -22,7 +22,7 @@ void ScanFeatures::c_modifier(Varcode code, Opcodes& next)
             features.insert(varcode_format(code));
             break;
     }
-    DDSInterpreter::c_modifier(code, next);
+    Interpreter::c_modifier(code, next);
 }
 
 void ScanFeatures::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)

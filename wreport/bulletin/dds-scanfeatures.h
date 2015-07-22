@@ -10,7 +10,7 @@ namespace bulletin {
 /**
  * Interpreter that scans what features are used by a bulletin
  */
-class ScanFeatures : public DDSInterpreter
+class ScanFeatures : public Interpreter
 {
 public:
     /// Features that have been found

@@ -13,7 +13,7 @@ using namespace wibble;
 
 namespace {
 
-struct VisitCounter : public bulletin::DDSInterpreter
+struct VisitCounter : public bulletin::Interpreter
 {
     unsigned count_b;
     unsigned count_r_plain;
@@ -22,10 +22,10 @@ struct VisitCounter : public bulletin::DDSInterpreter
     unsigned count_d;
 
     VisitCounter(const Tables& tables, const Opcodes& opcodes)
-        : bulletin::DDSInterpreter(tables, opcodes), count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
+        : bulletin::Interpreter(tables, opcodes), count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
 
     void b_variable(Varcode code) override { ++count_b; }
-    void c_modifier(Varcode code, Opcodes& next) override { ++count_c; bulletin::DDSInterpreter::c_modifier(code, next); }
+    void c_modifier(Varcode code, Opcodes& next) override { ++count_c; bulletin::Interpreter::c_modifier(code, next); }
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override
     {
         if (delayed_code)
@@ -39,7 +39,7 @@ struct VisitCounter : public bulletin::DDSInterpreter
     void run_d_expansion(Varcode code) override
     {
         ++count_d;
-        bulletin::DDSInterpreter::run_d_expansion(code);
+        bulletin::Interpreter::run_d_expansion(code);
     }
 };
 

@@ -19,7 +19,15 @@
 namespace wreport {
 namespace bulletin {
 
-void DDSInterpreter::run()
+Interpreter::Interpreter(const Tables& tables, const Opcodes& opcodes)
+    : tables(tables), associated_field(*tables.btable)
+{
+    opcode_stack.push(opcodes);
+}
+
+Interpreter::~Interpreter() {}
+
+void Interpreter::run()
 {
     Opcodes opcodes = opcode_stack.top();
     while (!opcodes.empty())
@@ -69,7 +77,7 @@ void DDSInterpreter::run()
     }
 }
 
-Varinfo DDSInterpreter::get_varinfo(Varcode code)
+Varinfo Interpreter::get_varinfo(Varcode code)
 {
     Varinfo peek = tables.btable->query(code);
 
@@ -108,7 +116,7 @@ Varinfo DDSInterpreter::get_varinfo(Varcode code)
     return tables.btable->query_altered(code, scale, bit_len);
 }
 
-void DDSInterpreter::b_variable(Varcode code)
+void Interpreter::b_variable(Varcode code)
 {
     Varinfo info = get_varinfo(code);
     // Choose which value we should encode
@@ -126,7 +134,7 @@ void DDSInterpreter::b_variable(Varcode code)
     }
 }
 
-void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
+void Interpreter::c_modifier(Varcode code, Opcodes& next)
 {
     TRACE("C DATA %01d%02d%03d\n", WR_VAR_FXY(code));
     switch (WR_VAR_X(code))
@@ -360,7 +368,7 @@ void DDSInterpreter::c_modifier(Varcode code, Opcodes& next)
     }
 }
 
-void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+void Interpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     // unsigned group = WR_VAR_X(code);
     unsigned count = WR_VAR_Y(code);
@@ -396,12 +404,12 @@ void DDSInterpreter::r_replication(Varcode code, Varcode delayed_code, const Opc
     }
 }
 
-void DDSInterpreter::run_r_repetition(unsigned cur, unsigned total)
+void Interpreter::run_r_repetition(unsigned cur, unsigned total)
 {
     run();
 }
 
-void DDSInterpreter::r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+void Interpreter::r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
 {
     // Get and check the opcode count, which must be 1
     unsigned opcode_count = WR_VAR_X(code);
@@ -424,54 +432,54 @@ void DDSInterpreter::r_bitmap(Varcode code, Varcode delayed_code, const Opcodes&
     bitmaps.pending_definitions = 0;
 }
 
-void DDSInterpreter::run_d_expansion(Varcode code)
+void Interpreter::run_d_expansion(Varcode code)
 {
     run();
 }
 
-void DDSInterpreter::define_bitmap(unsigned bitmap_size)
+void Interpreter::define_bitmap(unsigned bitmap_size)
 {
     throw error_unimplemented("define_bitmap is not implemented in this interpreter");
 }
 
-unsigned DDSInterpreter::define_delayed_replication_factor(Varinfo info)
+unsigned Interpreter::define_delayed_replication_factor(Varinfo info)
 {
     throw error_unimplemented("define_delayed_replication_factor is not implemented in this interpreter");
 }
 
-unsigned DDSInterpreter::define_bitmap_delayed_replication_factor(Varinfo info)
+unsigned Interpreter::define_bitmap_delayed_replication_factor(Varinfo info)
 {
     throw error_unimplemented("define_bitmap_delayed_replication_factor is not implemented in this interpreter");
 }
 
-unsigned DDSInterpreter::define_associated_field_significance(Varinfo info)
+unsigned Interpreter::define_associated_field_significance(Varinfo info)
 {
     throw error_unimplemented("define_associated_field_significance is not implemented in this interpreter");
 }
 
-void DDSInterpreter::define_variable(Varinfo info)
+void Interpreter::define_variable(Varinfo info)
 {
     throw error_unimplemented("define_variable is not implemented in this interpreter");
 }
 
-void DDSInterpreter::define_substituted_value(unsigned pos)
+void Interpreter::define_substituted_value(unsigned pos)
 {
     throw error_unimplemented("define_substituted_variable is not implemented in this interpreter");
 }
 
-void DDSInterpreter::define_attribute(Varinfo info, unsigned pos)
+void Interpreter::define_attribute(Varinfo info, unsigned pos)
 {
     throw error_unimplemented("define_attribute is not implemented in this interpreter");
 }
 
-void DDSInterpreter::define_raw_character_data(Varcode code)
+void Interpreter::define_raw_character_data(Varcode code)
 {
     throw error_unimplemented("define_raw_character_data is not implemented in this interpreter");
 }
 
 
 Printer::Printer(const Tables& tables, const Opcodes& opcodes)
-    : DDSInterpreter(tables, opcodes), out(stdout), indent(0), indent_step(2)
+    : Interpreter(tables, opcodes), out(stdout), indent(0), indent_step(2)
 {
 }
 
@@ -558,7 +566,7 @@ void Printer::c_modifier(Varcode code, Opcodes& next)
             fputs(" (C modifier)\n", out);
             break;
     }
-    DDSInterpreter::c_modifier(code, next);
+    Interpreter::c_modifier(code, next);
 }
 
 void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
@@ -584,7 +592,7 @@ void Printer::run_d_expansion(Varcode code)
     print_lead(code);
     fputs(" (group)\n", out);
     indent += indent_step;
-    DDSInterpreter::run_d_expansion(code);
+    Interpreter::run_d_expansion(code);
     indent -= indent_step;
 }
 

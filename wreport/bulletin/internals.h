@@ -16,10 +16,10 @@ struct Bulletin;
 namespace bulletin {
 
 /**
- * Base DDSInterpreter specialisation for message encoders that works on a
+ * Base Interpreter specialisation for message encoders that works on a
  * subset at a time
  */
-struct UncompressedEncoder : public bulletin::DDSInterpreter
+struct UncompressedEncoder : public bulletin::Interpreter
 {
     /// Current subset (used to refer to past variables)
     const Subset& current_subset;
@@ -41,7 +41,7 @@ struct UncompressedEncoder : public bulletin::DDSInterpreter
     void define_bitmap(unsigned bitmap_size) override;
 };
 
-struct UncompressedDecoder : public bulletin::DDSInterpreter
+struct UncompressedDecoder : public bulletin::Interpreter
 {
     /// Subset where decoded variables go
     Subset& output_subset;
@@ -50,7 +50,7 @@ struct UncompressedDecoder : public bulletin::DDSInterpreter
     ~UncompressedDecoder();
 };
 
-struct CompressedDecoder : public bulletin::DDSInterpreter
+struct CompressedDecoder : public bulletin::Interpreter
 {
     Bulletin& output_bulletin;
 
