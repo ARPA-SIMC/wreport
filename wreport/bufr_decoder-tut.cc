@@ -63,6 +63,13 @@ std::vector<Test> make_tests()
 
         ensure(s[1].enqa(WR_VAR(0, 33, 7)) != NULL);
         ensure_equals(s[1].enqa(WR_VAR(0, 33, 7))->enqi(), 70);
+
+        wassert(actual(msg.section_end[0]) == 8);
+        wassert(actual(msg.section_end[1]) == 26);
+        wassert(actual(msg.section_end[2]) == 78);
+        wassert(actual(msg.section_end[3]) == 102);
+        wassert(actual(msg.section_end[4]) == 178);
+        wassert(actual(msg.section_end[5]) == 182);
     });
 
     declare_test("bufr/bufr2", [](WIBBLE_TEST_LOCPRM, const BufrBulletin& msg) {

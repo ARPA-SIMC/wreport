@@ -607,6 +607,10 @@ void Decoder::decode_data()
     if (memcmp(in.data + in.sec[5], "7777", 4) != 0)
         in.parse_error(5, 0, "section 5 does not contain '7777'");
 
+    for (unsigned i = 0; i < 5; ++i)
+        out.section_end[i] = in.sec[i + 1];
+    out.section_end[5] = out.section_end[4] + 4;
+
     //if (subsets_no != out.subsets.size())
     //    parse_error(sec5, "header advertised %u subsets but only %zd found", subsets_no, out.subsets.size());
 }

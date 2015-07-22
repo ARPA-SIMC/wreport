@@ -259,6 +259,13 @@ struct BufrBulletin : public Bulletin
      */
     std::string optional_section;
 
+    /**
+     * Offsets of the end of BUFR sections.
+     *
+     * This is only filled in during decoding.
+     */
+    unsigned section_end[6] = { 0, 0, 0, 0, 0, 0 };
+
 
     virtual ~BufrBulletin();
 

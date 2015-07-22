@@ -376,6 +376,16 @@ string BufrBulletin::encode() const
         memcpy((char*)out.out.data() + 4, ((char*)&val) + 1, 3);
         TRACE("msg size %zd\n", out.out.size());
     }
+
+#if 0
+    // Not doing it because we are const
+
+    // Store the section offsets in the BUFR bulletin
+    for (unsigned i = 0; i < 5; ++i)
+        section_end[i] = e.sec[i + 1];
+    section_end[5] = section_end[4] + 4;
+#endif
+
     return buf;
 }
 
