@@ -179,6 +179,7 @@
  007004 PRESSURE                                                         PA                        -1            0  14  
  007005 HEIGHT INCREMENT                                                 M                          0         -400  12  
  007006 HEIGHT ABOVE STATION                                             M                          0            0  15  
+ 007007 HEIGHT                                                           M                          0        -1000  17
  007021 ELEVATION                                                        DEGREE                     2        -9000  15  
  007022 SOLAR ELEVATION                                                  DEGREE                     2        -9000  15  
  007061 DEPTH BELOW LAND SURFACE                                         M                          2            0  14  
