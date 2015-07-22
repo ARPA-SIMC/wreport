@@ -87,7 +87,7 @@ struct BulletinBenchmark : Benchmark
         : Benchmark(name),
           decode_bufr_head(this, "decode_bufr_head"), decode_bufr(this, "decode_bufr"),
           decode_crex_head(this, "decode_crex_head"), decode_crex(this, "decode_crex"),
-          encode_bufr(this, "encode_bufr"), encode_crex(this, "encode_bufr")
+          encode_bufr(this, "encode_bufr"), encode_crex(this, "encode_crex")
     {
 
         repetitions = 20;
