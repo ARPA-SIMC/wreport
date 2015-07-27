@@ -7,7 +7,7 @@ Group: Applications/Meteo
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: doxygen, libtool, libwibble-devel >= 1.1, gperf,lua-devel >= 5.1.1
+BuildRequires: doxygen, libtool, libwibble-devel >= 1.1, lua-devel >= 5.1.1
 %description
 null
 

@@ -73,17 +73,6 @@ then
 	fi
 fi
 
-dnl Check for gperf
-AC_CHECK_PROG(have_gperf, gperf, true)
-if test x$have_gperf != xtrue
-then
-	AC_MSG_WARN([gperf was not found: relying on prebuilt wreport/uniconv.cc])
-	if ! test -f wreport/uniconv.cc
-	then
-		AC_MSG_ERROR([please extract wreport/uniconv.cc from the distribution tarball])
-	fi
-fi
-
 DEP_LIBS=""
 AC_SUBST(DEP_LIBS)
 

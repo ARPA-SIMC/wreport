@@ -50,7 +50,6 @@ libwreport_la_SOURCES = \
 	options.cc \
 	error.cc \
 	notes.cc \
-	uniconv.cc \
 	conv.cc \
 	tableinfo.cc \
 	varinfo.cc \
@@ -90,11 +89,8 @@ libwreport_test_la_LIBADD = libwreport.la $(WIBBLE_LIBS)
 libwreport_test_la_LDFLAGS = -static -version-info @LIBWREPORT_VERSION_INFO@
 endif
 
-uniconv.cc: uniconv.gperf
-	if ! gperf < $< > $@; then rm $@; /bin/false; fi
-
 BUILT_SOURCES = uniconv.cc
-EXTRA_DIST = internals/compat.h uniconv.gperf uniconv.cc main.dox style.dox features.dox examples.dox
+EXTRA_DIST = internals/compat.h main.dox style.dox features.dox examples.dox
 
 #
 # Unit testing

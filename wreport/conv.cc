@@ -22,10 +22,240 @@
 #include "conv.h"
 #include "error.h"
 #include "codetables.h"
+#include <vector>
+#include <cmath>
+#include <cstring>
+#include <algorithm>
 
-#include <math.h>
+using namespace std;
 
 namespace wreport {
+
+namespace {
+
+struct Convert
+{
+    virtual ~Convert() {}
+    virtual double convert(double val) const = 0;
+};
+
+struct ConvertIdent : public Convert
+{
+    double convert(double val) const override { return val; }
+};
+
+struct ConvertLinear : public Convert
+{
+    double mul;
+    double add;
+
+    ConvertLinear(double mul, double add) : mul(mul), add(add) {}
+
+    double convert(double val) const override { return val * mul + add; }
+};
+
+struct Conv
+{
+    const char* from;
+    const char* to;
+    const Convert* conv;
+
+    Conv(const char* from, const char* to, const Convert* conv) : from(from), to(to), conv(conv) {}
+    Conv(const Conv& o) = delete;
+    Conv(Conv&& o)
+        : from(o.from), to(o.to), conv(o.conv) { o.conv = nullptr; }
+    ~Conv() { delete conv; }
+
+    Conv& operator=(const Conv&) = delete;
+    Conv& operator=(Conv&& o)
+    {
+        if (this == &o) return *this;
+        from = o.from;
+        to = o.to;
+        delete conv;
+        conv = o.conv;
+        o.conv = nullptr;
+        return *this;
+    }
+
+    int compare(const char* ofrom, const char* oto) const
+    {
+        if (int res = strcmp(from, ofrom)) return res;
+        if (int res = strcmp(to, oto)) return res;
+        return 0;
+    }
+
+    int compare(const Conv& o) const
+    {
+        if (int res = strcmp(from, o.from)) return res;
+        if (int res = strcmp(to, o.to)) return res;
+        return 0;
+    }
+
+    bool operator<(const Conv& o) const
+    {
+        return compare(o) < 0;
+    }
+
+    bool operator==(const Conv& o) const
+    {
+        return compare(o) == 0;
+    }
+};
+
+struct ConvertRepository
+{
+    std::vector<Conv> repo;
+
+    ConvertRepository()
+    {
+        add_linear("K",           "C", 1, -273.15001);
+        add_linear("K",           "C/10", 10, -2731.5001);
+        add_linear("C",           "C/10", 10, 0);
+        add_linear("minuti",      "S", 60, 0);
+        add_linear("MINUTE",      "S", 60, 0);
+        add_linear("S",           "MINUTE", 1.0/60, 0);
+        add_linear("G/M**3",      "KG/M**3", 0.001, 0);
+        add_linear("KG/M**3",     "G/M**3", 1000, 0);
+        add_linear("ug/m**3",     "KG/M**3", 0.000000001, 0);
+        add_linear("KG/M**3",     "ug/m**3", 1000000000, 0);
+        add_linear("PA",          "KPA", 0.001, 0);
+        add_linear("KPA",         "PA", 1000, 0);
+        add_linear("M",           "MM", 1000, 0);
+        add_linear("MM",          "M", 0.001, 0);
+        add_linear("M",           "cm", 100, 0);
+        add_linear("cm",          "M", 0.01, 0);
+        add_linear("M",           "KM", 0.001, 0);
+        add_linear("KM",          "M", 1000, 0);
+        add_linear("%",           "PERCENT", 1, 0);
+        add_linear("PERCENT",     "%", 1, 0);
+        add_linear("M",           "FT", 3.2808, 0);
+        add_linear("FT",          "M", 0.3048, 0);
+        add_linear("cal/cm**2",   "J/M**2", 41868, 0);
+        add_linear("J/M**2",      "cal/cm**2", 0.000023885, 0);
+        add_linear("J/M**2",      "MJ/M**2", 0.000001, 0);
+        add_linear("MJ/M**2",     "J/M**2", 1000000, 0);
+        add_linear("m/s/10",      "M/S", 0.1, 0);
+        add_linear("M/S",         "m/s/10", 10, 0);
+        add_linear("nodi",        "M/S", 0.51444, 0);
+        add_linear("M/S",         "nodi", 1.94384, 0);
+        add_linear("PA",          "mBar", 0.01, 0);
+        add_linear("mBar",        "PA", 100, 0);
+        add_linear("PA",          "hPa", 0.01, 0);
+        add_linear("hPa",         "PA", 100, 0);
+        add_linear("PA",          "Bar", 0.00001, 0);
+        add_linear("Bar",         "PA", 100000, 0);
+        add_linear("PA",          "NBAR", 0.0001, 0 );
+        add_linear("NBAR",        "PA", 10000, 0);
+        add_linear("hm",          "M", 100, 0);
+        add_linear("M",           "hm", 0.01, 0);
+        add_linear("mm",          "M", 0.001, 0);
+        add_linear("M",           "mm", 1000, 0);
+        add_linear("1/8",         "%", 12.5, 0);
+        add_linear("%",           "1/8", 0.08, 0);
+        add_linear("mm/10",       "KG/M**2", 0.1, 0);
+        add_linear("GPM",         "m**2/s**2", 9.80665, 0);
+        add_linear("GPM",         "M**2/S**2", 9.80665, 0);
+        add_linear("MGP",         "m**2/s**2", 9.80665, 0);
+        add_linear("MGP",         "M**2/S**2", 9.80665, 0);
+        add_linear("m**2/s**2",   "GPM", 0.101971621, 0);
+        add_linear("M**2/S**2",   "GPM", 0.101971621, 0);
+        add_linear("m**2/s**2",   "MGP", 0.101971621, 0);
+        add_linear("M**2/S**2",   "MGP", 0.101971621, 0);
+        add_linear("cal/s/cm**2", "W/M**2", 41868, 0);
+        add_linear("cal/h/cm**2", "W/M**2", 11.63, 0);
+        add_linear("Mj/m**2",     "J/M**2", 1000000, 0);
+        add_linear("RATIO",       "%", 100, 0);
+        add_linear("%",           "RATIO", 0.01, 0);
+        add_linear("ms/cm",       "S/M", 0.1, 0);
+        add_linear("S/M",         "ms/cm", 10, 0);
+        add_linear("mS/cm",       "S/M", 0.1, 0);
+        add_linear("S/M",         "mS/cm", 10, 0);
+        add_ident("A",            "YEAR");
+        add_ident("YEARS",        "YEAR");
+        add_ident("MON",          "MONTH");
+        add_ident("MONTHS",       "MONTH");
+        add_ident("D",            "DAY");
+        add_ident("DAYS",         "DAY");
+        add_ident("H",            "HOUR");
+        add_ident("HOURS",        "HOUR");
+        add_ident("MIN",          "MINUTE");
+        add_ident("MINUTES",      "MINUTE");
+        add_ident("SECONDS",      "SECOND");
+        add_ident("SECOND",       "S");
+        add_ident("sec",          "S");
+        add_ident("G/G",          "KG/KG");
+        add_ident("m**(2/3)/S",   "M**(2/3)/S");
+        add_ident("DEGREE**2",    "DEGREE2");
+        add_ident("KG/M**2",      "KGM-2");
+        add_ident("KG/M**2",      "KG M-2");
+        add_ident("J/M**2",       "JM-2");
+        add_ident("Bq/L",         "BQ L-1");
+        add_ident("DOBSON",       "DU");
+        add_ident("LOG(1/M**2)",  "LOG (M-2)");
+        add_ident("DEGREE",       "DEG");
+        add_ident("DEGREE TRUE",  "DEG");
+        add_ident("DEGREE TRUE",  "gsess");
+        add_ident("m/sec",        "M/S");
+        add_ident("m",            "M");
+        add_ident("mm",           "KG/M**2");
+        add_ident("degree true",  "DEGREE TRUE");
+        add_ident("GPM",          "MGP");
+        add_ident("W/m**2",       "W/M**2");
+        add_ident("J M-2",        "J/M**2");
+
+        sort(repo.begin(), repo.end());
+    }
+    ~ConvertRepository()
+    {
+    }
+
+    void add_ident(const char* from, const char* to)
+    {
+        repo.emplace_back(from, to, new ConvertIdent);
+        repo.emplace_back(to, from, new ConvertIdent);
+
+    }
+
+    void add_linear(const char* from, const char* to, double mul, double add)
+    {
+        repo.emplace_back(from, to, new ConvertLinear(mul, add));
+        repo.emplace_back(to, from, new ConvertLinear(1/mul, -add));
+    }
+
+    const Convert* find(const char* from, const char* to)
+    {
+        int begin, end;
+
+        // Binary search
+        begin = -1, end = repo.size();
+        while (end - begin > 1)
+        {
+            int cur = (end + begin) / 2;
+            if (repo[cur].compare(from, to) > 0)
+                end = cur;
+            else
+                begin = cur;
+        }
+        if (begin == -1 || repo[begin].compare(from, to) != 0)
+            return nullptr;
+        else
+            return repo[begin].conv;
+    }
+};
+
+}
+
+
+double convert_units(const char* from, const char* to, double val)
+{
+    static ConvertRepository* repo = nullptr;
+    if (!repo) repo = new ConvertRepository;
+    const Convert* conv = repo->find(from, to);
+    if (!conv)
+        error_unimplemented::throwf("conversion from \"%s\" to \"%s\" is not implemented", from, to);
+    return conv->convert(val);
+}
 
 /*
 Cloud type VM		Cloud type 20012
@@ -57,7 +287,6 @@ Per i cloud type nei 4 gruppi ripetuti del synop:
 	0..9 -> 0..9
 	/ -> 59
 */
-
 int convert_WMO0500_to_BUFR20012(int from)
 {
 	if (from >= 0 && from <= 9)
