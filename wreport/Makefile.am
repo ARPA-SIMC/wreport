@@ -166,6 +166,7 @@ dist_noinst_HEADERS += \
 	benchmark.h
 
 benchmark_SOURCES = \
+	conv-bench.cc \
 	var-bench.cc \
 	bulletin-bench.cc \
 	benchmark-main.cc
