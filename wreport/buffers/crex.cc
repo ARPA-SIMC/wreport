@@ -1,11 +1,5 @@
 #include "crex.h"
 #include "wreport/var.h"
-//#include "conv.h"
-//#include "compat.h"
-//#include "internals.h"
-//#include <cctype>
-//#include <cstdio>
-//#include <cstdlib>
 #include <cstdarg>
 #include "config.h"
 
