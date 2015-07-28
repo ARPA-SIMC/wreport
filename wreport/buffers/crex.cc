@@ -43,12 +43,14 @@ void CrexInput::parse_error(const char* fmt, ...) const
 
     va_list ap;
     va_start(ap, fmt);
-    vasprintf(&message, fmt, ap);
+    if (vasprintf(&message, fmt, ap) == -1)
+        message = nullptr;
     va_end(ap);
 
-    asprintf(&context, "%s:%zd+%d: %s", fname, offset, (int)(cur - data), message);
+    if (asprintf(&context, "%s:%zd+%d: %s", fname, offset, (int)(cur - data), message ? message : fmt) == -1)
+        context = nullptr;
 
-    string msg(context);
+    string msg(context ? context : fmt);
     free(context);
     free(message);
     throw error_parse(msg);

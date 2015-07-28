@@ -102,17 +102,18 @@ error_parse::error_parse(const char* file, int line, const std::string& msg)
 
 void error_parse::throwf(const char* file, int line, const char* fmt, ...)
 {
-	// Format the arguments
-	va_list ap;
-	va_start(ap, fmt);
-	char* cmsg;
-	vasprintf(&cmsg, fmt, ap);
-	va_end(ap);
+    // Format the arguments
+    va_list ap;
+    va_start(ap, fmt);
+    char* cmsg;
+    if (vasprintf(&cmsg, fmt, ap) == -1)
+        cmsg = nullptr;
+    va_end(ap);
 
-	// Convert to string
-	std::string msg(cmsg);
-	free(cmsg);
-	throw error_parse(file, line, msg);
+    // Convert to string
+    std::string msg(cmsg ? cmsg : fmt);
+    free(cmsg);
+    throw error_parse(file, line, msg);
 }
 
 static std::string build_regexp_error(int code, void* re, const std::string& msg)
@@ -129,17 +130,18 @@ error_regexp::error_regexp(int code, void* re, const std::string& msg)
 
 void error_regexp::throwf(int code, void* re, const char* fmt, ...)
 {
-	// Format the arguments
-	va_list ap;
-	va_start(ap, fmt);
-	char* cmsg;
-	vasprintf(&cmsg, fmt, ap);
-	va_end(ap);
+    // Format the arguments
+    va_list ap;
+    va_start(ap, fmt);
+    char* cmsg;
+    if (vasprintf(&cmsg, fmt, ap) == -1)
+        cmsg = nullptr;
+    va_end(ap);
 
-	// Convert to string
-	std::string msg(cmsg);
-	free(cmsg);
-	throw error_regexp(code, re, msg);
+    // Convert to string
+    std::string msg(cmsg ? cmsg : fmt);
+    free(cmsg);
+    throw error_regexp(code, re, msg);
 }
 
 MAKE_THROWF(error_unimplemented)

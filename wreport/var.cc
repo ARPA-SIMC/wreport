@@ -555,7 +555,7 @@ void Var::setf(const char* val)
         case Vartype::String: assign_c_checked(val, m_info->len); break;
         case Vartype::Binary:
             // If we are a binary, we need to convert from hex to binary first
-#warning TODO: implement this
+            // TODO: implement this
             throw error_unimplemented("hex to binary not yet implemented");
             break;
         case Vartype::Integer:
@@ -765,7 +765,7 @@ void Var::print(std::ostream& out) const
 
 unsigned Var::diff(const Var& var) const
 {
-#warning TODO: alterations are not taken into account
+    // TODO: alterations are not taken into account
     if (code() != var.code())
     {
         notes::logf("varcodes differ: first is %d%02d%03d'%s', second is %d%02d%03d'%s'\n",

@@ -111,13 +111,15 @@ void BufrInput::parse_error(const char* fmt, ...) const
 
     va_list ap;
     va_start(ap, fmt);
-    vasprintf(&message, fmt, ap);
+    if (vasprintf(&message, fmt, ap) == -1)
+        message = nullptr;
     va_end(ap);
 
-    asprintf(&context, "%s:%zd+%u: %s", fname, start_offset, s4_cursor, message);
+    if (asprintf(&context, "%s:%zd+%u: %s", fname, start_offset, s4_cursor, message ? message : fmt) == -1)
+        context = nullptr;
     free(message);
 
-    string msg(context);
+    string msg(context ? context : fmt);
     free(context);
 
     throw error_parse(msg);
@@ -130,13 +132,15 @@ void BufrInput::parse_error(unsigned pos, const char* fmt, ...) const
 
     va_list ap;
     va_start(ap, fmt);
-    vasprintf(&message, fmt, ap);
+    if (vasprintf(&message, fmt, ap) == -1)
+        message = nullptr;
     va_end(ap);
 
-    asprintf(&context, "%s:%zd+%u: %s", fname, start_offset, pos, message);
+    if (asprintf(&context, "%s:%zd+%u: %s", fname, start_offset, pos, message ? message : fmt) == -1)
+        context = nullptr;
     free(message);
 
-    string msg(context);
+    string msg(context ? context : fmt);
     free(context);
     throw error_parse(msg);
 }
@@ -148,15 +152,17 @@ void BufrInput::parse_error(unsigned section, unsigned pos, const char* fmt, ...
 
     va_list ap;
     va_start(ap, fmt);
-    vasprintf(&message, fmt, ap);
+    if (vasprintf(&message, fmt, ap) == -1)
+        message = nullptr;
     va_end(ap);
 
-    asprintf(&context, "%s:%zd+%u: %s (%db inside section %s)",
-        fname, start_offset, sec[section] + pos, message,
-        pos, bufr_sec_names[section]);
+    if (asprintf(&context, "%s:%zd+%u: %s (%db inside section %s)",
+            fname, start_offset, sec[section] + pos, message ? message : fmt,
+            pos, bufr_sec_names[section]) == -1)
+        context = nullptr;
     free(message);
 
-    string msg(context);
+    string msg(context ? context : fmt);
     free(context);
     throw error_parse(msg);
 }

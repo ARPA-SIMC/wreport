@@ -8,7 +8,6 @@ using namespace std;
 
 namespace {
 double ticks_per_sec = sysconf(_SC_CLK_TCK);
-
 }
 
 namespace wreport {
@@ -73,8 +72,6 @@ void Benchmark::run(Progress& progress)
 
 void Benchmark::print_timings()
 {
-    double ticks_per_second = (double)sysconf(_SC_CLK_TCK);
-
     for (auto& t: tasks)
     {
         fprintf(stdout, "%s.%s: %d runs, user: %.2fs (%.1f%%), sys: %.2fs (%.1f%%), total: %.2fs (%.1f%%)\n",

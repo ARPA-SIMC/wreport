@@ -55,10 +55,14 @@ void logf(const char* fmt, ...)
 
     char *c;
     va_list ap;
-    va_start( ap, fmt );
-    vasprintf( &c, fmt, ap );
-    (*target) << c;
-    free( c );
+    va_start(ap, fmt);
+    if (vasprintf(&c, fmt, ap) == -1)
+        (*target) << fmt;
+    else
+    {
+        (*target) << c;
+        free(c);
+    }
 }
 
 }

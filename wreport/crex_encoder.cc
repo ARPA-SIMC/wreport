@@ -136,12 +136,12 @@ string CrexBulletin::encode() const
     out.raw_append("CREX++\r\r\n", 9);
 
     // Encode section 1
-    int sec1_start = out.buf.size();
+    //int sec1_start = out.buf.size();
     encode_sec1(*this, out);
     TRACE("SEC1 encoded as [[[%s]]]", out.buf.substr(sec1_start).c_str());
 
     /* Encode section 2 */
-    int sec2_start = out.buf.size();
+    //int sec2_start = out.buf.size();
 
     // Encode all subsets
     for (unsigned i = 0; i < subsets.size(); ++i)
@@ -154,11 +154,11 @@ string CrexBulletin::encode() const
     TRACE("SEC2 encoded as [[[%s]]]", out.buf.substr(sec2_start).c_str());
 
     /* Encode section 3 */
-    int sec3_start = out.buf.size();
+    //int sec3_start = out.buf.size();
     /* Nothing to do, as we have no custom section */
 
     /* Encode section 4 */
-    int sec4_start = out.buf.size();
+    //int sec4_start = out.buf.size();
     out.raw_append("7777\r\r\n", 7);
     return buf;
 }
