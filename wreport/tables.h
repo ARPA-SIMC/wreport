@@ -2,7 +2,6 @@
 #define WREPORT_TABLES_H
 
 #include <wreport/varinfo.h>
-#include <forward_list>
 #include <map>
 #include <string>
 
