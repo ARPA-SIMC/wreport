@@ -89,7 +89,6 @@ libwreport_test_la_LIBADD = libwreport.la $(WIBBLE_LIBS)
 libwreport_test_la_LDFLAGS = -static -version-info @LIBWREPORT_VERSION_INFO@
 endif
 
-BUILT_SOURCES = uniconv.cc
 EXTRA_DIST = internals/compat.h main.dox style.dox features.dox examples.dox
 
 #
