@@ -4,6 +4,7 @@
 #include <vector>
 #include <cmath>
 #include <cstring>
+#include <functional>
 #include <algorithm>
 
 using namespace std;
