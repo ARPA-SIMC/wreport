@@ -36,6 +36,7 @@ typedef test_group::Fixture Fixture;
 
 std::vector<Test> tests {
     Test("units", [](Fixture& f) {
+        ensure_equals(convert_units("K", "K", 273.15), 273.15);
         ensure_similar(convert_units("C", "K", 0.7), 273.85, 0.0001);
         //ensure(convert_units_allowed("C", "K"));
         //ensure(not convert_units_allowed("C", "M"));
