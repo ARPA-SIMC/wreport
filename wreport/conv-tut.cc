@@ -55,6 +55,10 @@ std::vector<Test> tests {
 
         ensure_equals(convert_units("J/M**2", "MJ/M**2", 1), 0.000001);
         ensure_equals(convert_units("MJ/M**2", "J/M**2", 1), 1000000);
+
+        ensure_equals(convert_units("octants", "DEGREE TRUE", 0), 0);
+        ensure_equals(convert_units("octants", "DEGREE TRUE", 1), 45);
+        ensure_equals(convert_units("DEGREE TRUE", "octants", 45), 1);
     }),
     Test("vss", [](Fixture& f) {
         // Vertical sounding significance conversion functions

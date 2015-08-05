@@ -33,6 +33,15 @@ struct ConvertLinear : public Convert
     double convert(double val) const override { return val * mul + add; }
 };
 
+struct ConvertFunction : public Convert
+{
+    std::function<double(double)> conv;
+
+    ConvertFunction(std::function<double(double)> conv) : conv(conv) {}
+
+    double convert(double val) const override { return conv(val); }
+};
+
 struct Conv
 {
     const char* from;
@@ -182,6 +191,7 @@ struct ConvertRepository
         add_ident("GPM",          "MGP");
         add_ident("W/m**2",       "W/M**2");
         add_ident("J M-2",        "J/M**2");
+        add_function("octants",   "DEGREE TRUE", convert_octants_to_degrees, convert_degrees_to_octants);
 
         sort(repo.begin(), repo.end());
     }
@@ -200,6 +210,14 @@ struct ConvertRepository
     {
         repo.emplace_back(from, to, new ConvertLinear(mul, add));
         repo.emplace_back(to, from, new ConvertLinear(1/mul, -add));
+    }
+
+    void add_function(const char* from, const char* to,
+                      std::function<double(double)> forward,
+                      std::function<double(double)> backward)
+    {
+        repo.emplace_back(from, to, new ConvertFunction(forward));
+        repo.emplace_back(to, from, new ConvertFunction(backward));
     }
 
     const Convert* find(const char* from, const char* to)
