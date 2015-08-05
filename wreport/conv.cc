@@ -229,6 +229,8 @@ struct ConvertRepository
 double convert_units(const char* from, const char* to, double val)
 {
     static ConvertRepository* repo = nullptr;
+    if (strcmp(from, to) == 0)
+        return val;
     if (!repo) repo = new ConvertRepository;
     const Convert* conv = repo->find(from, to);
     if (!conv)
