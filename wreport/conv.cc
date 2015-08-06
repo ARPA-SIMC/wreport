@@ -248,7 +248,11 @@ struct ConvertRepository
 double convert_units(const char* from, const char* to, double val)
 {
     static ConvertRepository* repo = nullptr;
-    if (strcmp(from, to) == 0)
+    if (strcmp(from, to) == 0
+        || strncmp(from, "CODE TABLE", 10) == 0
+        || strncmp(to, "CODE TABLE", 10) == 0
+        || strncmp(from, "FLAG TABLE", 10) == 0
+        || strncmp(to, "FLAG TABLE", 10) == 0)
         return val;
     if (!repo) repo = new ConvertRepository;
     const Convert* conv = repo->find(from, to);
