@@ -59,6 +59,9 @@ std::vector<Test> tests {
         ensure_equals(convert_units("octants", "DEGREE TRUE", 0), 0);
         ensure_equals(convert_units("octants", "DEGREE TRUE", 1), 45);
         ensure_equals(convert_units("DEGREE TRUE", "octants", 45), 1);
+
+        ensure_equals(convert_units("FLAGTABLE", "FLAG TABLE 2002", 1), 1);
+        ensure_equals(convert_units("CODETABLE", "CODE TABLE 2001", 1), 1);
     }),
     Test("vss", [](Fixture& f) {
         // Vertical sounding significance conversion functions
