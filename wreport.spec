@@ -1,13 +1,13 @@
 Summary: Library for working with (coded) weather reports
 Name: wreport
-Version: 2.13
-Release: 4298%{dist}
+Version: 3.0
+Release: 1%{dist}
 License: GPL2
 Group: Applications/Meteo
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: doxygen, libtool, libwibble-devel >= 1.1, lua-devel >= 5.1.1
+BuildRequires: doxygen, libtool, libwibble-devel >= 1.1, lua-devel >= 5.1.1, python-devel
 %description
 null
 
@@ -22,12 +22,12 @@ Requires: lib%{name}-common
 The tools provide simple weather bulletin handling functions
 
 
-%package -n lib%{name}2
+%package -n lib%{name}3
 Summary: shared library for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}-common
 
-%description -n lib%{name}2
+%description -n lib%{name}3
  libwreport is a C++ library to read and write weather reports in BUFR and CREX
  formats.
  
@@ -57,7 +57,7 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %package -n lib%{name}-devel
 Summary:  Library for working with (coded) weather reports
 Group: Applications/Meteo
-Requires: lib%{name}2 = %{version}
+Requires: lib%{name}3 = %{version}
 
 %description -n lib%{name}-devel
 libwreport is a C++ library to read and write weather reports in BUFR and CREX
@@ -73,6 +73,18 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
   * Handling of physical variables
   * Read and write BUFR version 2, 3, and 4
   * Read and write CREX
+
+%package -n python-%{name}3
+Summary: shared library for working with weather reports
+Group: Applications/Meteo
+Requires: lib%{name}3
+
+%description -n python-%{name}3
+libwreport is a C++ library to read and write weather reports in BUFR and CREX
+ formats.
+
+ This is the Python library
+
 
 %prep
 %setup -q
@@ -96,7 +108,7 @@ make install DESTDIR="%{buildroot}"
 %{_bindir}/wrep
 %{_bindir}/wrep-importtable
 
-%files -n lib%{name}2
+%files -n lib%{name}3
 %defattr(-,root,root,-)
 %{_libdir}/libwreport.so.*
 
@@ -125,7 +137,22 @@ make install DESTDIR="%{buildroot}"
 %doc %{_docdir}/%{name}/apidocs/*
 %doc %{_docdir}/%{name}/examples/*
 
+%files -n python-%{name}3
+%defattr(-,root,root,-)
+%dir %{python_sitelib}/wreport
+%{python_sitelib}/wreport/*
+%dir %{python_sitearch}
+%{python_sitearch}/*.a
+%{python_sitearch}/*.la
+%{python_sitearch}/*.so*
+
+%doc %{_docdir}/wreport/python-wreport.html
+%doc %{_docdir}/wreport/python-wreport.rst
+
 %changelog
+* Wed Jul 29 2015 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 3.0-0.1%{dist}
+- wreport 3.0 pre-release
+
 * Tue Aug 05 2014 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 2.13-4298%{dist}
 - Updated wrep-importtable to deal with new zipfiles and XML files published by
   WMO
