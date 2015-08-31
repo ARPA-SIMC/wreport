@@ -1,0 +1,7 @@
+Packaging files for Fedora
+
+(add files in the matching rpmbuild subdirectories)
+
+Please note:
+
+- the spec file might not match the current version, it is intended as a starting point for rpm packaging
