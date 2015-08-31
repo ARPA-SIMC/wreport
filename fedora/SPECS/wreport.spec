@@ -1,6 +1,6 @@
 Summary: Library for working with (coded) weather reports
 Name: wreport
-Version: 3.0
+Version: 3.1
 Release: 1%{dist}
 License: GPL2
 Group: Applications/Meteo
@@ -150,6 +150,9 @@ make install DESTDIR="%{buildroot}"
 %doc %{_docdir}/wreport/python-wreport.rst
 
 %changelog
+* Mon Aug 31 2015 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 3.1-1%{dist}
+- Fixed FLAGTABLE and CODETABLE conversion errors
+
 * Wed Jul 29 2015 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 3.0-0.1%{dist}
 - wreport 3.0 pre-release
 
