@@ -1,15 +1,12 @@
-#include "test-utils-wreport.h"
+#include "tests.h"
 #include "interpreter.h"
 #include "wreport/vartable.h"
 #include "wreport/dtable.h"
-#include <wibble/string.h>
+#include "utils/string.h"
 
-using namespace wibble::tests;
-using namespace wibble;
 using namespace wreport;
 using namespace wreport::tests;
 using namespace std;
-using namespace wibble;
 
 namespace {
 
@@ -43,33 +40,33 @@ struct VisitCounter : public bulletin::Interpreter
     }
 };
 
-typedef test_group<> test_group;
-typedef test_group::Test Test;
-typedef test_group::Fixture Fixture;
+class Tests : public TestCase
+{
+    using TestCase::TestCase;
 
-std::vector<Test> tests {
-    Test("visitor", [](Fixture& f) {
-        // Test visitor
-        const char* testdatadir = getenv("WREPORT_TABLES");
-        if (!testdatadir) testdatadir = TABLE_DIR;
-        Tables tables;
-        tables.btable = Vartable::load_bufr(str::joinpath(testdatadir, "B0000000000000014000.txt"));
-        tables.dtable = DTable::load_bufr(str::joinpath(testdatadir, "D0000000000000014000.txt"));
-        Opcodes ops = tables.dtable->query(WR_VAR(3, 0, 10));
-        ensure_equals(ops.size(), 4);
+    void register_tests() override
+    {
+        add_method("visitor", []() {
+            // Test visitor
+            const char* testdatadir = getenv("WREPORT_TABLES");
+            if (!testdatadir) testdatadir = TABLE_DIR;
+            Tables tables;
+            tables.btable = Vartable::load_bufr(str::joinpath(testdatadir, "B0000000000000014000.txt"));
+            tables.dtable = DTable::load_bufr(str::joinpath(testdatadir, "D0000000000000014000.txt"));
+            Opcodes ops = tables.dtable->query(WR_VAR(3, 0, 10));
+            wassert(actual(ops.size()) == 4u);
 
-        VisitCounter c(tables, ops);
-        c.run();
+            VisitCounter c(tables, ops);
+            c.run();
 
-        ensure_equals(c.count_b, 4u);
-        ensure_equals(c.count_c, 0u);
-        ensure_equals(c.count_r_plain, 0u);
-        ensure_equals(c.count_r_delayed, 1u);
-        ensure_equals(c.count_d, 1u);
-    }),
-};
-
-test_group newtg("bulletin_interpreter", tests);
+            wassert(actual(c.count_b) == 4u);
+            wassert(actual(c.count_c) == 0u);
+            wassert(actual(c.count_r_plain) == 0u);
+            wassert(actual(c.count_r_delayed) == 1u);
+            wassert(actual(c.count_d) == 1u);
+        });
+    }
+} test("bulletin_interpreter");
 
 }
 

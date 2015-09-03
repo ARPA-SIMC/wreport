@@ -47,7 +47,7 @@ int convert_degrees_to_octants(double from);
  * Convert vertical sounding significance from the AOF encoding to BUFR code
  * table 08001.
  */
-int convert_AOFVSS_to_BUFR08042(int from);
+unsigned convert_AOFVSS_to_BUFR08042(unsigned from);
 
 /**
  * Conversion functions between various code tables
@@ -78,9 +78,9 @@ int convert_BUFR20003_to_WMO4677(int from);
 /** Past weather */
 int convert_BUFR20004_to_WMO4561(int from);
 /** Vertical sounding significance */
-int convert_BUFR08001_to_BUFR08042(int from);
+unsigned convert_BUFR08001_to_BUFR08042(unsigned from);
 /** Vertical sounding significance */
-int convert_BUFR08042_to_BUFR08001(int from);
+unsigned convert_BUFR08042_to_BUFR08001(unsigned from);
 /* @} */
 
 /**

@@ -411,7 +411,7 @@ int convert_BUFR20004_to_WMO4561(int from)
 		error_domain::throwf("cannot handle BUFR 20004 present weather (%d) values above 9", from);
 }
 
-int convert_BUFR08001_to_BUFR08042(int from)
+unsigned convert_BUFR08001_to_BUFR08042(unsigned from)
 {
     // Handle missing value
     if (from & BUFR08001::MISSING)
@@ -427,7 +427,7 @@ int convert_BUFR08001_to_BUFR08042(int from)
     return res;
 }
 
-int convert_BUFR08042_to_BUFR08001(int from)
+unsigned convert_BUFR08042_to_BUFR08001(unsigned from)
 {
     if (from & BUFR08042::MISSING)
         return BUFR08001::ALL_MISSING;
@@ -499,9 +499,9 @@ int convert_degrees_to_octants(double from)
     return 7;
 }
 
-int convert_AOFVSS_to_BUFR08042(int from)
+unsigned convert_AOFVSS_to_BUFR08042(unsigned from)
 {
-	int res = 0;
+    unsigned res = 0;
 	if (from & (1 << 0))	// Maximum wind level
 		res |= BUFR08042::MAXWIND;
 	if (from & (1 << 1))	// Tropopause

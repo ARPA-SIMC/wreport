@@ -125,18 +125,6 @@ AM_CONDITIONAL([PYTHON], [test x"$enable_python" = x"yes"])
 AC_CHECK_PROG(have_rst2html, rst2html, yes, no)
 AM_CONDITIONAL([HAVE_RST2HTML], [test x$have_rst2html = xyes])
 
-dnl Check for wibble
-PKG_CHECK_EXISTS([libwibble], [have_wibble=yes], [have_wibble=no])
-if test x$have_wibble = xyes
-then
-	PKG_CHECK_MODULES(WIBBLE,libwibble)
-	enable_tests=yes
-	DEP_LIBS="$DEP_LIBS $WIBBLE_LIBS"
-else
-	AC_MSG_WARN([libwibble not found, tests will be disabled])
-	enable_tests=no
-fi
-
 LIBS="$LIBS -lm"
 
 confdir='${sysconfdir}'"/$PACKAGE"
@@ -193,7 +181,6 @@ AC_SUBST(DOXYGEN_WARN_IF_UNDOCUMENTED)
 
 AM_CONDITIONAL([DO_DOCS], [test x"$enable_docs" = x"yes"])
 AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
-AM_CONDITIONAL([WIBBLE], [test x"$have_wibble" = x"yes"])
 
 AC_CONFIG_FILES([
 Makefile
@@ -205,7 +192,6 @@ testdata/Makefile
 doc/Makefile
 doc/libwreport.dox
 libwreport.pc
-libwreport-test.pc
 ])
 #tools/Makefile
 AC_OUTPUT

@@ -1,5 +1,5 @@
-#ifndef WIBBLE_COMPAT_H
-#define WIBBLE_COMPAT_H
+#ifndef WREPORT_COMPAT_H
+#define WREPORT_COMPAT_H
 
 #include "config.h"
 #include <cstdarg>

@@ -36,10 +36,10 @@ nobase_dist_wreportinclude_HEADERS = \
 	varinfo.h \
 	vartable.h \
 	utils/lua.h \
+	utils/string.h \
+	utils/tests.h \
+	tests.h \
 	benchmark.h
-if WIBBLE
-nobase_dist_wreportinclude_HEADERS += tests.h
-endif
 if PYTHON
 nobase_dist_wreportinclude_HEADERS += python.h
 endif
@@ -58,6 +58,8 @@ libwreport_la_SOURCES = \
 	opcodes.cc \
 	dtable.cc \
 	tables.cc \
+	utils/string.cc \
+	utils/tests.cc \
 	internals/fs.cc \
 	internals/tabledir.cc \
 	subset.cc \
@@ -75,18 +77,12 @@ libwreport_la_SOURCES = \
 	bufr_encoder.cc \
 	crex_decoder.cc \
 	crex_encoder.cc \
+	tests.cc \
 	benchmark.cc
 libwreport_la_LDFLAGS = -version-info @LIBWREPORT_VERSION_INFO@
 if LUA
 libwreport_la_SOURCES += utils/lua.cc var-lua.cc
 libwreport_la_LIBADD += $(LUA_LIBS)
-endif
-
-if WIBBLE
-lib_LTLIBRARIES += libwreport-test.la
-libwreport_test_la_SOURCES = tests.cc
-libwreport_test_la_LIBADD = libwreport.la $(WIBBLE_LIBS)
-libwreport_test_la_LDFLAGS = -static -version-info @LIBWREPORT_VERSION_INFO@
 endif
 
 EXTRA_DIST = internals/compat.h main.dox style.dox features.dox examples.dox
@@ -108,45 +104,42 @@ check-local:
 
 #CXXFLAGS += -O0
 
-dist_noinst_HEADERS = test-utils-wreport.h
+dist_noinst_HEADERS = tests.h
 
 tut_test_SOURCES = \
-	test-utils-wreport.cc \
-	options-tut.cc \
-	error-tut.cc \
-	conv-tut.cc \
-	tableinfo-tut.cc \
-	varinfo-tut.cc \
-	vartable-tut.cc \
-	var-tut.cc \
-	opcodes-tut.cc \
-	dtable-tut.cc \
-	tables-tut.cc \
-	internals/fs-tut.cc \
-	internals/tabledir-tut.cc \
-	subset-tut.cc \
-	bulletin-tut.cc \
-	bufr_decoder-tut.cc \
-	bufr_encoder-tut.cc \
-	crex_decoder-tut.cc \
-	buffers/bufr-tut.cc \
-	buffers/crex-tut.cc \
-	bulletin/associated_fields-tut.cc \
-	bulletin/bitmaps-tut.cc \
-	bulletin/interpreter-tut.cc \
-	bulletin/internals-tut.cc \
-	bulletin/dds-validator-tut.cc \
-	tests-tut.cc \
-	tut-main.cpp
-tut_test_LDADD = \
-	libwreport.la \
-	libwreport-test.la \
-	$(WIBBLE_LIBS)
+	options-test.cc \
+	error-test.cc \
+	conv-test.cc \
+	tableinfo-test.cc \
+	varinfo-test.cc \
+	vartable-test.cc \
+	var-test.cc \
+	opcodes-test.cc \
+	dtable-test.cc \
+	tables-test.cc \
+	internals/fs-test.cc \
+	internals/tabledir-test.cc \
+	subset-test.cc \
+	bulletin-test.cc \
+	bufr_decoder-test.cc \
+	bufr_encoder-test.cc \
+	crex_decoder-test.cc \
+	buffers/bufr-test.cc \
+	buffers/crex-test.cc \
+	bulletin/associated_fields-test.cc \
+	bulletin/bitmaps-test.cc \
+	bulletin/interpreter-test.cc \
+	bulletin/internals-test.cc \
+	bulletin/dds-validator-test.cc \
+	tests-test.cc \
+	utils/tests-main.cpp
+tut_test_LDADD = libwreport.la
+
 
 if LUA
 dist_noinst_HEADERS += test-utils-lua.h
 tut_test_SOURCES += \
-	lua-tut.cc \
+	lua-test.cc \
 	test-utils-lua.cc
 tut_test_LDADD += $(LUA_LIBS)
 endif
