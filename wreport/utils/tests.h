@@ -122,28 +122,6 @@ struct TestFailed : public std::exception
     void backtrace(std::ostream& out) const;
 };
 
-#if 0
-#define WREPORT_TESTS_ALWAYS_THROWS __attribute__ ((noreturn))
-
-    /**
-     * Return a message describing a test failure, including the current
-     * backtrace
-     */
-    std::string fail_msg(const std::string& error) const;
-
-    /**
-     * Return a message describing a test failure, including the current
-     * backtrace
-     */
-    std::string fail_msg(std::function<void(std::ostream&)> write_error) const;
-
-    /// Raise TestFailed for the given error message
-    void fail_test(const std::string& error) const WREPORT_TESTS_ALWAYS_THROWS;
-
-    /// Raise TestFailed with error message written by the given function
-    void fail_test(std::function<void(std::ostream&)> write_error) const WREPORT_TESTS_ALWAYS_THROWS;
-#endif
-
 /**
  * Use this to declare a local variable with the given name that will be
  * picked up by tests as extra local info
@@ -255,6 +233,22 @@ void assert_contains(const std::string& actual, const std::string& expected);
 /// Ensure that the string \a actual does not contain \a expected
 void assert_not_contains(const std::string& actual, const std::string& expected);
 
+/**
+ * Ensure that the string \a actual matches the extended regular expression
+ * \a expected.
+ *
+ * The syntax is that of extended regular expression (see man regex(7) ).
+ */
+void assert_re_matches(const std::string& actual, const std::string& expected);
+
+/**
+ * Ensure that the string \a actual does not match the extended regular
+ * expression \a expected.
+ *
+ * The syntax is that of extended regular expression (see man regex(7) ).
+ */
+void assert_not_re_matches(const std::string& actual, const std::string& expected);
+
 
 template<class A>
 struct Actual
@@ -292,6 +286,8 @@ struct ActualCString
     void endswith(const std::string& expected) const;
     void contains(const std::string& expected) const;
     void not_contains(const std::string& expected) const;
+    void matches(const std::string& re) const;
+    void not_matches(const std::string& re) const;
 };
 
 struct ActualStdString : public Actual<std::string>
@@ -308,8 +304,8 @@ struct ActualStdString : public Actual<std::string>
     void endswith(const std::string& expected) const;
     void contains(const std::string& expected) const;
     void not_contains(const std::string& expected) const;
-//    TestRegexp matches(const std::string& regexp) const { return TestRegexp(actual, regexp); }
-//    TestFileExists fileexists() const { return TestFileExists(actual); }
+    void matches(const std::string& re) const;
+    void not_matches(const std::string& re) const;
 };
 
 struct ActualDouble : public Actual<double>
@@ -711,9 +707,11 @@ struct Fixture
 /**
  * Test case that includes a fixture
  */
-template<typename Fixture>
+template<typename FIXTURE>
 struct FixtureTestCase : public TestCase
 {
+    typedef FIXTURE Fixture;
+
     Fixture* fixture = 0;
     std::function<Fixture*()> make_fixture;
 
@@ -721,7 +719,7 @@ struct FixtureTestCase : public TestCase
     FixtureTestCase(const std::string& name, Args... args)
         : TestCase(name)
     {
-        make_fixture = [&]() { return new Fixture(&args...); };
+        make_fixture = [&]() { return new Fixture(args...); };
     }
 
     void setup() override
@@ -740,12 +738,12 @@ struct FixtureTestCase : public TestCase
     void method_setup(TestMethodResult& mr) override
     {
         TestCase::method_setup(mr);
-        if (fixture) fixture.test_setup();
+        if (fixture) fixture->test_setup();
     }
 
     void method_teardown(TestMethodResult& mr) override
     {
-        if (fixture) fixture.test_teardown();
+        if (fixture) fixture->test_teardown();
         TestCase::method_teardown(mr);
     }
 

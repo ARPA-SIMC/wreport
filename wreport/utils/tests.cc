@@ -11,6 +11,8 @@
 #include <fnmatch.h>
 #include <cmath>
 #include <iomanip>
+#include <sys/types.h>
+#include <regex.h>
 //#include <wreport/regexp.h>
 //#include <wreport/sys/fs.h>
 
@@ -79,16 +81,6 @@ std::string Location::fail_msg(std::function<void(std::ostream&)> write_error) c
     ss << endl;
     return ss.str();
 }
-
-void Location::fail_test(const std::string& error) const
-{
-    throw TestFailed(this->fail_msg(error));
-}
-
-void Location::fail_test(std::function<void(std::ostream&)> write_error) const
-{
-    throw TestFailed(this->fail_msg(write_error));
-}
 #endif
 
 std::ostream& LocationInfo::operator()()
@@ -131,6 +123,60 @@ void assert_not_contains(const std::string& actual, const std::string& expected)
     if (actual.find(expected) == std::string::npos) return;
     std::stringstream ss;
     ss << "'" << actual << "' contains '" << expected << "'";
+    throw TestFailed(ss.str());
+}
+
+namespace {
+
+struct Regexp
+{
+    regex_t compiled;
+
+    Regexp(const char* regex)
+    {
+        if (int err = regcomp(&compiled, regex, REG_EXTENDED | REG_NOSUB))
+            raise_error(err);
+    }
+    ~Regexp()
+    {
+        regfree(&compiled);
+    }
+
+    bool search(const char* s)
+    {
+        return regexec(&compiled, s, 0, nullptr, 0) != REG_NOMATCH;
+    }
+
+    void raise_error(int code)
+    {
+        // Get the size of the error message string
+        size_t size = regerror(code, &compiled, nullptr, 0);
+
+        char* buf = new char[size];
+        regerror(code, &compiled, buf, size);
+        string msg(buf);
+        delete[] buf;
+        throw std::runtime_error(msg);
+    }
+};
+
+}
+
+void assert_re_matches(const std::string& actual, const std::string& expected)
+{
+    Regexp re(expected.c_str());
+    if (re.search(actual.c_str())) return;
+    std::stringstream ss;
+    ss << "'" << actual << "' does not match '" << expected << "'";
+    throw TestFailed(ss.str());
+}
+
+void assert_not_re_matches(const std::string& actual, const std::string& expected)
+{
+    Regexp re(expected.c_str());
+    if (!re.search(actual.c_str())) return;
+    std::stringstream ss;
+    ss << "'" << actual << "' should not match '" << expected << "'";
     throw TestFailed(ss.str());
 }
 
@@ -214,6 +260,18 @@ void ActualCString::operator>=(const std::string& expected) const
     assert_greater_equal<std::string, std::string>(actual, expected);
 }
 
+void ActualCString::matches(const std::string& re) const
+{
+    _actual_must_be_set(actual);
+    assert_re_matches(actual, re);
+}
+
+void ActualCString::not_matches(const std::string& re) const
+{
+    _actual_must_be_set(actual);
+    assert_not_re_matches(actual, re);
+}
+
 void ActualCString::startswith(const std::string& expected) const
 {
     _actual_must_be_set(actual);
@@ -256,6 +314,16 @@ void ActualStdString::contains(const std::string& expected) const
 void ActualStdString::not_contains(const std::string& expected) const
 {
     assert_not_contains(actual, expected);
+}
+
+void ActualStdString::matches(const std::string& re) const
+{
+    assert_re_matches(actual, re);
+}
+
+void ActualStdString::not_matches(const std::string& re) const
+{
+    assert_not_re_matches(actual, re);
 }
 
 void ActualDouble::almost_equal(double expected, unsigned places) const
