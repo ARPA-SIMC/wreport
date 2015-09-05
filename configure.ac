@@ -180,7 +180,6 @@ fi
 AC_SUBST(DOXYGEN_WARN_IF_UNDOCUMENTED)
 
 AM_CONDITIONAL([DO_DOCS], [test x"$enable_docs" = x"yes"])
-AM_CONDITIONAL([DO_TESTS], [test x"$enable_tests" = x"yes"])
 
 AC_CONFIG_FILES([
 Makefile
@@ -202,6 +201,5 @@ $PACKAGE_NAME-$PACKAGE_VERSION configuration:
 AS_HELP_STRING([lua:], [$have_lua])
 AS_HELP_STRING([python:], [$enable_python])
 AS_HELP_STRING([rst2html:], [$have_rst2html])
-AS_HELP_STRING([tests:], [$enable_tests])
 AS_HELP_STRING([documentation:], [$enable_docs])
 ===================================================])

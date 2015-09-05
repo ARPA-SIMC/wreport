@@ -91,9 +91,7 @@ EXTRA_DIST = internals/compat.h main.dox style.dox features.dox examples.dox
 # Unit testing
 #
 
-if DO_TESTS
-
-check_PROGRAMS = tut_test
+check_PROGRAMS = test-wreport
 TESTS_ENVIRONMENT = $(top_srcdir)/testenv
 #TESTS = $(check_PROGRAMS)
 
@@ -106,7 +104,7 @@ check-local:
 
 dist_noinst_HEADERS = tests.h
 
-tut_test_SOURCES = \
+test_wreport_SOURCES = \
 	options-test.cc \
 	error-test.cc \
 	conv-test.cc \
@@ -133,15 +131,15 @@ tut_test_SOURCES = \
 	bulletin/dds-validator-test.cc \
 	tests-test.cc \
 	utils/tests-main.cpp
-tut_test_LDADD = libwreport.la
+test_wreport_LDADD = libwreport.la
 
 
 if LUA
 dist_noinst_HEADERS += test-utils-lua.h
-tut_test_SOURCES += \
+test_wreport_SOURCES += \
 	lua-test.cc \
 	test-utils-lua.cc
-tut_test_LDADD += $(LUA_LIBS)
+test_wreport_LDADD += $(LUA_LIBS)
 endif
 
 #
@@ -160,6 +158,3 @@ benchmark_SOURCES = \
 	benchmark-main.cc
 benchmark_LDADD = \
 	libwreport.la
-
-
-endif
