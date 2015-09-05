@@ -94,12 +94,12 @@ struct ActualVar : public Actual<Var>
 {
     ActualVar(const Var& actual) : Actual<Var>(actual) {}
 
-    void operator==(const Var& expected) const { assert_var_equal(actual, expected); }
-    void operator!=(const Var& expected) const { assert_var_not_equal(actual, expected); }
+    void operator==(const Var& expected) const { assert_var_equal(_actual, expected); }
+    void operator!=(const Var& expected) const { assert_var_not_equal(_actual, expected); }
     template<typename Val>
-    void operator==(Val expected) const { assert_var_value_equal(actual, expected); }
+    void operator==(Val expected) const { assert_var_value_equal(_actual, expected); }
     template<typename Val>
-    void operator!=(Val expected) const { assert_var_value_not_equal(actual, expected); }
+    void operator!=(Val expected) const { assert_var_value_not_equal(_actual, expected); }
     void isset() const;
     void isunset() const;
 };

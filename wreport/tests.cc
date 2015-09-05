@@ -210,7 +210,7 @@ template void assert_var_value_not_equal<std::string>(const Var& actual, std::st
 
 void ActualVar::isset() const
 {
-    if (actual.isset()) return;
+    if (_actual.isset()) return;
     std::stringstream ss;
     ss << "actual variable is unset, but it should not be";
     throw TestFailed(ss.str());
@@ -218,25 +218,25 @@ void ActualVar::isset() const
 
 void ActualVar::isunset() const
 {
-    if (!actual.isset()) return;
+    if (!_actual.isset()) return;
     std::stringstream ss;
-    ss << "actual variable value is " << actual.format() << ", but it should be unset";
+    ss << "actual variable value is " << _actual.format() << ", but it should be unset";
     throw TestFailed(ss.str());
 }
 
 void ActualVarcode::operator==(Varcode expected) const
 {
-    if (expected == actual) return;
+    if (expected == _actual) return;
     std::stringstream ss;
-    ss << "actual varcode value is " << varcode_format(actual) << " but it should be " << varcode_format(expected);
+    ss << "actual varcode value is " << varcode_format(_actual) << " but it should be " << varcode_format(expected);
     throw TestFailed(ss.str());
 }
 
 void ActualVarcode::operator!=(Varcode expected) const
 {
-    if (expected != actual) return;
+    if (expected != _actual) return;
     std::stringstream ss;
-    ss << "actual varcode value is " << varcode_format(actual) << " but it should not be";
+    ss << "actual varcode value is " << varcode_format(_actual) << " but it should not be";
     throw TestFailed(ss.str());
 }
 

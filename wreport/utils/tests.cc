@@ -198,9 +198,9 @@ static void _actual_must_be_set(const char* actual)
 
 void ActualCString::operator==(const char* expected) const
 {
-    if (expected && actual)
-        assert_equal<std::string, std::string>(actual, expected);
-    else if (!expected && !actual)
+    if (expected && _actual)
+        assert_equal<std::string, std::string>(_actual, expected);
+    else if (!expected && !_actual)
         ;
     else if (expected)
     {
@@ -211,151 +211,153 @@ void ActualCString::operator==(const char* expected) const
     else
     {
         std::stringstream ss;
-        ss << "actual value is the string \"" << str::encode_cstring(actual) << "\" instead of nullptr";
+        ss << "actual value is the string \"" << str::encode_cstring(_actual) << "\" instead of nullptr";
         throw TestFailed(ss.str());
     }
 }
 
 void ActualCString::operator==(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_equal<std::string, std::string>(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_equal<std::string, std::string>(_actual, expected);
 }
 
 void ActualCString::operator!=(const char* expected) const
 {
-    if (expected && actual)
-        assert_not_equal<std::string, std::string>(actual, expected);
-    else if (!expected && !actual)
+    if (expected && _actual)
+        assert_not_equal<std::string, std::string>(_actual, expected);
+    else if (!expected && !_actual)
         throw TestFailed("actual and expected values are both nullptr but they should be different");
 }
 
 void ActualCString::operator!=(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_not_equal<std::string, std::string>(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_not_equal<std::string, std::string>(_actual, expected);
 }
 
 void ActualCString::operator<(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_less<std::string, std::string>(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_less<std::string, std::string>(_actual, expected);
 }
 
 void ActualCString::operator<=(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_less_equal<std::string, std::string>(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_less_equal<std::string, std::string>(_actual, expected);
 }
 
 void ActualCString::operator>(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_greater<std::string, std::string>(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_greater<std::string, std::string>(_actual, expected);
 }
 
 void ActualCString::operator>=(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_greater_equal<std::string, std::string>(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_greater_equal<std::string, std::string>(_actual, expected);
 }
 
 void ActualCString::matches(const std::string& re) const
 {
-    _actual_must_be_set(actual);
-    assert_re_matches(actual, re);
+    _actual_must_be_set(_actual);
+    assert_re_matches(_actual, re);
 }
 
 void ActualCString::not_matches(const std::string& re) const
 {
-    _actual_must_be_set(actual);
-    assert_not_re_matches(actual, re);
+    _actual_must_be_set(_actual);
+    assert_not_re_matches(_actual, re);
 }
 
 void ActualCString::startswith(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_startswith(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_startswith(_actual, expected);
 }
 
 void ActualCString::endswith(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_endswith(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_endswith(_actual, expected);
 }
 
 void ActualCString::contains(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_contains(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_contains(_actual, expected);
 }
 
 void ActualCString::not_contains(const std::string& expected) const
 {
-    _actual_must_be_set(actual);
-    assert_not_contains(actual, expected);
+    _actual_must_be_set(_actual);
+    assert_not_contains(_actual, expected);
 }
 
 void ActualStdString::startswith(const std::string& expected) const
 {
-    assert_startswith(actual, expected);
+    assert_startswith(_actual, expected);
 }
 
 void ActualStdString::endswith(const std::string& expected) const
 {
-    assert_endswith(actual, expected);
+    assert_endswith(_actual, expected);
 }
 
 void ActualStdString::contains(const std::string& expected) const
 {
-    assert_contains(actual, expected);
+    assert_contains(_actual, expected);
 }
 
 void ActualStdString::not_contains(const std::string& expected) const
 {
-    assert_not_contains(actual, expected);
+    assert_not_contains(_actual, expected);
 }
 
 void ActualStdString::matches(const std::string& re) const
 {
-    assert_re_matches(actual, re);
+    assert_re_matches(_actual, re);
 }
 
 void ActualStdString::not_matches(const std::string& re) const
 {
-    assert_not_re_matches(actual, re);
+    assert_not_re_matches(_actual, re);
 }
 
 void ActualDouble::almost_equal(double expected, unsigned places) const
 {
-    if (round((actual - expected) * exp10(places)) == 0.0)
+    if (round((_actual - expected) * exp10(places)) == 0.0)
         return;
     std::stringstream ss;
-    ss << std::setprecision(places) << fixed << actual << " is different than the expected " << expected;
+    ss << std::setprecision(places) << fixed << _actual << " is different than the expected " << expected;
     throw TestFailed(ss.str());
 }
 
 void ActualDouble::not_almost_equal(double expected, unsigned places) const
 {
-    if (round(actual - expected * exp10(places)) != 0.0)
+    if (round(_actual - expected * exp10(places)) != 0.0)
         return;
     std::stringstream ss;
-    ss << std::setprecision(places) << fixed << actual << " is the same as the expected " << expected;
+    ss << std::setprecision(places) << fixed << _actual << " is the same as the expected " << expected;
     throw TestFailed(ss.str());
 }
 
-#if 0
-void test_assert_re_match(WIBBLE_TEST_LOCPRM, const std::string& regexp, const std::string& actual)
+void ActualFunction::throws(const std::string& what_match) const
 {
-    ERegexp re(regexp);
-    if (!re.match(actual))
-    {
-        std::stringstream ss;
-        ss << "'" << actual << "' does not match regexp '" << regexp << "'";
-        wreport_test_location.fail_test(ss.str());
+    bool thrown = false;
+    try {
+        _actual();
+    } catch (std::exception& e) {
+        thrown = true;
+        wassert(actual(e.what()).matches(what_match));
     }
+    if (!thrown)
+        throw TestFailed("code did not throw any exception");
 }
 
+#if 0
 void test_assert_file_exists(WIBBLE_TEST_LOCPRM, const std::string& fname)
 {
     if (not sys::fs::exists(fname))
@@ -377,18 +379,6 @@ void test_assert_not_file_exists(WIBBLE_TEST_LOCPRM, const std::string& fname)
 }
 
 #if 0
-
-struct TestRegexp
-{
-    std::string actual;
-    std::string regexp;
-    bool inverted;
-    TestRegexp(const std::string& actual, const std::string& regexp, bool inverted=false) : actual(actual), regexp(regexp), inverted(inverted) {}
-
-    TestRegexp operator!() { return TestRegexp(actual, regexp, !inverted); }
-    void check(WREPORT_TEST_LOCPRM) const;
-};
-
 struct TestFileExists
 {
     std::string pathname;
@@ -398,25 +388,6 @@ struct TestFileExists
     void check(WREPORT_TEST_LOCPRM) const;
 };
 #endif
-
-
-
-void TestRegexp::check(WIBBLE_TEST_LOCPRM) const
-{
-    ERegexp re(regexp);
-    if (!inverted)
-    {
-        if (re.match(actual)) return;
-        std::stringstream ss;
-        ss << "'" << actual << "' does not match regexp '" << regexp << "'";
-        wreport_test_location.fail_test(ss.str());
-    } else {
-        if (!re.match(actual)) return;
-        std::stringstream ss;
-        ss << "'" << actual << "' matches regexp '" << regexp << "'";
-        wreport_test_location.fail_test(ss.str());
-    }
-}
 
 void TestFileExists::check(WIBBLE_TEST_LOCPRM) const
 {
