@@ -17,7 +17,6 @@
 
 namespace wreport {
 namespace tests {
-struct Location;
 struct LocationInfo;
 }
 }
@@ -80,7 +79,20 @@ struct TestStackFrame
     {
     }
 
+    std::string format() const;
+
     void format(std::ostream& out) const;
+};
+
+struct TestStack : public std::vector<TestStackFrame>
+{
+    using vector::vector;
+
+    /// Return the formatted backtrace for this location
+    std::string backtrace() const;
+
+    /// Write the formatted backtrace for this location to \a out
+    void backtrace(std::ostream& out) const;
 };
 
 /**
@@ -90,7 +102,7 @@ struct TestStackFrame
 struct TestFailed : public std::exception
 {
     std::string message;
-    std::vector<TestStackFrame> stack;
+    TestStack stack;
 
     TestFailed(const std::exception& e);
 
@@ -114,12 +126,6 @@ struct TestFailed : public std::exception
 
     template<typename ...Args>
     void add_stack_info(Args&&... args) { stack.emplace_back(std::forward<Args>(args)...); }
-
-    /// Return the formatted backtrace for this location
-    std::string backtrace() const;
-
-    /// Write the formatted backtrace for this location to \a out
-    void backtrace(std::ostream& out) const;
 };
 
 /**
@@ -378,6 +384,9 @@ struct TestMethodResult
     /// If non-empty, the test failed with this error
     std::string error_message;
 
+    /// Stack frame of where the error happened
+    TestStack error_stack;
+
     /// If non-empty, the test raised an exception and this is its type ID
     std::string exception_typeid;
 
@@ -391,6 +400,7 @@ struct TestMethodResult
     void set_failed(TestFailed& e)
     {
         error_message = e.what();
+        error_stack = e.stack;
         if (error_message.empty())
             error_message = "test failed with an empty error message";
     }

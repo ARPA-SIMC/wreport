@@ -105,10 +105,13 @@ int main(int argc,const char* argv[])
                   ++methods_ok;
               else
               {
+                  fprintf(stderr, "\n");
                   if (tm_res.exception_typeid.empty())
                       fprintf(stderr, "%s.%s: %s\n", tm_res.test_case.c_str(), tm_res.test_method.c_str(), tm_res.error_message.c_str());
                   else
                       fprintf(stderr, "%s.%s:[%s] %s\n", tm_res.test_case.c_str(), tm_res.test_method.c_str(), tm_res.exception_typeid.c_str(), tm_res.error_message.c_str());
+                  for (const auto& frame : tm_res.error_stack)
+                      fprintf(stderr, "  %s", frame.format().c_str());
                   ++methods_failed;
               }
           }
@@ -120,14 +123,14 @@ int main(int argc,const char* argv[])
   if (test_cases_failed)
   {
       success = false;
-      fprintf(stderr, "%u/%u test cases had issues initializing or cleaning up\n",
+      fprintf(stderr, "\n%u/%u test cases had issues initializing or cleaning up\n",
               test_cases_failed, test_cases_ok + test_cases_failed);
   }
 
   if (methods_failed)
   {
       success = false;
-      fprintf(stderr, "%u/%u tests failed\n", methods_failed, methods_ok + methods_failed);
+      fprintf(stderr, "\n%u/%u tests failed\n", methods_failed, methods_ok + methods_failed);
   }
   else
       fprintf(stderr, "%u tests succeeded\n", methods_ok);

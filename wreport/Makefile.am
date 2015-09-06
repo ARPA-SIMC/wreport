@@ -37,6 +37,7 @@ nobase_dist_wreportinclude_HEADERS = \
 	vartable.h \
 	utils/lua.h \
 	utils/string.h \
+	utils/sys.h \
 	utils/tests.h \
 	tests.h \
 	benchmark.h
@@ -59,6 +60,7 @@ libwreport_la_SOURCES = \
 	dtable.cc \
 	tables.cc \
 	utils/string.cc \
+	utils/sys.cc \
 	utils/tests.cc \
 	internals/fs.cc \
 	internals/tabledir.cc \

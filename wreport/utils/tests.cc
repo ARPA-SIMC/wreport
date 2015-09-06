@@ -28,12 +28,37 @@ namespace tests {
  * TestStackFrame
  */
 
+std::string TestStackFrame::format() const
+{
+    std::stringstream ss;
+    format(ss);
+    return ss.str();
+}
+
 void TestStackFrame::format(std::ostream& out) const
 {
     out << file << ":" << line << ":" << call;
     if (!local_info.empty())
         out << " [" << local_info << "]";
     out << endl;
+}
+
+
+/*
+ * TestStack
+ */
+
+void TestStack::backtrace(std::ostream& out) const
+{
+    for (const auto& frame: *this)
+        frame.format(out);
+}
+
+std::string TestStack::backtrace() const
+{
+    std::stringstream ss;
+    backtrace(ss);
+    return ss.str();
 }
 
 
@@ -48,18 +73,6 @@ TestFailed::TestFailed(const std::exception& e)
    message += e.what();
 }
 
-void TestFailed::backtrace(std::ostream& out) const
-{
-    for (const auto& frame: stack)
-        frame.format(out);
-}
-
-std::string TestFailed::backtrace() const
-{
-    std::stringstream ss;
-    backtrace(ss);
-    return ss.str();
-}
 
 #if 0
 std::string Location::fail_msg(const std::string& error) const

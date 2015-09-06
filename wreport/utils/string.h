@@ -178,14 +178,17 @@ std::string basename(const std::string& pathname);
 std::string dirname(const std::string& pathname);
 
 /// Append path2 to path1, adding slashes when appropriate
+void appendpath(std::string& dest, const char* path2);
+
+/// Append path2 to path1, adding slashes when appropriate
 void appendpath(std::string& dest, const std::string& path2);
 
 /// Append an arbitrary number of path components to \a dest
-template<typename... Args>
-void appendpath(std::string& dest, const std::string& first, Args... next)
+template<typename S1, typename S2, typename... Args>
+void appendpath(std::string& dest, S1 first, S2 second, Args... next)
 {
     appendpath(dest, first);
-    appendpath(dest, next...);
+    appendpath(dest, second, next...);
 }
 
 /// Join two or more paths, adding slashes when appropriate
@@ -205,27 +208,67 @@ std::string joinpath(Args... components)
 std::string normpath(const std::string& pathname);
 
 /**
- * Split a string using \a sep as separator, calling dest on each result.
+ * Split a string where a given substring is found
+ *
+ * This does a similar work to the split functions of perl, python and ruby.
+ *
+ * Example code:
+ * \code
+ *   str::Split splitter(my_string, "/");
+ *   vector<string> split;
+ *   std::copy(splitter.begin(), splitter.end(), back_inserter(split));
+ * \endcode
  */
-template<typename SEP>
-void split(const std::string& s, const SEP& sep, std::function<void(const std::string&)> dest)
+struct Split
 {
-    size_t pos = 0;
-    while (true)
+    /// String to split
+    std::string str;
+    /// Separator
+    std::string sep;
+    /**
+     * If true, skip empty tokens, effectively grouping consecutive separators
+     * as if they were a single one
+     */
+    bool skip_empty;
+
+    Split(const std::string& str, const std::string& sep, bool skip_empty=false)
+        : str(str), sep(sep), skip_empty(skip_empty) {}
+
+    class const_iterator : public std::iterator<std::input_iterator_tag, std::string>
     {
-        size_t end = s.find(sep, pos);
-        if (end == std::string::npos)
-        {
-            dest(s.substr(pos));
-            break;
-        }
-        else
-        {
-            dest(s.substr(pos, end-pos));
-            pos = end + 1;
-        }
-    }
-}
+    protected:
+        const Split* split = nullptr;
+        /// Current token
+        std::string cur;
+        /// Position of the first character of the next token
+        size_t end = 0;
+
+        /// Move end past all the consecutive separators that start at its position
+        void skip_separators();
+
+    public:
+        /// Begin iterator
+        const_iterator(const Split& split);
+        /// End iterator
+        const_iterator() {}
+        ~const_iterator();
+
+        const_iterator& operator++();
+        const std::string& operator*() const;
+        const std::string* operator->() const;
+
+        std::string remainder() const;
+
+        bool operator==(const const_iterator& ti) const;
+        bool operator!=(const const_iterator& ti) const;
+    };
+
+    /// Return the begin iterator to split a string on instances of sep
+    const_iterator begin() { return const_iterator(*this); }
+
+    /// Return the end iterator to string split
+    const_iterator end() { return const_iterator(); }
+};
 
 /**
  * Escape the string so it can safely used as a C string inside double quotes

@@ -17,14 +17,55 @@ std::string basename(const std::string& pathname)
 
 std::string dirname(const std::string& pathname)
 {
-    size_t pos = pathname.rfind("/");
-    if (pos == std::string::npos)
-        return std::string();
-    else if (pos == 0)
-        // Handle the case of '/foo'
-        return std::string("/");
+    if (pathname.empty()) return ".";
+
+    // Skip trailing separators
+    size_t end = pathname.size();
+    while (end > 0 && pathname[end - 1] == '/')
+        --end;
+
+    // If the result is empty again, then the string was only / characters
+    if (!end) return "/";
+
+    // Find the previous separator
+    end = pathname.rfind("/", end - 1);
+
+    if (end == std::string::npos)
+        // No previous separator found, everything should be chopped
+        return std::string(".");
     else
-        return pathname.substr(0, pos);
+    {
+        while (end > 0 && pathname[end - 1] == '/')
+            --end;
+        if (!end) return "/";
+        return pathname.substr(0, end);
+    }
+}
+
+void appendpath(std::string& dest, const char* path2)
+{
+    if (!*path2)
+        return;
+
+    if (dest.empty())
+    {
+        dest = path2;
+        return;
+    }
+
+    if (dest[dest.size() - 1] == '/')
+        if (path2[0] == '/')
+            dest += (path2 + 1);
+        else
+            dest += path2;
+    else
+        if (path2[0] == '/')
+            dest += path2;
+        else
+        {
+            dest += '/';
+            dest += path2;
+        }
 }
 
 void appendpath(std::string& dest, const std::string& path2)
@@ -66,18 +107,20 @@ std::string normpath(const std::string& pathname)
     if (pathname[0] == '/')
         st.push_back("/");
 
-    split(pathname, '/', [&st](const std::string& i) {
-        if (i == "." || i.empty()) return;;
+    Split split(pathname, "/");
+    for (const auto& i: split)
+    {
+        if (i == "." || i.empty()) continue;
         if (i == "..")
             if (st.back() == "..")
                 st.emplace_back(i);
             else if (st.back() == "/")
-                return;
+                continue;
             else
                 st.pop_back();
         else
             st.emplace_back(i);
-    });
+    }
 
     if (st.empty())
         return ".";
@@ -87,6 +130,125 @@ std::string normpath(const std::string& pathname)
         appendpath(res, i);
     return res;
 }
+
+Split::const_iterator::const_iterator(const Split& split)
+    : split(&split)
+{
+    // Ignore leading separators if skip_end is true
+    if (split.skip_empty) skip_separators();
+    ++*this;
+}
+
+Split::const_iterator::~const_iterator()
+{
+}
+
+std::string Split::const_iterator::remainder() const
+{
+    if (end == std::string::npos)
+        return std::string();
+    else
+        return split->str.substr(end);
+};
+
+void Split::const_iterator::skip_separators()
+{
+    const std::string& str = split->str;
+    const std::string& sep = split->sep;
+
+    while (end + sep.size() <= str.size())
+    {
+        unsigned i = 0;
+        for ( ; i < sep.size(); ++i)
+            if (str[end + i] != sep[i])
+                break;
+        if (i < sep.size())
+            break;
+        else
+            end += sep.size();
+    }
+}
+
+Split::const_iterator& Split::const_iterator::operator++()
+{
+    if (!split) return *this;
+
+    const std::string& str = split->str;
+    const std::string& sep = split->sep;
+    bool skip_empty = split->skip_empty;
+
+    /// Convert into an end iterator
+    if (end == std::string::npos)
+    {
+        split = nullptr;
+        return *this;
+    }
+
+    /// The string ended with an iterator, and we do not skip empty tokens:
+    /// return it
+    if (end == str.size())
+    {
+        cur = string();
+        end = std::string::npos;
+        return *this;
+    }
+
+    /// Position of the first character past the token that starts at 'end'
+    size_t tok_end;
+    if (sep.empty())
+        /// If separator is empty, advance one character at a time
+        tok_end = end + 1;
+    else
+    {
+        /// The token ends at the next separator
+        tok_end = str.find(sep, end);
+    }
+
+    /// No more separators found, return from end to the end of the string
+    if (tok_end == std::string::npos)
+    {
+        cur = str.substr(end);
+        end = std::string::npos;
+        return *this;
+    }
+
+    /// We have the boundaries of the current token
+    cur = str.substr(end, tok_end - end);
+
+    /// Skip the separator
+    end = tok_end + sep.size();
+
+    /// Skip all the following separators if skip_empty is true
+    if (skip_empty)
+    {
+        skip_separators();
+        if (end == str.size())
+        {
+            end = std::string::npos;
+            return *this;
+        }
+    }
+
+    return *this;
+}
+
+const std::string& Split::const_iterator::operator*() const { return cur; }
+const std::string* Split::const_iterator::operator->() const { return &cur; }
+
+bool Split::const_iterator::operator==(const const_iterator& ti) const
+{
+    if (!split && !ti.split) return true;
+    if (split != ti.split) return false;
+    return end == ti.end;
+}
+
+bool Split::const_iterator::operator!=(const const_iterator& ti) const
+{
+    if (!split && !ti.split) return false;
+    if (split != ti.split) return true;
+    return end != ti.end;
+}
+
 
 std::string encode_cstring(const std::string& str)
 {
