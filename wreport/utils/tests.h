@@ -494,6 +494,11 @@ struct TestCaseResult
     }
 };
 
+struct TestCase;
+struct TestCaseResult;
+struct TestMethod;
+struct TestMethodResult;
+
 /**
  * Abstract interface for the objects that supervise test execution.
  *
@@ -509,24 +514,24 @@ struct TestController
      *
      * @returns true if the test case should be run, false if it should be skipped
      */
-    virtual bool test_case_begin(const TestCaseResult& test_case) { return true; }
+    virtual bool test_case_begin(const TestCase& test_case, const TestCaseResult& test_case_result) { return true; }
 
     /**
      * Called after running a test case.
      */
-    virtual void test_case_end(const TestCaseResult& test_case) {}
+    virtual void test_case_end(const TestCase& test_case, const TestCaseResult& test_case_result) {}
 
     /**
      * Called before running a test method.
      *
      * @returns true if the test method should be run, false if it should be skipped
      */
-    virtual bool test_method_begin(const TestMethodResult& test_method) { return true; }
+    virtual bool test_method_begin(const TestMethod& test_method, const TestMethodResult& test_method_result) { return true; }
 
     /**
      * Called after running a test method.
      */
-    virtual void test_method_end(const TestMethodResult& test_method) {}
+    virtual void test_method_end(const TestMethod& test_method, const TestMethodResult& test_method_result) {}
 };
 
 /**
@@ -543,10 +548,12 @@ struct SimpleTestController : public TestController
     /// Any method matching this glob expression will not be run
     std::string blacklist;
 
-    bool test_case_begin(const TestCaseResult& test_case) override;
-    void test_case_end(const TestCaseResult& test_case) override;
-    bool test_method_begin(const TestMethodResult& test_method) override;
-    void test_method_end(const TestMethodResult& test_method) override;
+    bool test_case_begin(const TestCase& test_case, const TestCaseResult& test_case_result) override;
+    void test_case_end(const TestCase& test_case, const TestCaseResult& test_case_result) override;
+    bool test_method_begin(const TestMethod& test_method, const TestMethodResult& test_method_result) override;
+    void test_method_end(const TestMethod& test_method, const TestMethodResult& test_method_result) override;
+
+    bool test_method_should_run(const std::string& fullname) const;
 };
 
 
@@ -732,7 +739,7 @@ struct FixtureTestCase : public TestCase
     FixtureTestCase(const std::string& name, Args... args)
         : TestCase(name)
     {
-        make_fixture = [&]() { return new Fixture(args...); };
+        make_fixture = [=]() { return new Fixture(args...); };
     }
 
     void setup() override

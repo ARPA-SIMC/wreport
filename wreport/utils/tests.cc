@@ -448,10 +448,10 @@ TestCaseResult TestCase::run_tests(TestController& controller)
 {
     TestCaseResult res(name);
 
-    if (!controller.test_case_begin(res))
+    if (!controller.test_case_begin(*this, res))
     {
         res.skipped = true;
-        controller.test_case_end(res);
+        controller.test_case_end(*this, res);
         return res;
     }
 
@@ -459,7 +459,7 @@ TestCaseResult TestCase::run_tests(TestController& controller)
         setup();
     } catch (std::exception& e) {
         res.set_setup_failed(e);
-        controller.test_case_end(res);
+        controller.test_case_end(*this, res);
         return res;
     }
 
@@ -475,7 +475,7 @@ TestCaseResult TestCase::run_tests(TestController& controller)
         res.set_teardown_failed(e);
     }
 
-    controller.test_case_end(res);
+    controller.test_case_end(*this, res);
     return res;
 }
 
@@ -483,10 +483,10 @@ TestMethodResult TestCase::run_test(TestController& controller, TestMethod& meth
 {
     TestMethodResult res(name, method.name);
 
-    if (!controller.test_method_begin(res))
+    if (!controller.test_method_begin(method, res))
     {
         res.skipped = true;
-        controller.test_method_end(res);
+        controller.test_method_end(method, res);
         return res;
     }
 
@@ -520,46 +520,56 @@ TestMethodResult TestCase::run_test(TestController& controller, TestMethod& meth
         res.set_teardown_exception(e);
     }
 
-    controller.test_method_end(res);
+    controller.test_method_end(method, res);
     return res;
 }
 
-bool SimpleTestController::test_case_begin(const TestCaseResult& test_case)
+bool SimpleTestController::test_method_should_run(const std::string& fullname) const
 {
-    fprintf(stdout, "%s: ", test_case.test_case.c_str());
+    if (!whitelist.empty() && fnmatch(whitelist.c_str(), fullname.c_str(), 0) == FNM_NOMATCH)
+        return false;
+
+    if (!blacklist.empty() && fnmatch(blacklist.c_str(), fullname.c_str(), 0) == FNM_NOMATCH)
+        return false;
+
+    return true;
+}
+
+bool SimpleTestController::test_case_begin(const TestCase& test_case, const TestCaseResult& test_case_result)
+{
+    // Skip test case if all its methods should not run
+    bool should_run = false;
+    for (const auto& m : test_case.methods)
+        should_run |= test_method_should_run(test_case.name + "." + m.name);
+    if (!should_run) return false;
+
+    fprintf(stdout, "%s: ", test_case.name.c_str());
     fflush(stderr);
     return true;
 }
 
-void SimpleTestController::test_case_end(const TestCaseResult& test_case)
+void SimpleTestController::test_case_end(const TestCase& test_case, const TestCaseResult& test_case_result)
 {
-    if (test_case.skipped)
-        fprintf(stdout, "skipped\n");
-    else if (test_case.is_success())
+    if (test_case_result.skipped)
+        ;
+    else if (test_case_result.is_success())
         fprintf(stdout, "\n");
     else
         fprintf(stdout, "\n");
     fflush(stderr);
 }
 
-bool SimpleTestController::test_method_begin(const TestMethodResult& test_method)
+bool SimpleTestController::test_method_begin(const TestMethod& test_method, const TestMethodResult& test_method_result)
 {
-    string name = test_method.test_case + "." + test_method.test_method;
-
-    if (!whitelist.empty() && fnmatch(whitelist.c_str(), name.c_str(), 0) == FNM_NOMATCH)
-        return false;
-
-    if (!blacklist.empty() && fnmatch(blacklist.c_str(), name.c_str(), 0) == FNM_NOMATCH)
-        return false;
-
-    return true;
+    string name = test_method_result.test_case + "." + test_method.name;
+    return test_method_should_run(name);
 }
 
-void SimpleTestController::test_method_end(const TestMethodResult& test_method)
+void SimpleTestController::test_method_end(const TestMethod& test_method, const TestMethodResult& test_method_result)
 {
-    if (test_method.skipped)
+    if (test_method_result.skipped)
         putc('s', stdout);
-    else if (test_method.is_success())
+    else if (test_method_result.is_success())
         putc('.', stdout);
     else
         putc('x', stdout);
