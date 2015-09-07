@@ -21,6 +21,8 @@ struct Table
 
     Table(const std::string& dirname, const std::string& filename);
     virtual ~Table() {}
+
+    virtual void print_id(FILE* out) const;
 };
 
 /// Information about a version of a BUFR table
@@ -30,6 +32,8 @@ struct BufrTable : Table
 
     BufrTable(const BufrTableID& id, const std::string& dirname, const std::string& filename)
         : Table(dirname, filename), id(id) {}
+
+    void print_id(FILE* out) const override;
 };
 
 /// Information about a version of a CREX table
@@ -39,6 +43,8 @@ struct CrexTable : Table
 
     CrexTable(const CrexTableID& id, const std::string& dirname, const std::string& filename)
         : Table(dirname, filename), id(id) {}
+
+    void print_id(FILE* out) const override;
 };
 
 
@@ -134,6 +140,9 @@ public:
 
     /// Find a BUFR or CREX table by file name
     const tabledir::Table* find(const std::string& basename);
+
+    /// Print a list of all tables found
+    void print(FILE* out);
 
     /// Get the default tabledir instance
     static Tabledir& get();

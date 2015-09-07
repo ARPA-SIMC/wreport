@@ -39,6 +39,7 @@ enum Action {
     UNPARSABLE,
     TABLES,
     FEATURES,
+    LIST_TABLES,
     HELP,
 };
 

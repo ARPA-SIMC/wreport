@@ -1,26 +1,6 @@
-/*
- * wrep - command line tool to work with weather bulletins
- *
- * Copyright (C) 2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include <wreport/error.h>
 #include <wreport/notes.h>
+#include <wreport/internals/tabledir.h>
 #include "options.h"
 #include <string>
 #include <iostream>
@@ -66,6 +46,7 @@ void do_help(FILE* out)
         "  -U,--unparsable     output a copy of the messages that cannot be parsed\n"
         "  -T,--tables         print the version of tables used by each bulletin\n"
         "  -F,--features       print the features used by each bulletin\n"
+        "  -L,--list-tables    print a list of all tables found\n"
 #ifndef HAS_GETOPT_LONG
         "NOTE: long options are not supported on this system\n"
 #endif
@@ -88,6 +69,7 @@ int main(int argc, char* argv[])
         {"unparsable", no_argument,       NULL, 'U'},
         {"tables",     no_argument,       NULL, 'T'},
         {"features",   no_argument,       NULL, 'F'},
+        {"list-tables", no_argument,       NULL, 'L'},
         {"help",       no_argument,       NULL, 'h'},
         {0, 0, 0, 0}
     };
@@ -101,10 +83,10 @@ int main(int argc, char* argv[])
         int option_index = 0;
 
 #ifdef HAS_GETOPT_LONG
-        int c = getopt_long(argc, argv, "cdsDpivUTFh:",
+        int c = getopt_long(argc, argv, "cdsDpivUTFLh:",
                 long_options, &option_index);
 #else
-        int c = getopt(argc, argv, "cdsDpivUTFh:");
+        int c = getopt(argc, argv, "cdsDpivUTFLh:");
 #endif
 
         // Detect the end of the options
@@ -126,6 +108,7 @@ int main(int argc, char* argv[])
             case 'U': options.action = UNPARSABLE; break;
             case 'T': options.action = TABLES; break;
             case 'F': options.action = FEATURES; break;
+            case 'L': options.action = LIST_TABLES; break;
             case 'h': options.action = HELP; break;
             default:
                 fprintf(stderr, "unknown option character %c (%d)\n", c, c);
@@ -147,6 +130,9 @@ int main(int argc, char* argv[])
             return 0;
         case INFO:
             do_info();
+            return 0;
+        case LIST_TABLES:
+            tabledir::Tabledir::get().print(stdout);
             return 0;
         case DUMP: handler.reset(new PrintContents(stdout)); break;
         case DUMP_STRUCTURE: handler.reset(new PrintStructure(stdout)); break;

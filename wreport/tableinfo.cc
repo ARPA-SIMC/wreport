@@ -339,7 +339,7 @@ int CrexTableID::closest_match(const BufrTableID& first, const CrexTableID& seco
 
 void CrexTableID::print(FILE* out) const
 {
-    fprintf(stderr, "CREX(%02hhu, %02hu:%02hu, %02hhu:%02hhu:%02hhu:%02hhu)",
+    fprintf(out, "CREX(%02hhu, %02hu:%02hu, %02hhu:%02hhu:%02hhu:%02hhu)",
         edition_number, originating_centre, originating_subcentre,
         master_table_number, master_table_version_number,
         master_table_version_number_local,

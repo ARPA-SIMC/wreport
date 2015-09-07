@@ -34,6 +34,21 @@ Table::Table(const std::string& dirname, const std::string& filename)
     dtable_pathname = dirname + "/D" + filename.substr(1);
 }
 
+void Table::print_id(FILE* out) const
+{
+    fprintf(out, "(raw data)");
+}
+
+void BufrTable::print_id(FILE* out) const
+{
+    id.print(out);
+}
+
+void CrexTable::print_id(FILE* out) const
+{
+    id.print(out);
+}
+
 
 Dir::Dir(const std::string& pathname)
     : pathname(pathname), mtime(0)
@@ -279,6 +294,17 @@ struct Index
                     return t;
         return nullptr;
     }
+
+    void print(FILE* out) const
+    {
+        for (auto& d: dirs)
+            for (auto& t: d.tables)
+            {
+                fprintf(out, "%s/%s:", d.pathname.c_str(), t->btable_id.c_str());
+                t->print_id(out);
+                fprintf(out, "\n");
+            }
+    }
 };
 
 
@@ -337,6 +363,12 @@ const tabledir::Table* Tabledir::find(const std::string& basename)
 {
     if (!index) index = new tabledir::Index(dirs);
     return index->find(basename);
+}
+
+void Tabledir::print(FILE* out)
+{
+    if (!index) index = new tabledir::Index(dirs);
+    index->print(out);
 }
 
 Tabledir& Tabledir::get()
