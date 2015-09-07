@@ -529,7 +529,7 @@ bool SimpleTestController::test_method_should_run(const std::string& fullname) c
     if (!whitelist.empty() && fnmatch(whitelist.c_str(), fullname.c_str(), 0) == FNM_NOMATCH)
         return false;
 
-    if (!blacklist.empty() && fnmatch(blacklist.c_str(), fullname.c_str(), 0) == FNM_NOMATCH)
+    if (!blacklist.empty() && fnmatch(blacklist.c_str(), fullname.c_str(), 0) != FNM_NOMATCH)
         return false;
 
     return true;
@@ -544,7 +544,7 @@ bool SimpleTestController::test_case_begin(const TestCase& test_case, const Test
     if (!should_run) return false;
 
     fprintf(stdout, "%s: ", test_case.name.c_str());
-    fflush(stderr);
+    fflush(stdout);
     return true;
 }
 
@@ -556,7 +556,7 @@ void SimpleTestController::test_case_end(const TestCase& test_case, const TestCa
         fprintf(stdout, "\n");
     else
         fprintf(stdout, "\n");
-    fflush(stderr);
+    fflush(stdout);
 }
 
 bool SimpleTestController::test_method_begin(const TestMethod& test_method, const TestMethodResult& test_method_result)
@@ -573,7 +573,7 @@ void SimpleTestController::test_method_end(const TestMethod& test_method, const 
         putc('.', stdout);
     else
         putc('x', stdout);
-    fflush(stderr);
+    fflush(stdout);
 }
 
 }
