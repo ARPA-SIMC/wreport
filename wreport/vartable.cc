@@ -317,6 +317,16 @@ struct VartableBase : public Vartable
     }
 };
 
+static void normalise_unit(char* unit)
+{
+    if (strncmp(unit, "CODE TABLE", 10) == 0
+     || strncmp(unit, "CODETABLE", 9) == 0)
+        strcpy(unit, "CODE TABLE");
+    else if (strncmp(unit, "FLAG TABLE", 10) == 0
+     || strncmp(unit, "FLAGTABLE", 9) == 0)
+        strcpy(unit, "FLAG TABLE");
+}
+
 struct BufrVartable : public VartableBase
 {
     /// Create and load a BUFR B table
@@ -352,6 +362,7 @@ struct BufrVartable : public VartableBase
             // Convert the unit from space-padded to zero-padded
             for (int i = 23; i >= 0 && isspace(entry->unit[i]); --i)
                 entry->unit[i] = 0;
+            normalise_unit(entry->unit);
 
             entry->scale = getnumber(line+98);
             entry->bit_ref = getnumber(line+102);
@@ -432,6 +443,7 @@ struct CrexVartable : public VartableBase
             // Convert the unit from space-padded to zero-padded
             for (int i = 23; i >= 0 && isspace(entry->unit[i]); --i)
                 entry->unit[i] = 0;
+            normalise_unit(entry->unit);
 
             entry->scale = getnumber(line+143);
             entry->len = getnumber(line+149);

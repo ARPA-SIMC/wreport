@@ -68,6 +68,22 @@ class Tests : public TestCase
             wassert(actual(info->scale) == -8) ;
             wassert(actual(info->len) == 8u);
             wassert(actual(info->type) == Vartype::Decimal);
+
+            info = table->query(WR_VAR(0, 1, 3));
+            wassert(actual(info->code) == WR_VAR(0, 1, 3));
+            wassert(actual(info->desc) == "WMO REGION NUMBER/GEOGRAPHICAL AREA");
+            wassert(actual(info->unit) == "CODE TABLE");
+            wassert(actual(info->scale) == 0) ;
+            wassert(actual(info->len) == 1u);
+            wassert(actual(info->type) == Vartype::Integer);
+
+            info = table->query(WR_VAR(0, 2, 2));
+            wassert(actual(info->code) == WR_VAR(0, 2, 2));
+            wassert(actual(info->desc) == "TYPE OF INSTRUMENTATION FOR WIND MEASUREMENT");
+            wassert(actual(info->unit) == "FLAG TABLE");
+            wassert(actual(info->scale) == 0) ;
+            wassert(actual(info->len) == 2u);
+            wassert(actual(info->type) == Vartype::Integer);
         });
         add_method("bufr", []() {
             // Test querying BUFR tables
@@ -118,6 +134,26 @@ class Tests : public TestCase
             wassert(actual(info->bit_len) == 17u);
             wassert(actual(info->len) == 6u);
             wassert(actual(info->type) == Vartype::Decimal);
+
+            info = table->query(WR_VAR(0, 1, 3));
+            wassert(actual(info->code) == WR_VAR(0, 1, 3));
+            wassert(actual(info->desc) == "WMO REGION NUMBER/GEOGRAPHICAL AREA");
+            wassert(actual(info->unit) == "CODE TABLE");
+            wassert(actual(info->scale) == 0) ;
+            wassert(actual(info->bit_ref) == 0);
+            wassert(actual(info->bit_len) == 3u);
+            wassert(actual(info->len) == 1u);
+            wassert(actual(info->type) == Vartype::Integer);
+
+            info = table->query(WR_VAR(0, 2, 2));
+            wassert(actual(info->code) == WR_VAR(0, 2, 2));
+            wassert(actual(info->desc) == "TYPE OF INSTRUMENTATION FOR WIND MEASUREMENT");
+            wassert(actual(info->unit) == "FLAG TABLE");
+            wassert(actual(info->scale) == 0) ;
+            wassert(actual(info->bit_ref) == 0);
+            wassert(actual(info->bit_len) == 4u);
+            wassert(actual(info->len) == 2u);
+            wassert(actual(info->type) == Vartype::Integer);
         });
         add_method("bufr4", []() {
             // Test reading BUFR edition 4 tables
