@@ -132,7 +132,7 @@ int main(int argc, char* argv[])
             do_info();
             return 0;
         case LIST_TABLES:
-            tabledir::Tabledir::get().print(stdout);
+            tabledir::Tabledirs::get().print(stdout);
             return 0;
         case DUMP: handler.reset(new PrintContents(stdout)); break;
         case DUMP_STRUCTURE: handler.reset(new PrintStructure(stdout)); break;

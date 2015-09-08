@@ -100,6 +100,12 @@ public:
     /// Print a list of all tables found
     void print(FILE* out);
 
+    /// Print the step by step process by which a table is selected for \a id
+    void explain_find_bufr(const BufrTableID& id, FILE* out);
+
+    /// Print the step by step process by which a table is selected for \a id
+    void explain_find_crex(const CrexTableID& id, FILE* out);
+
     /// Get the default tabledir instance
     static Tabledirs& get();
 };

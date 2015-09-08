@@ -68,6 +68,8 @@ class Tests : public TestCase
             // differences
             auto& td = tabledir::Tabledirs::get();
 
+            //td.explain_find_bufr(BufrTableID(0, 0, 0, 24, 0), stderr);
+
             const tabledir::Table* t = td.find_bufr(BufrTableID(0, 0, 0, 24, 0));
             wassert(actual(t != 0).istrue());
             const tabledir::BufrTable* bt = dynamic_cast<const tabledir::BufrTable*>(t);

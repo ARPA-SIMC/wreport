@@ -126,27 +126,51 @@ struct Query
     BufrTable* bufr_best = nullptr;
     CrexTable* crex_best = nullptr;
 
+    void consider_table(Table* t)
+    {
+        if (BufrTable* cur = dynamic_cast<BufrTable*>(t))
+        {
+            if (!is_acceptable(cur->id)) return;
+            if (!bufr_best)
+                bufr_best = cur;
+            else
+                bufr_best = choose_best(*bufr_best, *cur);
+        }
+        else if (CrexTable* cur = dynamic_cast<CrexTable*>(t))
+        {
+            if (!is_acceptable(cur->id)) return;
+            if (!crex_best)
+                crex_best = cur;
+            else
+                crex_best = choose_best(*crex_best, *cur);
+        }
+        // Ignore other kinds of tables
+    }
+
     void search(Dir& dir)
     {
         for (const auto& t : dir.tables)
+            consider_table(t);
+    }
+
+    void explain_search(Dir& dir, FILE* out)
+    {
+        for (const auto& t : dir.tables)
         {
-            if (BufrTable* cur = dynamic_cast<BufrTable*>(t))
-            {
-                if (!is_acceptable(cur->id)) continue;
-                if (!bufr_best)
-                    bufr_best = cur;
-                else
-                    bufr_best = choose_best(*bufr_best, *cur);
-            }
-            else if (CrexTable* cur = dynamic_cast<CrexTable*>(t))
-            {
-                if (!is_acceptable(cur->id)) continue;
-                if (!crex_best)
-                    crex_best = cur;
-                else
-                    crex_best = choose_best(*crex_best, *cur);
-            }
-            // Ignore other kinds of tables
+            fprintf(out, "%s: considering ", dir.pathname.c_str());
+            t->print_id(out);
+            consider_table(t);
+            fprintf(out, ": best bufr: ");
+            if (bufr_best)
+                bufr_best->print_id(out);
+            else
+                fprintf(out, "none");
+            fprintf(out, ", best crex: ");
+            if (crex_best)
+                crex_best->print_id(out);
+            else
+                fprintf(out, "none");
+            fprintf(out, "\n");
         }
     }
 
@@ -162,6 +186,17 @@ struct Query
                 return bufr_best;
             else
                 return choose_best(*bufr_best, *crex_best);
+    }
+
+    void explain_result(FILE* out) const
+    {
+        Table* res = result();
+        fprintf(out, "Result chosen: ");
+        if (res)
+            res->print_id(out);
+        else
+            fprintf(out, "none");
+        fprintf(out, "\n");
     }
 
     virtual bool is_acceptable(const BufrTableID& id) const = 0;
@@ -283,6 +318,15 @@ struct Index
         return nullptr;
     }
 
+    void explain_find_bufr(const BufrTableID& id, FILE* out)
+    {
+        // If it is the first time this combination is requested, look for the best match
+        BufrQuery query(id);
+        for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
+            query.explain_search(*d, out);
+        query.explain_result(out);
+    }
+
     const tabledir::Table* find_crex(const CrexTableID& id)
     {
         // First look it up in cache
@@ -305,6 +349,15 @@ struct Index
             return result;
         }
         return nullptr;
+    }
+
+    void explain_find_crex(const CrexTableID& id, FILE* out)
+    {
+        // If it is the first time this combination is requested, look for the best match
+        CrexQuery query(id);
+        for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
+            query.explain_search(*d, out);
+        query.explain_result(out);
     }
 
     const tabledir::Table* find(const std::string& basename)
@@ -390,6 +443,18 @@ void Tabledirs::print(FILE* out)
 {
     if (!index) index = new tabledir::Index(dirs);
     index->print(out);
+}
+
+void Tabledirs::explain_find_bufr(const BufrTableID& id, FILE* out)
+{
+    if (!index) index = new tabledir::Index(dirs);
+    index->explain_find_bufr(id, out);
+}
+
+void Tabledirs::explain_find_crex(const CrexTableID& id, FILE* out)
+{
+    if (!index) index = new tabledir::Index(dirs);
+    index->explain_find_crex(id, out);
 }
 
 Tabledirs& Tabledirs::get()
