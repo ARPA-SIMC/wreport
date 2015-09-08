@@ -636,25 +636,33 @@ void mkFilePath(const std::string& file)
     if (pos != std::string::npos)
         mkpath(file.substr(0, pos));
 }
+#endif
 
-bool deleteIfExists(const std::string& file)
+bool unlink_ifexists(const std::string& file)
 {
     if (::unlink(file.c_str()) != 0)
+    {
         if (errno != ENOENT)
-            throw wibble::exception::File(file, "removing file");
+            throw std::system_error(errno, std::system_category(), "cannot unlink " + file);
         else
             return false;
+    }
     else
         return true;
 }
 
-void renameIfExists(const std::string& src, const std::string& dst)
+bool rename_ifexists(const std::string& src, const std::string& dst)
 {
-    int res = ::rename(src.c_str(), dst.c_str());
-    if (res < 0 && errno != ENOENT)
-        throw wibble::exception::System("moving " + src + " to " + dst);
+    if (::rename(src.c_str(), dst.c_str()) != 0)
+    {
+        if (errno != ENOENT)
+            throw std::system_error(errno, std::system_category(), "cannot rename " + src + " to " + dst);
+        else
+            return false;
+    }
+    else
+        return true;
 }
-#endif
 
 template<typename String>
 static void impl_mkdir_ifmissing(String pathname, mode_t mode)

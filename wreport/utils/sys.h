@@ -360,17 +360,21 @@ std::string mkdtemp(std::string templ);
 /// Ensure that the path to the given file exists, creating it if it does not.
 /// The file itself will not get created.
 void mkFilePath(const std::string& file);
+#endif
 
 /**
  * Delete a file if it exists. If it does not exist, do nothing.
  *
  * @return true if the file was deleted, false if it did not exist
  */
-bool deleteIfExists(const std::string& file);
+bool unlink_ifexists(const std::string& file);
 
-/// Move \a src to \a dst, without raising exception if \a src does not exist
-void renameIfExists(const std::string& src, const std::string& dst);
-#endif
+/**
+ * Move \a src to \a dst, without raising exception if \a src does not exist
+ *
+ * @return true if the file was renamed, false if it did not exist
+ */
+bool rename_ifexists(const std::string& src, const std::string& dst);
 
 /// Create the given directory, if it does not already exists.
 /// It will complain if the given pathname already exists but is not a
