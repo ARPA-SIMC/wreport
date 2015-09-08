@@ -26,7 +26,7 @@ class Tests : public TestCase
             wassert(actual(t.dtable_pathname) == "/antani/D12345.txt");
         });
         add_method("tabledir_bufr_wmo", []() {
-            auto& td = tabledir::Tabledir::get();
+            auto& td = tabledir::Tabledirs::get();
 
             const tabledir::Table* t = td.find_bufr(BufrTableID(0, 0, 0, 10, 0));
             wassert(actual(t != 0).istrue());
@@ -39,7 +39,7 @@ class Tests : public TestCase
             wassert(actual(bt->id.master_table_version_number_local) == 0);
         });
         add_method("tabledir_bufr_ecmwf", []() {
-            auto& td = tabledir::Tabledir::get();
+            auto& td = tabledir::Tabledirs::get();
             const tabledir::Table* t = td.find_bufr(BufrTableID(98, 0, 0, 6, 1));
             wassert(actual(t != 0).istrue());
             const tabledir::BufrTable* bt = dynamic_cast<const tabledir::BufrTable*>(t);
@@ -51,7 +51,7 @@ class Tests : public TestCase
             wassert(actual((int)bt->id.master_table_version_number_local) == 1);
         });
         add_method("tabledir_crex_old", []() {
-            auto& td = tabledir::Tabledir::get();
+            auto& td = tabledir::Tabledirs::get();
             const tabledir::Table* t = td.find_crex(CrexTableID(1, 0, 0, 0, 3, 0, 0));
             wassert(actual(t != 0).istrue());
             const tabledir::CrexTable* ct = dynamic_cast<const tabledir::CrexTable*>(t);
@@ -66,7 +66,7 @@ class Tests : public TestCase
         add_method("tabledir_crex_bufr", []() {
             // Load the same table file as bufr and as crex, and check the
             // differences
-            auto& td = tabledir::Tabledir::get();
+            auto& td = tabledir::Tabledirs::get();
 
             const tabledir::Table* t = td.find_bufr(BufrTableID(0, 0, 0, 24, 0));
             wassert(actual(t != 0).istrue());
@@ -94,7 +94,7 @@ class Tests : public TestCase
         });
         add_method("tabledir_extra", []() {
             // Find a non-BUFR non-CREX table by name
-            auto& td = tabledir::Tabledir::get();
+            auto& td = tabledir::Tabledirs::get();
             const tabledir::Table* t = td.find("test");
             wassert(actual(t != 0).istrue());
         });

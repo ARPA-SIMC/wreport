@@ -66,62 +66,18 @@ struct Dir
     void refresh();
 };
 
-struct Query
-{
-    BufrTable* bufr_best = nullptr;
-    CrexTable* crex_best = nullptr;
-
-    void search(Dir& dir);
-
-    Table* result() const;
-
-    virtual bool is_acceptable(const BufrTableID& id) const = 0;
-    virtual bool is_acceptable(const CrexTableID& id) const = 0;
-    virtual BufrTable* choose_best(BufrTable& first, BufrTable& second) const = 0;
-    virtual CrexTable* choose_best(CrexTable& first, CrexTable& second) const = 0;
-    virtual Table* choose_best(BufrTable& first, CrexTable& second) const = 0;
-};
-
-/// Query for a BUFR table
-struct BufrQuery : public Query
-{
-    BufrTableID id;
-
-    BufrQuery(const BufrTableID& id);
-
-    bool is_acceptable(const BufrTableID& id) const override;
-    bool is_acceptable(const CrexTableID& id) const override;
-    BufrTable* choose_best(BufrTable& first, BufrTable& second) const override;
-    CrexTable* choose_best(CrexTable& first, CrexTable& second) const override;
-    Table* choose_best(BufrTable& first, CrexTable& second) const override;
-};
-
-/// Query for a CREX table
-struct CrexQuery : public Query
-{
-    CrexTableID id;
-
-    CrexQuery(const CrexTableID& id);
-
-    bool is_acceptable(const BufrTableID& id) const override;
-    bool is_acceptable(const CrexTableID& id) const override;
-    BufrTable* choose_best(BufrTable& first, BufrTable& second) const override;
-    CrexTable* choose_best(CrexTable& first, CrexTable& second) const override;
-    Table* choose_best(BufrTable& first, CrexTable& second) const override;
-};
-
-class Tabledir
+class Tabledirs
 {
 protected:
     std::vector<std::string> dirs;
     Index* index;
 
 public:
-    Tabledir();
-    Tabledir(const Tabledir&) = delete;
-    ~Tabledir();
+    Tabledirs();
+    Tabledirs(const Tabledirs&) = delete;
+    ~Tabledirs();
 
-    Tabledir& operator=(const Tabledir&) = delete;
+    Tabledirs& operator=(const Tabledirs&) = delete;
 
     /**
      * Add the default directories according to compile-time and environment
@@ -145,7 +101,7 @@ public:
     void print(FILE* out);
 
     /// Get the default tabledir instance
-    static Tabledir& get();
+    static Tabledirs& get();
 };
 
 }

@@ -119,110 +119,131 @@ void Dir::refresh()
     mtime = st.st_mtime;
 }
 
+namespace {
 
-void Query::search(Dir& dir)
+struct Query
 {
-    for (const auto& t : dir.tables)
+    BufrTable* bufr_best = nullptr;
+    CrexTable* crex_best = nullptr;
+
+    void search(Dir& dir)
     {
-        if (BufrTable* cur = dynamic_cast<BufrTable*>(t))
+        for (const auto& t : dir.tables)
         {
-            if (!is_acceptable(cur->id)) continue;
-            if (!bufr_best)
-                bufr_best = cur;
-            else
-                bufr_best = choose_best(*bufr_best, *cur);
+            if (BufrTable* cur = dynamic_cast<BufrTable*>(t))
+            {
+                if (!is_acceptable(cur->id)) continue;
+                if (!bufr_best)
+                    bufr_best = cur;
+                else
+                    bufr_best = choose_best(*bufr_best, *cur);
+            }
+            else if (CrexTable* cur = dynamic_cast<CrexTable*>(t))
+            {
+                if (!is_acceptable(cur->id)) continue;
+                if (!crex_best)
+                    crex_best = cur;
+                else
+                    crex_best = choose_best(*crex_best, *cur);
+            }
+            // Ignore other kinds of tables
         }
-        else if (CrexTable* cur = dynamic_cast<CrexTable*>(t))
-        {
-            if (!is_acceptable(cur->id)) continue;
-            if (!crex_best)
-                crex_best = cur;
-            else
-                crex_best = choose_best(*crex_best, *cur);
-        }
-        // Ignore other kinds of tables
     }
-}
 
-Table* Query::result() const
-{
-    if (!bufr_best)
-        if (!crex_best)
-            return nullptr;
+    Table* result() const
+    {
+        if (!bufr_best)
+            if (!crex_best)
+                return nullptr;
+            else
+                return crex_best;
         else
-            return crex_best;
-    else
-        if (!crex_best)
-            return bufr_best;
-        else
-            return choose_best(*bufr_best, *crex_best);
-}
+            if (!crex_best)
+                return bufr_best;
+            else
+                return choose_best(*bufr_best, *crex_best);
+    }
 
+    virtual bool is_acceptable(const BufrTableID& id) const = 0;
+    virtual bool is_acceptable(const CrexTableID& id) const = 0;
+    virtual BufrTable* choose_best(BufrTable& first, BufrTable& second) const = 0;
+    virtual CrexTable* choose_best(CrexTable& first, CrexTable& second) const = 0;
+    virtual Table* choose_best(BufrTable& first, CrexTable& second) const = 0;
+};
 
-BufrQuery::BufrQuery(const BufrTableID& id) : id(id)
+/// Query for a BUFR table
+struct BufrQuery : public Query
 {
-}
+    BufrTableID id;
 
-bool BufrQuery::is_acceptable(const BufrTableID& id) const
-{
-    return this->id.is_acceptable_replacement(id);
-}
+    BufrQuery(const BufrTableID& id) : id(id) {}
 
-bool BufrQuery::is_acceptable(const CrexTableID& id) const
-{
-    return this->id.is_acceptable_replacement(id);
-}
+    bool is_acceptable(const BufrTableID& id) const override
+    {
+        return this->id.is_acceptable_replacement(id);
+    }
 
-BufrTable* BufrQuery::choose_best(BufrTable& first, BufrTable& second) const
-{
-    int cmp = id.closest_match(first.id, second.id);
-    return cmp <= 0 ? &first : &second;
-}
+    bool is_acceptable(const CrexTableID& id) const override
+    {
+        return this->id.is_acceptable_replacement(id);
+    }
 
-CrexTable* BufrQuery::choose_best(CrexTable& first, CrexTable& second) const
-{
-    return nullptr;
-}
+    BufrTable* choose_best(BufrTable& first, BufrTable& second) const override
+    {
+        int cmp = id.closest_match(first.id, second.id);
+        return cmp <= 0 ? &first : &second;
+    }
 
-Table* BufrQuery::choose_best(BufrTable& first, CrexTable& second) const
-{
-    return &first;
-}
+    CrexTable* choose_best(CrexTable& first, CrexTable& second) const override
+    {
+        return nullptr;
+    }
 
-
-CrexQuery::CrexQuery(const CrexTableID& id) : id(id)
-{
-}
-
-bool CrexQuery::is_acceptable(const BufrTableID& id) const
-{
-    return this->id.is_acceptable_replacement(id);
-}
-
-bool CrexQuery::is_acceptable(const CrexTableID& id) const
-{
-    return this->id.is_acceptable_replacement(id);
-}
-
-BufrTable* CrexQuery::choose_best(BufrTable& first, BufrTable& second) const
-{
-    int cmp = id.closest_match(first.id, second.id);
-    return cmp <= 0 ? &first : &second;
-}
-
-CrexTable* CrexQuery::choose_best(CrexTable& first, CrexTable& second) const
-{
-    int cmp = id.closest_match(first.id, second.id);
-    return cmp <= 0 ? &first : &second;
-}
-
-Table* CrexQuery::choose_best(BufrTable& first, CrexTable& second) const
-{
-    int cmp = id.closest_match(first.id, second.id);
-    if (cmp <= 0)
+    Table* choose_best(BufrTable& first, CrexTable& second) const override
+    {
         return &first;
-    else
-        return &second;
+    }
+};
+
+/// Query for a CREX table
+struct CrexQuery : public Query
+{
+    CrexTableID id;
+
+    CrexQuery(const CrexTableID& id) : id(id) {}
+
+    bool is_acceptable(const BufrTableID& id) const override
+    {
+        return this->id.is_acceptable_replacement(id);
+    }
+
+    bool is_acceptable(const CrexTableID& id) const override
+    {
+        return this->id.is_acceptable_replacement(id);
+    }
+
+    BufrTable* choose_best(BufrTable& first, BufrTable& second) const override
+    {
+        int cmp = id.closest_match(first.id, second.id);
+        return cmp <= 0 ? &first : &second;
+    }
+
+    CrexTable* choose_best(CrexTable& first, CrexTable& second) const override
+    {
+        int cmp = id.closest_match(first.id, second.id);
+        return cmp <= 0 ? &first : &second;
+    }
+
+    Table* choose_best(BufrTable& first, CrexTable& second) const override
+    {
+        int cmp = id.closest_match(first.id, second.id);
+        if (cmp <= 0)
+            return &first;
+        else
+            return &second;
+    }
+};
+
 }
 
 struct Index
@@ -308,17 +329,17 @@ struct Index
 };
 
 
-Tabledir::Tabledir()
+Tabledirs::Tabledirs()
     : index(0)
 {
 }
 
-Tabledir::~Tabledir()
+Tabledirs::~Tabledirs()
 {
     delete index;
 }
 
-void Tabledir::add_default_directories()
+void Tabledirs::add_default_directories()
 {
     if (char* env = getenv("WREPORT_EXTRA_TABLES"))
         add_directory(env);
@@ -327,7 +348,7 @@ void Tabledir::add_default_directories()
     add_directory(TABLE_DIR);
 }
 
-void Tabledir::add_directory(const std::string& dir)
+void Tabledirs::add_directory(const std::string& dir)
 {
     // Strip trailing /
     string clean_dir(dir);
@@ -347,36 +368,36 @@ void Tabledir::add_directory(const std::string& dir)
     index = 0;
 }
 
-const tabledir::Table* Tabledir::find_bufr(const BufrTableID& id)
+const tabledir::Table* Tabledirs::find_bufr(const BufrTableID& id)
 {
     if (!index) index = new tabledir::Index(dirs);
     return index->find_bufr(id);
 }
 
-const tabledir::Table* Tabledir::find_crex(const CrexTableID& id)
+const tabledir::Table* Tabledirs::find_crex(const CrexTableID& id)
 {
     if (!index) index = new tabledir::Index(dirs);
     return index->find_crex(id);
 }
 
-const tabledir::Table* Tabledir::find(const std::string& basename)
+const tabledir::Table* Tabledirs::find(const std::string& basename)
 {
     if (!index) index = new tabledir::Index(dirs);
     return index->find(basename);
 }
 
-void Tabledir::print(FILE* out)
+void Tabledirs::print(FILE* out)
 {
     if (!index) index = new tabledir::Index(dirs);
     index->print(out);
 }
 
-Tabledir& Tabledir::get()
+Tabledirs& Tabledirs::get()
 {
-    static Tabledir* default_tabledir = 0;
+    static Tabledirs* default_tabledir = 0;
     if (!default_tabledir)
     {
-        default_tabledir = new Tabledir();
+        default_tabledir = new Tabledirs();
         default_tabledir->add_default_directories();
     }
     return *default_tabledir;

@@ -52,7 +52,7 @@ void Tables::clear()
 
 void Tables::load_bufr(const BufrTableID& id)
 {
-    auto& tabledir = tabledir::Tabledir::get();
+    auto& tabledir = tabledir::Tabledirs::get();
     auto t = tabledir.find_bufr(id);
     if (!t)
         error_notfound::throwf("BUFR table for center %hu:%hu table %hhu:%hhu:%hhu not found",
@@ -65,7 +65,7 @@ void Tables::load_bufr(const BufrTableID& id)
 
 void Tables::load_crex(const CrexTableID& id)
 {
-    auto& tabledir = tabledir::Tabledir::get();
+    auto& tabledir = tabledir::Tabledirs::get();
     auto t = tabledir.find_crex(id);
     if (!t)
         error_notfound::throwf("CREX table for center %hu:%hu table %hhu:%hhu:%hhu:%hhu not found",
