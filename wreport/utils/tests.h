@@ -698,7 +698,8 @@ struct TestCase
     template<typename FUNC, typename ...Args>
     void add_method(const std::string& name, FUNC test_function, Args&&... args)
     {
-        methods.emplace_back(name, [test_function, args...]() { test_function(args...); });
+        auto f = std::bind(test_function, args...);
+        methods.emplace_back(name, f);
     }
 };
 
@@ -728,8 +729,16 @@ struct Fixture
  * Test case that includes a fixture
  */
 template<typename FIXTURE>
-struct FixtureTestCase : public TestCase
+class FixtureTestCase : public TestCase
 {
+private:
+    template<typename... Args>
+    Fixture* fixture_factory(Args... args)
+    {
+        return new Fixture(args...);
+    }
+
+public:
     typedef FIXTURE Fixture;
 
     Fixture* fixture = 0;
@@ -739,7 +748,7 @@ struct FixtureTestCase : public TestCase
     FixtureTestCase(const std::string& name, Args... args)
         : TestCase(name)
     {
-        make_fixture = [=]() { return new Fixture(args...); };
+        make_fixture = std::bind(this->fixture_factory, args...);
     }
 
     void setup() override
@@ -776,7 +785,8 @@ struct FixtureTestCase : public TestCase
     template<typename FUNC, typename ...Args>
     void add_method(const std::string& name, FUNC test_function, Args&&... args)
     {
-        methods.emplace_back(name, [this, test_function, args...] { test_function(*fixture, args...); });
+        auto f = std::bind(test_function, *fixture, args...);
+        methods.emplace_back(name, f);
     }
 };
 
