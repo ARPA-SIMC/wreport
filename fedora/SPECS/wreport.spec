@@ -125,7 +125,6 @@ make install DESTDIR="%{buildroot}"
 %{_libdir}/libwreport.so
 %{_libdir}/libwreport-test.a
 %{_libdir}/libwreport-test.la
-%{_libdir}/pkgconfig/libwreport-test.pc
 
 %dir %{_includedir}/%{name}
 %{_includedir}/%{name}/*

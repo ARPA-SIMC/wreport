@@ -14,4 +14,4 @@ SUBDIRS += .
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libwreport.pc
 
-EXTRA_DIST = libwreport.pc.in libwreport-test.pc.in run-local run-bench testenv TODO-threads INSTALL
+EXTRA_DIST = libwreport.pc.in run-local run-bench testenv TODO-threads INSTALL
