@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(wreport, [3.1], [enrico@enricozini.org])
+AC_INIT(wreport, [3.2], [enrico@enricozini.org])
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AM_CONFIG_HEADER(config.h)
@@ -165,7 +165,7 @@ dnl     then increment AGE.
 dnl
 dnl  6. If any interfaces have been removed since the last public release,
 dnl     then set AGE to 0.
-LIBWREPORT_VERSION_INFO="3:1:0"
+LIBWREPORT_VERSION_INFO="3:2:0"
 AC_SUBST(LIBWREPORT_VERSION_INFO)
 
 dnl Give me warnings
