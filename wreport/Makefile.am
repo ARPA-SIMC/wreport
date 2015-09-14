@@ -132,7 +132,7 @@ test_wreport_SOURCES = \
 	bulletin/internals-test.cc \
 	bulletin/dds-validator-test.cc \
 	tests-test.cc \
-	utils/tests-main.cpp
+	utils/tests-main.cc
 test_wreport_LDADD = libwreport.la
 
 
