@@ -722,13 +722,11 @@ struct TestCase
  */
 struct Fixture
 {
-    virtual ~Fixture() {}
-
     // Called before each test
-    virtual void test_setup() {}
+    void test_setup() {}
 
     // Called after each test
-    virtual void test_teardown() {}
+    void test_teardown() {}
 };
 
 template<typename Fixture, typename... Args>
@@ -743,12 +741,10 @@ static inline Fixture* fixture_factory(Args... args)
 template<typename FIXTURE>
 class FixtureTestCase : public TestCase
 {
-private:
-
 public:
     typedef FIXTURE Fixture;
 
-    Fixture* fixture = 0;
+    Fixture* fixture = nullptr;
     std::function<Fixture*()> make_fixture;
 
     template<typename... Args>
@@ -789,11 +785,12 @@ public:
      * Any extra arguments to the function will be passed to the test method
      * after the fixture.
      */
-    template<typename FUNC, typename ...Args>
-    void add_method(const std::string& name, FUNC test_function, Args&&... args)
+    template<typename FUNC>
+    void add_method(const std::string& name, FUNC test_function)
     {
-        auto f = std::bind(test_function, *fixture, args...);
-        methods.emplace_back(name, f);
+        methods.emplace_back(name, [=]() {
+            test_function(*fixture);
+        });
     }
 };
 
