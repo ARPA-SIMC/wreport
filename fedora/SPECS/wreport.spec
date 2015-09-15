@@ -1,13 +1,13 @@
 Summary: Library for working with (coded) weather reports
 Name: wreport
-Version: 3.1
+Version: 3.2
 Release: 1%{dist}
 License: GPL2
 Group: Applications/Meteo
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: doxygen, libtool, libwibble-devel >= 1.1, lua-devel >= 5.1.1, python-devel
+BuildRequires: doxygen, libtool, lua-devel >= 5.1.1, python-devel
 %description
 null
 
@@ -123,8 +123,6 @@ make install DESTDIR="%{buildroot}"
 %{_libdir}/libwreport.la
 %{_libdir}/pkgconfig/libwreport.pc
 %{_libdir}/libwreport.so
-%{_libdir}/libwreport-test.a
-%{_libdir}/libwreport-test.la
 
 %dir %{_includedir}/%{name}
 %{_includedir}/%{name}/*
@@ -149,6 +147,13 @@ make install DESTDIR="%{buildroot}"
 %doc %{_docdir}/wreport/python-wreport.rst
 
 %changelog
+* Tue Sep 15 2015 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 3.2-1%{dist}
+- gcc 4.8.3 support (lambdas and variadic templates)
+- Removed every reference to libwreport-test.pc.in
+- version 3.2 and version-info 3:2:0
+- Normalise CODE TABLE and FLAG TABLE units
+-  Removed dependency on wibble in favour of new utils/ code in sync with wobble
+
 * Mon Aug 31 2015 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 3.1-1%{dist}
 - Fixed FLAGTABLE and CODETABLE conversion errors
 
