@@ -350,6 +350,12 @@ inline ActualFunction actual_function(std::function<void()> actual) { return Act
         throw TestFailed(e, __FILE__, __LINE__, #__VA_ARGS__, wreport_test_location_info); \
     } } while(0)
 
+/// Shortcut to check that a given expression returns true
+#define wassert_true(...) wassert(actual(__VA_ARGS__).istrue())
+
+/// Shortcut to check that a given expression returns false
+#define wassert_false(...) wassert(actual(__VA_ARGS__).isfalse())
+
 /**
  * Call a function returning its result, and raising TestFailed with the
  * appropriate backtrace information if it threw an exception.
@@ -725,6 +731,12 @@ struct Fixture
     virtual void test_teardown() {}
 };
 
+template<typename Fixture, typename... Args>
+static inline Fixture* fixture_factory(Args... args)
+{
+    return new Fixture(args...);
+}
+
 /**
  * Test case that includes a fixture
  */
@@ -732,11 +744,6 @@ template<typename FIXTURE>
 class FixtureTestCase : public TestCase
 {
 private:
-    template<typename... Args>
-    Fixture* fixture_factory(Args... args)
-    {
-        return new Fixture(args...);
-    }
 
 public:
     typedef FIXTURE Fixture;
@@ -748,7 +755,7 @@ public:
     FixtureTestCase(const std::string& name, Args... args)
         : TestCase(name)
     {
-        make_fixture = std::bind(this->fixture_factory, args...);
+        make_fixture = std::bind(fixture_factory<FIXTURE, Args...>, args...);
     }
 
     void setup() override

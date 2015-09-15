@@ -5,12 +5,12 @@
 #include <exception>
 #include <sstream>
 #include <system_error>
+#include <cerrno>
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <alloca.h>
-#include <errno.h>
 
 namespace {
 
