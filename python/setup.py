@@ -1,14 +1,21 @@
 from setuptools import Extension, setup
+import subprocess
+
+
+def pkg_config_flags(options):
+    return [
+        s for s in subprocess.check_output(['pkg-config'] + options + ['libwreport']).decode().strip().split(" ") if s
+    ]
 
 
 wreport_module = Extension(
     '_wreport',
     sources=[
-        "common.cc", "varinfo.cc", "vartable.cc", "var.cc", "wreport.cc",
+        "common.cc", "varinfo.cc", "vartable.cc", "var.cc", "wreport.cc"
     ],
     language="c++",
-    extra_compile_args=['-std=c++11'],
-    libraries=['wreport', 'lua'],
+    extra_compile_args=pkg_config_flags(["--cflags"]) + ["-std=c++11"],
+    extra_link_args=pkg_config_flags(["--libs"]),
 )
 
 setup(
