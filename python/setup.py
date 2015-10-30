@@ -1,19 +1,14 @@
-from setuptools import Extension, setup, command
-import os.path
-
-
-pydir = os.path.dirname(__file__)
+from setuptools import Extension, setup
 
 
 wreport_module = Extension(
-    'wreport',
+    '_wreport',
     sources=[
-        os.path.join(pydir, f) for f in [
-            "common.cc", "varinfo.cc", "vartable.cc", "var.cc", "wreport.cc",
-        ]
+        "common.cc", "varinfo.cc", "vartable.cc", "var.cc", "wreport.cc",
     ],
     language="c++",
     extra_compile_args=['-std=c++11'],
+    libraries=['wreport', 'lua5.2'],
 )
 
 setup(
@@ -28,7 +23,7 @@ setup(
     url="http://github.com/arpa-simc/wreport",
     license="GPLv2+",
     py_modules=[],
-    packages=[],
+    packages=['wreport'],
     data_files=[],
     zip_safe=False,
     include_package_data=True,
