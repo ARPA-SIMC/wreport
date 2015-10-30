@@ -8,7 +8,7 @@ wreport_module = Extension(
     ],
     language="c++",
     extra_compile_args=['-std=c++11'],
-    libraries=['wreport', 'lua5.2'],
+    libraries=['wreport', 'lua'],
 )
 
 setup(
