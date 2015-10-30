@@ -1,5 +1,5 @@
 #include <Python.h>
-#include "config.h"
+// #include "config.h"
 #include "common.h"
 #include "vartable.h"
 #include "varinfo.h"
