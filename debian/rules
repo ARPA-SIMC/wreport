@@ -36,5 +36,5 @@ debsrc: vercheck
 		make dist; \
 		mv $(RELEASE_PACKAGE)-$(VERSION).tar.gz ../$(RELEASE_PACKAGE)_$(VERSION).orig.tar.gz; \
 	fi
-	git-buildpackage -S -us -uc
+	gbp buildpackage -S -us -uc
 	rm -f ../$(RELEASE_PACKAGE)_$(VERSION)_source.changes
