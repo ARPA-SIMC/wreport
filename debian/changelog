@@ -6,6 +6,7 @@ wreport (3.3-1) unstable; urgency=medium
      - Updated vcs links after the code has been migrated from subversion to
        github
      - Fixed debian/changelog syntax
+     - Updated Standards-Version, no changes required
 
  -- Enrico Zini <enrico@debian.org>  Mon, 02 Nov 2015 11:18:08 +0100
 
