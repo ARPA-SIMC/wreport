@@ -1,10 +1,12 @@
-wreport (3.2-1) UNRELEASED; urgency=medium
+wreport (3.3-1) unstable; urgency=medium
 
   * New major upstream version
      - Big refactoring, API and ABI changed, increased soname
      - Requires C++11
+     - Updated vcs links after the code has been migrated from subversion to
+       github
 
- -- Enrico Zini <enrico@debian.org>  Wed, 23 Sep 2015 12:32:34 +0200
+ -- Enrico Zini <enrico@debian.org>  Mon, 02 Nov 2015 11:18:08 +0100
 
 wreport (2.15-1) UNRELEASED; urgency=medium
 
