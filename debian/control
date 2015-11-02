@@ -9,8 +9,8 @@ Build-Depends:
   python-all-dev, python3-all-dev, python-docutils, python-numpy, python3-numpy,
   python-six, python3-six
 Standards-Version: 3.9.5.0
-Homepage: http://sourceforge.net/p/wreport
-Vcs-Svn: https://svn.smr.arpa.emr.it/dballe/wreport/trunk
+Homepage: https://github.com/ARPA-SIMC/wreport
+Vcs-Git: https://github.com/ARPA-SIMC/wreport.git
 
 Package: libwreport-dev
 Section: libdevel
