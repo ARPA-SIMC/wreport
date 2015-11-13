@@ -26,10 +26,10 @@ you need to install the automake/autoconf/libtool packages, which are usually
 available on any linux distribution, and, in the wreport directory, execute 
 the commands:
 
-  autoreconf -if 
-  ./configure
-  make
-  make install
+    autoreconf -if 
+    ./configure
+    make
+    make install
 
 if you're familiar with .rpm and .deb packaging you'll find the packaging 
 files in the `debian` and `fedora` directories
