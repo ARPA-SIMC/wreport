@@ -45,6 +45,7 @@ python-wreport.html: python-wreport.rst
 
 clean-local:
 	rm -f *.pyc wreport/*.pyc _wreport.so
+	rm -rf __pycache__ wreport/__pycache__
 
 EXTRA_DIST += testlib.py $(python_tests)
 
