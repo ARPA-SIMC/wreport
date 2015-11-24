@@ -1,19 +1,21 @@
-from setuptools import Extension, setup, command
-import os.path
+from setuptools import Extension, setup
+import subprocess
 
 
-pydir = os.path.dirname(__file__)
+def pkg_config_flags(options):
+    return [
+        s for s in subprocess.check_output(['pkg-config'] + options + ['libwreport']).decode().strip().split(" ") if s
+    ]
 
 
 wreport_module = Extension(
-    'wreport',
+    '_wreport',
     sources=[
-        os.path.join(pydir, f) for f in [
-            "common.cc", "varinfo.cc", "vartable.cc", "var.cc", "wreport.cc",
-        ]
+        "common.cc", "varinfo.cc", "vartable.cc", "var.cc", "wreport.cc"
     ],
     language="c++",
-    extra_compile_args=['-std=c++11'],
+    extra_compile_args=pkg_config_flags(["--cflags"]) + ["-std=c++11"],
+    extra_link_args=pkg_config_flags(["--libs"]),
 )
 
 setup(
@@ -28,7 +30,7 @@ setup(
     url="http://github.com/arpa-simc/wreport",
     license="GPLv2+",
     py_modules=[],
-    packages=[],
+    packages=['wreport'],
     data_files=[],
     zip_safe=False,
     include_package_data=True,
