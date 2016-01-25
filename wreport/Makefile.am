@@ -1,6 +1,9 @@
 ## Process this file with automake to produce Makefile.in
 
 AM_CPPFLAGS = -DTABLE_DIR=\"$(tabledir)\" -I$(top_srcdir) $(LUA_CFLAGS)
+if FILE_OFFSET_BITS_64
+AM_CPPFLAGS += -D_FILE_OFFSET_BITS=64
+endif
 
 #
 # Shared library

@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(wreport, [3.3], [enrico@enricozini.org])
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Use libtool
@@ -45,6 +45,16 @@ AX_CXX_COMPILE_STDCXX_11
 AC_ISC_POSIX
 AC_PROG_CC
 AC_PROG_CXX
+
+AC_SYS_LARGEFILE
+
+dnl See http://www.gossamer-threads.com/lists/xen/devel/275132
+FILE_OFFSET_BITS_64=
+if test $ac_cv_sys_file_offset_bits = 64
+then
+    FILE_OFFSET_BITS_64=yes
+fi
+AM_CONDITIONAL([FILE_OFFSET_BITS_64], [test x"$FILE_OFFSET_BITS_64" = x"yes"])
 
 AM_PROG_CC_STDC
 AC_HEADER_STDC
