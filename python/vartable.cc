@@ -3,6 +3,7 @@
 #include "common.h"
 #include <wreport/vartable.h>
 #include <wreport/tableinfo.h>
+#include "config.h"
 
 using namespace std;
 using namespace wreport;
