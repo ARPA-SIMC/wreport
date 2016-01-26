@@ -1,7 +1,7 @@
 Summary: Library for working with (coded) weather reports
 Name: wreport
 Version: 3.4
-Release: 1%{dist}
+Release: 1
 License: GPL2
 Group: Applications/Meteo
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
@@ -87,7 +87,7 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 
 
 %prep
-%setup -q
+%setup -q -n %{name}-%{version}-%{release}
 
 %build
 %configure
