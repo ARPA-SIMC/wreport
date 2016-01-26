@@ -40,7 +40,7 @@ void read_bufr_raw(const Options& opts, const char* fname, RawHandler& handler)
 
         // (optional) offset of the start of the BUFR message read, which we
         // pass to the decoder to have nicer error messages
-        long offset;
+        off_t offset;
 
         // Read all BUFR data in the input file, one message at a time. Extra
         // data before and after each BUFR message is skipped.
@@ -83,7 +83,7 @@ void read_crex_raw(const Options& opts, const char* fname, RawHandler& handler)
 
         // (optional) offset of the start of the CREX message read, which we
         // pass to the decoder to have nicer error messages
-        long offset;
+        off_t offset;
 
         // Read all CREX data in the input file, one message at a time. Extra
         // data before and after each CREX message is skipped.
