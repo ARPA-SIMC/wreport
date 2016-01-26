@@ -5,7 +5,7 @@ Release: 1%{dist}
 License: GPL2
 Group: Applications/Meteo
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
-Source0: %{name}-%{version}.tar.gz
+Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{name}-%{version}-%{release}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 BuildRequires: doxygen, libtool, lua-devel >= 5.1.1, python-devel
 %description
