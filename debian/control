@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Enrico Zini <enrico@debian.org>
 Build-Depends:
-  debhelper (>= 9), dh-buildinfo, dh-autoreconf,
+  debhelper (>= 9), dh-buildinfo, dh-autoreconf, dh-python,
   doxygen, pkg-config,
   liblua5.1-0-dev,
   python-all-dev, python3-all-dev, python-docutils, python-numpy, python3-numpy,
@@ -72,8 +72,6 @@ Package: python-wreport
 Section: python
 Architecture: any
 Depends: wreport-common, ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
-XB-Python-Version: ${python:Versions}
-Provides: ${python:Provides}
 Description: Python library to work with BUFR and CREX weather bulletins
  Python bindings for wreport, a library to read and write weather reports in
  BUFR and CREX formats.
@@ -81,8 +79,7 @@ Description: Python library to work with BUFR and CREX weather bulletins
 Package: python3-wreport
 Section: python
 Architecture: any
-Depends: wreport-common, ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
-Provides: ${python:Provides}
+Depends: wreport-common, ${shlibs:Depends}, ${misc:Depends}, ${python3:Depends}
 Description: Python library to work with BUFR and CREX weather bulletins
  Python bindings for wreport, a library to read and write weather reports in
  BUFR and CREX formats.
