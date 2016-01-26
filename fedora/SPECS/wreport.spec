@@ -1,6 +1,6 @@
 Summary: Library for working with (coded) weather reports
 Name: wreport
-Version: 3.2
+Version: 3.4
 Release: 1%{dist}
 License: GPL2
 Group: Applications/Meteo
