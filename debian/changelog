@@ -6,6 +6,9 @@ wreport (3.5-1) UNRELEASED; urgency=medium
   * Minor cleanup of obsolete Python packaging information in debian/control
   * Add dh-python to build-depends rather than depending on it indirectly
 
+  [ Enrico Zini ]
+  * New upstream version
+
  -- Scott Kitterman <scott@kitterman.com>  Wed, 06 Jan 2016 06:45:24 +0000
 
 wreport (3.3-1) unstable; urgency=medium
