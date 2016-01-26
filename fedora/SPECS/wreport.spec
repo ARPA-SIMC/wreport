@@ -90,6 +90,9 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %setup -q -n %{name}-%{version}-%{release}
 
 %build
+
+autoreconf -ifv
+
 %configure
 make
 
