@@ -2,6 +2,7 @@ wreport (3.6-1) unstable; urgency=medium
 
   * New upstream version
      - fixed comparing Var values with doubles in test functions
+  * Updated standards-version, no change required
 
  -- Enrico Zini <enrico@debian.org>  Thu, 18 Aug 2016 15:32:18 +0200
 
