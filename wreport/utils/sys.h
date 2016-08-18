@@ -140,6 +140,11 @@ public:
     FileDescriptor(int fd);
     virtual ~FileDescriptor();
 
+    // We can copy at the FileDescriptor level because the destructor does not
+    // close fd
+    FileDescriptor(const FileDescriptor& o) = default;
+    FileDescriptor& operator=(const FileDescriptor& o) = default;
+
     /**
      * Throw an exception based on errno and the given message.
      *
@@ -149,17 +154,71 @@ public:
      */
     [[noreturn]] virtual void throw_error(const char* desc);
 
+    /**
+     * Throw a runtime_error unrelated from errno.
+     *
+     * This can be overridden by subclasses that may have more information
+     * about the file descriptor, so that they can generate more descriptive
+     * messages.
+     */
+    [[noreturn]] virtual void throw_runtime_error(const char* desc);
+
     void close();
 
     void fstat(struct stat& st);
     void fchmod(mode_t mode);
 
-    size_t write(const void* buf, size_t count);
+    int dup();
+
+    size_t read(void* buf, size_t count);
 
     /**
-     * Write all the data in buf, retrying partial writes
+     * Read all the data into buf, throwing runtime_error in case of a partial
+     * read
      */
-    void write_all(const void* buf, size_t count);
+    void read_all_or_throw(void* buf, size_t count);
+
+    size_t write(const void* buf, size_t count);
+
+    template<typename Container>
+    size_t write(const Container& c)
+    {
+        return write(c.data(), c.size() * sizeof(Container::value_type));
+    }
+
+    /// Write all the data in buf, retrying partial writes
+    void write_all_or_retry(const void* buf, size_t count);
+
+    template<typename Container>
+    void write_all_or_retry(const Container& c)
+    {
+        write_all_or_retry(c.data(), c.size() * sizeof(typename Container::value_type));
+    }
+
+    /**
+     * Write all the data in buf, throwing runtime_error in case of a partial
+     * write
+     */
+    void write_all_or_throw(const void* buf, size_t count);
+
+    template<typename Container>
+    void write_all_or_throw(const Container& c)
+    {
+        write_all_or_throw(c.data(), c.size() * sizeof(typename Container::value_type));
+    }
+
+    off_t lseek(off_t offset, int whence=SEEK_SET);
+
+    size_t pread(void* buf, size_t count, off_t offset);
+    size_t pwrite(const void* buf, size_t count, off_t offset);
+
+    template<typename Container>
+    size_t pwrite(const Container& c, off_t offset)
+    {
+        return pwrite(c.data(), c.size() * sizeof(typename Container::value_type), offset);
+    }
+
+    void ftruncate(off_t length);
 
     MMap mmap(size_t length, int prot, int flags, off_t offset=0);
 
@@ -170,7 +229,6 @@ public:
 /**
  * File descriptor with a name
  */
-
 class NamedFileDescriptor : public FileDescriptor
 {
 protected:
@@ -179,17 +237,22 @@ protected:
 public:
     NamedFileDescriptor(int fd, const std::string& pathname);
     NamedFileDescriptor(NamedFileDescriptor&&);
-
     NamedFileDescriptor& operator=(NamedFileDescriptor&&);
 
+    // We can copy at the NamedFileDescriptor level because the destructor does not
+    // close fd
+    NamedFileDescriptor(const NamedFileDescriptor& o) = default;
+    NamedFileDescriptor& operator=(const NamedFileDescriptor& o) = default;
+
     [[noreturn]] virtual void throw_error(const char* desc);
+    [[noreturn]] virtual void throw_runtime_error(const char* desc);
 
     /// Return the file pathname
     const std::string& name() const { return pathname; }
 };
 
 /**
- * Wrap a path on the file system opened with O_PATH
+ * Wrap a path on the file system opened with O_PATH.
  */
 struct Path : public NamedFileDescriptor
 {
@@ -313,6 +376,11 @@ public:
     File(File&&) = default;
     File(const File&) = delete;
 
+    /**
+     * Create an unopened File object for the given pathname
+     */
+    File(const std::string& pathname);
+
     /// Wrapper around open(2)
     File(const std::string& pathname, int flags, mode_t mode=0777);
 
@@ -327,6 +395,15 @@ public:
 
     File& operator=(const File&) = delete;
     File& operator=(File&&) = default;
+
+    /// Wrapper around open(2)
+    void open(int flags, mode_t mode=0777);
+
+    /**
+     * Wrap open(2) and return false instead of throwing an exception if open
+     * fails with ENOENT
+     */
+    bool open_ifexists(int flags, mode_t mode=0777);
 
     static File mkstemp(const std::string& prefix);
 };
@@ -345,6 +422,14 @@ void write_file(const std::string& file, const std::string& data, mode_t mode=07
 /**
  * Write \a data to \a file, replacing existing contents if it already exists.
  *
+ * New files are created with the given permission mode, honoring umask.
+ * Permissions of existing files do not change.
+ */
+void write_file(const std::string& file, const void* data, size_t size, mode_t mode=0777);
+
+/**
+ * Write \a data to \a file, replacing existing contents if it already exists.
+ *
  * Files are created with the given permission mode, honoring umask. If the
  * file already exists, its mode is ignored.
  *
@@ -352,6 +437,17 @@ void write_file(const std::string& file, const std::string& data, mode_t mode=07
  * ensure an atomic operation.
  */
 void write_file_atomically(const std::string& file, const std::string& data, mode_t mode=0777);
+
+/**
+ * Write \a data to \a file, replacing existing contents if it already exists.
+ *
+ * Files are created with the given permission mode, honoring umask. If the
+ * file already exists, its mode is ignored.
+ *
+ * Data is written to a temporary file, then moved to its final destination, to
+ * ensure an atomic operation.
+ */
+void write_file_atomically(const std::string& file, const void* data, size_t size, mode_t mode=0777);
 
 #if 0
 // Create a temporary directory based on a template.
@@ -376,16 +472,25 @@ bool unlink_ifexists(const std::string& file);
  */
 bool rename_ifexists(const std::string& src, const std::string& dst);
 
-/// Create the given directory, if it does not already exists.
-/// It will complain if the given pathname already exists but is not a
-/// directory.
-void mkdir_ifmissing(const char* pathname, mode_t mode=0777);
+/**
+ * Create the given directory, if it does not already exists.
+ *
+ * It will throw an exception if the given pathname already exists but is not a
+ * directory.
+ *
+ * @returns true if the directory was created, false if it already existed.
+ */
+bool mkdir_ifmissing(const char* pathname, mode_t mode=0777);
 
-void mkdir_ifmissing(const std::string& pathname, mode_t mode=0777);
+bool mkdir_ifmissing(const std::string& pathname, mode_t mode=0777);
 
-/// Create all the component of the given directory, including the directory
-/// itself.
-void makedirs(const std::string& pathname, mode_t=0777);
+/**
+ * Create all the component of the given directory, including the directory
+ * itself.
+ *
+ * @returns true if the directory was created, false if it already existed.
+ */
+bool makedirs(const std::string& pathname, mode_t=0777);
 
 /**
  * Compute the absolute path of an executable.

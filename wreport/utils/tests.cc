@@ -8,6 +8,7 @@
 
 #include "tests.h"
 #include "string.h"
+#include "sys.h"
 #include <fnmatch.h>
 #include <cmath>
 #include <iomanip>
@@ -368,6 +369,18 @@ void ActualFunction::throws(const std::string& what_match) const
         throw TestFailed("code did not throw any exception");
 }
 
+void ActualFile::exists() const
+{
+    if (sys::exists(_actual)) return;
+    throw TestFailed("file " + _actual + " does not exist and it should");
+}
+
+void ActualFile::not_exists() const
+{
+    if (!sys::exists(_actual)) return;
+    throw TestFailed("file " + _actual + " exists and it should not");
+}
+
 #if 0
 void test_assert_file_exists(WIBBLE_TEST_LOCPRM, const std::string& fname)
 {
@@ -455,6 +468,10 @@ TestCaseResult TestCase::run_tests(TestController& controller)
 
     try {
         setup();
+    } catch (TestSkipped) {
+        res.skipped = true;
+        controller.test_case_end(*this, res);
+        return res;
     } catch (std::exception& e) {
         res.set_setup_failed(e);
         controller.test_case_end(*this, res);
@@ -491,6 +508,10 @@ TestMethodResult TestCase::run_test(TestController& controller, TestMethod& meth
     bool run = true;
     try {
         method_setup(res);
+    } catch (TestSkipped) {
+        res.skipped = true;
+        controller.test_method_end(method, res);
+        return res;
     } catch (std::exception& e) {
         res.set_setup_exception(e);
         run = false;
@@ -500,6 +521,8 @@ TestMethodResult TestCase::run_test(TestController& controller, TestMethod& meth
     {
         try {
             method.test_function();
+        } catch (TestSkipped) {
+            res.skipped = true;
         } catch (TestFailed& e) {
             // Location::fail_test() was called
             res.set_failed(e);

@@ -96,7 +96,7 @@ struct TestStack : public std::vector<TestStackFrame>
 };
 
 /**
- * Exception raised when a test assertion fails, normally by
+ * Exception thrown when a test assertion fails, normally by
  * Location::fail_test
  */
 struct TestFailed : public std::exception
@@ -126,6 +126,13 @@ struct TestFailed : public std::exception
 
     template<typename ...Args>
     void add_stack_info(Args&&... args) { stack.emplace_back(std::forward<Args>(args)...); }
+};
+
+/**
+ * Exception thrown when a test or a test case needs to be skipped
+ */
+struct TestSkipped : public std::exception
+{
 };
 
 /**
@@ -332,6 +339,15 @@ struct ActualFunction : public Actual<std::function<void()>>
 
 inline ActualFunction actual_function(std::function<void()> actual) { return ActualFunction(actual); }
 
+struct ActualFile : public Actual<std::string>
+{
+    using Actual::Actual;
+
+    void exists() const;
+    void not_exists() const;
+};
+
+inline ActualFile actual_file(const std::string& pathname) { return ActualFile(pathname); }
 
 /**
  * Run the given command, raising TestFailed with the appropriate backtrace
@@ -343,11 +359,11 @@ inline ActualFunction actual_function(std::function<void()> actual) { return Act
 #define wassert(...) \
     do { try { \
         __VA_ARGS__ ; \
-    } catch (TestFailed& e) { \
+    } catch (wreport::tests::TestFailed& e) { \
         e.add_stack_info(__FILE__, __LINE__, #__VA_ARGS__, wreport_test_location_info); \
         throw; \
     } catch (std::exception& e) { \
-        throw TestFailed(e, __FILE__, __LINE__, #__VA_ARGS__, wreport_test_location_info); \
+        throw wreport::tests::TestFailed(e, __FILE__, __LINE__, #__VA_ARGS__, wreport_test_location_info); \
     } } while(0)
 
 /// Shortcut to check that a given expression returns true
@@ -366,11 +382,11 @@ inline ActualFunction actual_function(std::function<void()> actual) { return Act
 #define wcallchecked(func) \
     [&]() { try { \
         return func; \
-    } catch (TestFailed& e) { \
+    } catch (wreport::tests::TestFailed& e) { \
         e.add_stack_info(__FILE__, __LINE__, #func, wreport_test_location_info); \
         throw; \
     } catch (std::exception& e) { \
-        throw TestFailed(e, __FILE__, __LINE__, #func, wreport_test_location_info); \
+        throw wreport::tests::TestFailed(e, __FILE__, __LINE__, #func, wreport_test_location_info); \
     } }()
 
 
@@ -393,7 +409,7 @@ struct TestMethodResult
     /// Stack frame of where the error happened
     TestStack error_stack;
 
-    /// If non-empty, the test raised an exception and this is its type ID
+    /// If non-empty, the test threw an exception and this is its type ID
     std::string exception_typeid;
 
     /// True if the test has been skipped

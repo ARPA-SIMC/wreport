@@ -231,6 +231,11 @@ void FileDescriptor::throw_error(const char* desc)
     throw std::system_error(errno, std::system_category(), desc);
 }
 
+void FileDescriptor::throw_runtime_error(const char* desc)
+{
+    throw std::runtime_error(desc);
+}
+
 void FileDescriptor::close()
 {
     if (fd == -1) return;
@@ -251,6 +256,29 @@ void FileDescriptor::fchmod(mode_t mode)
         throw_error("cannot fchmod");
 }
 
+int FileDescriptor::dup()
+{
+    int res = ::dup(fd);
+    if (res == -1)
+        throw_error("cannot dup");
+    return res;
+}
+
+size_t FileDescriptor::read(void* buf, size_t count)
+{
+    ssize_t res = ::read(fd, buf, count);
+    if (res == -1)
+        throw_error("cannot read");
+    return res;
+}
+
+void FileDescriptor::read_all_or_throw(void* buf, size_t count)
+{
+    size_t res = read(buf, count);
+    if (res != count)
+        throw_runtime_error("partial read");
+}
+
 size_t FileDescriptor::write(const void* buf, size_t count)
 {
     ssize_t res = ::write(fd, buf, count);
@@ -259,11 +287,48 @@ size_t FileDescriptor::write(const void* buf, size_t count)
     return res;
 }
 
-void FileDescriptor::write_all(const void* buf, size_t count)
+size_t FileDescriptor::pread(void* buf, size_t count, off_t offset)
+{
+    ssize_t res = ::pread(fd, buf, count, offset);
+    if (res == -1)
+        throw_error("cannot pread");
+    return res;
+}
+
+size_t FileDescriptor::pwrite(const void* buf, size_t count, off_t offset)
+{
+    ssize_t res = ::pwrite(fd, buf, count, offset);
+    if (res == -1)
+        throw_error("cannot pwrite");
+    return res;
+}
+
+off_t FileDescriptor::lseek(off_t offset, int whence)
+{
+    off_t res = ::lseek(fd, offset, whence);
+    if (res == (off_t)-1)
+        throw_error("cannot seek");
+    return res;
+}
+
+void FileDescriptor::write_all_or_retry(const void* buf, size_t count)
 {
     size_t written = 0;
     while (written < count)
         written += write((unsigned char*)buf + written, count - written);
+}
+
+void FileDescriptor::write_all_or_throw(const void* buf, size_t count)
+{
+    size_t written = write((unsigned char*)buf, count);
+    if (written < count)
+        throw_runtime_error("partial write");
+}
+
+void FileDescriptor::ftruncate(off_t length)
+{
+    if (::ftruncate(fd, length) == -1)
+        throw_error("cannot ftruncate");
 }
 
 MMap FileDescriptor::mmap(size_t length, int prot, int flags, off_t offset)
@@ -301,6 +366,11 @@ NamedFileDescriptor& NamedFileDescriptor::operator=(NamedFileDescriptor&& o)
 void NamedFileDescriptor::throw_error(const char* desc)
 {
     throw std::system_error(errno, std::system_category(), pathname + ": " + desc);
+}
+
+void NamedFileDescriptor::throw_runtime_error(const char* desc)
+{
+    throw std::runtime_error(pathname + ": " + desc);
 }
 
 
@@ -566,17 +636,35 @@ void Path::rmtree()
  * File
  */
 
+File::File(const std::string& pathname)
+    : NamedFileDescriptor(-1, pathname)
+{
+}
+
 File::File(const std::string& pathname, int flags, mode_t mode)
     : NamedFileDescriptor(-1, pathname)
 {
-    fd = open(pathname.c_str(), flags, mode);
-    if (fd == -1)
-        throw std::system_error(errno, std::system_category(), "cannot open file " + pathname);
+    open(flags, mode);
 }
 
 File::~File()
 {
     if (fd != -1) ::close(fd);
+}
+
+void File::open(int flags, mode_t mode)
+{
+    fd = ::open(pathname.c_str(), flags, mode);
+    if (fd == -1)
+        throw std::system_error(errno, std::system_category(), "cannot open file " + pathname);
+}
+
+bool File::open_ifexists(int flags, mode_t mode)
+{
+    fd = ::open(pathname.c_str(), flags, mode);
+    if (fd != -1) return true;
+    if (errno == ENOENT) return false;
+    throw std::system_error(errno, std::system_category(), "cannot open file " + pathname);
 }
 
 File File::mkstemp(const std::string& prefix)
@@ -606,12 +694,22 @@ std::string read_file(const std::string& file)
 
 void write_file(const std::string& file, const std::string& data, mode_t mode)
 {
+    write_file(file, data.data(), data.size(), mode);
+}
+
+void write_file(const std::string& file, const void* data, size_t size, mode_t mode)
+{
     File out(file, O_WRONLY | O_CREAT, mode);
-    out.write_all(data.data(), data.size());
+    out.write_all_or_retry(data, size);
     out.close();
 }
 
 void write_file_atomically(const std::string& file, const std::string& data, mode_t mode)
+{
+    write_file_atomically(file, data.data(), data.size(), mode);
+}
+
+void write_file_atomically(const std::string& file, const void* data, size_t size, mode_t mode)
 {
     File out = File::mkstemp(file);
 
@@ -622,7 +720,7 @@ void write_file_atomically(const std::string& file, const std::string& data, mod
     // Set the file permissions, honoring umask
     out.fchmod(mode & ~mask);
 
-    out.write_all(data.data(), data.size());
+    out.write_all_or_retry(data, size);
     out.close();
 
     if (rename(out.name().c_str(), file.c_str()) < 0)
@@ -665,13 +763,13 @@ bool rename_ifexists(const std::string& src, const std::string& dst)
 }
 
 template<typename String>
-static void impl_mkdir_ifmissing(String pathname, mode_t mode)
+static bool impl_mkdir_ifmissing(String pathname, mode_t mode)
 {
     for (unsigned i = 0; i < 5; ++i)
     {
         // If it does not exist, make it
         if (::mkdir(to_cstring(pathname), mode) != -1)
-            return;
+            return true;
 
         // throw on all errors except EEXIST. Note that EEXIST "includes the case
         // where pathname is a symbolic link, dangling or not."
@@ -706,33 +804,33 @@ static void impl_mkdir_ifmissing(String pathname, mode_t mode)
         }
         else
             // If it exists and it is a directory, we're fine
-            return;
+            return false;
     }
     std::stringstream msg;
     msg << pathname << " exists and looks like a dangling symlink";
     throw std::runtime_error(msg.str());
 }
 
-void mkdir_ifmissing(const char* pathname, mode_t mode)
+bool mkdir_ifmissing(const char* pathname, mode_t mode)
 {
     return impl_mkdir_ifmissing(pathname, mode);
 }
 
-void mkdir_ifmissing(const std::string& pathname, mode_t mode)
+bool mkdir_ifmissing(const std::string& pathname, mode_t mode)
 {
     return impl_mkdir_ifmissing(pathname, mode);
 }
 
-void makedirs(const std::string& pathname, mode_t mode)
+bool makedirs(const std::string& pathname, mode_t mode)
 {
-    if (pathname == "/" || pathname == ".") return;
+    if (pathname == "/" || pathname == ".") return false;
     std::string parent = str::dirname(pathname);
 
     // First ensure that the upper path exists
     makedirs(parent, mode);
 
     // Then create this dir
-    mkdir_ifmissing(pathname, mode);
+    return mkdir_ifmissing(pathname, mode);
 }
 
 std::string which(const std::string& name)
