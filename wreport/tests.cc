@@ -178,7 +178,8 @@ bool equals(const char* a, const char* b) { return strcmp(a, b) == 0; }
 template<typename Val>
 void assert_var_value_equal(const Var& actual, Val expected)
 {
-    if (!equals(actual.enq<Val>(), expected))
+    Var vexpected(actual.info(), expected);
+    if (!actual.value_equals(vexpected))
     {
         std::stringstream ss;
         ss << "actual variable value is " << actual.format() << " (" << actual.enq<Val>() << ") instead of " << expected;
