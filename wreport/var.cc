@@ -141,8 +141,8 @@ Var& Var::operator=(const Var& var)
 {
     if (&var == this) return *this;
 
-	// Copy info
-	m_info = var.m_info;
+    // Copy info
+    m_info = var.m_info;
 
     // Copy value
     copy_value(var);
@@ -582,7 +582,7 @@ const Var* Var::enqa(Varcode code) const
 
 void Var::seta(const Var& attr)
 {
-	seta(unique_ptr<Var>(new Var(attr)));
+    seta(unique_ptr<Var>(new Var(attr)));
 }
 
 void Var::seta(Var&& attr)
@@ -635,7 +635,7 @@ void Var::unseta(Varcode code)
 
 const Var* Var::next_attr() const
 {
-	return m_attrs;
+    return m_attrs;
 }
 
 void Var::setval(const Var& src)
@@ -659,9 +659,9 @@ void Var::setval(const Var& src)
 
 void Var::setattrs(const Var& src)
 {
-	clear_attrs();
-	if (src.m_attrs)
-		m_attrs = new Var(*src.m_attrs);
+    clear_attrs();
+    if (src.m_attrs)
+        m_attrs = new Var(*src.m_attrs);
 }
 
 std::string Var::format(const char* ifundef) const
@@ -741,14 +741,14 @@ void Var::print_without_attrs(std::ostream& out) const
 
 void Var::print(FILE* out) const
 {
-	print_without_attrs(out);
+    print_without_attrs(out);
 
-	// Print attrs
-	for (const Var* a = next_attr(); a; a = a->next_attr())
-	{
-		fputs("           ", out);
-		a->print_without_attrs(out);
-	}
+    // Print attrs
+    for (const Var* a = next_attr(); a; a = a->next_attr())
+    {
+        fputs("           ", out);
+        a->print_without_attrs(out);
+    }
 }
 
 void Var::print(std::ostream& out) const

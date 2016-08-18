@@ -23,8 +23,8 @@ namespace wreport {
 class Var
 {
 protected:
-	/// Metadata about the variable
-	Varinfo m_info;
+    /// Metadata about the variable
+    Varinfo m_info;
 
     /// True if the variable is set, false otherwise
     bool m_isset;
@@ -45,8 +45,8 @@ protected:
         char* c;
     } m_value;
 
-	/// Attribute list (ordered by Varcode)
-	Var* m_attrs;
+    /// Attribute list (ordered by Varcode)
+    Var* m_attrs;
 
     /// Make sure that m_value is allocated. It does nothing if it already is.
     void allocate();
@@ -61,17 +61,17 @@ protected:
     void assign_c_checked(const char* val, unsigned size);
 
 public:
-	/// Create a new Var, with undefined value
-	Var(Varinfo info);
+    /// Create a new Var, with undefined value
+    Var(Varinfo info);
 
-	/// Create a new Var, with integer value
-	Var(Varinfo info, int val);
+    /// Create a new Var, with integer value
+    Var(Varinfo info, int val);
 
-	/// Create a new Var, with double value
-	Var(Varinfo info, double val);
+    /// Create a new Var, with double value
+    Var(Varinfo info, double val);
 
-	/// Create a new Var, with character value
-	Var(Varinfo info, const char* val);
+    /// Create a new Var, with character value
+    Var(Varinfo info, const char* val);
 
     /// Create a new Var, with character value
     Var(Varinfo info, const std::string& val);
@@ -88,8 +88,8 @@ public:
      */
     Var(Varinfo info, const Var& var);
 
-	/// Copy constructor
-	Var(const Var& var);
+    /// Copy constructor
+    Var(const Var& var);
 
     /**
      * Move constructor.
@@ -131,41 +131,41 @@ public:
     bool isset() const throw () { return m_isset; }
 
 
-	/// Get the value as an integer
-	int enqi() const;
+    /// Get the value as an integer
+    int enqi() const;
 
-	/// Get the value as a double
-	double enqd() const;
+    /// Get the value as a double
+    double enqd() const;
 
-	/// Get the value as a string
-	const char* enqc() const;
+    /// Get the value as a string
+    const char* enqc() const;
 
     /// Get the value as a std::string
     std::string enqs() const;
 
-	/// Templated version of enq
-	template<typename T>
-	T enq() const
-	{
-		throw error_unimplemented("getting value of unsupported type");
-	}
+    /// Templated version of enq
+    template<typename T>
+    T enq() const
+    {
+        throw error_unimplemented("getting value of unsupported type");
+    }
 
-	/**
-	 * Return the variable value, or the given default value if the variable is
-	 * not set
-	 */
-	template<typename T>
-	T enq(T default_value) const
-	{
-		if (!isset()) return default_value;
-		return enq<T>();
-	}
+    /**
+     * Return the variable value, or the given default value if the variable is
+     * not set
+     */
+    template<typename T>
+    T enq(T default_value) const
+    {
+        if (!isset()) return default_value;
+        return enq<T>();
+    }
 
-	/// Set the value from an integer value
-	void seti(int val);
+    /// Set the value from an integer value
+    void seti(int val);
 
-	/// Set the value from a double value
-	void setd(double val);
+    /// Set the value from a double value
+    void setd(double val);
 
     /// Set the value from a string or opaque binary value
     void setc(const char* val);
@@ -196,44 +196,44 @@ public:
      */
     void setattrs(const Var& src);
 
-	/**
-	 * Shortcuts (use with care, as the semanthics are slightly different
-	 * depending on the type)
-	 * @{
-	 */
-	void set(int val) { seti(val); }
-	void set(double val) { setd(val); }
-	void set(const char* val) { setc(val); }
-	void set(const std::string& val) { setc(val.c_str()); }
-	void set(const Var& var) { setval(var); setattrs(var); }
-	/// @}
+    /**
+     * Shortcuts (use with care, as the semanthics are slightly different
+     * depending on the type)
+     * @{
+     */
+    void set(int val) { seti(val); }
+    void set(double val) { setd(val); }
+    void set(const char* val) { setc(val); }
+    void set(const std::string& val) { setc(val.c_str()); }
+    void set(const Var& var) { setval(var); setattrs(var); }
+    /// @}
 
-	/// Unset the value
-	void unset();
+    /// Unset the value
+    void unset();
 
-	/// Remove all attributes
-	void clear_attrs();
+    /// Remove all attributes
+    void clear_attrs();
 
-	/**
-	 * Query variable attributes
-	 *
-	 * @param code
-	 *   The wreport::Varcode of the attribute requested.  See @ref vartable.h
-	 * @returns attr
-	 *   A pointer to the attribute if it exists, else NULL.  The pointer points to
-	 *   the internal representation and must not be deallocated by the caller.
-	 */
-	const Var* enqa(Varcode code) const;
+    /**
+     * Query variable attributes
+     *
+     * @param code
+     *   The wreport::Varcode of the attribute requested.  See @ref vartable.h
+     * @returns attr
+     *   A pointer to the attribute if it exists, else NULL.  The pointer points to
+     *   the internal representation and must not be deallocated by the caller.
+     */
+    const Var* enqa(Varcode code) const;
 
-	/**
-	 * Set an attribute of the variable.  An existing attribute with the same
-	 * wreport::Varcode will be replaced.
-	 *
-	 * @param attr
-	 *   The attribute to add.  It will be copied inside var, and memory management
-	 *   will still be in charge of the caller.
-	 */
-	void seta(const Var& attr);
+    /**
+     * Set an attribute of the variable.  An existing attribute with the same
+     * wreport::Varcode will be replaced.
+     *
+     * @param attr
+     *   The attribute to add.  It will be copied inside var, and memory management
+     *   will still be in charge of the caller.
+     */
+    void seta(const Var& attr);
 
     /**
      * Set an attribute of the variable.  An existing attribute with the same
@@ -245,28 +245,28 @@ public:
      */
     void seta(Var&& attr);
 
-	/**
-	 * Set an attribute of the variable.  An existing attribute with the same
-	 * wreport::Varcode will be replaced.
-	 *
-	 * @param attr
-	 *   The attribute to add.  It will be used directly, and var will take care of
-	 *   its memory management.
-	 */
-	void seta(std::unique_ptr<Var>&& attr);
+    /**
+     * Set an attribute of the variable.  An existing attribute with the same
+     * wreport::Varcode will be replaced.
+     *
+     * @param attr
+     *   The attribute to add.  It will be used directly, and var will take care of
+     *   its memory management.
+     */
+    void seta(std::unique_ptr<Var>&& attr);
 
-	/// Remove the attribute with the given code
-	void unseta(Varcode code);
+    /// Remove the attribute with the given code
+    void unseta(Varcode code);
 
-	/**
-	 * Get the next attribute in the attribute list
-	 *
-	 * Example attribute iteration:
-	 *
-	 * for (const Var* a = var.next_attr(); a != NULL; a = a->next_attr())
-	 * 	// Do something with a
-	 */
-	const Var* next_attr() const;
+    /**
+     * Get the next attribute in the attribute list
+     *
+     * Example attribute iteration:
+     *
+     * for (const Var* a = var.next_attr(); a != NULL; a = a->next_attr())
+     *  // Do something with a
+     */
+    const Var* next_attr() const;
 
     /**
      * Create a formatted string representation of the variable value
@@ -279,13 +279,13 @@ public:
     /// Write the formatted value of this variable to an output stream
     void format(FILE* out, const char* ifundef="") const;
 
-	/**
-	 * Print the variable to an output stream
-	 *
-	 * @param out
-	 *   The output stream to use for printing
-	 */
-	void print(FILE* out) const;
+    /**
+     * Print the variable to an output stream
+     *
+     * @param out
+     *   The output stream to use for printing
+     */
+    void print(FILE* out) const;
 
     /**
      * Print the variable to an output stream
@@ -325,17 +325,17 @@ public:
     unsigned diff(const Var& var) const;
 
 
-	/**
-	 * Push the variable as an object in the lua stack
-	 */
-	void lua_push(struct lua_State* L);
+    /**
+     * Push the variable as an object in the lua stack
+     */
+    void lua_push(struct lua_State* L);
 
-	/**
-	 * Check that the element at \a idx is a Var
-	 *
-	 * @return the Var element, or NULL if the check failed
-	 */
-	static Var* lua_check(struct lua_State* L, int idx);
+    /**
+     * Check that the element at \a idx is a Var
+     *
+     * @return the Var element, or NULL if the check failed
+     */
+    static Var* lua_check(struct lua_State* L, int idx);
 };
 
 template<> inline int Var::enq() const { return enqi(); }
