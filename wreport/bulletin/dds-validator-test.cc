@@ -1,5 +1,6 @@
 #include "tests.h"
 #include "dds-validator.h"
+#include "wreport/utils/string.h"
 #include <set>
 
 using namespace wreport;
@@ -45,20 +46,20 @@ class Tests : public TestCase
             blacklist.insert("bufr/test-soil1.bufr");
 
             std::vector<std::string> files = tests::all_test_files("bufr");
-            for (std::vector<std::string>::const_iterator i = files.begin();
-                    i != files.end(); ++i)
+            for (const auto& i: files)
             {
+                if (str::startswith(i, "bufr/afl-")) continue;
                 WREPORT_TEST_INFO(test_info);
-                if (blacklist.find(*i) != blacklist.end()) continue;
+                if (blacklist.find(i) != blacklist.end()) continue;
 
                 // Read the whole contents of the test file
-                std::string raw1 = tests::slurpfile(*i);
+                std::string raw1 = tests::slurpfile(i);
 
                 // Decode the original contents
-                unique_ptr<BufrBulletin> msg1 = wcallchecked(BufrBulletin::decode(raw1, i->c_str()));
+                unique_ptr<BufrBulletin> msg1 = wcallchecked(BufrBulletin::decode(raw1, i.c_str()));
 
                 // Validate them
-                test_info() << *i;
+                test_info() << i;
                 wassert(validate(*msg1));
             }
         });

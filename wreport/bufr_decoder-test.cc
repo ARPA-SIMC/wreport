@@ -22,6 +22,23 @@ class Tests : public TestCase
         });
     };
 
+    void declare_test_decode_fail(std::string fname, std::string errmsg)
+    {
+        add_method(fname, [=]() {
+            // Read the whole contents of the test file
+            std::string raw = wcallchecked(slurpfile(fname));
+
+            bool failed = true;
+            try {
+                BufrBulletin::decode(raw, fname.c_str());
+                failed = false;
+            } catch (std::exception& e) {
+                wassert(actual(e.what()).contains(errmsg));
+            }
+            wassert(actual(failed).istrue());
+        });
+    }
+
     void register_tests() override
     {
         add_method("bufr/corrupted.bufr", []() {
@@ -660,6 +677,8 @@ class Tests : public TestCase
             wassert(actual(msg.data_subcategory_local) == 1);
             wassert(actual(msg.subsets.size()) == 1u);
         });
+
+        declare_test_decode_fail("bufr/afl-src01flip1-pos10.bufr", "looking for data descriptor list");
     }
 } testnewtg("bufr_decoder");
 
