@@ -10,12 +10,16 @@ WREPLIBS =  ../wreport/libwreport.la
 dist_noinst_HEADERS = options.h info.cc input.cc output.cc iterate.cc makebuoy.cc unparsable.cc
 
 bin_PROGRAMS = wrep
-noinst_PROGRAMS = examples
+noinst_PROGRAMS = examples afl-test
 dist_bin_SCRIPTS = wrep-importtable
 
 wrep_SOURCES = options.cc wrep.cc
 wrep_LDFLAGS = $(WREPLIBS)
 wrep_DEPENDENCIES = $(WREPLIBS)
+
+afl_test_SOURCES = afl-test.cc
+afl_test_LDFLAGS = $(WREPLIBS)
+afl_test_DEPENDENCIES = $(WREPLIBS)
 
 examples_SOURCES = examples.cc
 examples_LDFLAGS = $(WREPLIBS)
