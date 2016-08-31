@@ -1,8 +1,6 @@
-WREPORT
-===============================================================
+# WREPORT
 
-Introduction
-------------
+## Introduction
 
 wreport is a C++ library for working with weather reports.
 
@@ -19,10 +17,9 @@ Features provided:
 - Unit conversion
 - Handling of physical variables
 
-Building wreport
-----------------
+## Building wreport
 
-you need to install the automake/autoconf/libtool packages, which are usually 
+You need to install the automake/autoconf/libtool packages, which are usually 
 available on any linux distribution, and, in the wreport directory, execute 
 the commands:
 
@@ -34,8 +31,18 @@ the commands:
 if you're familiar with .rpm and .deb packaging you'll find the packaging 
 files in the `debian` and `fedora` directories
 
-Contact and copyright information
----------------------------------
+### AFL instrumentation
+
+To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
+
+    CXX=/usr/bin/afl-g++ ./configure --disable-shared
+    make AFL_HARDEN=1
+    mkdir afl-bufr
+    cp testdata/*.bufr afl-bufr/
+    mkdir afl-bufr-out
+    afl-fuzz -i afl-bufr -o afl-bufr-out src/afl-test @@
+
+## Contact and copyright information
 
 The author of wreport is Enrico Zini <enrico@enricozini.com>
 
