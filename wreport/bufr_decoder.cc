@@ -175,7 +175,9 @@ struct Decoder
         in.check_available_data(3, 0, 8, "section 3 of BUFR message (data description section)");
         expected_subsets = in.read_number(3, 4, 2);
         out.compression = (in.read_byte(3, 6) & 0x40) ? 1 : 0;
-        for (unsigned i = 0; i < (in.sec[4] - in.sec[3] - 7)/2; i++)
+        unsigned descriptor_count = (in.sec[4] - in.sec[3] - 7) / 2;
+        in.check_available_data(3, 7, descriptor_count * 2, "data descriptor list");
+        for (unsigned i = 0; i < descriptor_count; i++)
             out.datadesc.push_back((Varcode)in.read_number(3, 7 + i * 2, 2));
         TRACE("     s3length %d subsets %zd observed %d compression %d byte7 %x\n",
                 in.sec[4] - in.sec[3], expected_subsets, (in.read_byte(3, 6) & 0x80) ? 1 : 0,
