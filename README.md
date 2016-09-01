@@ -37,10 +37,8 @@ To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
 
     CXX=/usr/bin/afl-g++ ./configure --disable-shared
     make AFL_HARDEN=1
-    mkdir afl-bufr
-    cp testdata/*.bufr afl-bufr/
-    mkdir afl-bufr-out
-    afl-fuzz -i afl-bufr -o afl-bufr-out src/afl-test @@
+    afl-cmin  -i testdata/bufr/ -o afl-bufr -- src/afl-test @@
+    afl-fuzz -t 100 -i afl-bufr -o afl-bufr-out src/afl-test @@
 
 ## Contact and copyright information
 
