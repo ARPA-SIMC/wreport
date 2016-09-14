@@ -860,7 +860,6 @@
  020052 Amount of middle clouds                                          %                          0            0   7 %                         0         3
  020053 Amount of high clouds                                            %                          0            0   7 %                         0         3
  020054 True direction from which a phenomenon or clouds are moving      DEGREE TRUE                0            0   9 DEGREE TRUE               0         3
- 020054 True direction from which a phenomenon or clouds are moving or i DEGREE TRUE                0            0   9 DEGREE TRUE               0         3
  020055 State of sky in the tropics                                      CODE TABLE                 0            0   4 CODE TABLE                0         2
  020056 Cloud phase                                                      CODE TABLE                 0            0   3 CODE TABLE                0         1
  020058 Visibility seawards from a coastal station                       M                         -1            0  13 M                        -1         4
