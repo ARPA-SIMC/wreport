@@ -679,6 +679,7 @@ class Tests : public TestCase
         });
 
         declare_test_decode_fail("bufr/afl-src01flip1-pos10.bufr", "looking for data descriptor list");
+        declare_test_decode_fail("bufr/afl-src4824splice-rep8.bufr", "Optional section length is 3 but it must be at least 4");
     }
 } testnewtg("bufr_decoder");
 

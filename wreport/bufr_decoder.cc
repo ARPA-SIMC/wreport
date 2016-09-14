@@ -166,9 +166,12 @@ struct Decoder
         // Read BUFR section 2 (Optional section)
         if (optional_section_length)
         {
-            out.optional_section = string(
-                    (const char*)in.data + in.sec[2] + 4,
-                    in.read_number(2, 0, 3) - 4);
+            in.check_available_data(2, 0, 3, "section 2 of BUFR message (optional section length)");
+            unsigned s2_length = in.read_number(2, 0, 3);
+            in.check_available_data(2, 0, s2_length, "section 2 of BUFR message (optional section)");
+            if (s2_length < 4)
+                error_consistency::throwf("Optional section length is %u but it must be at least 4", s2_length);
+            out.optional_section = string((const char*)in.data + in.sec[2] + 4, s2_length - 4);
         }
 
         /* Read BUFR section 3 (Data description section) */
