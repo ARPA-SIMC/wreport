@@ -73,6 +73,11 @@ B0000000000085014000.txt: B0000000000085014001.txt
 D0000000000085014000.txt: D0000000000085014001.txt
 	cp $< $@
 
-CLEANFILES = $(generated_tables)
+tables_ok: check_btable $(bufrbtables)
+	$(srcdir)/check_btable $(bufrbtables)
 
-EXTRA_DIST = $(crexbtables) $(crexdtables) $(bufrbtables) $(bufrdtables) test.txt
+noinst_DATA = tables_ok
+
+CLEANFILES = $(generated_tables) tables_ok
+
+EXTRA_DIST = $(crexbtables) $(crexdtables) $(bufrbtables) $(bufrdtables) check_btable test.txt

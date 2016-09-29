@@ -334,7 +334,7 @@
  010009 Geopotential height                                              GPM                        0        -1000  17 GPM                       0          5 
  010010 Minimum pressure reduced to mean sea level                       PA                        -1            0  14 PA                       -1          5 
  010011 Maximum pressure reduced to mean sea level                       PA                        -1            0  14 PA                       -1          5 
- 010031 In direction of the North Pole, distance from the Earth뭩 centre M                          2  -1073741824  31 M                         2         10 
+ 010031 In direction of the North Pole, distance from the Earth's centre M                          2  -1073741824  31 M                         2         10 
  010040 Number of retrieved layers                                       NUMERIC                    0            0  10 NUMERIC                   0          4 
  010050 Standard deviation altitude                                      M                          2            0  16 M                         2          5 
  010061 3-hour pressure change                                           PA                        -1         -500  10 PA                       -1          4 
@@ -392,29 +392,29 @@
  011077 Reporting interval or averaging time for Eddy Dissipation Rate   S                          0            0  12 S                         0          4 
  011081 Model wind direction at 10m                                      DEGREE TRUE                2            0  16 DEGREE TRUE               2          5 
  011082 Model wind speed at 10m                                          M S-1                      2            0  14 M S-1                     2          4 
- 012001 Temperature/dry-bulb temperature                                 K                          1            0  12 캜                        1          3 
- 012002 Wet-bulb temperature                                             K                          1            0  12 캜                        1          3 
- 012003 Dew-point temperature                                            K                          1            0  12 캜                        1          3 
- 012004 Dry-bulb temperature at 2 m                                      K                          1            0  12 캜                        1          3 
- 012005 Wet-bulb temperature at 2 m                                      K                          1            0  12 캜                        1          3 
- 012006 Dew-point temperature at 2 m                                     K                          1            0  12 캜                        1          3 
- 012007 Virtual temperature                                              K                          1            0  12 캜                        1          3 
- 012011 Maximum temperature, at height and over period specified         K                          1            0  12 캜                        1          3 
- 012012 Minimum temperature, at height and over period specified         K                          1            0  12 캜                        1          3 
- 012013 Ground minimum temperature, past 12 hours                        K                          1            0  12 캜                        1          3 
- 012014 Maximum temperature at 2 m, past 12 hours                        K                          1            0  12 캜                        1          3 
- 012015 Minimum temperature at 2 m, past 12 hours                        K                          1            0  12 캜                        1          3 
- 012016 Maximum temperature at 2 m, past 24 hours                        K                          1            0  12 캜                        1          3 
- 012017 Minimum temperature at 2 m, past 24 hours                        K                          1            0  12 캜                        1          3 
- 012021 Maximum temperature at 2m                                        K                          2            0  16 캜                        2          4 
- 012022 Minimum temperature at 2m                                        K                          2            0  16 캜                        2          4 
- 012030 Soil temperature                                                 K                          1            0  12 캜                        1          3 
- 012051 Standard deviation temperature                                   K                          1            0  10 캜                        1          3 
- 012052 Highest daily mean temperature                                   K                          1            0  12 캜                        1          3 
- 012053 Lowest daily mean temperature                                    K                          1            0  12 캜                        1          3 
- 012061 Skin temperature                                                 K                          1            0  12 캜                        1          3 
- 012062 Equivalent black body temperature                                K                          1            0  12 캜                        1          3 
- 012063 Brightness temperature                                           K                          1            0  12 캜                        1          3 
+ 012001 Temperature/dry-bulb temperature                                 K                          1            0  12 째C                        1          3 
+ 012002 Wet-bulb temperature                                             K                          1            0  12 째C                        1          3 
+ 012003 Dew-point temperature                                            K                          1            0  12 째C                        1          3 
+ 012004 Dry-bulb temperature at 2 m                                      K                          1            0  12 째C                        1          3 
+ 012005 Wet-bulb temperature at 2 m                                      K                          1            0  12 째C                        1          3 
+ 012006 Dew-point temperature at 2 m                                     K                          1            0  12 째C                        1          3 
+ 012007 Virtual temperature                                              K                          1            0  12 째C                        1          3 
+ 012011 Maximum temperature, at height and over period specified         K                          1            0  12 째C                        1          3 
+ 012012 Minimum temperature, at height and over period specified         K                          1            0  12 째C                        1          3 
+ 012013 Ground minimum temperature, past 12 hours                        K                          1            0  12 째C                        1          3 
+ 012014 Maximum temperature at 2 m, past 12 hours                        K                          1            0  12 째C                        1          3 
+ 012015 Minimum temperature at 2 m, past 12 hours                        K                          1            0  12 째C                        1          3 
+ 012016 Maximum temperature at 2 m, past 24 hours                        K                          1            0  12 째C                        1          3 
+ 012017 Minimum temperature at 2 m, past 24 hours                        K                          1            0  12 째C                        1          3 
+ 012021 Maximum temperature at 2m                                        K                          2            0  16 째C                        2          4 
+ 012022 Minimum temperature at 2m                                        K                          2            0  16 째C                        2          4 
+ 012030 Soil temperature                                                 K                          1            0  12 째C                        1          3 
+ 012051 Standard deviation temperature                                   K                          1            0  10 째C                        1          3 
+ 012052 Highest daily mean temperature                                   K                          1            0  12 째C                        1          3 
+ 012053 Lowest daily mean temperature                                    K                          1            0  12 째C                        1          3 
+ 012061 Skin temperature                                                 K                          1            0  12 째C                        1          3 
+ 012062 Equivalent black body temperature                                K                          1            0  12 째C                        1          3 
+ 012063 Brightness temperature                                           K                          1            0  12 째C                        1          3 
  012064 Instrument temperature                                           K                          1            0  12 K                         1          4 
  012065 Standard deviation brightness temperature                        K                          1            0  12 K                         1          4 
  012070 Warm load temperature                                            K                          2            0  16 K                         2          5 
@@ -422,29 +422,29 @@
  012072 Radiance                                                         W M-2 SR-1                 6            0  31 W M-2SR-1                 6          9 
  012075 Spectral radiance                                                W M-3 SR-1                -3            0  16 W M-3SR-1                -3          5 
  012076 Radiance                                                         W M-2 SR-1                 3            0  16 W M-2SR-1                 3          5 
- 012101 Temperature/dry-bulb temperature                                 K                          2            0  16 캜                        2          4 
- 012102 Wet-bulb temperature                                             K                          2            0  16 캜                        2          4 
- 012103 Dew-point temperature                                            K                          2            0  16 캜                        2          4 
- 012104 Dry-bulb temperature at 2m                                       K                          2            0  16 캜                        2          4 
- 012105 Web-bulb temperature at 2m                                       K                          2            0  16 캜                        2          4 
- 012106 Dew-point temperature at 2m                                      K                          2            0  16 캜                        2          4 
- 012107 Virtual temperature                                              K                          2            0  16 캜                        2          4 
- 012111 Maximum temperature, at height and over period specified         K                          2            0  16 캜                        2          4 
- 012112 Minimum temperature, at height and over period specified         K                          2            0  16 캜                        2          4 
- 012113 Ground minimum temperature, past 12 hours                        K                          2            0  16 캜                        2          4 
- 012114 Maximum temperature at 2m, past 12 hours                         K                          2            0  16 캜                        2          4 
- 012115 Minimum temperature at 2m, past 12 hours                         K                          2            0  16 캜                        2          4 
- 012116 Maximum temperature at 2m, past 24 hours                         K                          2            0  16 캜                        2          4 
- 012117 Minimum temperature at 2m, past 24 hours                         K                          2            0  16 캜                        2          4 
- 012118 Maximum temperature at height specified, past 24 hours           K                          2            0  16 캜                        2          4 
- 012119 Minimum  temperature at height specified, past 24 hours          K                          2            0  16 캜                        2          4 
- 012130 Soil temperature                                                 K                          2            0  16 캜                        2          4 
- 012151 Standard deviation of daily mean temperature                     K                          2            0  12 캜                        2          4 
- 012152 Highest daily mean temperature                                   K                          2            0  16 캜                        2          4 
- 012153 Lowest daily mean temperature                                    K                          2            0  16 캜                        2          4 
- 012161 Skin temperature                                                 K                          2            0  16 캜                        2          4 
- 012162 Equivalent black body temperature                                K                          2            0  16 캜                        2          4 
- 012163 Brightness temperature                                           K                          2            0  16 캜                        2          4 
+ 012101 Temperature/dry-bulb temperature                                 K                          2            0  16 째C                        2          4 
+ 012102 Wet-bulb temperature                                             K                          2            0  16 째C                        2          4 
+ 012103 Dew-point temperature                                            K                          2            0  16 째C                        2          4 
+ 012104 Dry-bulb temperature at 2m                                       K                          2            0  16 째C                        2          4 
+ 012105 Web-bulb temperature at 2m                                       K                          2            0  16 째C                        2          4 
+ 012106 Dew-point temperature at 2m                                      K                          2            0  16 째C                        2          4 
+ 012107 Virtual temperature                                              K                          2            0  16 째C                        2          4 
+ 012111 Maximum temperature, at height and over period specified         K                          2            0  16 째C                        2          4 
+ 012112 Minimum temperature, at height and over period specified         K                          2            0  16 째C                        2          4 
+ 012113 Ground minimum temperature, past 12 hours                        K                          2            0  16 째C                        2          4 
+ 012114 Maximum temperature at 2m, past 12 hours                         K                          2            0  16 째C                        2          4 
+ 012115 Minimum temperature at 2m, past 12 hours                         K                          2            0  16 째C                        2          4 
+ 012116 Maximum temperature at 2m, past 24 hours                         K                          2            0  16 째C                        2          4 
+ 012117 Minimum temperature at 2m, past 24 hours                         K                          2            0  16 째C                        2          4 
+ 012118 Maximum temperature at height specified, past 24 hours           K                          2            0  16 째C                        2          4 
+ 012119 Minimum  temperature at height specified, past 24 hours          K                          2            0  16 째C                        2          4 
+ 012130 Soil temperature                                                 K                          2            0  16 째C                        2          4 
+ 012151 Standard deviation of daily mean temperature                     K                          2            0  12 째C                        2          4 
+ 012152 Highest daily mean temperature                                   K                          2            0  16 째C                        2          4 
+ 012153 Lowest daily mean temperature                                    K                          2            0  16 째C                        2          4 
+ 012161 Skin temperature                                                 K                          2            0  16 째C                        2          4 
+ 012162 Equivalent black body temperature                                K                          2            0  16 째C                        2          4 
+ 012163 Brightness temperature                                           K                          2            0  16 째C                        2          4 
  012164 Instrument temperature                                           K                          2            0  16 K                         2          5 
  012171 Coldest cluster temperature                                      K                          2            0  16 K                         2          5 
  015001 Total ozone                                                      DU                         0            0  10 DU                        0          4 
@@ -769,12 +769,12 @@
  027004 Alternate latitude (high accuracy)                               DEGREE                     5     -9000000  25 DEGREE                    5          7 
  027020 Satellite location counter                                       NUMERIC                    0            0  16 NUMERIC                   0          5 
  027021 Satellite sublocation dimension                                  NUMERIC                    0            0  16 NUMERIC                   0          5 
- 027031 In direction of 0 degrees longitude, distance from the Earth뭩 c M                          2  -1073741824  31 M                         2         10 
+ 027031 In direction of 0 degrees longitude, distance from the Earth혪s c M                          2  -1073741824  31 M                         2         10 
  028001 Longitude (high accuracy)                                        DEGREE                     5    -18000000  26 DEGREE                    5          8 
  028002 Longitude (coarse accuracy)                                      DEGREE                     2       -18000  16 DEGREE                    2          5 
  028003 Alternate longitude (coarse accuracy)                            DEGREE                     2       -18000  16 DEGREE                    2          5 
  028004 Alternate longitude (high accuracy)                              DEGREE                     5    -18000000  26 DEGREE                    5          8 
- 028031 In direction 90 degrees East, distance from the Earth뭩 centre   M                          2  -1073741824  31 M                         2         10 
+ 028031 In direction 90 degrees East, distance from the Earth혪s centre   M                          2  -1073741824  31 M                         2         10 
  029001 Projection type                                                  CODE TABLE                 0            0   3 CODE TABLE                0          1 
  029002 Co-ordinate grid type                                            CODE TABLE                 0            0   3 CODE TABLE                0          1 
  029193 Long Origin                                                      DEGREE                     2       -18000  16 DEGREE                    2          5 
