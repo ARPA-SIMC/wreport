@@ -1,0 +1,52 @@
+#!/usr/bin/python3
+
+import sys
+
+def parse_line(line):
+    if len(line) < 118:
+        raise ValueError("bufr table line too short")
+    return "0" + line[2:7]
+
+
+def check_file(fname):
+    is_ok = True
+
+    last_bcode = 0
+    with open(fname, "rb") as fd:
+        for idx, line in enumerate(fd, start=1):
+            try:
+                line = line.decode("utf-8").rstrip()
+            except UnicodeDecodeError as e:
+                print("{}:{}:encoding error: {}".format(fname, idx, str(e)), file=sys.stderr)
+                is_ok = False
+                continue
+
+            try:
+                bcode = parse_line(line)
+                int_bcode = int(bcode)
+            except ValueError as e:
+                print("{}:{}:{}".format(fname, idx, str(e)), file=sys.stderr)
+                is_ok = False
+                continue
+
+            if int_bcode <= last_bcode:
+                print("{}:{}:B code {} is not greater than the B code in the previous line".format(fname, idx, bcode), file=sys.stderr)
+                is_ok = False
+                continue
+            else:
+                last_bcode = int_bcode
+
+    return is_ok
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description="Validate BUFR table files")
+    parser.add_argument('files', nargs='+', help='input file(s) to validate')
+    args = parser.parse_args()
+    all_ok = all([check_file(x) for x in args.files])
+    sys.exit(0 if all_ok else 1)
+
+
+if __name__ == "__main__":
+    main()
