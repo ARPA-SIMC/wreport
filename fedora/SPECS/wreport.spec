@@ -1,6 +1,6 @@
 Summary: Library for working with (coded) weather reports
 Name: wreport
-Version: 3.5
+Version: 3.7
 Release: 1
 License: GPL2
 Group: Applications/Meteo
@@ -147,6 +147,12 @@ make install DESTDIR="%{buildroot}"
 %doc %{_docdir}/wreport/python-wreport.rst
 
 %changelog
+* Wed Oct 5 2016 Daniele Branchini <dbranchini@arpae.it> - 3.7-1
+- fixed duplicate varaible in table
+- check tables ad build times (fixes #10)
+- implemented test cases with American Fuzzy Loop
+- updated wobble
+
 * Tue Sep 15 2015 Emanuele Di Giacomo <edigiacomo@arpa.emr.it> - 3.2-1%{dist}
 - gcc 4.8.3 support (lambdas and variadic templates)
 - Removed every reference to libwreport-test.pc.in
