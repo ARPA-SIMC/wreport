@@ -80,4 +80,4 @@ noinst_DATA = tables_ok
 
 CLEANFILES = $(generated_tables) tables_ok
 
-EXTRA_DIST = $(crexbtables) $(crexdtables) $(bufrbtables) $(bufrdtables) check_btable test.txt
+EXTRA_DIST = $(crexbtables) $(crexdtables) $(bufrbtables) $(bufrdtables) check_btable test.txt README.md
