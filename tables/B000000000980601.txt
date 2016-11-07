@@ -633,7 +633,8 @@
  013230 CONVECTIVE PRECIPITATION                                         KG/M**2                    1           -1  14  
  013231 LARGE SCALE PRECIPITATION                                        KG/M**2                    1           -1  14  
  013233 FRACTION OF TOTAL PRECIPITATION IN SOLID FORM (SNOW)             M                          4            0  18
- 013240 AIR DENSITY                                                      KG/M**3                    3            0  10  
+ 013240 AIR DENSITY                                                      KG/M**3                    3            0  10
+ 013241 CONVECTIVE AVAILABLE POTENTIAL ENERGY                            J/KG                       1            0  17
  014001 LONG-WAVE RADIATION,INTEGRATED OVER 24 HOURS                     J/M**2                    -3        -2048  12
  014002 LONG-WAVE RADIATION,INTEGRATED OVER PERIOD SPECIFIED             J/M**2                    -3        -2048  12
  014003 SHORT-WAVE RADIATION,INTEGRATED OVER 24 HOURS                    J/M**2                    -3        -2048  12
