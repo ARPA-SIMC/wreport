@@ -236,6 +236,8 @@ void FileDescriptor::throw_runtime_error(const char* desc)
     throw std::runtime_error(desc);
 }
 
+bool FileDescriptor::is_open() const { return fd != -1; }
+
 void FileDescriptor::close()
 {
     if (fd == -1) return;
@@ -375,11 +377,31 @@ void NamedFileDescriptor::throw_runtime_error(const char* desc)
 
 
 /*
+ * ManagedNamedFileDescriptor
+ */
+
+ManagedNamedFileDescriptor::~ManagedNamedFileDescriptor()
+{
+    if (fd != -1) ::close(fd);
+}
+
+ManagedNamedFileDescriptor& ManagedNamedFileDescriptor::operator=(ManagedNamedFileDescriptor&& o)
+{
+    if (&o == this) return *this;
+    close();
+    fd = o.fd;
+    pathname = std::move(o.pathname);
+    o.fd = -1;
+    return *this;
+}
+
+
+/*
  * Path
  */
 
 Path::Path(const char* pathname, int flags)
-    : NamedFileDescriptor(-1, pathname)
+    : ManagedNamedFileDescriptor(-1, pathname)
 {
     fd = open(pathname, flags | O_PATH);
     if (fd == -1)
@@ -387,7 +409,7 @@ Path::Path(const char* pathname, int flags)
 }
 
 Path::Path(const std::string& pathname, int flags)
-    : NamedFileDescriptor(-1, pathname)
+    : ManagedNamedFileDescriptor(-1, pathname)
 {
     fd = open(pathname.c_str(), flags | O_PATH);
     if (fd == -1)
@@ -395,15 +417,9 @@ Path::Path(const std::string& pathname, int flags)
 }
 
 Path::Path(Path& parent, const char* pathname, int flags)
-    : NamedFileDescriptor(parent.openat(pathname, flags | O_PATH),
+    : ManagedNamedFileDescriptor(parent.openat(pathname, flags | O_PATH),
             str::joinpath(parent.name(), pathname))
 {
-}
-
-Path::~Path()
-{
-    if (fd != -1)
-        ::close(fd);
 }
 
 DIR* Path::fdopendir()
@@ -472,21 +488,11 @@ Path::iterator::iterator(Path& dir)
     : path(&dir)
 {
     this->dir = dir.fdopendir();
-
-    long name_max = fpathconf(dir.fd, _PC_NAME_MAX);
-    if (name_max == -1) // Limit not defined, or error: take a guess
-        name_max = 255;
-    size_t len = offsetof(dirent, d_name) + name_max + 1;
-    cur_entry = (struct dirent*)malloc(len);
-    if (cur_entry == NULL)
-        throw std::bad_alloc();
-
     operator++();
 }
 
 Path::iterator::~iterator()
 {
-    if (cur_entry) free(cur_entry);
     if (dir) closedir(dir);
 }
 
@@ -505,12 +511,12 @@ bool Path::iterator::operator!=(const iterator& i) const
 
 void Path::iterator::operator++()
 {
-    struct dirent* result;
-    if (readdir_r(dir, cur_entry, &result) != 0)
-        path->throw_error("cannot readdir_r");
-
-    if (result == nullptr)
+    errno = 0;
+    cur_entry = readdir(dir);
+    if (cur_entry == nullptr)
     {
+        if (errno) path->throw_error("cannot readdir");
+
         // Turn into an end iterator
         free(cur_entry);
         cur_entry = nullptr;
@@ -637,23 +643,19 @@ void Path::rmtree()
  */
 
 File::File(const std::string& pathname)
-    : NamedFileDescriptor(-1, pathname)
+    : ManagedNamedFileDescriptor(-1, pathname)
 {
 }
 
 File::File(const std::string& pathname, int flags, mode_t mode)
-    : NamedFileDescriptor(-1, pathname)
+    : ManagedNamedFileDescriptor(-1, pathname)
 {
     open(flags, mode);
 }
 
-File::~File()
-{
-    if (fd != -1) ::close(fd);
-}
-
 void File::open(int flags, mode_t mode)
 {
+    close();
     fd = ::open(pathname.c_str(), flags, mode);
     if (fd == -1)
         throw std::system_error(errno, std::system_category(), "cannot open file " + pathname);
@@ -661,6 +663,7 @@ void File::open(int flags, mode_t mode)
 
 bool File::open_ifexists(int flags, mode_t mode)
 {
+    close();
     fd = ::open(pathname.c_str(), flags, mode);
     if (fd != -1) return true;
     if (errno == ENOENT) return false;
