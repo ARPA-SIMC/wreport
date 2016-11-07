@@ -80,7 +80,7 @@ class Tests : public TestCase
                 wassert(actual(msg.data_category) == 0);
                 wassert(actual(msg.data_subcategory) == 255);
                 wassert(actual(msg.data_subcategory_local) == 0);
-                wassert(actual(msg.subsets.size()) == 1);
+                wassert(actual(msg.subsets.size()) == 1u);
 
                 const Subset& s = msg.subset(0);
                 wassert(actual(s.size()) == 21u);
@@ -99,7 +99,7 @@ class Tests : public TestCase
                 wassert(actual(msg.data_category) == 0);
                 wassert(actual(msg.data_subcategory) == 255);
                 wassert(actual(msg.data_subcategory_local) == 0);
-                wassert(actual(msg.subsets.size()) == 1);
+                wassert(actual(msg.subsets.size()) == 1u);
 
                 const Subset& s = msg.subset(0);
                 wassert(actual(s.size()) == 49u);
@@ -118,7 +118,7 @@ class Tests : public TestCase
                 wassert(actual(msg.data_category) == 0);
                 wassert(actual(msg.data_subcategory) == 255);
                 wassert(actual(msg.data_subcategory_local) == 0);
-                wassert(actual(msg.subsets.size()) == 1);
+                wassert(actual(msg.subsets.size()) == 1u);
 
                 const Subset& s = msg.subset(0);
                 wassert(actual(s.size()) == 27u);
@@ -137,7 +137,7 @@ class Tests : public TestCase
                 wassert(actual(msg.data_category) == 1);
                 wassert(actual(msg.data_subcategory) == 255);
                 wassert(actual(msg.data_subcategory_local) == 0);
-                wassert(actual(msg.subsets.size()) == 1);
+                wassert(actual(msg.subsets.size()) == 1u);
 
                 const Subset& s = msg.subset(0);
                 wassert(actual(s.size()) == 32u);
@@ -156,7 +156,7 @@ class Tests : public TestCase
                 wassert(actual(msg.data_category) == 1);
                 wassert(actual(msg.data_subcategory) == 255);
                 wassert(actual(msg.data_subcategory_local) == 0);
-                wassert(actual(msg.subsets.size()) == 1);
+                wassert(actual(msg.subsets.size()) == 1u);
 
                 const Subset& s = msg.subset(0);
                 wassert(actual(s.size()) == 32u);
@@ -175,7 +175,7 @@ class Tests : public TestCase
                 wassert(actual(msg.data_category) == 1);
                 wassert(actual(msg.data_subcategory) == 255);
                 wassert(actual(msg.data_subcategory_local) == 0);
-                wassert(actual(msg.subsets.size()) == 1);
+                wassert(actual(msg.subsets.size()) == 1u);
 
                 const Subset& s = msg.subset(0);
                 wassert(actual(s.size()) == 39u);
@@ -194,7 +194,7 @@ class Tests : public TestCase
                 wassert(actual(msg.data_category) == 2);
                 wassert(actual(msg.data_subcategory) == 255);
                 wassert(actual(msg.data_subcategory_local) == 0);
-                wassert(actual(msg.subsets.size()) == 1);
+                wassert(actual(msg.subsets.size()) == 1u);
 
                 const Subset& s = msg.subset(0);
                 wassert(actual(s.size()) == 550u);
