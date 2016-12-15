@@ -71,12 +71,13 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
   * Read and write BUFR version 2, 3, and 4
   * Read and write CREX
 
-%package -n python-%{name}3
+%package -n python2-%{name}3
 Summary: shared library for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}3
+%{?python_provide:%python_provide python2-wreport3}
 
-%description -n python-%{name}3
+%description -n python2-%{name}3
 libwreport is a C++ library to read and write weather reports in BUFR and CREX
  formats.
 
@@ -86,6 +87,8 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 Summary: shared library for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}3
+%{?python_provide:%python_provide python3-wreport3}
+
 
 %description -n python3-%{name}3
 libwreport is a C++ library to read and write weather reports in BUFR and CREX
@@ -162,14 +165,14 @@ make install DESTDIR="%{buildroot}"
 %doc %{_docdir}/%{name}/apidocs/*
 %doc %{_docdir}/%{name}/examples/*
 
-%files -n python-%{name}3
+%files -n python2-%{name}3
 %defattr(-,root,root,-)
-%dir %{python_sitelib}/wreport
-%{python_sitelib}/wreport/*
-%dir %{python_sitearch}
-%{python_sitearch}/*.a
-%{python_sitearch}/*.la
-%{python_sitearch}/*.so*
+%dir %{python2_sitelib}/wreport
+%{python2_sitelib}/wreport/*
+%dir %{python2_sitearch}
+%{python2_sitearch}/*.a
+%{python2_sitearch}/*.la
+%{python2_sitearch}/*.so*
 
 %doc %{_docdir}/wreport/python-wreport.html
 %doc %{_docdir}/wreport/python-wreport.rst
