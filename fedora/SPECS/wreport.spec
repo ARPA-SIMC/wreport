@@ -7,7 +7,7 @@ Group: Applications/Meteo
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
 Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{name}-%{version}-%{release}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: doxygen, libtool, lua-devel >= 5.1.1, python-devel
+BuildRequires: doxygen, libtool, lua-devel >= 5.1.1, python2-devel, python3-devel
 Summary: Tools for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}-common
@@ -82,9 +82,23 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 
  This is the Python library
 
+%package -n python3-%{name}3
+Summary: shared library for working with weather reports
+Group: Applications/Meteo
+Requires: lib%{name}3
+
+%description -n python3-%{name}3
+libwreport is a C++ library to read and write weather reports in BUFR and CREX
+ formats.
+
+ This is the Python library
+
 
 %prep
 %setup -q -n %{name}-%{version}-%{release}
+
+rm -rf %{py3dir}
+cp -a . %{py3dir}
 
 %build
 
@@ -93,11 +107,25 @@ autoreconf -ifv
 %configure
 make
 
+pushd %{py3dir}
+%configure PYTHON=python3
+make
+popd
+
 %check
 make check
+pushd %{py3dir}
+make check
+popd
+
 
 %install
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
+
+pushd %{py3dir}
+make install DESTDIR="%{buildroot}"
+popd
+
 make install DESTDIR="%{buildroot}"
 
 %clean
@@ -145,6 +173,20 @@ make install DESTDIR="%{buildroot}"
 
 %doc %{_docdir}/wreport/python-wreport.html
 %doc %{_docdir}/wreport/python-wreport.rst
+
+
+%files -n python3-%{name}3
+%defattr(-,root,root,-)
+%dir %{python3_sitelib}/wreport
+%{python3_sitelib}/wreport/*
+%dir %{python3_sitearch}
+%{python3_sitearch}/*.a
+%{python3_sitearch}/*.la
+%{python3_sitearch}/*.so*
+
+%doc %{_docdir}/wreport/python-wreport.html
+%doc %{_docdir}/wreport/python-wreport.rst
+
 
 %changelog
 * Wed Oct 5 2016 Daniele Branchini <dbranchini@arpae.it> - 3.7-1
