@@ -187,9 +187,6 @@ make install DESTDIR="%{buildroot}"
 %{python3_sitearch}/*.la
 %{python3_sitearch}/*.so*
 
-%doc %{_docdir}/wreport/python-wreport.html
-%doc %{_docdir}/wreport/python-wreport.rst
-
 
 %changelog
 * Wed Oct 5 2016 Daniele Branchini <dbranchini@arpae.it> - 3.7-1
