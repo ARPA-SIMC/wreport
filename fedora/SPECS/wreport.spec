@@ -109,6 +109,7 @@ autoreconf -ifv
 make
 
 pushd %{py3dir}
+autoreconf -ifv
 %configure PYTHON=%{__python3}
 make
 popd
