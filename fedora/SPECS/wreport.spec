@@ -1,5 +1,5 @@
 Name: wreport
-Version: 3.7
+Version: 3.8
 Release: 1
 License: GPL2
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
@@ -187,6 +187,10 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Mon Dec 19 2016 Daniele Branchini <dbranchini@arpae.it> - 3.8-1
+- Added documentation for table file formats (fixes #11)
+- Splitted python2 and python3 packages (fixes #12)
+
 * Wed Oct 5 2016 Daniele Branchini <dbranchini@arpae.it> - 3.7-1
 - fixed duplicate varaible in table
 - check tables ad build times (fixes #10)
