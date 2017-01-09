@@ -1,11 +1,16 @@
 Name: wreport
 Version: 3.8
-Release: 1
+Release: 2
 License: GPL2
 URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
 Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{name}-%{version}-%{release}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: doxygen, libtool, lua-devel >= 5.1.1, python-devel, python3-devel
+%if 0%{?rhel} == 7
+%define python3_vers python34
+%else
+%define python3_vers python3
+%endif
+BuildRequires: doxygen, libtool, lua-devel >= 5.1.1, python-devel, %{python3_vers}-devel
 Summary: Tools for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}-common
@@ -80,12 +85,12 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 
  This is the Python library
 
-%package -n python3-%{name}3
+%package -n %{python3_vers}-%{name}3
 Summary: shared library for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}3
 
-%description -n python3-%{name}3
+%description -n %{python3_vers}-%{name}3
 libwreport is a C++ library to read and write weather reports in BUFR and CREX
  formats.
 
@@ -174,7 +179,7 @@ make install DESTDIR="%{buildroot}"
 %doc %{_docdir}/wreport/python-wreport.rst
 
 
-%files -n python3-%{name}3
+%files -n %{python3_vers}-%{name}3
 %defattr(-,root,root,-)
 %dir %{python3_sitelib}/wreport
 %{python3_sitelib}/wreport/*
@@ -185,6 +190,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Mon Jan 9 2017 Daniele Branchini <dbranchini@arpae.it> - 3.8-2
+- Managing python namespace for CentOs 7
+
 * Mon Dec 19 2016 Daniele Branchini <dbranchini@arpae.it> - 3.8-1
 - Added documentation for table file formats (fixes #11)
 - Splitted python2 and python3 packages (fixes #12)
