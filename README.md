@@ -44,7 +44,7 @@ To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
 
 The author of wreport is Enrico Zini <enrico@enricozini.com>
 
-wreport is Copyright (C) 2005-2015 ARPA-SIMC <urpsim@arpa.emr.it>
+wreport is Copyright (C) 2005-2017 ARPAE-SIMC <urpsim@arpae.it>
 
 wreport is licensed under the terms of the GNU General Public License version
 2.
