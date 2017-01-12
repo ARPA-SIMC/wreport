@@ -47,6 +47,7 @@ Group: Applications/Meteo
 %package -n lib%{name}-doc
 Summary: documentation for libwreport
 Group: Applications/Meteo
+BuildRequires: python-docutils
 
 %description -n lib%{name}-doc
 libwreport is a C++ library to read and write weather reports in BUFR and CREX
