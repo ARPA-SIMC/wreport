@@ -41,6 +41,9 @@ class Tests : public TestCase
 
             wassert(actual(convert_units("FLAG TABLE", "FLAG TABLE", 1)) == 1);
             wassert(actual(convert_units("CODE TABLE", "CODE TABLE", 1)) == 1);
+
+            wassert(actual(convert_units("ppt", "PART PER THOUSAND", 1)) == 1);
+            wassert(actual(convert_units("PART PER THOUSAND", "ppt", 1)) == 1);
         });
         add_method("vss", []() {
             // Vertical sounding significance conversion functions
