@@ -192,6 +192,7 @@ struct ConvertRepository
         add_ident("GPM",          "MGP");
         add_ident("W/m**2",       "W/M**2");
         add_ident("J M-2",        "J/M**2");
+        add_ident("ppt",          "PART PER THOUSAND");
         add_function("octants",   "DEGREE TRUE", convert_octants_to_degrees, convert_degrees_to_octants);
 
         sort(repo.begin(), repo.end());
