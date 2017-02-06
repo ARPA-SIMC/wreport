@@ -42,6 +42,9 @@ class Tests : public TestCase
             wassert(actual(convert_units("FLAG TABLE", "FLAG TABLE", 1)) == 1);
             wassert(actual(convert_units("CODE TABLE", "CODE TABLE", 1)) == 1);
 
+            wassert(actual(convert_units("mg/l", "KG/M**3", 1)) == 0.001);
+            wassert(actual(convert_units("KG/M**3", "mg/l", 1)) == 1000);
+
             wassert(actual(convert_units("ppt", "PART PER THOUSAND", 1)) == 1);
             wassert(actual(convert_units("PART PER THOUSAND", "ppt", 1)) == 1);
         });

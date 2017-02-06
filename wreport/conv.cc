@@ -108,6 +108,8 @@ struct ConvertRepository
         add_linear("KG/M**3",     "G/M**3", 1000, 0);
         add_linear("ug/m**3",     "KG/M**3", 0.000000001, 0);
         add_linear("KG/M**3",     "ug/m**3", 1000000000, 0);
+        add_linear("mg/l",        "KG/M**3", 0.001, 0);
+        add_linear("KG/M**3",     "mg/l", 1000, 0);
         add_linear("PA",          "KPA", 0.001, 0);
         add_linear("KPA",         "PA", 1000, 0);
         add_linear("M",           "MM", 1000, 0);
