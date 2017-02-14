@@ -1,8 +1,8 @@
 Name: wreport
-Version: 3.8
-Release: 2
+Version: 3.9
+Release: 1
 License: GPL2
-URL: http://www.arpa.emr.it/dettaglio_documento.asp?id=514&idlivello=64
+URL: https://github.com/arpa-simc/%{name}
 Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{release}.tar.gz#/%{name}-%{version}-%{release}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %if 0%{?rhel} == 7
@@ -191,6 +191,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Tue Feb 14 2017 Daniele Branchini <dbranchini@arpae.it> - 3.9-1
+- Added ppt (part per thousand) conversion
+
 * Mon Jan 9 2017 Daniele Branchini <dbranchini@arpae.it> - 3.8-2
 - Managing python namespace for CentOs 7
 
