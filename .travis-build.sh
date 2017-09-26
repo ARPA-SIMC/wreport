@@ -12,7 +12,7 @@ elif [[ $image =~ ^fedora: ]]
 then
     pkgcmd="dnf"
     builddep="dnf builddep"
-    dnf install -y 'dnf-command(builddep)' fedora-packager
+    dnf install -y @buildsys-build 'dnf-command(builddep)' fedora-packager
 fi
 
 $builddep -y fedora/SPECS/wreport.spec
