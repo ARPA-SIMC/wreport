@@ -17,7 +17,7 @@ fi
 
 $builddep -y fedora/SPECS/wreport.spec
 
-if [[ $image =~ "^fedora:" ]]
+if [[ $image =~ ^fedora: ]]
 then
     pkgname="$(rpmspec -q --qf="wreport-%{version}-%{release}\n" fedora/SPECS/wreport.spec | head -n1)"
     rpmdev-setuptree
