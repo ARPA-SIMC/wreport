@@ -19,6 +19,7 @@ then
     sed -i '/^tsflags=/d' /etc/dnf/dnf.conf
     dnf install -y @buildsys-build
     dnf install -y 'dnf-command(builddep)'
+    dnf install -y git
 fi
 
 $builddep -y fedora/SPECS/wreport.spec
