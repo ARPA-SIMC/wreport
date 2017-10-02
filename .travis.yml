@@ -24,8 +24,3 @@ deploy:
     on:
         branch: master
         condition: $DOCKER_IMAGE = fedora:24
-
-matrix:
-    allow_failures:
-        - env: DOCKER_IMAGE=fedora:26
-        - env: DOCKER_IMAGE=fedora:25
