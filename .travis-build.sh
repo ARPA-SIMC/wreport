@@ -7,20 +7,26 @@ if [[ $image =~ ^centos: ]]
 then
     pkgcmd="yum"
     builddep="yum-builddep"
+    sed -i '/^tsflags=/d' /etc/yum.conf
+    yum install -y epel-release
+    yum install -y @buildsys-build
     yum install -y yum-utils
+    yum install -y git
 elif [[ $image =~ ^fedora: ]]
 then
     pkgcmd="dnf"
     builddep="dnf builddep"
-    dnf install -y @buildsys-build 'dnf-command(builddep)' fedora-packager
+    sed -i '/^tsflags=/d' /etc/dnf/dnf.conf
+    dnf install -y @buildsys-build
+    dnf install -y 'dnf-command(builddep)'
 fi
 
 $builddep -y fedora/SPECS/wreport.spec
 
-if [[ $image =~ ^fedora: ]]
+if [[ $image =~ ^fedora: || $image =~ ^centos: ]]
 then
     pkgname="$(rpmspec -q --qf="wreport-%{version}-%{release}\n" fedora/SPECS/wreport.spec | head -n1)"
-    rpmdev-setuptree
+    mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
     git archive --prefix=$pkgname/ --format=tar HEAD | gzip -c > ~/rpmbuild/SOURCES/$pkgname.tar.gz
     rpmbuild -ba fedora/SPECS/wreport.spec
     find ~/rpmbuild/{RPMS,SRPMS}/ -name "${pkgname}*rpm" -exec cp -v {} . \;
