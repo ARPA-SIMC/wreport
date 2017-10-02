@@ -10,7 +10,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %else
 %define python3_vers python3
 %endif
-BuildRequires: gcc-c++, doxygen, libtool, lua-devel >= 5.1.1, python-devel, %{python3_vers}-devel
+BuildRequires: doxygen, libtool, lua-devel >= 5.1.1, python-devel, %{python3_vers}-devel, python-six, %{python3_vers}-six
 Summary: Tools for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}-common
