@@ -37,17 +37,19 @@ then
     fi
 
         echo "Running $DEBUGGER $CMD $ARGS"
-        RES=0
-        if ! $DEBUGGER $CMD $ARGS
+        if $DEBUGGER $CMD $ARGS
         then
+            RES=0
+        else
                 RES=$?
                 echo "Failed with result $RES"
         fi
 else
         echo "Running $CMD $ARGS"
-        RES=0
-        if ! $CMD $ARGS
+        if $CMD $ARGS
         then
+            RES=0
+        else
                 RES=$?
                 echo "Failed with result $RES"
         fi
