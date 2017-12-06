@@ -309,7 +309,7 @@ struct Index
         if (auto result = query.result())
         {
             bufr_cache[id] = result;
-            notes::logf("Matched table %s for ce %hu sc %hu mt %hhu mtv %hhu mtlv %hhu",
+            notes::logf("Matched table %s for ce %hu sc %hu mt %hhu mtv %hhu mtlv %hhu\n",
                     result->btable_id.c_str(),
                     id.originating_centre, id.originating_subcentre,
                     id.master_table_number, id.master_table_version_number, id.master_table_version_number_local);
@@ -342,7 +342,7 @@ struct Index
         if (auto result = query.result())
         {
             crex_cache[id] = result;
-            notes::logf("Matched table %s for mt %hhu mtv %hhu mtlv %hhu",
+            notes::logf("Matched table %s for mt %hhu mtv %hhu mtlv %hhu\n",
                     result->btable_id.c_str(),
                     id.master_table_number, id.master_table_version_number,
                     id.master_table_version_number_local);
