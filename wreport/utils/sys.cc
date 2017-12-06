@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <fcntl.h>
 #include <alloca.h>
 
@@ -341,6 +342,84 @@ MMap FileDescriptor::mmap(size_t length, int prot, int flags, off_t offset)
     return MMap(res, length);
 }
 
+bool FileDescriptor::ofd_setlk(struct flock& lk)
+{
+#ifdef F_OFD_SETLK
+    if (fcntl(fd, F_OFD_SETLK, &lk) != -1)
+#else
+    if (fcntl(fd, F_SETLK, &lk) != -1)
+#endif
+        return true;
+    if (errno != EAGAIN)
+        throw_error("cannot acquire lock");
+    return false;
+}
+
+bool FileDescriptor::ofd_setlkw(struct flock& lk, bool retry_on_signal)
+{
+    while (true)
+    {
+#ifdef F_OFD_SETLK
+        if (fcntl(fd, F_OFD_SETLKW, &lk) != -1)
+#else
+        if (fcntl(fd, F_SETLKW, &lk) != -1)
+#endif
+            return true;
+        if (errno != EAGAIN)
+            throw_error("cannot acquire lock");
+        if (!retry_on_signal)
+            return false;
+    }
+}
+
+bool FileDescriptor::ofd_getlk(struct flock& lk)
+{
+#ifdef F_OFD_SETLK
+    if (fcntl(fd, F_OFD_GETLK, &lk) == -1)
+#else
+    if (fcntl(fd, F_GETLK, &lk) == -1)
+#endif
+        throw_error("cannot test lock");
+    return lk.l_type == F_UNLCK;
+}
+
+void FileDescriptor::futimens(const struct timespec ts[2])
+{
+    if (::futimens(fd, ts) == -1)
+        throw_error("cannot change file timestamps");
+}
+
+void FileDescriptor::fsync()
+{
+    if (::fsync(fd) == -1)
+        throw_error("fsync failed");
+}
+
+void FileDescriptor::fdatasync()
+{
+    if (::fdatasync(fd) == -1)
+        throw_error("fdatasync failed");
+}
+
+
+/*
+ * PreserveFileTimes
+ */
+
+PreserveFileTimes::PreserveFileTimes(FileDescriptor fd)
+    : fd(fd)
+{
+    struct stat st;
+    fd.fstat(st);
+    ts[0] = st.st_atim;
+    ts[1] = st.st_mtim;
+}
+
+PreserveFileTimes::~PreserveFileTimes()
+{
+    fd.futimens(ts);
+}
+
 
 /*
  * NamedFileDescriptor
@@ -456,16 +535,43 @@ int Path::openat(const char* pathname, int flags, mode_t mode)
     return res;
 }
 
+bool Path::faccessat(const char* pathname, int mode, int flags)
+{
+    return ::faccessat(fd, pathname, mode, flags) == 0;
+}
+
 void Path::fstatat(const char* pathname, struct stat& st)
 {
     if (::fstatat(fd, pathname, &st, 0) == -1)
         throw_error("cannot fstatat");
 }
 
+bool Path::fstatat_ifexists(const char* pathname, struct stat& st)
+{
+    if (::fstatat(fd, pathname, &st, 0) == -1)
+    {
+        if (errno == ENOENT)
+            return false;
+        throw_error("cannot fstatat");
+    }
+    return true;
+}
+
 void Path::lstatat(const char* pathname, struct stat& st)
 {
     if (::fstatat(fd, pathname, &st, AT_SYMLINK_NOFOLLOW) == -1)
         throw_error("cannot fstatat");
+}
+
+bool Path::lstatat_ifexists(const char* pathname, struct stat& st)
+{
+    if (::fstatat(fd, pathname, &st, AT_SYMLINK_NOFOLLOW) == -1)
+    {
+        if (errno == ENOENT)
+            return false;
+        throw_error("cannot fstatat");
+    }
+    return true;
 }
 
 void Path::unlinkat(const char* pathname)
@@ -620,6 +726,11 @@ bool Path::iterator::issock() const
     return S_ISSOCK(st.st_mode);
 }
 
+Path Path::iterator::open_path(int flags) const
+{
+    return Path(*path, cur_entry->d_name);
+}
+
 
 void Path::rmtree()
 {
@@ -689,6 +800,9 @@ std::string read_file(const std::string& file)
     struct stat st;
     in.fstat(st);
 
+    if (st.st_size == 0)
+        return std::string();
+
     // mmap the input file
     MMap src = in.mmap(st.st_size, PROT_READ, MAP_SHARED);
 
@@ -702,7 +816,7 @@ void write_file(const std::string& file, const std::string& data, mode_t mode)
 
 void write_file(const std::string& file, const void* data, size_t size, mode_t mode)
 {
-    File out(file, O_WRONLY | O_CREAT, mode);
+    File out(file, O_WRONLY | O_CREAT | O_TRUNC, mode);
     out.write_all_or_retry(data, size);
     out.close();
 }
@@ -726,7 +840,7 @@ void write_file_atomically(const std::string& file, const void* data, size_t siz
     out.write_all_or_retry(data, size);
     out.close();
 
-    if (rename(out.name().c_str(), file.c_str()) < 0)
+    if (::rename(out.name().c_str(), file.c_str()) < 0)
         throw std::system_error(errno, std::system_category(), "cannot rename " + out.name() + " to " + file);
 }
 
@@ -750,6 +864,12 @@ bool unlink_ifexists(const std::string& file)
     }
     else
         return true;
+}
+
+void rename(const std::string& src_pathname, const std::string& dst_pathname)
+{
+    if (::rename(src_pathname.c_str(), dst_pathname.c_str()) != 0)
+        throw std::system_error(errno, std::system_category(), "cannot rename " + src_pathname + " to " + dst_pathname);
 }
 
 bool rename_ifexists(const std::string& src, const std::string& dst)
@@ -873,6 +993,20 @@ void rmtree(const std::string& pathname)
 {
     Path path(pathname);
     path.rmtree();
+}
+
+bool rmtree_ifexists(const std::string& pathname)
+{
+    int fd = open(pathname.c_str(), O_PATH);
+    if (fd == -1)
+    {
+        if (errno == ENOENT)
+            return false;
+        throw std::system_error(errno, std::system_category(), "cannot open path " + pathname);
+    }
+    Path path(fd, pathname);
+    path.rmtree();
+    return true;
 }
 
 #if 0

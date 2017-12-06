@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
 
 namespace wreport {
 namespace sys {
@@ -176,6 +177,11 @@ public:
     void fstat(struct stat& st);
     void fchmod(mode_t mode);
 
+    void futimens(const struct timespec ts[2]);
+
+    void fsync();
+    void fdatasync();
+
     int dup();
 
     size_t read(void* buf, size_t count);
@@ -230,8 +236,50 @@ public:
 
     MMap mmap(size_t length, int prot, int flags, off_t offset=0);
 
+    /**
+     * Open file description locks F_OFD_SETLK operation.
+     *
+     * Returns true if the lock was obtained, false if acquiring the lock
+     * failed.
+     */
+    bool ofd_setlk(struct ::flock&);
+
+    /**
+     * Open file description locks F_OFD_SETLKW operation.
+     *
+     * Returns true if the lock was obtained, false if a signal was received
+     * while waiting for the lock.
+     *
+     * If retry_on_signal is true, acquiring the lock is automatically retried
+     * in case of signals, and the function always returns true.
+     */
+    bool ofd_setlkw(struct ::flock&, bool retry_on_signal=true);
+
+    /**
+     * Open file description locks F_OFD_GETLK operation.
+     *
+     * Returns true if the lock would have been obtainable, false if not.
+     */
+    bool ofd_getlk(struct ::flock&);
+
     operator int() const { return fd; }
 };
+
+
+/**
+ * RAII mechanism to save restore file times at the end of some file operations
+ */
+class PreserveFileTimes
+{
+protected:
+    FileDescriptor fd;
+    struct timespec ts[2];
+
+public:
+    PreserveFileTimes(FileDescriptor fd);
+    ~PreserveFileTimes();
+};
+
 
 
 /**
@@ -339,6 +387,9 @@ struct Path : public ManagedNamedFileDescriptor
 
         /// @return true if we refer to a Unix domain socket.
         bool issock() const;
+
+        /// Return a Path object for this entry
+        Path open_path(int flags=0) const;
     };
 
     using ManagedNamedFileDescriptor::ManagedNamedFileDescriptor;
@@ -370,10 +421,18 @@ struct Path : public ManagedNamedFileDescriptor
 
     int openat(const char* pathname, int flags, mode_t mode=0777);
 
+    bool faccessat(const char* pathname, int mode, int flags=0);
+
     void fstatat(const char* pathname, struct stat& st);
+
+    /// fstatat, but in case of ENOENT returns false instead of throwing
+    bool fstatat_ifexists(const char* pathname, struct stat& st);
 
     /// fstatat with the AT_SYMLINK_NOFOLLOW flag set
     void lstatat(const char* pathname, struct stat& st);
+
+    /// lstatat, but in case of ENOENT returns false instead of throwing
+    bool lstatat_ifexists(const char* pathname, struct stat& st);
 
     void unlinkat(const char* pathname);
 
@@ -524,6 +583,21 @@ void rmdir(const std::string& pathname);
 
 /// Delete the directory \a pathname and all its contents.
 void rmtree(const std::string& pathname);
+
+/**
+ * Delete the directory \a pathname and all its contents.
+ *
+ * If the directory does not exist, it returns false, else true.
+ */
+bool rmtree_ifexists(const std::string& pathname);
+
+/**
+ * Rename src_pathname into dst_pathname.
+ *
+ * This is just a wrapper to the rename(2) system call: source and destination
+ * must be on the same file system.
+ */
+void rename(const std::string& src_pathname, const std::string& dst_pathname);
 
 #if 0
 /// Nicely wrap access to directories
