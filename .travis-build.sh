@@ -26,7 +26,7 @@ $builddep -y fedora/SPECS/wreport.spec
 
 if [[ $image =~ ^fedora: || $image =~ ^centos: ]]
 then
-    pkgname=wreport-$(git describe --abbrev=0 --tags --match='v*')
+    pkgname=wreport-$(git describe --abbrev=0 --tags --match='v*' | sed -e 's,^v,,g')
     mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
     cp fedora/SPECS/wreport.spec ~/rpmbuild/SPECS/wreport.spec
     git archive --prefix=$pkgname/ --format=tar HEAD | gzip -c > ~/rpmbuild/SOURCES/$pkgname.tar.gz
