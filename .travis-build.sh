@@ -26,7 +26,7 @@ $builddep -y fedora/SPECS/wreport.spec
 
 if [[ $image =~ ^fedora: || $image =~ ^centos: ]]
 then
-    pkgname="$(rpmspec -q --qf="wreport-%{version}-%{release}\n" fedora/SPECS/wreport.spec | head -n1)"
+    pkgname=wreport-$(git describe --abbrev=0 --tags --match='v*')
     mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
     cp fedora/SPECS/wreport.spec ~/rpmbuild/SPECS/wreport.spec
     git archive --prefix=$pkgname/ --format=tar HEAD | gzip -c > ~/rpmbuild/SOURCES/$pkgname.tar.gz
