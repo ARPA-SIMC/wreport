@@ -211,6 +211,7 @@ static void wrpy_Var_dealloc(wrpy_Var* self)
 {
     // Explicitly call destructor
     self->var.~Var();
+    Py_TYPE(self)->tp_free(self);
 }
 
 static PyObject* wrpy_Var_str(wrpy_Var* self)
