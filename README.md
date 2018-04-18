@@ -5,10 +5,9 @@
 | Environment | Status |
 | ----------- | ------ |
 | CentOS 7    | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/wreport?branch=master&env=DOCKER_IMAGE=centos:7&label=centos7)](https://travis-ci.org/ARPA-SIMC/wreport) |
-| Fedora 24   | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/wreport?branch=master&env=DOCKER_IMAGE=fedora:24&label=fedora24)](https://travis-ci.org/ARPA-SIMC/wreport) |
-| Fedora 25   | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/wreport?branch=master&env=DOCKER_IMAGE=fedora:25&label=fedora25)](https://travis-ci.org/ARPA-SIMC/wreport) |
 | Fedora 26   | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/wreport?branch=master&env=DOCKER_IMAGE=fedora:26&label=fedora26)](https://travis-ci.org/ARPA-SIMC/wreport) |
 | Fedora 27   | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/wreport?branch=master&env=DOCKER_IMAGE=fedora:27&label=fedora27)](https://travis-ci.org/ARPA-SIMC/wreport) |
+| Fedora 28   | [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/wreport?branch=master&env=DOCKER_IMAGE=fedora:28&label=fedora28)](https://travis-ci.org/ARPA-SIMC/wreport) |
 
 ## Introduction
 
@@ -54,7 +53,7 @@ To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
 
 The author of wreport is Enrico Zini <enrico@enricozini.com>
 
-wreport is Copyright (C) 2005-2017 ARPAE-SIMC <urpsim@arpae.it>
+wreport is Copyright (C) 2005-2018 ARPAE-SIMC <urpsim@arpae.it>
 
 wreport is licensed under the terms of the GNU General Public License version
 2.
