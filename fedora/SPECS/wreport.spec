@@ -1,4 +1,4 @@
-%global releaseno 1
+%global releaseno 2
 
 Name: wreport
 Version: 3.10
@@ -193,6 +193,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Wed Apr 18 2018 Daniele Branchini <dbranchini@arpae.it> - 3.10-2
+- Deallocate storage for Var objects
+
 * Thu Feb 22 2018 Daniele Branchini <dbranchini@arpae.it> - 3.10-1
 - Updated wobble
 - Added missing newline ad the end of verbose output
