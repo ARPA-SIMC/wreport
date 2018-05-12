@@ -41,6 +41,8 @@ nobase_dist_wreportinclude_HEADERS = \
 	utils/lua.h \
 	utils/string.h \
 	utils/sys.h \
+	utils/term.h \
+	utils/testrunner.h \
 	utils/tests.h \
 	tests.h \
 	benchmark.h
@@ -64,7 +66,9 @@ libwreport_la_SOURCES = \
 	tables.cc \
 	utils/string.cc \
 	utils/sys.cc \
+	utils/term.cc \
 	utils/tests.cc \
+	utils/testrunner.cc \
 	internals/fs.cc \
 	internals/tabledir.cc \
 	subset.cc \
