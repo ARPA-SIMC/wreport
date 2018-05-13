@@ -59,6 +59,11 @@ struct DecoderTarget
      * of the variables added
      */
     virtual const Var& decode_and_add_to_all(Varinfo info) = 0;
+
+    /**
+     * Add the variable to all datasets
+     */
+    virtual void add_to_all(Var&& var) = 0;
 };
 
 struct UncompressedDecoderTarget : public DecoderTarget
@@ -70,6 +75,7 @@ struct UncompressedDecoderTarget : public DecoderTarget
 
     Var decode_semantic_b_value(Varinfo info) override;
     const Var& decode_and_add_to_all(Varinfo info) override;
+    void add_to_all(Var&& var) override;
 };
 
 struct CompressedDecoderTarget : public DecoderTarget
@@ -84,6 +90,7 @@ struct CompressedDecoderTarget : public DecoderTarget
 
     Var decode_semantic_b_value(Varinfo info) override;
     const Var& decode_and_add_to_all(Varinfo info) override;
+    void add_to_all(Var&& var) override;
 };
 
 struct DataSectionDecoder : public bulletin::Interpreter

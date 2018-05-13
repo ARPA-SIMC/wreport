@@ -261,6 +261,12 @@ const Var& UncompressedDecoderTarget::decode_and_add_to_all(Varinfo info)
     return out.back();
 }
 
+void UncompressedDecoderTarget::add_to_all(Var&& var)
+{
+    out.store_variable(std::move(var));
+
+}
+
 /*
  * CompressedDecoderTarget
  */
@@ -294,6 +300,12 @@ const Var& CompressedDecoderTarget::decode_and_add_to_all(Varinfo info)
     for (unsigned i = 0; i < subset_count; ++i)
         out.subsets[i].store_variable(res);
     return out.subsets[0].back();
+}
+
+void CompressedDecoderTarget::add_to_all(Var&& var)
+{
+    for (unsigned i = 0; i < subset_count; ++i)
+        out.subsets[i].store_variable(var);
 }
 
 
@@ -557,21 +569,15 @@ void CompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
     // Create the bitmap variable
     Var bmp(info, buf);
 
-    // Add var to subset(s)
-    // TODO: this is add_to_all
-    for (unsigned i = 0; i < m_target.subset_count; ++i)
-        m_target.out.subsets[i].store_variable(bmp);
-
-    // Bitmap will stay set as a reference to the variable to use as the
-    // current bitmap. The subset(s) are taking care of memory managing it.
-
     IFTRACE {
         TRACE("Decoded bitmap count %u: ", bitmap_size);
         bmp.print(stderr);
         TRACE("\n");
     }
 
-    bitmaps.define(std::move(bmp), output_bulletin.subset(0), output_bulletin.subset(0).size());
+    bitmaps.define(bmp, output_bulletin.subset(0), output_bulletin.subset(0).size());
+
+    target().add_to_all(std::move(bmp));
 }
 
 
