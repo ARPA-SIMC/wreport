@@ -315,8 +315,8 @@ void Input::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits
         // Compute the value for this subset
         uint32_t newval = base + diff;
         double dval = info->decode_binary(newval);
-        TRACE("Input:decode_number:decoded diffbits %u %u+%u=%u->%f %s\n",
-                diffbits, base, diff, newval, dval, info->unit);
+        TRACE("Input:decode_number:decoded diffbits %u %u+%u=%u->%f %01d%02d%03d %s\n",
+                diffbits, base, diff, newval, dval, WR_VAR_FXY(info->code), info->unit);
 
         /* Create the new Var */
         dest.setd(dval);

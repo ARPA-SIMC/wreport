@@ -502,6 +502,7 @@ void CompressedBufrDecoder::define_substituted_value(unsigned pos)
 void CompressedBufrDecoder::define_attribute(Varinfo info, unsigned pos)
 {
     decode_b_value(info, [&](unsigned idx, Var&& var) {
+        TRACE("define_attribute:seta subset[%u][%u] (%01d%02d%03d) %01d%02d%03d %s\n", idx, pos, WR_VAR_FXY(output_bulletin.subsets[idx][pos].code()), WR_VAR_FXY(var.code()), var.enq("-"));
         output_bulletin.subsets[idx][pos].seta(var);
     });
 }

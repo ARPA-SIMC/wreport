@@ -129,7 +129,7 @@ void Interpreter::b_variable(Varcode code)
     } else {
         // Proper variable
         TRACE("b_variable variable %01d%02d%03d\n",
-                WR_VAR_F(info->var), WR_VAR_X(info->var), WR_VAR_Y(info->var));
+                WR_VAR_F(info->code), WR_VAR_X(info->code), WR_VAR_Y(info->code));
         define_variable(info);
     }
 }

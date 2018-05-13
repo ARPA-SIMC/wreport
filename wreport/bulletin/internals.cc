@@ -1,8 +1,8 @@
 #include "internals.h"
-#include "var.h"
-#include "subset.h"
-#include "bulletin.h"
-#include "notes.h"
+#include "wreport/var.h"
+#include "wreport/subset.h"
+#include "wreport/bulletin.h"
+#include "wreport/notes.h"
 #include <cmath>
 
 // #define TRACE_INTERPRETER
