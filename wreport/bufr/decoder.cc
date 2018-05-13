@@ -236,6 +236,8 @@ UncompressedDecoderTarget::UncompressedDecoderTarget(Input& in, Subset& out)
 {
 }
 
+const Subset& UncompressedDecoderTarget::reference_subset() const { return out; }
+
 Var UncompressedDecoderTarget::decode_semantic_b_value(Varinfo info)
 {
     Var var(info);
@@ -261,11 +263,20 @@ const Var& UncompressedDecoderTarget::decode_and_add_to_all(Varinfo info)
     return out.back();
 }
 
-void UncompressedDecoderTarget::add_to_all(Var&& var)
+const Var& UncompressedDecoderTarget::decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size)
 {
-    out.store_variable(std::move(var));
+    // Read the bitmap
+    std::string buf = in.decode_uncompressed_bitmap(bitmap_size);
 
+    // Create a single use varinfo to store the bitmap
+    Varinfo info = tables.get_bitmap(code, buf);
+
+    // Store the bitmap
+    out.store_variable(Var(info, buf));
+
+    return out.back();
 }
+
 
 /*
  * CompressedDecoderTarget
@@ -275,6 +286,8 @@ CompressedDecoderTarget::CompressedDecoderTarget(Input& in, Bulletin& out)
     : DecoderTarget(in), out(out), subset_count(out.subsets.size())
 {
 }
+
+const Subset& CompressedDecoderTarget::reference_subset() const { return out.subsets[0]; }
 
 Var CompressedDecoderTarget::decode_semantic_b_value(Varinfo info)
 {
@@ -302,12 +315,21 @@ const Var& CompressedDecoderTarget::decode_and_add_to_all(Varinfo info)
     return out.subsets[0].back();
 }
 
-void CompressedDecoderTarget::add_to_all(Var&& var)
+const Var& CompressedDecoderTarget::decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size)
 {
-    for (unsigned i = 0; i < subset_count; ++i)
-        out.subsets[i].store_variable(var);
-}
+    // Read the bitmap
+    std::string buf = in.decode_compressed_bitmap(bitmap_size);
 
+    // Create a single use varinfo to store the bitmap
+    Varinfo info = tables.get_bitmap(code, buf);
+
+    // Store the bitmap
+    Var bmp(info, buf);
+    for (unsigned i = 0; i < subset_count; ++i)
+        out.subsets[i].store_variable(bmp);
+
+    return out.subsets[0].back();
+}
 
 /*
  * DataSectionDecoder
@@ -332,6 +354,21 @@ unsigned DataSectionDecoder::define_delayed_replication_factor(Varinfo info)
 unsigned DataSectionDecoder::define_associated_field_significance(Varinfo info)
 {
     return target().decode_and_add_to_all(info).enq(63);
+}
+
+void DataSectionDecoder::define_bitmap(unsigned bitmap_size)
+{
+    TRACE("define_bitmap %d\n", bitmap_size);
+
+    const Var& bmp = target().decode_and_add_bitmap(tables, bitmaps.pending_definitions, bitmap_size);
+
+    IFTRACE {
+        TRACE("Decoded bitmap count %u: ", bitmap_size);
+        bmp.print(stderr);
+        TRACE("\n");
+    }
+
+    bitmaps.define(bmp, target().reference_subset());
 }
 
 /*
@@ -434,38 +471,6 @@ void UncompressedBufrDecoder::define_raw_character_data(Varcode code)
     TRACE("decode_c_data:decoded string %s\n", buf.c_str());
 }
 
-void UncompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
-{
-    Varcode code = bitmaps.pending_definitions;
-
-    TRACE("define_bitmap %d\n", bitmap_size);
-
-    // Bitmap size is now in count
-
-    // Read the bitmap
-    std::string buf = in.decode_uncompressed_bitmap(bitmap_size);
-
-    // Create a single use varinfo to store the bitmap
-    Varinfo info = tables.get_bitmap(code, buf);
-
-    // Store the bitmap
-    Var bmp(info, buf);
-
-    // Bitmap will stay set as a reference to the variable to use as the
-    // current bitmap. The subset(s) are taking care of memory managing it.
-
-    // Add var to subset(s)
-    output_bulletin.subsets[subset_no].store_variable(bmp);
-
-    IFTRACE {
-        TRACE("Decoded bitmap count %u: ", bitmap_size);
-        bmp.print(stderr);
-        TRACE("\n");
-    }
-
-    bitmaps.define(std::move(bmp), output_bulletin.subsets[subset_no], output_bulletin.subsets[subset_no].size());
-}
-
 
 /*
  * CompressedBufrDecoder
@@ -555,31 +560,6 @@ void CompressedBufrDecoder::define_raw_character_data(Varcode code)
     // TODO: if compressed, extract the data from each subset? Store it in each dataset?
     error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(code));
 }
-
-void CompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
-{
-    Varcode code = bitmaps.pending_definitions;
-
-    // Read the bitmap
-    std::string buf = in.decode_compressed_bitmap(bitmap_size);
-
-    // Create a single use varinfo to store the bitmap
-    Varinfo info = tables.get_bitmap(code, buf);
-
-    // Create the bitmap variable
-    Var bmp(info, buf);
-
-    IFTRACE {
-        TRACE("Decoded bitmap count %u: ", bitmap_size);
-        bmp.print(stderr);
-        TRACE("\n");
-    }
-
-    bitmaps.define(bmp, output_bulletin.subset(0), output_bulletin.subset(0).size());
-
-    target().add_to_all(std::move(bmp));
-}
-
 
 }
 }

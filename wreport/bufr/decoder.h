@@ -46,6 +46,15 @@ struct DecoderTarget
     virtual ~DecoderTarget() {}
 
     /**
+     * Return the reference to a subset that is receiving the data currently
+     * decoded.
+     *
+     * For uncompressed decoders, this is the current subset. For compressed
+     * decoders, it is the first subset.
+     */
+    virtual const Subset& reference_subset() const = 0;
+
+    /**
      * Decode a value that must always be the same across all datasets.
      *
      * Do not add it to the output.
@@ -60,10 +69,7 @@ struct DecoderTarget
      */
     virtual const Var& decode_and_add_to_all(Varinfo info) = 0;
 
-    /**
-     * Add the variable to all datasets
-     */
-    virtual void add_to_all(Var&& var) = 0;
+    virtual const Var& decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size) = 0;
 };
 
 struct UncompressedDecoderTarget : public DecoderTarget
@@ -73,9 +79,10 @@ struct UncompressedDecoderTarget : public DecoderTarget
 
     UncompressedDecoderTarget(Input& in, Subset& out);
 
+    const Subset& reference_subset() const override;
     Var decode_semantic_b_value(Varinfo info) override;
     const Var& decode_and_add_to_all(Varinfo info) override;
-    void add_to_all(Var&& var) override;
+    const Var& decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size) override;
 };
 
 struct CompressedDecoderTarget : public DecoderTarget
@@ -88,9 +95,10 @@ struct CompressedDecoderTarget : public DecoderTarget
 
     CompressedDecoderTarget(Input& in, Bulletin& out);
 
+    const Subset& reference_subset() const override;
     Var decode_semantic_b_value(Varinfo info) override;
     const Var& decode_and_add_to_all(Varinfo info) override;
-    void add_to_all(Var&& var) override;
+    const Var& decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size) override;
 };
 
 struct DataSectionDecoder : public bulletin::Interpreter
@@ -108,6 +116,7 @@ struct DataSectionDecoder : public bulletin::Interpreter
     unsigned define_delayed_replication_factor(Varinfo info) override;
     unsigned define_associated_field_significance(Varinfo info) override;
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
+    void define_bitmap(unsigned bitmap_size) override;
 };
 
 /// Decoder for uncompressed data
@@ -137,8 +146,6 @@ struct UncompressedBufrDecoder : public DataSectionDecoder
      * Request processing of C05yyy character data
      */
     void define_raw_character_data(Varcode code);
-
-    void define_bitmap(unsigned bitmap_size) override;
 };
 
 /// Decoder for compressed data
@@ -160,7 +167,6 @@ struct CompressedBufrDecoder : public DataSectionDecoder
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;
     void define_raw_character_data(Varcode code) override;
-    void define_bitmap(unsigned bitmap_size) override;
 };
 
 }
