@@ -232,7 +232,7 @@ void Decoder::decode_data()
  */
 
 UncompressedBufrDecoder::UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, Input& in)
-    : bulletin::UncompressedDecoder(bulletin, subset_no), in(in)
+    : Interpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_no)), in(in)
 {
 }
 
@@ -397,8 +397,9 @@ void UncompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
  */
 
 CompressedBufrDecoder::CompressedBufrDecoder(BufrBulletin& bulletin, Input& in)
-    : bulletin::CompressedDecoder(bulletin), in(in), subset_count(bulletin.subsets.size())
+    : Interpreter(bulletin.tables, bulletin.datadesc), output_bulletin(bulletin), in(in), subset_count(bulletin.subsets.size())
 {
+    TRACE("parser: start on compressed bulletin\n");
 }
 
 void CompressedBufrDecoder::decode_b_value(Varinfo info, DispatchToSubsets& dest)
@@ -532,6 +533,7 @@ unsigned CompressedBufrDecoder::define_bitmap_delayed_replication_factor(Varinfo
     Var rep_count = decode_semantic_b_value(info);
     return rep_count.enqi();
 }
+
 void CompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
 {
     Varcode code = bitmaps.pending_definitions;

@@ -1,5 +1,5 @@
 #include "bulletin.h"
-#include "bulletin/internals.h"
+#include "bulletin/interpreter.h"
 #include "buffers/crex.h"
 #include <cstring>
 #include "config.h"
@@ -118,12 +118,14 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
 }
 
 
-struct CrexParser : public bulletin::UncompressedDecoder
+struct CrexParser : public bulletin::Interpreter
 {
+    /// Subset where decoded variables go
+    Subset& output_subset;
     buffers::CrexInput& in;
 
     CrexParser(Bulletin& bulletin, unsigned subset_idx, buffers::CrexInput& in)
-        : bulletin::UncompressedDecoder(bulletin, subset_idx), in(in)
+        : Interpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_idx)), in(in)
     {
     }
 

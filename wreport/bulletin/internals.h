@@ -66,24 +66,6 @@ struct UncompressedEncoder : public bulletin::Interpreter
     virtual void encode_associated_field(const Var& var);
 };
 
-struct UncompressedDecoder : public bulletin::Interpreter
-{
-    /// Subset where decoded variables go
-    Subset& output_subset;
-
-    UncompressedDecoder(Bulletin& bulletin, unsigned subset_no);
-    ~UncompressedDecoder();
-};
-
-struct CompressedDecoder : public bulletin::Interpreter
-{
-    Bulletin& output_bulletin;
-
-    CompressedDecoder(Bulletin& bulletin);
-    virtual ~CompressedDecoder();
-};
-
 }
 }
-
 #endif

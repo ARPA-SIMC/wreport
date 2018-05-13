@@ -3,7 +3,7 @@
 
 #include <wreport/var.h>
 #include <wreport/bulletin.h>
-#include <wreport/bulletin/internals.h>
+#include <wreport/bulletin/interpreter.h>
 #include <wreport/bufr/input.h>
 
 namespace wreport {
@@ -38,8 +38,11 @@ struct Decoder
 };
 
 /// Decoder for uncompressed data
-struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
+struct UncompressedBufrDecoder : public bulletin::Interpreter
 {
+    /// Subset where decoded variables go
+    Subset& output_subset;
+
     /// Input buffer
     Input& in;
 
@@ -73,8 +76,10 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
 };
 
 /// Decoder for compressed data
-struct CompressedBufrDecoder : public bulletin::CompressedDecoder
+struct CompressedBufrDecoder : public bulletin::Interpreter
 {
+    Bulletin& output_bulletin;
+
     /// Input buffer
     Input& in;
 
@@ -94,24 +99,15 @@ struct CompressedBufrDecoder : public bulletin::CompressedDecoder
      */
     Var decode_semantic_b_value(Varinfo info);
 
-    /**
-     * Add \a var to all datasets, returning a pointer to one version of \a var
-     * that is memory managed by one of the datasets.
-     */
+    /// Add \a var to all datasets
     void add_to_all(const Var& var);
 
     void define_variable(Varinfo info) override;
-
     void define_substituted_value(unsigned pos) override;
-
     void define_attribute(Varinfo info, unsigned pos) override;
-
     void define_raw_character_data(Varcode code) override;
-
     unsigned define_delayed_replication_factor(Varinfo info) override;
-
     unsigned define_associated_field_significance(Varinfo info) override;
-
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
     void define_bitmap(unsigned bitmap_size) override;
 };

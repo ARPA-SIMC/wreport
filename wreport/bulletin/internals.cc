@@ -99,23 +99,5 @@ unsigned UncompressedEncoder::define_bitmap_delayed_replication_factor(Varinfo i
 }
 
 
-UncompressedDecoder::UncompressedDecoder(Bulletin& bulletin, unsigned subset_no)
-    : Interpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_no))
-{
-}
-
-UncompressedDecoder::~UncompressedDecoder()
-{
-}
-
-
-CompressedDecoder::CompressedDecoder(Bulletin& bulletin)
-    : Interpreter(bulletin.tables, bulletin.datadesc), output_bulletin(bulletin)
-{
-    TRACE("parser: start on compressed bulletin\n");
-}
-
-CompressedDecoder::~CompressedDecoder() {}
-
 }
 }
