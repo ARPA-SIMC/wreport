@@ -228,11 +228,31 @@ void Decoder::decode_data()
 
 
 /*
+ * UncompressedDecoderTarget
+ */
+
+UncompressedDecoderTarget::UncompressedDecoderTarget(Input& in, Subset& out)
+    : DecoderTarget(in), out(out)
+{
+}
+
+
+/*
+ * CompressedDecoderTarget
+ */
+
+CompressedDecoderTarget::CompressedDecoderTarget(Input& in, Bulletin& out)
+    : DecoderTarget(in), out(out), subset_count(out.subsets.size())
+{
+}
+
+
+/*
  * DataSectionDecoder
  */
 
 DataSectionDecoder::DataSectionDecoder(Bulletin& bulletin, Input& in)
-    : Interpreter(bulletin.tables, bulletin.datadesc), in(in)
+    : Interpreter(bulletin.tables, bulletin.datadesc), in(in), output_bulletin(bulletin)
 {
 }
 
@@ -241,7 +261,7 @@ DataSectionDecoder::DataSectionDecoder(Bulletin& bulletin, Input& in)
  */
 
 UncompressedBufrDecoder::UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, Input& in)
-    : DataSectionDecoder(bulletin, in), output_subset(bulletin.obtain_subset(subset_no))
+    : DataSectionDecoder(bulletin, in), m_target(in, bulletin.obtain_subset(subset_no)), subset_no(subset_no)
 {
 }
 
@@ -272,19 +292,19 @@ Var UncompressedBufrDecoder::decode_b_value(Varinfo info)
 void UncompressedBufrDecoder::define_substituted_value(unsigned pos)
 {
     // Use the details of the corrisponding variable for decoding
-    Varinfo info = output_subset[pos].info();
+    Varinfo info = output_bulletin.subsets[subset_no][pos].info();
     Var var = decode_b_value(info);
     TRACE(" define_substituted_value adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
-            WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(output_subset[pos].code()));
-    output_subset[pos].seta(var);
+            WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(output_bulletin.subsets[subset_no][pos].code()));
+    output_bulletin.subsets[subset_no][pos].seta(var);
 }
 
 void UncompressedBufrDecoder::define_attribute(Varinfo info, unsigned pos)
 {
     Var var = decode_b_value(info);
     TRACE(" define_attribute adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
-            WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(output_subset[pos].code()));
-    output_subset[pos].seta(var);
+            WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(output_bulletin.subsets[subset_no][pos].code()));
+    output_bulletin.subsets[subset_no][pos].seta(var);
 }
 
 /**
@@ -305,10 +325,10 @@ void UncompressedBufrDecoder::define_variable(Varinfo info)
         cur_associated_field = associated_field.make_attribute(val).release();
     }
 
-    output_subset.store_variable(decode_b_value(info));
+    output_bulletin.subsets[subset_no].store_variable(decode_b_value(info));
     IFTRACE {
         TRACE(" define_variable decoded: ");
-        output_subset.back().print(stderr);
+        output_bulletin.subsets[subset_no].back().print(stderr);
     }
     if (cur_associated_field)
     {
@@ -318,7 +338,7 @@ void UncompressedBufrDecoder::define_variable(Varinfo info)
         }
         std::unique_ptr<Var> af(cur_associated_field);
         cur_associated_field = 0;
-        output_subset.back().seta(move(af));
+        output_bulletin.subsets[subset_no].back().seta(move(af));
     }
 }
 
@@ -345,21 +365,21 @@ void UncompressedBufrDecoder::define_raw_character_data(Varcode code)
 
     // Store the character data
     Var cdata(info, buf);
-    output_subset.store_variable(cdata);
+    output_bulletin.subsets[subset_no].store_variable(cdata);
 
     TRACE("decode_c_data:decoded string %s\n", buf.c_str());
 }
 
 unsigned UncompressedBufrDecoder::define_delayed_replication_factor(Varinfo info)
 {
-    output_subset.store_variable(decode_b_value(info));
-    return output_subset.back().enqi();
+    output_bulletin.subsets[subset_no].store_variable(decode_b_value(info));
+    return output_bulletin.subsets[subset_no].back().enqi();
 }
 
 unsigned UncompressedBufrDecoder::define_associated_field_significance(Varinfo info)
 {
-    output_subset.store_variable(decode_b_value(info));
-    return output_subset.back().enq(63);
+    output_bulletin.subsets[subset_no].store_variable(decode_b_value(info));
+    return output_bulletin.subsets[subset_no].back().enq(63);
 }
 
 unsigned UncompressedBufrDecoder::define_bitmap_delayed_replication_factor(Varinfo info)
@@ -394,10 +414,10 @@ void UncompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
         TRACE("\n");
     }
 
-    bitmaps.define(bmp, output_subset, output_subset.size());
+    bitmaps.define(bmp, output_bulletin.subsets[subset_no], output_bulletin.subsets[subset_no].size());
 
     // Add var to subset(s)
-    output_subset.store_variable(std::move(bmp));
+    output_bulletin.subsets[subset_no].store_variable(std::move(bmp));
 }
 
 
@@ -406,7 +426,7 @@ void UncompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
  */
 
 CompressedBufrDecoder::CompressedBufrDecoder(BufrBulletin& bulletin, Input& in)
-    : DataSectionDecoder(bulletin, in), output_bulletin(bulletin), subset_count(bulletin.subsets.size())
+    : DataSectionDecoder(bulletin, in), m_target(in, bulletin), subset_count(bulletin.subsets.size())
 {
     TRACE("parser: start on compressed bulletin\n");
 }

@@ -37,25 +37,62 @@ struct Decoder
     void decode_data();
 };
 
+struct DecoderTarget
+{
+    /// Input buffer
+    Input& in;
+
+    DecoderTarget(Input& in) : in(in) {}
+    virtual ~DecoderTarget() {}
+};
+
+struct UncompressedDecoderTarget : public DecoderTarget
+{
+    /// Subset where decoded variables go
+    Subset& out;
+
+    UncompressedDecoderTarget(Input& in, Subset& out);
+};
+
+struct CompressedDecoderTarget : public DecoderTarget
+{
+    /// Output bulletin
+    Bulletin& out;
+
+    /// Number of subsets in data section
+    unsigned subset_count;
+
+    CompressedDecoderTarget(Input& in, Bulletin& out);
+};
+
 struct DataSectionDecoder : public bulletin::Interpreter
 {
     /// Input buffer
     Input& in;
 
+    /// Output bulletin
+    Bulletin& output_bulletin;
+
     DataSectionDecoder(Bulletin& bulletin, Input& in);
+
+    virtual DecoderTarget& target() = 0;
+
+    //virtual Var decode_semantic_b_value(Varinfo info);
 };
 
 /// Decoder for uncompressed data
 struct UncompressedBufrDecoder : public DataSectionDecoder
 {
-    /// Subset where decoded variables go
-    Subset& output_subset;
+    UncompressedDecoderTarget m_target;
+    unsigned subset_no;
 
     /// If set, it is the associated field for the next variable to be decoded
     Var* cur_associated_field = nullptr;
 
     UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, Input& in);
     ~UncompressedBufrDecoder();
+
+    DecoderTarget& target() override { return m_target; }
 
     Var decode_b_value(Varinfo info);
     void define_substituted_value(unsigned pos) override;
@@ -83,12 +120,13 @@ struct UncompressedBufrDecoder : public DataSectionDecoder
 /// Decoder for compressed data
 struct CompressedBufrDecoder : public DataSectionDecoder
 {
-    Bulletin& output_bulletin;
-
+    CompressedDecoderTarget m_target;
     /// Number of subsets in data section
     unsigned subset_count;
 
     CompressedBufrDecoder(BufrBulletin& bulletin, Input& in);
+
+    DecoderTarget& target() override { return m_target; }
 
     void decode_b_value(Varinfo info, DispatchToSubsets& dest);
 
