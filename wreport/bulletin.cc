@@ -1,4 +1,5 @@
 #include "bulletin.h"
+#include "bufr/decoder.h"
 #include "error.h"
 #include "tableinfo.h"
 #include "vartable.h"
@@ -339,6 +340,50 @@ void BufrBulletin::clear()
 void BufrBulletin::load_tables()
 {
     tables.load_bufr(BufrTableID(originating_centre, originating_subcentre, master_table_number, master_table_version_number, master_table_version_number_local));
+}
+
+std::unique_ptr<BufrBulletin> BufrBulletin::decode_header(const std::string& buf, const BufrCodecOptions& opts, const char* fname, size_t offset)
+{
+    auto res = BufrBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    bufr::Decoder d(buf, fname, offset, *res);
+    d.read_options(opts);
+    d.decode_header();
+    return res;
+}
+
+std::unique_ptr<BufrBulletin> BufrBulletin::decode(const std::string& buf, const BufrCodecOptions& opts, const char* fname, size_t offset)
+{
+    auto res = BufrBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    bufr::Decoder d(buf, fname, offset, *res);
+    d.read_options(opts);
+    d.decode_header();
+    d.decode_data();
+    return res;
+}
+
+std::unique_ptr<BufrBulletin> BufrBulletin::decode_header(const std::string& buf, const char* fname, size_t offset)
+{
+    auto res = BufrBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    bufr::Decoder d(buf, fname, offset, *res);
+    d.decode_header();
+    return res;
+}
+
+std::unique_ptr<BufrBulletin> BufrBulletin::decode(const std::string& buf, const char* fname, size_t offset)
+{
+    auto res = BufrBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    bufr::Decoder d(buf, fname, offset, *res);
+    d.decode_header();
+    d.decode_data();
+    return res;
 }
 
 void BufrBulletin::print_details(FILE* out) const

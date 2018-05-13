@@ -331,7 +331,7 @@ void BufrInput::decode_compressed_number(Var& dest, uint32_t base, unsigned diff
         uint32_t newval = base + diff;
         double dval = info->decode_binary(newval);
         TRACE("BufrInput:decode_number:decoded diffbits %u %u+%u=%u->%f %s\n",
-                diffbits, base, diff, newval, dval, info->bufr_unit);
+                diffbits, base, diff, newval, dval, info->unit);
 
         /* Create the new Var */
         dest.setd(dval);
@@ -393,7 +393,7 @@ void BufrInput::decode_compressed_number(Varinfo info, unsigned associated_field
     {
         uint32_t af_value = af_base + get_bits(af_diffbits);
         decode_compressed_number(var, base, diffbits);
-        dest(i, move(var), af_value);
+        dest(i, std::move(var), af_value);
     }
 }
 
