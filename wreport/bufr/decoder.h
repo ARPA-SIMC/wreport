@@ -37,14 +37,19 @@ struct Decoder
     void decode_data();
 };
 
+struct DataSectionDecoder : public bulletin::Interpreter
+{
+    /// Input buffer
+    Input& in;
+
+    DataSectionDecoder(Bulletin& bulletin, Input& in);
+};
+
 /// Decoder for uncompressed data
-struct UncompressedBufrDecoder : public bulletin::Interpreter
+struct UncompressedBufrDecoder : public DataSectionDecoder
 {
     /// Subset where decoded variables go
     Subset& output_subset;
-
-    /// Input buffer
-    Input& in;
 
     /// If set, it is the associated field for the next variable to be decoded
     Var* cur_associated_field = nullptr;
@@ -76,12 +81,9 @@ struct UncompressedBufrDecoder : public bulletin::Interpreter
 };
 
 /// Decoder for compressed data
-struct CompressedBufrDecoder : public bulletin::Interpreter
+struct CompressedBufrDecoder : public DataSectionDecoder
 {
     Bulletin& output_bulletin;
-
-    /// Input buffer
-    Input& in;
 
     /// Number of subsets in data section
     unsigned subset_count;

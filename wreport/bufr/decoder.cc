@@ -228,11 +228,20 @@ void Decoder::decode_data()
 
 
 /*
+ * DataSectionDecoder
+ */
+
+DataSectionDecoder::DataSectionDecoder(Bulletin& bulletin, Input& in)
+    : Interpreter(bulletin.tables, bulletin.datadesc), in(in)
+{
+}
+
+/*
  * UncompressedBufrDecoder
  */
 
 UncompressedBufrDecoder::UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, Input& in)
-    : Interpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_no)), in(in)
+    : DataSectionDecoder(bulletin, in), output_subset(bulletin.obtain_subset(subset_no))
 {
 }
 
@@ -397,7 +406,7 @@ void UncompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
  */
 
 CompressedBufrDecoder::CompressedBufrDecoder(BufrBulletin& bulletin, Input& in)
-    : Interpreter(bulletin.tables, bulletin.datadesc), output_bulletin(bulletin), in(in), subset_count(bulletin.subsets.size())
+    : DataSectionDecoder(bulletin, in), output_bulletin(bulletin), subset_count(bulletin.subsets.size())
 {
     TRACE("parser: start on compressed bulletin\n");
 }
