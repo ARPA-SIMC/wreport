@@ -44,6 +44,21 @@ struct DecoderTarget
 
     DecoderTarget(Input& in) : in(in) {}
     virtual ~DecoderTarget() {}
+
+    /**
+     * Decode a value that must always be the same across all datasets.
+     *
+     * Do not add it to the output.
+     *
+     * @returns the decoded value
+     */
+    virtual Var decode_semantic_b_value(Varinfo info) = 0;
+
+    /**
+     * Decode and add the same value to all datasets, return a reference to one
+     * of the variables added
+     */
+    virtual const Var& decode_and_add_to_all(Varinfo info) = 0;
 };
 
 struct UncompressedDecoderTarget : public DecoderTarget
@@ -52,6 +67,9 @@ struct UncompressedDecoderTarget : public DecoderTarget
     Subset& out;
 
     UncompressedDecoderTarget(Input& in, Subset& out);
+
+    Var decode_semantic_b_value(Varinfo info) override;
+    const Var& decode_and_add_to_all(Varinfo info) override;
 };
 
 struct CompressedDecoderTarget : public DecoderTarget
@@ -63,6 +81,9 @@ struct CompressedDecoderTarget : public DecoderTarget
     unsigned subset_count;
 
     CompressedDecoderTarget(Input& in, Bulletin& out);
+
+    Var decode_semantic_b_value(Varinfo info) override;
+    const Var& decode_and_add_to_all(Varinfo info) override;
 };
 
 struct DataSectionDecoder : public bulletin::Interpreter
@@ -77,7 +98,9 @@ struct DataSectionDecoder : public bulletin::Interpreter
 
     virtual DecoderTarget& target() = 0;
 
-    //virtual Var decode_semantic_b_value(Varinfo info);
+    unsigned define_delayed_replication_factor(Varinfo info) override;
+    unsigned define_associated_field_significance(Varinfo info) override;
+    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
 };
 
 /// Decoder for uncompressed data
@@ -108,12 +131,6 @@ struct UncompressedBufrDecoder : public DataSectionDecoder
      */
     void define_raw_character_data(Varcode code);
 
-    unsigned define_delayed_replication_factor(Varinfo info) override;
-
-    unsigned define_associated_field_significance(Varinfo info) override;
-
-    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
-
     void define_bitmap(unsigned bitmap_size) override;
 };
 
@@ -132,23 +149,10 @@ struct CompressedBufrDecoder : public DataSectionDecoder
 
     void decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest);
 
-    /**
-     * Decode a value that must always be the same acrosso all datasets.
-     *
-     * @returns the decoded value
-     */
-    Var decode_semantic_b_value(Varinfo info);
-
-    /// Add \a var to all datasets
-    void add_to_all(const Var& var);
-
     void define_variable(Varinfo info) override;
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;
     void define_raw_character_data(Varcode code) override;
-    unsigned define_delayed_replication_factor(Varinfo info) override;
-    unsigned define_associated_field_significance(Varinfo info) override;
-    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
     void define_bitmap(unsigned bitmap_size) override;
 };
 

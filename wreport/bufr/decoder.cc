@@ -236,6 +236,30 @@ UncompressedDecoderTarget::UncompressedDecoderTarget(Input& in, Subset& out)
 {
 }
 
+Var UncompressedDecoderTarget::decode_semantic_b_value(Varinfo info)
+{
+    Var var(info);
+    switch (info->type)
+    {
+        case Vartype::String:
+            in.decode_string(var);
+            break;
+        case Vartype::Binary:
+            in.decode_binary(var);
+            break;
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            in.decode_number(var);
+            break;
+    }
+    return var;
+}
+
+const Var& UncompressedDecoderTarget::decode_and_add_to_all(Varinfo info)
+{
+    out.store_variable(decode_semantic_b_value(info));
+    return out.back();
+}
 
 /*
  * CompressedDecoderTarget
@@ -246,6 +270,32 @@ CompressedDecoderTarget::CompressedDecoderTarget(Input& in, Bulletin& out)
 {
 }
 
+Var CompressedDecoderTarget::decode_semantic_b_value(Varinfo info)
+{
+    Var var(info);
+    switch (info->type)
+    {
+        case Vartype::String:
+            in.decode_string(var, subset_count);
+            break;
+        case Vartype::Binary:
+            throw error_unimplemented("decode_b_binary TODO");
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            in.decode_compressed_semantic_number(var, subset_count);
+            break;
+    }
+    return var;
+}
+
+const Var& CompressedDecoderTarget::decode_and_add_to_all(Varinfo info)
+{
+    Var res(decode_semantic_b_value(info));
+    for (unsigned i = 0; i < subset_count; ++i)
+        out.subsets[i].store_variable(res);
+    return out.subsets[0].back();
+}
+
 
 /*
  * DataSectionDecoder
@@ -254,6 +304,22 @@ CompressedDecoderTarget::CompressedDecoderTarget(Input& in, Bulletin& out)
 DataSectionDecoder::DataSectionDecoder(Bulletin& bulletin, Input& in)
     : Interpreter(bulletin.tables, bulletin.datadesc), in(in), output_bulletin(bulletin)
 {
+}
+
+unsigned DataSectionDecoder::define_bitmap_delayed_replication_factor(Varinfo info)
+{
+    Var rep_count = target().decode_semantic_b_value(info);
+    return rep_count.enqi();
+}
+
+unsigned DataSectionDecoder::define_delayed_replication_factor(Varinfo info)
+{
+    return target().decode_and_add_to_all(info).enqi();
+}
+
+unsigned DataSectionDecoder::define_associated_field_significance(Varinfo info)
+{
+    return target().decode_and_add_to_all(info).enq(63);
 }
 
 /*
@@ -272,21 +338,7 @@ UncompressedBufrDecoder::~UncompressedBufrDecoder()
 
 Var UncompressedBufrDecoder::decode_b_value(Varinfo info)
 {
-    Var var(info);
-    switch (info->type)
-    {
-        case Vartype::String:
-            in.decode_string(var);
-            break;
-        case Vartype::Binary:
-            in.decode_binary(var);
-            break;
-        case Vartype::Integer:
-        case Vartype::Decimal:
-            in.decode_number(var);
-            break;
-    }
-    return var;
+    return m_target.decode_semantic_b_value(info);
 }
 
 void UncompressedBufrDecoder::define_substituted_value(unsigned pos)
@@ -370,24 +422,6 @@ void UncompressedBufrDecoder::define_raw_character_data(Varcode code)
     TRACE("decode_c_data:decoded string %s\n", buf.c_str());
 }
 
-unsigned UncompressedBufrDecoder::define_delayed_replication_factor(Varinfo info)
-{
-    output_bulletin.subsets[subset_no].store_variable(decode_b_value(info));
-    return output_bulletin.subsets[subset_no].back().enqi();
-}
-
-unsigned UncompressedBufrDecoder::define_associated_field_significance(Varinfo info)
-{
-    output_bulletin.subsets[subset_no].store_variable(decode_b_value(info));
-    return output_bulletin.subsets[subset_no].back().enq(63);
-}
-
-unsigned UncompressedBufrDecoder::define_bitmap_delayed_replication_factor(Varinfo info)
-{
-    Var rep_count = decode_b_value(info);
-    return rep_count.enqi();
-}
-
 void UncompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
 {
     Varcode code = bitmaps.pending_definitions;
@@ -408,16 +442,16 @@ void UncompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
     // Bitmap will stay set as a reference to the variable to use as the
     // current bitmap. The subset(s) are taking care of memory managing it.
 
+    // Add var to subset(s)
+    output_bulletin.subsets[subset_no].store_variable(bmp);
+
     IFTRACE {
         TRACE("Decoded bitmap count %u: ", bitmap_size);
         bmp.print(stderr);
         TRACE("\n");
     }
 
-    bitmaps.define(bmp, output_bulletin.subsets[subset_no], output_bulletin.subsets[subset_no].size());
-
-    // Add var to subset(s)
-    output_bulletin.subsets[subset_no].store_variable(std::move(bmp));
+    bitmaps.define(std::move(bmp), output_bulletin.subsets[subset_no], output_bulletin.subsets[subset_no].size());
 }
 
 
@@ -481,39 +515,6 @@ void CompressedBufrDecoder::decode_b_value(Varinfo info, std::function<void(unsi
     }
 }
 
-/**
- * Decode a value that must always be the same acrosso all datasets.
- *
- * @returns the decoded value
- */
-Var CompressedBufrDecoder::decode_semantic_b_value(Varinfo info)
-{
-    Var var(info);
-    switch (info->type)
-    {
-        case Vartype::String:
-            in.decode_string(var, subset_count);
-            break;
-        case Vartype::Binary:
-            throw error_unimplemented("decode_b_binary TODO");
-        case Vartype::Integer:
-        case Vartype::Decimal:
-            in.decode_compressed_semantic_number(var, subset_count);
-            break;
-    }
-    return var;
-}
-
-/**
- * Add \a var to all datasets, returning a pointer to one version of \a var
- * that is memory managed by one of the datasets.
- */
-void CompressedBufrDecoder::add_to_all(const Var& var)
-{
-    for (unsigned i = 0; i < subset_count; ++i)
-        output_bulletin.subsets[i].store_variable(var);
-}
-
 void CompressedBufrDecoder::define_variable(Varinfo info)
 {
     DispatchToSubsets adder(output_bulletin, subset_count);
@@ -543,26 +544,6 @@ void CompressedBufrDecoder::define_raw_character_data(Varcode code)
     error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(code));
 }
 
-unsigned CompressedBufrDecoder::define_delayed_replication_factor(Varinfo info)
-{
-    Var res(decode_semantic_b_value(info));
-    add_to_all(res);
-    return res.enqi();
-}
-
-unsigned CompressedBufrDecoder::define_associated_field_significance(Varinfo info)
-{
-    Var res(decode_semantic_b_value(info));
-    add_to_all(res);
-    return res.enq(63);
-}
-
-unsigned CompressedBufrDecoder::define_bitmap_delayed_replication_factor(Varinfo info)
-{
-    Var rep_count = decode_semantic_b_value(info);
-    return rep_count.enqi();
-}
-
 void CompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
 {
     Varcode code = bitmaps.pending_definitions;
@@ -577,7 +558,9 @@ void CompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
     Var bmp(info, buf);
 
     // Add var to subset(s)
-    add_to_all(bmp);
+    // TODO: this is add_to_all
+    for (unsigned i = 0; i < m_target.subset_count; ++i)
+        m_target.out.subsets[i].store_variable(bmp);
 
     // Bitmap will stay set as a reference to the variable to use as the
     // current bitmap. The subset(s) are taking care of memory managing it.
