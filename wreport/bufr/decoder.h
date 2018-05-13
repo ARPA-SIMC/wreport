@@ -4,15 +4,16 @@
 #include <wreport/var.h>
 #include <wreport/bulletin.h>
 #include <wreport/bulletin/internals.h>
-#include <wreport/buffers/bufr.h>
+#include <wreport/bufr/input.h>
 
 namespace wreport {
 namespace bufr {
+struct DispatchToSubsets;
 
 struct Decoder
 {
     /// Input data
-    buffers::BufrInput in;
+    Input in;
     /* Output decoded variables */
     BufrBulletin& out;
     /// Number of expected subsets (read in decode_header, used in decode_data)
@@ -40,12 +41,12 @@ struct Decoder
 struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
 {
     /// Input buffer
-    buffers::BufrInput& in;
+    Input& in;
 
     /// If set, it is the associated field for the next variable to be decoded
     Var* cur_associated_field = nullptr;
 
-    UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, buffers::BufrInput& in);
+    UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, Input& in);
     ~UncompressedBufrDecoder();
 
     Var decode_b_value(Varinfo info);
@@ -75,15 +76,14 @@ struct UncompressedBufrDecoder : public bulletin::UncompressedDecoder
 struct CompressedBufrDecoder : public bulletin::CompressedDecoder
 {
     /// Input buffer
-    buffers::BufrInput& in;
+    Input& in;
 
     /// Number of subsets in data section
     unsigned subset_count;
 
-    CompressedBufrDecoder(BufrBulletin& bulletin, buffers::BufrInput& in);
+    CompressedBufrDecoder(BufrBulletin& bulletin, Input& in);
 
-    template<typename Adder>
-    void decode_b_value(Varinfo info, Adder& dest);
+    void decode_b_value(Varinfo info, DispatchToSubsets& dest);
 
     void decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest);
 

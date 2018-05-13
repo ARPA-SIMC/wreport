@@ -241,7 +241,7 @@ void Decoder::decode_data()
  * UncompressedBufrDecoder
  */
 
-UncompressedBufrDecoder::UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, buffers::BufrInput& in)
+UncompressedBufrDecoder::UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, Input& in)
     : bulletin::UncompressedDecoder(bulletin, subset_no), in(in)
 {
 }
@@ -406,13 +406,12 @@ void UncompressedBufrDecoder::define_bitmap(unsigned bitmap_size)
  * CompressedBufrDecoder
  */
 
-CompressedBufrDecoder::CompressedBufrDecoder(BufrBulletin& bulletin, buffers::BufrInput& in)
+CompressedBufrDecoder::CompressedBufrDecoder(BufrBulletin& bulletin, Input& in)
     : bulletin::CompressedDecoder(bulletin), in(in), subset_count(bulletin.subsets.size())
 {
 }
 
-template<typename Adder>
-void CompressedBufrDecoder::decode_b_value(Varinfo info, Adder& dest)
+void CompressedBufrDecoder::decode_b_value(Varinfo info, DispatchToSubsets& dest)
 {
     switch (info->type)
     {
@@ -497,27 +496,7 @@ void CompressedBufrDecoder::add_to_all(const Var& var)
 
 void CompressedBufrDecoder::define_variable(Varinfo info)
 {
-    struct Adder
-    {
-        Bulletin& out;
-        unsigned subset_count;
-        Adder(Bulletin& out, unsigned subset_count) : out(out), subset_count(subset_count) {}
-
-        void add_missing(Varinfo info)
-        {
-            for (unsigned i = 0; i < subset_count; ++i)
-                out.subsets[i].store_variable_undef(info);
-        }
-        void add_same(const Var& var)
-        {
-            for (unsigned i = 0; i < subset_count; ++i)
-                out.subsets[i].store_variable(Var(var));
-        }
-        void add_var(unsigned subset, Var&& var)
-        {
-            out.subsets[subset].store_variable(var);
-        }
-    } adder(output_bulletin, subset_count);
+    DispatchToSubsets adder(output_bulletin, subset_count);
     decode_b_value(info, adder);
 }
 

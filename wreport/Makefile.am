@@ -20,6 +20,7 @@ nobase_dist_wreportinclude_HEADERS = \
 	notes.h \
 	buffers/bufr.h \
 	buffers/crex.h \
+	bufr/input.h \
 	bufr/decoder.h \
 	bulletin.h \
 	bulletin/associated_fields.h \
@@ -75,6 +76,7 @@ libwreport_la_SOURCES = \
 	subset.cc \
 	buffers/bufr.cc \
 	buffers/crex.cc \
+	bufr/input.cc \
 	bufr/decoder.cc \
 	bulletin.cc \
 	bulletin/associated_fields.cc \
@@ -129,6 +131,7 @@ test_wreport_SOURCES = \
 	internals/tabledir-test.cc \
 	subset-test.cc \
 	bulletin-test.cc \
+	bufr/input-test.cc \
 	bufr/decoder-test.cc \
 	bufr_encoder-test.cc \
 	crex_decoder-test.cc \
