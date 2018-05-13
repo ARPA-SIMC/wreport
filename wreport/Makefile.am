@@ -20,6 +20,7 @@ nobase_dist_wreportinclude_HEADERS = \
 	notes.h \
 	buffers/bufr.h \
 	buffers/crex.h \
+	bufr/trace.h \
 	bufr/input.h \
 	bufr/decoder.h \
 	bulletin.h \
