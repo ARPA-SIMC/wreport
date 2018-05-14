@@ -10,6 +10,10 @@
 namespace wreport {
 struct Bulletin;
 
+namespace bulletin {
+struct AssociatedField;
+}
+
 namespace bufr {
 
 struct DispatchToSubsets
@@ -268,7 +272,7 @@ public:
      * Decode a number as described by \a info from a compressed bufr with
      * \a subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_compressed_number(Varinfo info, unsigned associated_field_bits, unsigned subsets, std::function<void(unsigned, Var&&, uint32_t)> dest);
+    void decode_compressed_number(Varinfo info, const bulletin::AssociatedField& afield, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
 
     /**
      * Decode a number as described by dest.info(), and set it as value for \a

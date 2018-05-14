@@ -538,9 +538,7 @@ void CompressedBufrDecoder::define_variable_with_associated_field(Varinfo info)
         case Vartype::Decimal:
             if (associated_field.bit_count)
             {
-                in.decode_compressed_number(info, associated_field.bit_count, subset_count, [&](unsigned subset_no, Var&& var, uint32_t associated_field_val) {
-                    std::unique_ptr<Var> af(associated_field.make_attribute(associated_field_val));
-                    if (af.get()) var.seta(std::move(af));
+                in.decode_compressed_number(info, associated_field, subset_count, [&](unsigned subset_no, Var&& var) {
                     dest.add_var(subset_no, std::move(var));
                 });
             }

@@ -1,5 +1,6 @@
 #include "input.h"
 #include "trace.h"
+#include "wreport/bulletin/associated_fields.h"
 #include <cstdarg>
 
 namespace {
@@ -323,8 +324,7 @@ void Input::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits
     }
 }
 
-//void Input::decode_compressed_number(Varinfo info, unsigned subsets, const bulletin::AssociatedField& associated_field, std::function<void(unsigned, Var&&)> dest)
-void Input::decode_compressed_number(Varinfo info, unsigned associated_field_bits, unsigned subsets, std::function<void(unsigned, Var&&, uint32_t)> dest)
+void Input::decode_compressed_number(Varinfo info, const bulletin::AssociatedField& associated_field, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
 {
     Var var(info);
 
@@ -346,7 +346,7 @@ void Input::decode_compressed_number(Varinfo info, unsigned associated_field_bit
      */
 
     /// Associated field base value
-    uint32_t af_base = get_bits(associated_field_bits);
+    uint32_t af_base = get_bits(associated_field.bit_count);
     /// Number of bits used to encode the associated field differences
     uint32_t af_diffbits = get_bits(6);
 
@@ -378,7 +378,9 @@ void Input::decode_compressed_number(Varinfo info, unsigned associated_field_bit
     {
         uint32_t af_value = af_base + get_bits(af_diffbits);
         decode_compressed_number(var, base, diffbits);
-        dest(i, std::move(var), af_value);
+        std::unique_ptr<Var> af(associated_field.make_attribute(af_value));
+        if (af.get()) var.seta(std::move(af));
+        dest(i, std::move(var));
     }
 }
 
