@@ -536,14 +536,9 @@ void CompressedBufrDecoder::define_variable_with_associated_field(Varinfo info)
             throw error_unimplemented("decode_b_binary TODO");
         case Vartype::Integer:
         case Vartype::Decimal:
-            if (associated_field.bit_count)
-            {
-                in.decode_compressed_number(info, associated_field, subset_count, [&](unsigned subset_no, Var&& var) {
-                    dest.add_var(subset_no, std::move(var));
-                });
-            }
-            else
-                in.decode_compressed_number(info, subset_count, dest);
+            in.decode_compressed_number(info, associated_field, subset_count, [&](unsigned subset_no, Var&& var) {
+                dest.add_var(subset_no, std::move(var));
+            });
             break;
     }
 }
