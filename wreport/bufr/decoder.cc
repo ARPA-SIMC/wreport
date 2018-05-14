@@ -238,7 +238,7 @@ UncompressedDecoderTarget::UncompressedDecoderTarget(Input& in, Subset& out)
 
 const Subset& UncompressedDecoderTarget::reference_subset() const { return out; }
 
-Var UncompressedDecoderTarget::decode_semantic_b_value(Varinfo info)
+Var UncompressedDecoderTarget::decode_uniform_b_value(Varinfo info)
 {
     Var var(info);
     switch (info->type)
@@ -259,7 +259,7 @@ Var UncompressedDecoderTarget::decode_semantic_b_value(Varinfo info)
 
 const Var& UncompressedDecoderTarget::decode_and_add_to_all(Varinfo info)
 {
-    out.store_variable(decode_semantic_b_value(info));
+    out.store_variable(decode_uniform_b_value(info));
     return out.back();
 }
 
@@ -277,6 +277,14 @@ const Var& UncompressedDecoderTarget::decode_and_add_bitmap(const Tables& tables
     return out.back();
 }
 
+void UncompressedDecoderTarget::decode_and_set_attribute(Varinfo info, unsigned pos)
+{
+    Var var = decode_uniform_b_value(info);
+    TRACE(" define_attribute adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
+            WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(output_bulletin.subsets[subset_no][pos].code()));
+    out[pos].seta(std::move(var));
+}
+
 
 /*
  * CompressedDecoderTarget
@@ -289,7 +297,7 @@ CompressedDecoderTarget::CompressedDecoderTarget(Input& in, Bulletin& out)
 
 const Subset& CompressedDecoderTarget::reference_subset() const { return out.subsets[0]; }
 
-Var CompressedDecoderTarget::decode_semantic_b_value(Varinfo info)
+Var CompressedDecoderTarget::decode_uniform_b_value(Varinfo info)
 {
     Var var(info);
     switch (info->type)
@@ -307,9 +315,25 @@ Var CompressedDecoderTarget::decode_semantic_b_value(Varinfo info)
     return var;
 }
 
+void CompressedDecoderTarget::decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest)
+{
+    switch (info->type)
+    {
+        case Vartype::String:
+            in.decode_string(info, subset_count, dest);
+            break;
+        case Vartype::Binary:
+            throw error_unimplemented("decode_b_binary TODO");
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            in.decode_compressed_number(info, subset_count, dest);
+            break;
+    }
+}
+
 const Var& CompressedDecoderTarget::decode_and_add_to_all(Varinfo info)
 {
-    Var res(decode_semantic_b_value(info));
+    Var res(decode_uniform_b_value(info));
     for (unsigned i = 0; i < subset_count; ++i)
         out.subsets[i].store_variable(res);
     return out.subsets[0].back();
@@ -331,6 +355,14 @@ const Var& CompressedDecoderTarget::decode_and_add_bitmap(const Tables& tables, 
     return out.subsets[0].back();
 }
 
+void CompressedDecoderTarget::decode_and_set_attribute(Varinfo info, unsigned pos)
+{
+    decode_b_value(info, [&](unsigned idx, Var&& var) {
+        TRACE("define_attribute:seta subset[%u][%u] (%01d%02d%03d) %01d%02d%03d %s\n", idx, pos, WR_VAR_FXY(output_bulletin.subsets[idx][pos].code()), WR_VAR_FXY(var.code()), var.enq("-"));
+        out.subsets[idx][pos].seta(std::move(var));
+    });
+}
+
 /*
  * DataSectionDecoder
  */
@@ -342,7 +374,7 @@ DataSectionDecoder::DataSectionDecoder(Bulletin& bulletin, Input& in)
 
 unsigned DataSectionDecoder::define_bitmap_delayed_replication_factor(Varinfo info)
 {
-    Var rep_count = target().decode_semantic_b_value(info);
+    Var rep_count = target().decode_uniform_b_value(info);
     return rep_count.enqi();
 }
 
@@ -371,6 +403,12 @@ void DataSectionDecoder::define_bitmap(unsigned bitmap_size)
     bitmaps.define(bmp, target().reference_subset());
 }
 
+void DataSectionDecoder::define_attribute(Varinfo info, unsigned pos)
+{
+    target().decode_and_set_attribute(info, pos);
+}
+
+
 /*
  * UncompressedBufrDecoder
  */
@@ -387,7 +425,7 @@ UncompressedBufrDecoder::~UncompressedBufrDecoder()
 
 Var UncompressedBufrDecoder::decode_b_value(Varinfo info)
 {
-    return m_target.decode_semantic_b_value(info);
+    return m_target.decode_uniform_b_value(info);
 }
 
 void UncompressedBufrDecoder::define_substituted_value(unsigned pos)
@@ -396,14 +434,6 @@ void UncompressedBufrDecoder::define_substituted_value(unsigned pos)
     Varinfo info = output_bulletin.subsets[subset_no][pos].info();
     Var var = decode_b_value(info);
     TRACE(" define_substituted_value adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
-            WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(output_bulletin.subsets[subset_no][pos].code()));
-    output_bulletin.subsets[subset_no][pos].seta(var);
-}
-
-void UncompressedBufrDecoder::define_attribute(Varinfo info, unsigned pos)
-{
-    Var var = decode_b_value(info);
-    TRACE(" define_attribute adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
             WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(output_bulletin.subsets[subset_no][pos].code()));
     output_bulletin.subsets[subset_no][pos].seta(var);
 }
@@ -543,14 +573,6 @@ void CompressedBufrDecoder::define_substituted_value(unsigned pos)
     // Use the details of the corrisponding variable for decoding
     Varinfo info = output_bulletin.subset(0)[pos].info();
     decode_b_value(info, [&](unsigned idx, Var&& var) {
-        output_bulletin.subsets[idx][pos].seta(var);
-    });
-}
-
-void CompressedBufrDecoder::define_attribute(Varinfo info, unsigned pos)
-{
-    decode_b_value(info, [&](unsigned idx, Var&& var) {
-        TRACE("define_attribute:seta subset[%u][%u] (%01d%02d%03d) %01d%02d%03d %s\n", idx, pos, WR_VAR_FXY(output_bulletin.subsets[idx][pos].code()), WR_VAR_FXY(var.code()), var.enq("-"));
         output_bulletin.subsets[idx][pos].seta(var);
     });
 }
