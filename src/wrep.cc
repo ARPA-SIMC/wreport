@@ -38,6 +38,7 @@ void do_help(FILE* out)
         "  -h,--help           print this help message\n"
         "  -i,--info           print configuration information\n"
         "  -d,--dump           (default) dump message contents\n"
+        "  -t,--trace          print a verbose trace of the decoding process\n"
         "  -s,--structure      dump message contents and structure\n"
         "  -D,--dds            dump message Data Descriptor Section\n"
         "  -p,--print=VARCODES for each input bulletin, print the given\n"
@@ -61,6 +62,7 @@ int main(int argc, char* argv[])
         /* These options set a flag. */
         {"crex",       no_argument,       NULL, 'c'},
         {"dump",       no_argument,       NULL, 'd'},
+        {"trace",      no_argument,       NULL, 't'},
         {"structure",  no_argument,       NULL, 's'},
         {"dds",        no_argument,       NULL, 'D'},
         {"print",      required_argument, NULL, 'p'},
@@ -83,10 +85,10 @@ int main(int argc, char* argv[])
         int option_index = 0;
 
 #ifdef HAS_GETOPT_LONG
-        int c = getopt_long(argc, argv, "cdsDpivUTFLh:",
+        int c = getopt_long(argc, argv, "cdsDpivtUTFLh:",
                 long_options, &option_index);
 #else
-        int c = getopt(argc, argv, "cdsDpivUTFLh:");
+        int c = getopt(argc, argv, "cdsDpivtUTFLh:");
 #endif
 
         // Detect the end of the options
@@ -98,6 +100,7 @@ int main(int argc, char* argv[])
             case 'c': options.crex = true; break;
             case 'v': options.verbose = true; break;
             case 'd': options.action = DUMP; break;
+            case 't': options.action = TRACE; break;
             case 's': options.action = DUMP_STRUCTURE; break;
             case 'D': options.action = DUMP_DDS; break;
             case 'p':
@@ -134,6 +137,7 @@ int main(int argc, char* argv[])
         case LIST_TABLES:
             tabledir::Tabledirs::get().print(stdout);
             return 0;
+        case TRACE: handler.reset(new PrintTrace(stdout)); break;
         case DUMP: handler.reset(new PrintContents(stdout)); break;
         case DUMP_STRUCTURE: handler.reset(new PrintStructure(stdout)); break;
         case DUMP_DDS: handler.reset(new PrintDDS(stdout)); break;

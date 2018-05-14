@@ -561,7 +561,7 @@ VerboseDataSectionDecoder::VerboseDataSectionDecoder(Bulletin& bulletin, Decoder
 
 void VerboseDataSectionDecoder::print_lead(Varcode code)
 {
-    fprintf(out, "%*s%d%02d%03d",
+    fprintf(out, "%*s%d%02d%03d ",
             indent, "", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
@@ -573,9 +573,9 @@ void VerboseDataSectionDecoder::b_variable(Varcode code)
         if (tables.btable->contains(code))
         {
             Varinfo info = tables.btable->query(code);
-            fprintf(out, " %s[%s]", info->desc, info->unit);
+            fprintf(out, "%s[%s]", info->desc, info->unit);
         } else
-            fprintf(out, " (missing in B table %s)", tables.btable->pathname().c_str());
+            fprintf(out, "(missing in B table %s)", tables.btable->pathname().c_str());
     }
     putc('\n', out);
     DataSectionDecoder::b_variable(code);

@@ -36,7 +36,7 @@ void read_bufr_raw(const Options& opts, const char* fname, RawHandler& handler)
     // even in case of errors
     try {
         // String used to hold raw data read from the input file
-        string raw_data;
+        std::string raw_data;
 
         // (optional) offset of the start of the BUFR message read, which we
         // pass to the decoder to have nicer error messages
