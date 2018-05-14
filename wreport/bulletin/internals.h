@@ -41,6 +41,7 @@ struct UncompressedEncoder : public bulletin::Interpreter
     void define_bitmap(unsigned bitmap_size) override;
 
     void define_variable(Varinfo info) override;
+    void define_variable_with_associated_field(Varinfo info) override;
     unsigned define_delayed_replication_factor(Varinfo info) override;
     unsigned define_associated_field_significance(Varinfo info) override;
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
@@ -66,24 +67,6 @@ struct UncompressedEncoder : public bulletin::Interpreter
     virtual void encode_associated_field(const Var& var);
 };
 
-struct UncompressedDecoder : public bulletin::Interpreter
-{
-    /// Subset where decoded variables go
-    Subset& output_subset;
-
-    UncompressedDecoder(Bulletin& bulletin, unsigned subset_no);
-    ~UncompressedDecoder();
-};
-
-struct CompressedDecoder : public bulletin::Interpreter
-{
-    Bulletin& output_bulletin;
-
-    CompressedDecoder(Bulletin& bulletin);
-    virtual ~CompressedDecoder();
-};
-
 }
 }
-
 #endif

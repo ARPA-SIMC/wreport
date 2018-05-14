@@ -71,6 +71,22 @@ std::unique_ptr<BULLETIN> decode_checked(const std::string& buf, const char* nam
 }
 
 template<typename BULLETIN>
+std::unique_ptr<BULLETIN> decode_checked(const std::string& buf, const char* name, FILE* verbose)
+{
+    try {
+        return BULLETIN::decode_verbose(buf, verbose, name);
+    } catch (wreport::error_parse& e) {
+        try {
+            auto h = BULLETIN::decode_header(buf, name);
+            h->print_structured(stderr);
+        } catch (wreport::error& e) {
+            std::cerr << "Dump interrupted: " << e.what();
+        }
+        throw;
+    }
+}
+
+template<typename BULLETIN>
 struct TestCodec
 {
     std::string fname;

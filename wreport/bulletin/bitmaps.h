@@ -42,6 +42,7 @@ struct Bitmap
      *   the C operator that defines or uses the bitmap)
      */
     Bitmap(const Var& bitmap, const Subset& subset, unsigned anchor);
+    Bitmap(const Var& bitmap, const Subset& subset);
     Bitmap(const Bitmap&) = delete;
     ~Bitmap();
     Bitmap& operator=(const Bitmap&) = delete;
@@ -79,6 +80,7 @@ struct Bitmaps
     ~Bitmaps();
     Bitmaps& operator=(const Bitmaps&) = delete;
 
+    void define(const Var& bitmap, const Subset& subset);
     void define(const Var& bitmap, const Subset& subset, unsigned anchor_point);
 
     void reuse_last();

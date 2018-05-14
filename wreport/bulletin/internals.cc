@@ -1,8 +1,8 @@
 #include "internals.h"
-#include "var.h"
-#include "subset.h"
-#include "bulletin.h"
-#include "notes.h"
+#include "wreport/var.h"
+#include "wreport/subset.h"
+#include "wreport/bulletin.h"
+#include "wreport/notes.h"
 #include <cmath>
 
 // #define TRACE_INTERPRETER
@@ -67,12 +67,13 @@ void UncompressedEncoder::encode_associated_field(const Var& var)
 
 void UncompressedEncoder::define_variable(Varinfo info)
 {
+    encode_var(info, get_var());
+}
+
+void UncompressedEncoder::define_variable_with_associated_field(Varinfo info)
+{
     const Var& var = get_var();
-
-    // Deal with an associated field
-    if (associated_field.bit_count)
-        encode_associated_field(var);
-
+    encode_associated_field(var);
     encode_var(info, var);
 }
 
@@ -98,24 +99,6 @@ unsigned UncompressedEncoder::define_bitmap_delayed_replication_factor(Varinfo i
     return var.info()->len;
 }
 
-
-UncompressedDecoder::UncompressedDecoder(Bulletin& bulletin, unsigned subset_no)
-    : Interpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_no))
-{
-}
-
-UncompressedDecoder::~UncompressedDecoder()
-{
-}
-
-
-CompressedDecoder::CompressedDecoder(Bulletin& bulletin)
-    : Interpreter(bulletin.tables, bulletin.datadesc), output_bulletin(bulletin)
-{
-    TRACE("parser: start on compressed bulletin\n");
-}
-
-CompressedDecoder::~CompressedDecoder() {}
 
 }
 }

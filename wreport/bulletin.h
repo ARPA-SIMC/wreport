@@ -355,6 +355,22 @@ struct BufrBulletin : public Bulletin
     static std::unique_ptr<BufrBulletin> decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
 
     /**
+     * Parse an encoded BUFR message, printing decoding information
+     *
+     * @param buf
+     *   The buffer to decode
+     * @param out
+     *   Where the decoder information should be printed
+     * @param fname
+     *   The file name to use for error messages
+     * @param offset
+     *   The offset inside the file of the start of the bulletin, used for
+     *   error messages
+     * @returns The new bulletin with the decoded message
+     */
+    static std::unique_ptr<BufrBulletin> decode_verbose(const std::string& raw, FILE* out, const char* fname="(memory)", size_t offset=0);
+
+    /**
      * Parse an encoded BUFR message
      *
      * @param buf
@@ -484,6 +500,22 @@ struct CrexBulletin : public Bulletin
      * @returns The new bulletin with the decoded message
      */
     static std::unique_ptr<CrexBulletin> decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
+
+    /**
+     * Parse an encoded BUFR message, printing decoding information
+     *
+     * @param buf
+     *   The buffer to decode
+     * @param out
+     *   Where the decoder information should be printed
+     * @param fname
+     *   The file name to use for error messages
+     * @param offset
+     *   The offset inside the file of the start of the bulletin, used for
+     *   error messages
+     * @returns The new bulletin with the decoded message
+     */
+    static std::unique_ptr<CrexBulletin> decode_verbose(const std::string& raw, FILE* out, const char* fname="(memory)", size_t offset=0);
 
 protected:
     CrexBulletin();
