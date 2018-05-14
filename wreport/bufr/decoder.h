@@ -55,6 +55,11 @@ struct DecoderTarget
     virtual const Subset& reference_subset() const = 0;
 
     /**
+     * Return information about a value previously stored at the given position
+     */
+    virtual Varinfo lookup_info(unsigned pos) const = 0;
+
+    /**
      * Decode a value that must always be the same across all datasets.
      *
      * Do not add it to the output.
@@ -86,6 +91,7 @@ struct UncompressedDecoderTarget : public DecoderTarget
     UncompressedDecoderTarget(Input& in, Subset& out);
 
     const Subset& reference_subset() const override;
+    Varinfo lookup_info(unsigned pos) const override;
     Var decode_uniform_b_value(Varinfo info) override;
     const Var& decode_and_add_to_all(Varinfo info) override;
     const Var& decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size) override;
@@ -103,6 +109,7 @@ struct CompressedDecoderTarget : public DecoderTarget
     CompressedDecoderTarget(Input& in, Bulletin& out);
 
     const Subset& reference_subset() const override;
+    Varinfo lookup_info(unsigned pos) const override;
     Var decode_uniform_b_value(Varinfo info) override;
     const Var& decode_and_add_to_all(Varinfo info) override;
     const Var& decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size) override;
@@ -129,6 +136,7 @@ struct DataSectionDecoder : public bulletin::Interpreter
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
     void define_bitmap(unsigned bitmap_size) override;
     void define_attribute(Varinfo info, unsigned pos) override;
+    void define_substituted_value(unsigned pos) override;
 };
 
 /// Decoder for uncompressed data
@@ -146,7 +154,6 @@ struct UncompressedBufrDecoder : public DataSectionDecoder
     DecoderTarget& target() override { return m_target; }
 
     Var decode_b_value(Varinfo info);
-    void define_substituted_value(unsigned pos) override;
 
     /**
      * Request processing, according to \a info, of a data variable.
@@ -175,7 +182,6 @@ struct CompressedBufrDecoder : public DataSectionDecoder
     void decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest);
 
     void define_variable(Varinfo info) override;
-    void define_substituted_value(unsigned pos) override;
     void define_raw_character_data(Varcode code) override;
 };
 

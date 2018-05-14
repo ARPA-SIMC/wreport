@@ -238,6 +238,11 @@ UncompressedDecoderTarget::UncompressedDecoderTarget(Input& in, Subset& out)
 
 const Subset& UncompressedDecoderTarget::reference_subset() const { return out; }
 
+Varinfo UncompressedDecoderTarget::lookup_info(unsigned pos) const
+{
+    return out[pos].info();
+}
+
 Var UncompressedDecoderTarget::decode_uniform_b_value(Varinfo info)
 {
     Var var(info);
@@ -296,6 +301,11 @@ CompressedDecoderTarget::CompressedDecoderTarget(Input& in, Bulletin& out)
 }
 
 const Subset& CompressedDecoderTarget::reference_subset() const { return out.subsets[0]; }
+
+Varinfo CompressedDecoderTarget::lookup_info(unsigned pos) const
+{
+    return out.subset(0)[pos].info();
+}
 
 Var CompressedDecoderTarget::decode_uniform_b_value(Varinfo info)
 {
@@ -408,6 +418,12 @@ void DataSectionDecoder::define_attribute(Varinfo info, unsigned pos)
     target().decode_and_set_attribute(info, pos);
 }
 
+void DataSectionDecoder::define_substituted_value(unsigned pos)
+{
+    Varinfo info = target().lookup_info(pos);
+    target().decode_and_set_attribute(info, pos);
+}
+
 
 /*
  * UncompressedBufrDecoder
@@ -426,16 +442,6 @@ UncompressedBufrDecoder::~UncompressedBufrDecoder()
 Var UncompressedBufrDecoder::decode_b_value(Varinfo info)
 {
     return m_target.decode_uniform_b_value(info);
-}
-
-void UncompressedBufrDecoder::define_substituted_value(unsigned pos)
-{
-    // Use the details of the corrisponding variable for decoding
-    Varinfo info = output_bulletin.subsets[subset_no][pos].info();
-    Var var = decode_b_value(info);
-    TRACE(" define_substituted_value adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
-            WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(output_bulletin.subsets[subset_no][pos].code()));
-    output_bulletin.subsets[subset_no][pos].seta(var);
 }
 
 /**
@@ -566,15 +572,6 @@ void CompressedBufrDecoder::define_variable(Varinfo info)
 {
     DispatchToSubsets adder(output_bulletin, subset_count);
     decode_b_value(info, adder);
-}
-
-void CompressedBufrDecoder::define_substituted_value(unsigned pos)
-{
-    // Use the details of the corrisponding variable for decoding
-    Varinfo info = output_bulletin.subset(0)[pos].info();
-    decode_b_value(info, [&](unsigned idx, Var&& var) {
-        output_bulletin.subsets[idx][pos].seta(var);
-    });
 }
 
 void CompressedBufrDecoder::define_raw_character_data(Varcode code)
