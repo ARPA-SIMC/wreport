@@ -185,14 +185,16 @@ void Decoder::decode_data()
     if (out.compression)
     {
         // Run only once
-        CompressedBufrDecoder dec(out, in);
+        CompressedDecoderTarget target(in, out);
+        DataSectionDecoder dec(out, target);
         dec.associated_field.skip_missing = !conf_add_undef_attrs;
         dec.run();
     } else {
         // Run once per subset
         for (unsigned i = 0; i < out.subsets.size(); ++i)
         {
-            UncompressedBufrDecoder dec(out, i, in);
+            UncompressedDecoderTarget target(in, out.obtain_subset(i));
+            DataSectionDecoder dec(out, target);
             dec.associated_field.skip_missing = !conf_add_undef_attrs;
             dec.run();
         }
@@ -474,32 +476,32 @@ void CompressedDecoderTarget::decode_and_add_raw_character_data(Varinfo info)
  * DataSectionDecoder
  */
 
-DataSectionDecoder::DataSectionDecoder(Bulletin& bulletin, Input& in)
-    : Interpreter(bulletin.tables, bulletin.datadesc), in(in), output_bulletin(bulletin)
+DataSectionDecoder::DataSectionDecoder(Bulletin& bulletin, DecoderTarget& target)
+    : Interpreter(bulletin.tables, bulletin.datadesc), target(target)
 {
 }
 
 unsigned DataSectionDecoder::define_bitmap_delayed_replication_factor(Varinfo info)
 {
-    Var rep_count = target().decode_uniform_b_value(info);
+    Var rep_count = target.decode_uniform_b_value(info);
     return rep_count.enqi();
 }
 
 unsigned DataSectionDecoder::define_delayed_replication_factor(Varinfo info)
 {
-    return target().decode_and_add_to_all(info).enqi();
+    return target.decode_and_add_to_all(info).enqi();
 }
 
 unsigned DataSectionDecoder::define_associated_field_significance(Varinfo info)
 {
-    return target().decode_and_add_to_all(info).enq(63);
+    return target.decode_and_add_to_all(info).enq(63);
 }
 
 void DataSectionDecoder::define_bitmap(unsigned bitmap_size)
 {
     TRACE("define_bitmap %d\n", bitmap_size);
 
-    const Var& bmp = target().decode_and_add_bitmap(tables, bitmaps.pending_definitions, bitmap_size);
+    const Var& bmp = target.decode_and_add_bitmap(tables, bitmaps.pending_definitions, bitmap_size);
 
     IFTRACE {
         TRACE("Decoded bitmap count %u: ", bitmap_size);
@@ -507,56 +509,35 @@ void DataSectionDecoder::define_bitmap(unsigned bitmap_size)
         TRACE("\n");
     }
 
-    bitmaps.define(bmp, target().reference_subset());
+    bitmaps.define(bmp, target.reference_subset());
 }
 
 void DataSectionDecoder::define_attribute(Varinfo info, unsigned pos)
 {
-    target().decode_and_set_attribute(info, pos);
+    target.decode_and_set_attribute(info, pos);
 }
 
 void DataSectionDecoder::define_substituted_value(unsigned pos)
 {
-    Varinfo info = target().lookup_info(pos);
-    target().decode_and_set_attribute(info, pos);
+    Varinfo info = target.lookup_info(pos);
+    target.decode_and_set_attribute(info, pos);
 }
 
 void DataSectionDecoder::define_variable(Varinfo info)
 {
-    target().decode_and_add_b_value(info);
+    target.decode_and_add_b_value(info);
 }
 
 void DataSectionDecoder::define_variable_with_associated_field(Varinfo info)
 {
-    target().decode_and_add_b_value_with_associated_field(info, associated_field);
+    target.decode_and_add_b_value_with_associated_field(info, associated_field);
 }
 
 void DataSectionDecoder::define_raw_character_data(Varcode code)
 {
     // Create a single use varinfo to store the bitmap
     Varinfo info = tables.get_chardata(code, WR_VAR_Y(code));
-    target().decode_and_add_raw_character_data(info);
-}
-
-
-/*
- * UncompressedBufrDecoder
- */
-
-UncompressedBufrDecoder::UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, Input& in)
-    : DataSectionDecoder(bulletin, in), m_target(in, bulletin.obtain_subset(subset_no)), subset_no(subset_no)
-{
-}
-
-
-/*
- * CompressedBufrDecoder
- */
-
-CompressedBufrDecoder::CompressedBufrDecoder(BufrBulletin& bulletin, Input& in)
-    : DataSectionDecoder(bulletin, in), m_target(in, bulletin)
-{
-    TRACE("parser: start on compressed bulletin\n");
+    target.decode_and_add_raw_character_data(info);
 }
 
 }

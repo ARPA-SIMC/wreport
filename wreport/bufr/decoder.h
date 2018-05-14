@@ -144,15 +144,9 @@ protected:
 
 struct DataSectionDecoder : public bulletin::Interpreter
 {
-    /// Input buffer
-    Input& in;
+    DecoderTarget& target;
 
-    /// Output bulletin
-    Bulletin& output_bulletin;
-
-    DataSectionDecoder(Bulletin& bulletin, Input& in);
-
-    virtual DecoderTarget& target() = 0;
+    DataSectionDecoder(Bulletin& bulletin, DecoderTarget& target);
 
     unsigned define_delayed_replication_factor(Varinfo info) override;
     unsigned define_associated_field_significance(Varinfo info) override;
@@ -165,28 +159,6 @@ struct DataSectionDecoder : public bulletin::Interpreter
     void define_raw_character_data(Varcode code);
 };
 
-/// Decoder for uncompressed data
-struct UncompressedBufrDecoder : public DataSectionDecoder
-{
-    UncompressedDecoderTarget m_target;
-    unsigned subset_no;
-
-    UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, Input& in);
-
-    DecoderTarget& target() override { return m_target; }
-};
-
-/// Decoder for compressed data
-struct CompressedBufrDecoder : public DataSectionDecoder
-{
-    CompressedDecoderTarget m_target;
-
-    CompressedBufrDecoder(BufrBulletin& bulletin, Input& in);
-
-    DecoderTarget& target() override { return m_target; }
-};
-
 }
 }
-
 #endif
