@@ -31,28 +31,23 @@ then
 fi
 if [ ! -z "$DEBUGGER" ]
 then
-    if [ -x $DIR/.libs/lt-$BASE ]
+    echo "Running $DEBUGGER $CMD $ARGS"
+    if libtool --mode=execute $DEBUGGER $CMD $ARGS
     then
-        CMD="$DIR/.libs/lt-$BASE"
+        RES=0
+    else
+    	RES=$?
+    	echo "Failed with result $RES"
     fi
-
-        echo "Running $DEBUGGER $CMD $ARGS"
-        if $DEBUGGER $CMD $ARGS
-        then
-            RES=0
-        else
-                RES=$?
-                echo "Failed with result $RES"
-        fi
 else
-        echo "Running $CMD $ARGS"
-        if $CMD $ARGS
-        then
-            RES=0
-        else
-                RES=$?
-                echo "Failed with result $RES"
-        fi
+    echo "Running $CMD $ARGS"
+    if $CMD $ARGS
+    then
+        RES=0
+    else
+            RES=$?
+            echo "Failed with result $RES"
+    fi
 fi
 
 
