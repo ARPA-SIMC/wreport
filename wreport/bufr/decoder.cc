@@ -290,6 +290,60 @@ void UncompressedDecoderTarget::decode_and_set_attribute(Varinfo info, unsigned 
     out[pos].seta(std::move(var));
 }
 
+void UncompressedDecoderTarget::decode_and_add_b_value(Varinfo info)
+{
+    Var var = decode_uniform_b_value(info);
+    out.store_variable(var);
+    IFTRACE {
+        TRACE(" define_variable decoded: ");
+        out.back().print(stderr);
+    }
+}
+
+void UncompressedDecoderTarget::decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field)
+{
+    /// If set, it is the associated field for the next variable to be decoded
+    TRACE("decode_b_data:reading %d bits of C04 information\n", associated_field.bit_count);
+    uint32_t val = in.get_bits(field.bit_count);
+    TRACE("decode_b_data:read C04 information %x\n", val);
+    auto cur_associated_field = field.make_attribute(val);
+
+    Var var = decode_uniform_b_value(info);
+    out.store_variable(var);
+    IFTRACE {
+        TRACE(" define_variable decoded: ");
+        out.back().print(stderr);
+    }
+    if (cur_associated_field.get())
+    {
+        IFTRACE {
+            TRACE(" define_variable with associated field: ");
+            cur_associated_field->print(stderr);
+        }
+        out.back().seta(std::move(cur_associated_field));
+    }
+}
+
+void UncompressedDecoderTarget::decode_and_add_raw_character_data(Varinfo info)
+{
+    std::string buf;
+    buf.resize(info->len);
+    TRACE("decode_c_data:character data %d long\n", cdatalen);
+    for (unsigned i = 0; i < info->len; ++i)
+    {
+        uint32_t bitval = in.get_bits(8);
+        TRACE("decode_c_data:decoded character %d %c\n", (int)bitval, (char)bitval);
+        buf[i] = bitval;
+    }
+
+    // Add as C variable to the subset
+
+    // Store the character data
+    Var cdata(info, buf);
+    out.store_variable(cdata);
+
+    TRACE("decode_c_data:decoded string %s\n", buf.c_str());
+}
 
 /*
  * CompressedDecoderTarget
@@ -373,6 +427,49 @@ void CompressedDecoderTarget::decode_and_set_attribute(Varinfo info, unsigned po
     });
 }
 
+void CompressedDecoderTarget::decode_and_add_b_value(Varinfo info)
+{
+    DispatchToSubsets dest(out, subset_count);
+    switch (info->type)
+    {
+        case Vartype::String:
+            in.decode_string(info, subset_count, dest);
+            break;
+        case Vartype::Binary:
+            throw error_unimplemented("decode_b_binary TODO");
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            in.decode_compressed_number(info, subset_count, dest);
+            break;
+    }
+}
+
+void CompressedDecoderTarget::decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field)
+{
+    DispatchToSubsets dest(out, subset_count);
+    switch (info->type)
+    {
+        case Vartype::String:
+            in.decode_string(info, subset_count, dest);
+            break;
+        case Vartype::Binary:
+            throw error_unimplemented("decode_b_binary TODO");
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            in.decode_compressed_number(info, field, subset_count, [&](unsigned subset_no, Var&& var) {
+                dest.add_var(subset_no, std::move(var));
+            });
+            break;
+    }
+}
+
+void CompressedDecoderTarget::decode_and_add_raw_character_data(Varinfo info)
+{
+    // TODO: if compressed, extract the data from each subset? Store it in each dataset?
+    error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(info->code));
+}
+
+
 /*
  * DataSectionDecoder
  */
@@ -424,6 +521,23 @@ void DataSectionDecoder::define_substituted_value(unsigned pos)
     target().decode_and_set_attribute(info, pos);
 }
 
+void DataSectionDecoder::define_variable(Varinfo info)
+{
+    target().decode_and_add_b_value(info);
+}
+
+void DataSectionDecoder::define_variable_with_associated_field(Varinfo info)
+{
+    target().decode_and_add_b_value_with_associated_field(info, associated_field);
+}
+
+void DataSectionDecoder::define_raw_character_data(Varcode code)
+{
+    // Create a single use varinfo to store the bitmap
+    Varinfo info = tables.get_chardata(code, WR_VAR_Y(code));
+    target().decode_and_add_raw_character_data(info);
+}
+
 
 /*
  * UncompressedBufrDecoder
@@ -434,119 +548,15 @@ UncompressedBufrDecoder::UncompressedBufrDecoder(Bulletin& bulletin, unsigned su
 {
 }
 
-void UncompressedBufrDecoder::define_variable(Varinfo info)
-{
-    Var var = m_target.decode_uniform_b_value(info);
-    output_bulletin.subsets[subset_no].store_variable(var);
-    IFTRACE {
-        TRACE(" define_variable decoded: ");
-        output_bulletin.subsets[subset_no].back().print(stderr);
-    }
-}
-
-void UncompressedBufrDecoder::define_variable_with_associated_field(Varinfo info)
-{
-    /// If set, it is the associated field for the next variable to be decoded
-    TRACE("decode_b_data:reading %d bits of C04 information\n", associated_field.bit_count);
-    uint32_t val = in.get_bits(associated_field.bit_count);
-    TRACE("decode_b_data:read C04 information %x\n", val);
-    auto cur_associated_field = associated_field.make_attribute(val);
-
-    Var var = m_target.decode_uniform_b_value(info);
-    output_bulletin.subsets[subset_no].store_variable(var);
-    IFTRACE {
-        TRACE(" define_variable decoded: ");
-        output_bulletin.subsets[subset_no].back().print(stderr);
-    }
-    if (cur_associated_field.get())
-    {
-        IFTRACE {
-            TRACE(" define_variable with associated field: ");
-            cur_associated_field->print(stderr);
-        }
-        output_bulletin.subsets[subset_no].back().seta(std::move(cur_associated_field));
-    }
-}
-
-/**
- * Request processing of C05yyy character data
- */
-void UncompressedBufrDecoder::define_raw_character_data(Varcode code)
-{
-    unsigned cdatalen = WR_VAR_Y(code);
-    std::string buf;
-    buf.resize(cdatalen);
-    TRACE("decode_c_data:character data %d long\n", cdatalen);
-    for (unsigned i = 0; i < cdatalen; ++i)
-    {
-        uint32_t bitval = in.get_bits(8);
-        TRACE("decode_c_data:decoded character %d %c\n", (int)bitval, (char)bitval);
-        buf[i] = bitval;
-    }
-
-    // Add as C variable to the subset
-
-    // Create a single use varinfo to store the bitmap
-    Varinfo info = tables.get_chardata(code, cdatalen);
-
-    // Store the character data
-    Var cdata(info, buf);
-    output_bulletin.subsets[subset_no].store_variable(cdata);
-
-    TRACE("decode_c_data:decoded string %s\n", buf.c_str());
-}
-
 
 /*
  * CompressedBufrDecoder
  */
 
 CompressedBufrDecoder::CompressedBufrDecoder(BufrBulletin& bulletin, Input& in)
-    : DataSectionDecoder(bulletin, in), m_target(in, bulletin), subset_count(bulletin.subsets.size())
+    : DataSectionDecoder(bulletin, in), m_target(in, bulletin)
 {
     TRACE("parser: start on compressed bulletin\n");
-}
-
-void CompressedBufrDecoder::define_variable(Varinfo info)
-{
-    DispatchToSubsets dest(output_bulletin, subset_count);
-    switch (info->type)
-    {
-        case Vartype::String:
-            in.decode_string(info, subset_count, dest);
-            break;
-        case Vartype::Binary:
-            throw error_unimplemented("decode_b_binary TODO");
-        case Vartype::Integer:
-        case Vartype::Decimal:
-            in.decode_compressed_number(info, subset_count, dest);
-            break;
-    }
-}
-
-void CompressedBufrDecoder::define_variable_with_associated_field(Varinfo info)
-{
-    DispatchToSubsets dest(output_bulletin, subset_count);
-    switch (info->type)
-    {
-        case Vartype::String:
-            in.decode_string(info, subset_count, dest);
-            break;
-        case Vartype::Binary:
-            throw error_unimplemented("decode_b_binary TODO");
-        case Vartype::Integer:
-        case Vartype::Decimal:
-            in.decode_compressed_number(info, associated_field, subset_count, [&](unsigned subset_no, Var&& var) {
-                dest.add_var(subset_no, std::move(var));
-            });
-            break;
-    }
-}
-
-void CompressedBufrDecoder::define_raw_character_data(Varcode code)
-{
-    // TODO: if compressed, extract the data from each subset? Store it in each dataset?
-    error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(code));
 }
 
 }
