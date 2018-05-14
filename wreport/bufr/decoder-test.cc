@@ -1,4 +1,4 @@
-#include "tests.h"
+#include "wreport/tests.h"
 #include <functional>
 
 using namespace wreport;

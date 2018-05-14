@@ -197,6 +197,9 @@ public:
 
     /// Request processing of C05yyy raw character data
     virtual void define_raw_character_data(Varcode code);
+
+    /// Print a description of this C modifier
+    static void print_c_modifier(FILE* out, Varcode code, Opcodes& nex);
 };
 
 

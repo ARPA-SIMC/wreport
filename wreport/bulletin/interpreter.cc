@@ -485,6 +485,69 @@ void Interpreter::define_raw_character_data(Varcode code)
     throw error_unimplemented("define_raw_character_data is not implemented in this interpreter");
 }
 
+void Interpreter::print_c_modifier(FILE* out, Varcode code, Opcodes& next)
+{
+    switch (WR_VAR_X(code))
+    {
+        case 1:
+            fprintf(out, "change data width to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            break;
+        case 2:
+            fprintf(out, "change data scale to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            break;
+        case 4:
+            fprintf(out, "%d bits of associated field\n", WR_VAR_Y(code));
+            break;
+        case 5:
+            fputs("character data\n", out);
+            break;
+        case 6:
+            if (next.empty())
+                fprintf(out, "local descriptor (unknown) %d bits long\n", WR_VAR_Y(code));
+            else
+                fprintf(out, "local descriptor %d%02d%03d %d bits long\n", WR_VAR_FXY(next[0]), WR_VAR_Y(code));
+            break;
+        case 7:
+            fprintf(out, "change data scale, reference value and data width by %d\n", WR_VAR_Y(code));
+            break;
+        case 8:
+            fprintf(out, "change width of string fields to %d\n", WR_VAR_Y(code));
+            break;
+        case 22:
+            fputs("quality information with bitmap\n", out);
+            break;
+        case 23:
+            switch (WR_VAR_Y(code))
+            {
+                case 0:
+                    fputs("substituted values bitmap\n", out);
+                    break;
+                case 255:
+                    fputs("one substituted value\n", out);
+                    break;
+                default:
+                    fprintf(out, "C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
+                    break;
+            }
+            break;
+        case 36:
+            fputs("define data present bitmap for reuse\n", out);
+            break;
+        case 37:
+            // Use defined data present bitmap
+            switch (WR_VAR_Y(code))
+            {
+                case 0: fputs("reuse last data present bitmap\n", out); break;
+                case 255: fputs("cancel reuse of the last defined bitmap\n", out); break;
+                default: fprintf(out, "C modifier %d%02d%03d uses unsupported y=%03d", WR_VAR_FXY(code), WR_VAR_Y(code)); break;
+            }
+            break;
+        default:
+            fputs("(C modifier)\n", out);
+            break;
+    }
+}
+
 
 Printer::Printer(const Tables& tables, const Opcodes& opcodes)
     : Interpreter(tables, opcodes), out(stdout), indent(0), indent_step(2)
@@ -515,65 +578,7 @@ void Printer::b_variable(Varcode code)
 void Printer::c_modifier(Varcode code, Opcodes& next)
 {
     print_lead(code);
-    switch (WR_VAR_X(code))
-    {
-        case 1:
-            fprintf(out, " change data width to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
-            break;
-        case 2:
-            fprintf(out, " change data scale to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
-            break;
-        case 4:
-            fprintf(out, " %d bits of associated field\n", WR_VAR_Y(code));
-            break;
-        case 5:
-            fputs(" character data\n", out);
-            break;
-        case 6:
-            if (next.empty())
-                fprintf(out, " local descriptor (unknown) %d bits long\n", WR_VAR_Y(code));
-            else
-                fprintf(out, " local descriptor %d%02d%03d %d bits long\n", WR_VAR_FXY(next[0]), WR_VAR_Y(code));
-            break;
-        case 7:
-            fprintf(out, " change data scale, reference value and data width by %d\n", WR_VAR_Y(code));
-            break;
-        case 8:
-            fprintf(out, " change width of string fields to %d\n", WR_VAR_Y(code));
-            break;
-        case 22:
-            fputs(" quality information with bitmap\n", out);
-            break;
-        case 23:
-            switch (WR_VAR_Y(code))
-            {
-                case 0:
-                    fputs(" substituted values bitmap\n", out);
-                    break;
-                case 255:
-                    fputs(" one substituted value\n", out);
-                    break;
-                default:
-                    fprintf(out, "C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
-                    break;
-            }
-            break;
-        case 36:
-            fputs(" define data present bitmap for reuse\n", out);
-            break;
-        case 37:
-            // Use defined data present bitmap
-            switch (WR_VAR_Y(code))
-            {
-                case 0: fputs(" reuse last data present bitmap\n", out); break;
-                case 255: fputs(" cancel reuse of the last defined bitmap\n", out); break;
-                default: fprintf(out, "C modifier %d%02d%03d uses unsupported y=%03d", WR_VAR_FXY(code), WR_VAR_Y(code)); break;
-            }
-            break;
-        default:
-            fputs(" (C modifier)\n", out);
-            break;
-    }
+    Interpreter::print_c_modifier(out, code, next);
     Interpreter::c_modifier(code, next);
 }
 

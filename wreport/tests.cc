@@ -253,6 +253,24 @@ void TestCodec<BULLETIN>::run()
     auto msg1 = wcallchecked(decode_checked<BULLETIN>(raw1, fname.c_str()));
     wassert(check_contents(*msg1));
 
+    test_info() << fname << ": decode original version, verbose version";
+    FILE* out = fopen("/dev/null", "w");
+    auto msg1a = wcallchecked(decode_checked<BULLETIN>(raw1, fname.c_str(), out));
+    wassert(check_contents(*msg1a));
+    fclose(out);
+
+    test_info() << fname << ": comparing normal and verbose decoder output";
+    {
+        notes::Collect c(std::cerr);
+        unsigned diffs = msg1->diff(*msg1a);
+        if (diffs)
+        {
+            track_bulletin(*msg1, "orig", fname.c_str());
+            track_bulletin(*msg1a, "verb", fname.c_str());
+        }
+        wassert(actual(diffs) == 0u);
+    }
+
     // Encode it again
     test_info() << fname << ": re-encode original version";
     std::string raw = wcallchecked(msg1->encode());

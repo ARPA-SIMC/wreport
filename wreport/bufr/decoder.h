@@ -22,6 +22,8 @@ struct Decoder
     bool conf_add_undef_attrs = false;
     /// Optional section length decoded from the message
     unsigned optional_section_length = 0;
+    /// If set, be verbose and print a trace of decoding to the given file
+    FILE* verbose_output = nullptr;
 
     Decoder(const std::string& buf, const char* fname, size_t offset, BufrBulletin& out);
 
@@ -156,7 +158,47 @@ struct DataSectionDecoder : public bulletin::Interpreter
     void define_substituted_value(unsigned pos) override;
     void define_variable(Varinfo info) override;
     void define_variable_with_associated_field(Varinfo info) override;
-    void define_raw_character_data(Varcode code);
+    void define_raw_character_data(Varcode code) override;
+};
+
+struct VerboseDataSectionDecoder : public DataSectionDecoder
+{
+protected:
+    /**
+     * Print line lead (indentation and formatted code)
+     *
+     * @param code
+     *   Code to format in the line lead
+     */
+    void print_lead(Varcode code);
+
+public:
+    FILE* out;
+
+    /**
+     * Current indent level
+     *
+     * It defaults to 0 in a newly created Printer. You can set it to some
+     * other value to indent all the output by the given amount of spaces
+     */
+    unsigned indent = 0;
+
+    /// How many spaces in an indentation level
+    unsigned indent_step = 2;
+
+    VerboseDataSectionDecoder(Bulletin& bulletin, DecoderTarget& target, FILE* out);
+
+    void b_variable(Varcode code) override;
+    void c_modifier(Varcode code, Opcodes& next) override;
+    unsigned define_delayed_replication_factor(Varinfo info) override;
+    unsigned define_associated_field_significance(Varinfo info) override;
+    unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
+    void define_bitmap(unsigned bitmap_size) override;
+    void define_attribute(Varinfo info, unsigned pos) override;
+    void define_substituted_value(unsigned pos) override;
+    void define_variable(Varinfo info) override;
+    void define_variable_with_associated_field(Varinfo info) override;
+    void define_raw_character_data(Varcode code) override;
 };
 
 }

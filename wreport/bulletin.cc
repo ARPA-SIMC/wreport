@@ -386,6 +386,18 @@ std::unique_ptr<BufrBulletin> BufrBulletin::decode(const std::string& buf, const
     return res;
 }
 
+std::unique_ptr<BufrBulletin> BufrBulletin::decode_verbose(const std::string& buf, FILE* out, const char* fname, size_t offset)
+{
+    auto res = BufrBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    bufr::Decoder d(buf, fname, offset, *res);
+    d.verbose_output = out;
+    d.decode_header();
+    d.decode_data();
+    return res;
+}
+
 void BufrBulletin::print_details(FILE* out) const
 {
     fprintf(out, " BUFR details: ed%hhu t%hhu:%hhu:%hhu %c osl%zd\n",

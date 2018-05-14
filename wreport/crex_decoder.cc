@@ -244,4 +244,15 @@ std::unique_ptr<CrexBulletin> CrexBulletin::decode(const std::string& buf, const
     return res;
 }
 
+std::unique_ptr<CrexBulletin> CrexBulletin::decode_verbose(const std::string& buf, FILE* out, const char* fname, size_t offset)
+{
+    auto res = CrexBulletin::create();
+    res->fname = fname;
+    res->offset = offset;
+    buffers::CrexInput in(buf, fname, offset);
+    bulletin::decode_header(in, *res);
+    bulletin::decode_data(in, *res);
+    return res;
+}
+
 }

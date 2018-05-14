@@ -1,5 +1,6 @@
 #include "decoder.h"
 #include "trace.h"
+#include "wreport/vartable.h"
 #include <cstring>
 
 namespace wreport {
@@ -186,17 +187,25 @@ void Decoder::decode_data()
     {
         // Run only once
         CompressedDecoderTarget target(in, out);
-        DataSectionDecoder dec(out, target);
-        dec.associated_field.skip_missing = !conf_add_undef_attrs;
-        dec.run();
+        std::unique_ptr<DataSectionDecoder> dec;
+        if (verbose_output)
+            dec.reset(new VerboseDataSectionDecoder(out, target, verbose_output));
+        else
+            dec.reset(new DataSectionDecoder(out, target));
+        dec->associated_field.skip_missing = !conf_add_undef_attrs;
+        dec->run();
     } else {
         // Run once per subset
         for (unsigned i = 0; i < out.subsets.size(); ++i)
         {
             UncompressedDecoderTarget target(in, out.obtain_subset(i));
-            DataSectionDecoder dec(out, target);
-            dec.associated_field.skip_missing = !conf_add_undef_attrs;
-            dec.run();
+            std::unique_ptr<DataSectionDecoder> dec;
+            if (verbose_output)
+                dec.reset(new VerboseDataSectionDecoder(out, target, verbose_output));
+            else
+                dec.reset(new DataSectionDecoder(out, target));
+            dec->associated_field.skip_missing = !conf_add_undef_attrs;
+            dec->run();
         }
     }
 
@@ -538,6 +547,82 @@ void DataSectionDecoder::define_raw_character_data(Varcode code)
     // Create a single use varinfo to store the bitmap
     Varinfo info = tables.get_chardata(code, WR_VAR_Y(code));
     target.decode_and_add_raw_character_data(info);
+}
+
+
+/*
+ * VerboseDataSectionDecoder
+ */
+
+VerboseDataSectionDecoder::VerboseDataSectionDecoder(Bulletin& bulletin, DecoderTarget& target, FILE* out)
+    : DataSectionDecoder(bulletin, target), out(out)
+{
+}
+
+void VerboseDataSectionDecoder::print_lead(Varcode code)
+{
+    fprintf(out, "%*s%d%02d%03d",
+            indent, "", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+}
+
+void VerboseDataSectionDecoder::b_variable(Varcode code)
+{
+    print_lead(code);
+    if (tables.btable)
+    {
+        if (tables.btable->contains(code))
+        {
+            Varinfo info = tables.btable->query(code);
+            fprintf(out, " %s[%s]", info->desc, info->unit);
+        } else
+            fprintf(out, " (missing in B table %s)", tables.btable->pathname().c_str());
+    }
+    putc('\n', out);
+    DataSectionDecoder::b_variable(code);
+}
+
+void VerboseDataSectionDecoder::c_modifier(Varcode code, Opcodes& next)
+{
+    print_lead(code);
+    Interpreter::print_c_modifier(out, code, next);
+    DataSectionDecoder::c_modifier(code, next);
+}
+
+unsigned VerboseDataSectionDecoder::define_delayed_replication_factor(Varinfo info)
+{
+    return DataSectionDecoder::define_delayed_replication_factor(info);
+}
+unsigned VerboseDataSectionDecoder::define_associated_field_significance(Varinfo info)
+{
+    return DataSectionDecoder::define_associated_field_significance(info);
+}
+unsigned VerboseDataSectionDecoder::define_bitmap_delayed_replication_factor(Varinfo info)
+{
+    return DataSectionDecoder::define_bitmap_delayed_replication_factor(info);
+}
+void VerboseDataSectionDecoder::define_bitmap(unsigned bitmap_size)
+{
+    DataSectionDecoder::define_bitmap(bitmap_size);
+}
+void VerboseDataSectionDecoder::define_attribute(Varinfo info, unsigned pos)
+{
+    DataSectionDecoder::define_attribute(info, pos);
+}
+void VerboseDataSectionDecoder::define_substituted_value(unsigned pos)
+{
+    DataSectionDecoder::define_substituted_value(pos);
+}
+void VerboseDataSectionDecoder::define_variable(Varinfo info)
+{
+    DataSectionDecoder::define_variable(info);
+}
+void VerboseDataSectionDecoder::define_variable_with_associated_field(Varinfo info)
+{
+    DataSectionDecoder::define_variable_with_associated_field(info);
+}
+void VerboseDataSectionDecoder::define_raw_character_data(Varcode code)
+{
+    DataSectionDecoder::define_raw_character_data(code);
 }
 
 }
