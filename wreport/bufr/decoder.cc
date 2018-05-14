@@ -286,7 +286,7 @@ void UncompressedDecoderTarget::decode_and_set_attribute(Varinfo info, unsigned 
 {
     Var var = decode_uniform_b_value(info);
     TRACE(" define_attribute adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
-            WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(output_bulletin.subsets[subset_no][pos].code()));
+            WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(out[pos].code()));
     out[pos].seta(std::move(var));
 }
 
@@ -368,7 +368,7 @@ const Var& CompressedDecoderTarget::decode_and_add_bitmap(const Tables& tables, 
 void CompressedDecoderTarget::decode_and_set_attribute(Varinfo info, unsigned pos)
 {
     decode_b_value(info, [&](unsigned idx, Var&& var) {
-        TRACE("define_attribute:seta subset[%u][%u] (%01d%02d%03d) %01d%02d%03d %s\n", idx, pos, WR_VAR_FXY(output_bulletin.subsets[idx][pos].code()), WR_VAR_FXY(var.code()), var.enq("-"));
+        TRACE("define_attribute:seta subset[%u][%u] (%01d%02d%03d) %01d%02d%03d %s\n", idx, pos, WR_VAR_FXY(out.subsets[idx][pos].code()), WR_VAR_FXY(var.code()), var.enq("-"));
         out.subsets[idx][pos].seta(std::move(var));
     });
 }
@@ -434,48 +434,37 @@ UncompressedBufrDecoder::UncompressedBufrDecoder(Bulletin& bulletin, unsigned su
 {
 }
 
-UncompressedBufrDecoder::~UncompressedBufrDecoder()
-{
-    delete cur_associated_field;
-}
-
-Var UncompressedBufrDecoder::decode_b_value(Varinfo info)
-{
-    return m_target.decode_uniform_b_value(info);
-}
-
-/**
- * Request processing, according to \a info, of a data variable.
- */
 void UncompressedBufrDecoder::define_variable(Varinfo info)
 {
-    if (associated_field.bit_count)
-    {
-        if (cur_associated_field)
-        {
-            delete cur_associated_field;
-            cur_associated_field = 0;
-        }
-        TRACE("decode_b_data:reading %d bits of C04 information\n", associated_field.bit_count);
-        uint32_t val = in.get_bits(associated_field.bit_count);
-        TRACE("decode_b_data:read C04 information %x\n", val);
-        cur_associated_field = associated_field.make_attribute(val).release();
-    }
-
-    output_bulletin.subsets[subset_no].store_variable(decode_b_value(info));
+    Var var = m_target.decode_uniform_b_value(info);
+    output_bulletin.subsets[subset_no].store_variable(var);
     IFTRACE {
         TRACE(" define_variable decoded: ");
         output_bulletin.subsets[subset_no].back().print(stderr);
     }
-    if (cur_associated_field)
+}
+
+void UncompressedBufrDecoder::define_variable_with_associated_field(Varinfo info)
+{
+    /// If set, it is the associated field for the next variable to be decoded
+    TRACE("decode_b_data:reading %d bits of C04 information\n", associated_field.bit_count);
+    uint32_t val = in.get_bits(associated_field.bit_count);
+    TRACE("decode_b_data:read C04 information %x\n", val);
+    auto cur_associated_field = associated_field.make_attribute(val);
+
+    Var var = m_target.decode_uniform_b_value(info);
+    output_bulletin.subsets[subset_no].store_variable(var);
+    IFTRACE {
+        TRACE(" define_variable decoded: ");
+        output_bulletin.subsets[subset_no].back().print(stderr);
+    }
+    if (cur_associated_field.get())
     {
         IFTRACE {
             TRACE(" define_variable with associated field: ");
             cur_associated_field->print(stderr);
         }
-        std::unique_ptr<Var> af(cur_associated_field);
-        cur_associated_field = 0;
-        output_bulletin.subsets[subset_no].back().seta(move(af));
+        output_bulletin.subsets[subset_no].back().seta(std::move(cur_associated_field));
     }
 }
 
@@ -518,8 +507,26 @@ CompressedBufrDecoder::CompressedBufrDecoder(BufrBulletin& bulletin, Input& in)
     TRACE("parser: start on compressed bulletin\n");
 }
 
-void CompressedBufrDecoder::decode_b_value(Varinfo info, DispatchToSubsets& dest)
+void CompressedBufrDecoder::define_variable(Varinfo info)
 {
+    DispatchToSubsets dest(output_bulletin, subset_count);
+    switch (info->type)
+    {
+        case Vartype::String:
+            in.decode_string(info, subset_count, dest);
+            break;
+        case Vartype::Binary:
+            throw error_unimplemented("decode_b_binary TODO");
+        case Vartype::Integer:
+        case Vartype::Decimal:
+            in.decode_compressed_number(info, subset_count, dest);
+            break;
+    }
+}
+
+void CompressedBufrDecoder::define_variable_with_associated_field(Varinfo info)
+{
+    DispatchToSubsets dest(output_bulletin, subset_count);
     switch (info->type)
     {
         case Vartype::String:
@@ -541,37 +548,6 @@ void CompressedBufrDecoder::decode_b_value(Varinfo info, DispatchToSubsets& dest
                 in.decode_compressed_number(info, subset_count, dest);
             break;
     }
-}
-
-void CompressedBufrDecoder::decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest)
-{
-    switch (info->type)
-    {
-        case Vartype::String:
-            in.decode_string(info, subset_count, dest);
-            break;
-        case Vartype::Binary:
-            throw error_unimplemented("decode_b_binary TODO");
-        case Vartype::Integer:
-        case Vartype::Decimal:
-            if (associated_field.bit_count)
-            {
-                in.decode_compressed_number(info, associated_field.bit_count, subset_count, [&](unsigned subset_no, Var&& var, uint32_t associated_field_val) {
-                    std::unique_ptr<Var> af(associated_field.make_attribute(associated_field_val));
-                    if (af.get()) var.seta(std::move(af));
-                    dest(subset_no, std::move(var));
-                });
-            }
-            else
-                in.decode_compressed_number(info, subset_count, dest);
-            break;
-    }
-}
-
-void CompressedBufrDecoder::define_variable(Varinfo info)
-{
-    DispatchToSubsets adder(output_bulletin, subset_count);
-    decode_b_value(info, adder);
 }
 
 void CompressedBufrDecoder::define_raw_character_data(Varcode code)

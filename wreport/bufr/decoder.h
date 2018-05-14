@@ -145,24 +145,12 @@ struct UncompressedBufrDecoder : public DataSectionDecoder
     UncompressedDecoderTarget m_target;
     unsigned subset_no;
 
-    /// If set, it is the associated field for the next variable to be decoded
-    Var* cur_associated_field = nullptr;
-
     UncompressedBufrDecoder(Bulletin& bulletin, unsigned subset_no, Input& in);
-    ~UncompressedBufrDecoder();
 
     DecoderTarget& target() override { return m_target; }
 
-    Var decode_b_value(Varinfo info);
-
-    /**
-     * Request processing, according to \a info, of a data variable.
-     */
     void define_variable(Varinfo info) override;
-
-    /**
-     * Request processing of C05yyy character data
-     */
+    void define_variable_with_associated_field(Varinfo info) override;
     void define_raw_character_data(Varcode code);
 };
 
@@ -177,11 +165,8 @@ struct CompressedBufrDecoder : public DataSectionDecoder
 
     DecoderTarget& target() override { return m_target; }
 
-    void decode_b_value(Varinfo info, DispatchToSubsets& dest);
-
-    void decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest);
-
     void define_variable(Varinfo info) override;
+    void define_variable_with_associated_field(Varinfo info) override;
     void define_raw_character_data(Varcode code) override;
 };
 

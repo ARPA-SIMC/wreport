@@ -147,11 +147,13 @@ public:
 
     /**
      * Request processing, according to \a info, of a data variable.
-     *
-     * associated_field should be consulted to see if there are also associated
-     * fields that need processing.
      */
     virtual void define_variable(Varinfo info);
+
+    /**
+     * Request processing, according to \a info, of a data variable.
+     */
+    virtual void define_variable_with_associated_field(Varinfo info);
 
     /**
      * Request processing, according to \a info, of a data variabile that is
@@ -239,6 +241,7 @@ public:
     void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
     void run_d_expansion(Varcode code) override;
     void define_variable(Varinfo info) override;
+    void define_variable_with_associated_field(Varinfo info) override;
     void define_bitmap(unsigned bitmap_size) override;
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
 };

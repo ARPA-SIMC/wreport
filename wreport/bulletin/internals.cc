@@ -67,12 +67,13 @@ void UncompressedEncoder::encode_associated_field(const Var& var)
 
 void UncompressedEncoder::define_variable(Varinfo info)
 {
+    encode_var(info, get_var());
+}
+
+void UncompressedEncoder::define_variable_with_associated_field(Varinfo info)
+{
     const Var& var = get_var();
-
-    // Deal with an associated field
-    if (associated_field.bit_count)
-        encode_associated_field(var);
-
+    encode_associated_field(var);
     encode_var(info, var);
 }
 

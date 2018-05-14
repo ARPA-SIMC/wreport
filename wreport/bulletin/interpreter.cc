@@ -130,7 +130,10 @@ void Interpreter::b_variable(Varcode code)
         // Proper variable
         TRACE("b_variable variable %01d%02d%03d\n",
                 WR_VAR_F(info->code), WR_VAR_X(info->code), WR_VAR_Y(info->code));
-        define_variable(info);
+        if (associated_field.bit_count)
+            define_variable_with_associated_field(info);
+        else
+            define_variable(info);
     }
 }
 
@@ -462,6 +465,11 @@ void Interpreter::define_variable(Varinfo info)
     throw error_unimplemented("define_variable is not implemented in this interpreter");
 }
 
+void Interpreter::define_variable_with_associated_field(Varinfo info)
+{
+    throw error_unimplemented("define_variable_with_associated_field is not implemented in this interpreter");
+}
+
 void Interpreter::define_substituted_value(unsigned pos)
 {
     throw error_unimplemented("define_substituted_variable is not implemented in this interpreter");
@@ -597,6 +605,10 @@ void Printer::run_d_expansion(Varcode code)
 }
 
 void Printer::define_variable(Varinfo info)
+{
+}
+
+void Printer::define_variable_with_associated_field(Varinfo info)
 {
 }
 

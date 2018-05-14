@@ -41,6 +41,7 @@ struct UncompressedEncoder : public bulletin::Interpreter
     void define_bitmap(unsigned bitmap_size) override;
 
     void define_variable(Varinfo info) override;
+    void define_variable_with_associated_field(Varinfo info) override;
     unsigned define_delayed_replication_factor(Varinfo info) override;
     unsigned define_associated_field_significance(Varinfo info) override;
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
