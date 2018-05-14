@@ -356,6 +356,21 @@ void UncompressedDecoderTarget::decode_and_add_raw_character_data(Varinfo info)
     TRACE("decode_c_data:decoded string %s\n", buf.c_str());
 }
 
+void UncompressedDecoderTarget::print_last_variable_added(FILE* out)
+{
+    this->out.back().format(out, "-");
+}
+
+void UncompressedDecoderTarget::print_last_attribute_added(FILE* out, Varcode code, unsigned pos)
+{
+    auto attr = this->out[pos].enqa(code);
+    if (attr)
+        attr->format(out, "-");
+    else
+        putc('-', out);
+}
+
+
 /*
  * CompressedDecoderTarget
  */
@@ -480,6 +495,28 @@ void CompressedDecoderTarget::decode_and_add_raw_character_data(Varinfo info)
     error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(info->code));
 }
 
+void CompressedDecoderTarget::print_last_variable_added(FILE* out)
+{
+    for (const auto& s: this->out.subsets)
+    {
+        s.back().format(out, "-");
+        putc(' ', out);
+    }
+}
+
+void CompressedDecoderTarget::print_last_attribute_added(FILE* out, Varcode code, unsigned pos)
+{
+    for (const auto& s: this->out.subsets)
+    {
+        auto attr = s[pos].enqa(code);
+        if (attr)
+            attr->format(out, "-");
+        else
+            putc('-', out);
+        putc(' ', out);
+    }
+}
+
 
 /*
  * DataSectionDecoder
@@ -565,6 +602,11 @@ void VerboseDataSectionDecoder::print_lead(Varcode code)
             indent, "", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
+void VerboseDataSectionDecoder::print_lead_continued()
+{
+    fprintf(out, "%*s       ", indent, "");
+}
+
 void VerboseDataSectionDecoder::b_variable(Varcode code)
 {
     print_lead(code);
@@ -588,41 +630,84 @@ void VerboseDataSectionDecoder::c_modifier(Varcode code, Opcodes& next)
     DataSectionDecoder::c_modifier(code, next);
 }
 
+void VerboseDataSectionDecoder::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+{
+    print_lead(code);
+    unsigned group = WR_VAR_X(code);
+    unsigned count = WR_VAR_Y(code);
+    fprintf(out, "replicate %u descriptors", group);
+    if (count)
+        fprintf(out, " %u times\n", count);
+    else
+        fprintf(out, " (delayed %d%02d%03d) times\n",
+                WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code));
+    indent += indent_step;
+    DataSectionDecoder::r_replication(code, delayed_code, ops);
+    indent -= indent_step;
+}
+
+void VerboseDataSectionDecoder::run_d_expansion(Varcode code)
+{
+    print_lead(code);
+    fputs(" (group)\n", out);
+    indent += indent_step;
+    Interpreter::run_d_expansion(code);
+    indent -= indent_step;
+}
+
 unsigned VerboseDataSectionDecoder::define_delayed_replication_factor(Varinfo info)
 {
-    return DataSectionDecoder::define_delayed_replication_factor(info);
+    unsigned res = DataSectionDecoder::define_delayed_replication_factor(info);
+    print_lead_continued();
+    fprintf(out, "delayed replication factor: %u\n", res);
+    return res;
 }
 unsigned VerboseDataSectionDecoder::define_associated_field_significance(Varinfo info)
 {
     return DataSectionDecoder::define_associated_field_significance(info);
+    // TODO: print results
 }
 unsigned VerboseDataSectionDecoder::define_bitmap_delayed_replication_factor(Varinfo info)
 {
     return DataSectionDecoder::define_bitmap_delayed_replication_factor(info);
+    // TODO: print results
 }
 void VerboseDataSectionDecoder::define_bitmap(unsigned bitmap_size)
 {
     DataSectionDecoder::define_bitmap(bitmap_size);
+    // TODO: print results
 }
 void VerboseDataSectionDecoder::define_attribute(Varinfo info, unsigned pos)
 {
     DataSectionDecoder::define_attribute(info, pos);
+    print_lead_continued();
+    Varinfo pos_info = target.lookup_info(pos);
+    fprintf(out, "at position %u: %d%02d%03d %s\n", pos, WR_VAR_FXY(info->code), info->desc);
+    print_lead_continued();
+    target.print_last_attribute_added(out, info->code, pos);
+    putc('\n', out);
 }
 void VerboseDataSectionDecoder::define_substituted_value(unsigned pos)
 {
     DataSectionDecoder::define_substituted_value(pos);
+    // TODO: print results
 }
 void VerboseDataSectionDecoder::define_variable(Varinfo info)
 {
     DataSectionDecoder::define_variable(info);
+    print_lead_continued();
+    target.print_last_variable_added(out);
+    putc('\n', out);
 }
 void VerboseDataSectionDecoder::define_variable_with_associated_field(Varinfo info)
 {
     DataSectionDecoder::define_variable_with_associated_field(info);
+    // TODO: print results
 }
 void VerboseDataSectionDecoder::define_raw_character_data(Varcode code)
 {
     DataSectionDecoder::define_raw_character_data(code);
+    // TODO: print results
 }
 
 }

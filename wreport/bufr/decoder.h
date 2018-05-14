@@ -100,6 +100,12 @@ struct DecoderTarget
      * subset(s)
      */
     virtual void decode_and_add_raw_character_data(Varinfo info) = 0;
+
+    /// Print the value(s) of the last variable(s) added to \a out
+    virtual void print_last_variable_added(FILE* out) = 0;
+
+    /// Print the value(s) of the last attributes(s) with the given \a code added to \a out
+    virtual void print_last_attribute_added(FILE* out, Varcode code, unsigned pos) = 0;
 };
 
 struct UncompressedDecoderTarget : public DecoderTarget
@@ -118,6 +124,9 @@ struct UncompressedDecoderTarget : public DecoderTarget
     void decode_and_add_b_value(Varinfo info) override;
     void decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field) override;
     void decode_and_add_raw_character_data(Varinfo info) override;
+
+    void print_last_variable_added(FILE* out) override;
+    void print_last_attribute_added(FILE* out, Varcode code, unsigned pos) override;
 };
 
 struct CompressedDecoderTarget : public DecoderTarget
@@ -139,6 +148,9 @@ struct CompressedDecoderTarget : public DecoderTarget
     void decode_and_add_b_value(Varinfo info) override;
     void decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field) override;
     void decode_and_add_raw_character_data(Varinfo info) override;
+
+    void print_last_variable_added(FILE* out) override;
+    void print_last_attribute_added(FILE* out, Varcode code, unsigned pos) override;
 
 protected:
     void decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest);
@@ -171,6 +183,7 @@ protected:
      *   Code to format in the line lead
      */
     void print_lead(Varcode code);
+    void print_lead_continued();
 
 public:
     FILE* out;
@@ -190,6 +203,8 @@ public:
 
     void b_variable(Varcode code) override;
     void c_modifier(Varcode code, Opcodes& next) override;
+    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
+    void run_d_expansion(Varcode code) override;
     unsigned define_delayed_replication_factor(Varinfo info) override;
     unsigned define_associated_field_significance(Varinfo info) override;
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
