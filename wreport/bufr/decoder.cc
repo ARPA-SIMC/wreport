@@ -298,6 +298,8 @@ void UncompressedDecoderTarget::decode_and_set_attribute(Varinfo info, unsigned 
     Var var = decode_uniform_b_value(info);
     TRACE(" define_attribute adding var %01d%02d%03d %s as attribute to %01d%02d%03d\n",
             WR_VAR_FXY(var.code()), var.enqc(), WR_VAR_FXY(out[pos].code()));
+    if (!var.isset())
+        return;
     out[pos].seta(std::move(var));
 }
 
@@ -449,6 +451,8 @@ void CompressedDecoderTarget::decode_and_set_attribute(Varinfo info, unsigned po
 {
     decode_b_value(info, [&](unsigned idx, Var&& var) {
         TRACE("define_attribute:seta subset[%u][%u] (%01d%02d%03d) %01d%02d%03d %s\n", idx, pos, WR_VAR_FXY(out.subsets[idx][pos].code()), WR_VAR_FXY(var.code()), var.enq("-"));
+        if (!var.isset())
+            return;
         out.subsets[idx][pos].seta(std::move(var));
     });
 }
@@ -681,8 +685,10 @@ void VerboseDataSectionDecoder::define_attribute(Varinfo info, unsigned pos)
 {
     DataSectionDecoder::define_attribute(info, pos);
     print_lead_continued();
+    fprintf(out, "attribute %d%02d%03d %s\n", WR_VAR_FXY(info->code), info->desc);
     Varinfo pos_info = target.lookup_info(pos);
-    fprintf(out, "at position %u: %d%02d%03d %s\n", pos, WR_VAR_FXY(info->code), info->desc);
+    print_lead_continued();
+    fprintf(out, "at position %u: %d%02d%03d %s\n", pos, WR_VAR_FXY(pos_info->code), pos_info->desc);
     print_lead_continued();
     target.print_last_attribute_added(out, info->code, pos);
     putc('\n', out);
