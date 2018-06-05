@@ -83,6 +83,15 @@ unsigned str_to_unsigned(const char *str)
     return val;
 }
 
+bool isnumber(const char *str)
+{
+    if (*str == '-') ++str;
+    while (*str)
+        if (!isdigit(*str++))
+            return false;
+    return true;
+}
+
 }
 
 namespace wreport {
@@ -501,7 +510,9 @@ void Var::setc(const char* val)
         case Vartype::Binary: assign_b_checked((uint8_t*)val, m_info->len); break;
         case Vartype::Decimal:
         case Vartype::Integer:
-            if (*val == '-')
+            if (!isnumber(val))
+                unset();
+            else if (*val == '-')
                 assign_i_checked(-str_to_unsigned(val + 1));
             else
                 assign_i_checked(str_to_unsigned(val));
@@ -532,7 +543,9 @@ void Var::sets(const std::string& val)
         case Vartype::Binary: assign_b_checked((uint8_t*)val.c_str(), val.size()); break;
         case Vartype::Integer:
         case Vartype::Decimal:
-            if (val[0] == '-')
+            if (!isnumber(val.c_str()))
+                unset();
+            else if (val[0] == '-')
                 assign_i_checked(-str_to_unsigned(val.c_str() + 1));
             else
                 assign_i_checked(str_to_unsigned(val.c_str()));
