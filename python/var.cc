@@ -80,12 +80,14 @@ static PyObject* wrpy_Var_info(wrpy_Var* self, void* closure) {
     return (PyObject*)varinfo_create(self->var.info());
 }
 
+#define PYFIXME (char*)
 static PyGetSetDef wrpy_Var_getsetters[] = {
-    {"code", (getter)wrpy_Var_code, NULL, "variable code", NULL },
-    {"isset", (getter)wrpy_Var_isset, NULL, "true if the value is set", NULL },
-    {"info", (getter)wrpy_Var_info, NULL, "Varinfo for this variable", NULL },
+    {PYFIXME "code", (getter)wrpy_Var_code, NULL, PYFIXME "variable code", NULL },
+    {PYFIXME "isset", (getter)wrpy_Var_isset, NULL, PYFIXME "true if the value is set", NULL },
+    {PYFIXME "info", (getter)wrpy_Var_info, NULL, PYFIXME "Varinfo for this variable", NULL },
     {NULL}
 };
+#undef PYFIXME
 
 static PyObject* wrpy_Var_enqi(wrpy_Var* self)
 {
@@ -113,11 +115,12 @@ static PyObject* wrpy_Var_enq(wrpy_Var* self)
     return var_value_to_python(self->var);
 }
 
+#define PYFIXME (char**)
 static PyObject* wrpy_Var_get(wrpy_Var* self, PyObject* args, PyObject* kw)
 {
-    static char* kwlist[] = { "default", NULL };
+    static const char* kwlist[] = { "default", NULL };
     PyObject* def = Py_None;
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "|O", kwlist, &def))
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|O", PYFIXME kwlist, &def))
         return NULL;
     if (self->var.isset())
         return var_value_to_python(self->var);
@@ -130,13 +133,14 @@ static PyObject* wrpy_Var_get(wrpy_Var* self, PyObject* args, PyObject* kw)
 
 static PyObject* wrpy_Var_format(wrpy_Var* self, PyObject* args, PyObject* kw)
 {
-    static char* kwlist[] = { "default", NULL };
+    static const char* kwlist[] = { "default", NULL };
     const char* def = "";
-    if (!PyArg_ParseTupleAndKeywords(args, kw, "|s", kwlist, &def))
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "|s", PYFIXME kwlist, &def))
         return NULL;
     std::string f = self->var.format(def);
     return PyUnicode_FromString(f.c_str());
 }
+#undef PYFIXME
 
 static PyMethodDef wrpy_Var_methods[] = {
     {"enqi", (PyCFunction)wrpy_Var_enqi, METH_NOARGS, R"(
