@@ -20,6 +20,9 @@ nobase_dist_wreportinclude_HEADERS = \
 	notes.h \
 	buffers/bufr.h \
 	buffers/crex.h \
+	bufr/trace.h \
+	bufr/input.h \
+	bufr/decoder.h \
 	bulletin.h \
 	bulletin/associated_fields.h \
 	bulletin/bitmaps.h \
@@ -41,6 +44,8 @@ nobase_dist_wreportinclude_HEADERS = \
 	utils/lua.h \
 	utils/string.h \
 	utils/sys.h \
+	utils/term.h \
+	utils/testrunner.h \
 	utils/tests.h \
 	tests.h \
 	benchmark.h
@@ -64,12 +69,16 @@ libwreport_la_SOURCES = \
 	tables.cc \
 	utils/string.cc \
 	utils/sys.cc \
+	utils/term.cc \
 	utils/tests.cc \
+	utils/testrunner.cc \
 	internals/fs.cc \
 	internals/tabledir.cc \
 	subset.cc \
 	buffers/bufr.cc \
 	buffers/crex.cc \
+	bufr/input.cc \
+	bufr/decoder.cc \
 	bulletin.cc \
 	bulletin/associated_fields.cc \
 	bulletin/bitmaps.cc \
@@ -78,7 +87,6 @@ libwreport_la_SOURCES = \
 	bulletin/dds-validator.cc \
 	bulletin/dds-printer.cc \
 	bulletin/dds-scanfeatures.cc \
-	bufr_decoder.cc \
 	bufr_encoder.cc \
 	crex_decoder.cc \
 	crex_encoder.cc \
@@ -124,7 +132,8 @@ test_wreport_SOURCES = \
 	internals/tabledir-test.cc \
 	subset-test.cc \
 	bulletin-test.cc \
-	bufr_decoder-test.cc \
+	bufr/input-test.cc \
+	bufr/decoder-test.cc \
 	bufr_encoder-test.cc \
 	crex_decoder-test.cc \
 	buffers/bufr-test.cc \

@@ -1,4 +1,4 @@
-#include "tests.h"
+#include "wreport/tests.h"
 #include <functional>
 
 using namespace wreport;
@@ -680,6 +680,34 @@ class Tests : public TestCase
 
         declare_test_decode_fail("bufr/afl-src01flip1-pos10.bufr", "looking for data descriptor list");
         declare_test_decode_fail("bufr/afl-src4824splice-rep8.bufr", "Optional section length is 3 but it must be at least 4");
+
+        declare_test("bufr/issue16-onenull.bufr", [](const BufrBulletin& msg) {
+            wassert(actual(msg.edition_number) == 4);
+            wassert(actual((unsigned)msg.data_category) == 5u);
+            wassert(actual((unsigned)msg.data_subcategory) == 255u);
+            wassert(actual((unsigned)msg.data_subcategory_local) == 10u);
+            wassert(actual(msg.subsets.size()) == 963u);
+            wassert(actual(msg.subset(0).size()) == 122u);
+            const Var& pressure = msg.subset(0)[15];
+            wassert(actual(pressure.code()) == WR_VAR(0, 7, 4));
+            const Var* attr = pressure.enqa(WR_VAR(0, 33, 7));
+            wassert_true(attr);
+            wassert(actual(attr->enqi()) == 84);
+        });
+
+        declare_test("bufr/issue16-twonull.bufr", [](const BufrBulletin& msg) {
+            wassert(actual(msg.edition_number) == 4);
+            wassert(actual((unsigned)msg.data_category) == 5u);
+            wassert(actual((unsigned)msg.data_subcategory) == 255u);
+            wassert(actual((unsigned)msg.data_subcategory_local) == 10u);
+            wassert(actual(msg.subsets.size()) == 963u);
+            wassert(actual(msg.subset(0).size()) == 122u);
+            const Var& pressure = msg.subset(0)[15];
+            wassert(actual(pressure.code()) == WR_VAR(0, 7, 4));
+            const Var* attr = pressure.enqa(WR_VAR(0, 33, 7));
+            wassert_true(attr);
+            wassert(actual(attr->enqi()) == 87);
+        });
     }
 } testnewtg("bufr_decoder");
 

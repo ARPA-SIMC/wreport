@@ -34,6 +34,7 @@ enum Action {
     DUMP,
     DUMP_STRUCTURE,
     DUMP_DDS,
+    TRACE,
     PRINT_VARS,
     INFO,
     UNPARSABLE,

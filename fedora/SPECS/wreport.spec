@@ -1,7 +1,7 @@
 %global releaseno 1
 
 Name: wreport
-Version: 3.9
+Version: 3.12
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -193,6 +193,19 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Thu Jun 7 2018 Daniele Branchini <dbranchini@arpae.it> - 3.12-1
+- fixed #17
+
+* Mon Jun 4 2018 Daniele Branchini <dbranchini@arpae.it> - 3.11-1
+- fixed #16
+
+* Wed Apr 18 2018 Daniele Branchini <dbranchini@arpae.it> - 3.10-2
+- Deallocate storage for Var objects
+
+* Thu Feb 22 2018 Daniele Branchini <dbranchini@arpae.it> - 3.10-1
+- Updated wobble
+- Added missing newline ad the end of verbose output
+
 * Tue Feb 14 2017 Daniele Branchini <dbranchini@arpae.it> - 3.9-1
 - Added ppt (part per thousand) conversion
 

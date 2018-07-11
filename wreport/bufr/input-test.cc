@@ -1,5 +1,5 @@
 #include "wreport/tests.h"
-#include "bufr.h"
+#include "input.h"
 
 using namespace wreport;
 using namespace wreport::tests;
@@ -16,6 +16,7 @@ class Tests : public TestCase
         add_method("empty", []() {
         });
     }
-} test("buffers_bufr");
+} test("bufr_input");
 
 }
+

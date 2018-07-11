@@ -392,6 +392,15 @@ class Tests : public TestCase
             Var var3(move(var2));
             wassert(actual(var3.enqc()) == "ciaon");
         });
+        add_method("issue17", []() {
+            _Varinfo vi;
+            vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 2, 5, 0, 16);
+            Var var(&vi);
+            wassert(var.sets("None"));
+            wassert_false(var.isset());
+            wassert(var.setc("None"));
+            wassert_false(var.isset());
+        });
     }
 
 #if 0

@@ -11,6 +11,8 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <utime.h>
 #include <alloca.h>
 
 namespace {
@@ -350,7 +352,7 @@ bool FileDescriptor::ofd_setlk(struct flock& lk)
     if (fcntl(fd, F_SETLK, &lk) != -1)
 #endif
         return true;
-    if (errno != EAGAIN)
+    if (errno != EAGAIN && errno != EACCES)
         throw_error("cannot acquire lock");
     return false;
 }
@@ -365,7 +367,7 @@ bool FileDescriptor::ofd_setlkw(struct flock& lk, bool retry_on_signal)
         if (fcntl(fd, F_SETLKW, &lk) != -1)
 #endif
             return true;
-        if (errno != EAGAIN)
+        if (errno != EINTR)
             throw_error("cannot acquire lock");
         if (!retry_on_signal)
             return false;
@@ -383,7 +385,7 @@ bool FileDescriptor::ofd_getlk(struct flock& lk)
     return lk.l_type == F_UNLCK;
 }
 
-void FileDescriptor::futimens(const struct timespec ts[2])
+void FileDescriptor::futimens(const struct ::timespec ts[2])
 {
     if (::futimens(fd, ts) == -1)
         throw_error("cannot change file timestamps");
@@ -532,6 +534,18 @@ int Path::openat(const char* pathname, int flags, mode_t mode)
     int res = ::openat(fd, pathname, flags, mode);
     if (res == -1)
         throw_error("cannot openat");
+    return res;
+}
+
+int Path::openat_ifexists(const char* pathname, int flags, mode_t mode)
+{
+    int res = ::openat(fd, pathname, flags, mode);
+    if (res == -1)
+    {
+        if (errno == ENOENT)
+            return -1;
+        throw_error("cannot openat");
+    }
     return res;
 }
 
@@ -786,10 +800,24 @@ File File::mkstemp(const std::string& prefix)
     char* fbuf = (char*)alloca(prefix.size() + 7);
     memcpy(fbuf, prefix.data(), prefix.size());
     memcpy(fbuf + prefix.size(), "XXXXXX", 7);
-    int fd = ::mkstemp(fbuf);
+    return mkstemp(fbuf);
+}
+
+File File::mkstemp(const char* prefix)
+{
+    size_t prefix_size = strlen(prefix);
+    char* fbuf = (char*)alloca(prefix_size + 7);
+    memcpy(fbuf, prefix, prefix_size);
+    memcpy(fbuf + prefix_size, "XXXXXX", 7);
+    return mkstemp(fbuf);
+}
+
+File File::mkstemp(char* pathname_template)
+{
+    int fd = ::mkstemp(pathname_template);
     if (fd < 0)
-        throw std::system_error(errno, std::system_category(), std::string("cannot create temporary file ") + fbuf);
-    return File(fd, fbuf);
+        throw std::system_error(errno, std::system_category(), std::string("cannot create temporary file ") + pathname_template);
+    return File(fd, pathname_template);
 }
 
 std::string read_file(const std::string& file)
@@ -884,6 +912,14 @@ bool rename_ifexists(const std::string& src, const std::string& dst)
     else
         return true;
 }
+
+void touch(const std::string& pathname, time_t ts)
+{
+    struct utimbuf t = { ts, ts };
+    if (::utime(pathname.c_str(), &t) != 0)
+        throw std::system_error(errno, std::system_category(), "cannot set mtime/atime of " + pathname);
+}
+
 
 template<typename String>
 static bool impl_mkdir_ifmissing(String pathname, mode_t mode)
@@ -1009,13 +1045,83 @@ bool rmtree_ifexists(const std::string& pathname)
     return true;
 }
 
-#if 0
-std::string mkdtemp( std::string tmpl )
+void clock_gettime(::clockid_t clk_id, struct ::timespec& ts)
 {
-    char *_tmpl = reinterpret_cast< char * >( alloca( tmpl.size() + 1 ) );
-    strcpy( _tmpl, tmpl.c_str() );
-    return ::mkdtemp( _tmpl );
+    int res = ::clock_gettime(clk_id, &ts);
+    if (res == -1)
+        throw std::system_error(errno, std::system_category(), "clock_gettime failed on clock " + std::to_string(clk_id));
 }
-#endif
+
+unsigned long long timesec_elapsed(const struct ::timespec& begin, const struct ::timespec& until)
+{
+    if (begin.tv_sec > until.tv_sec)
+        return 0;
+
+    if (begin.tv_sec == until.tv_sec)
+    {
+        if (begin.tv_nsec > until.tv_nsec)
+            return 0;
+        return until.tv_nsec - begin.tv_nsec;
+    }
+
+    if (until.tv_nsec < begin.tv_nsec)
+        return (until.tv_sec - begin.tv_sec - 1) * 1000000000 + (until.tv_nsec + 1000000000 - begin.tv_nsec);
+    else
+        return (until.tv_sec - begin.tv_sec) * 1000000000 + until.tv_nsec - begin.tv_nsec;
+}
+
+/*
+ * Clock
+ */
+
+Clock::Clock(clockid_t clk_id)
+    : clk_id(clk_id)
+{
+    clock_gettime(clk_id, ts);
+}
+
+unsigned long long Clock::elapsed()
+{
+    struct timespec cur_ts;
+    clock_gettime(clk_id, cur_ts);
+    return timesec_elapsed(ts, cur_ts);
+}
+
+
+/*
+ * rlimit
+ */
+
+void getrlimit(int resource, struct ::rlimit& rlim)
+{
+    if (::getrlimit(resource, &rlim) == -1)
+        throw std::system_error(errno, std::system_category(), "getrlimit failed");
+}
+
+void setrlimit(int resource, const struct ::rlimit& rlim)
+{
+    if (::setrlimit(resource, &rlim) == -1)
+        throw std::system_error(errno, std::system_category(), "setrlimit failed");
+}
+
+OverrideRlimit::OverrideRlimit(int resource, rlim_t rlim)
+    : resource(resource)
+{
+    getrlimit(resource, orig);
+    set(rlim);
+}
+
+OverrideRlimit::~OverrideRlimit()
+{
+    setrlimit(resource, orig);
+}
+
+void OverrideRlimit::set(rlim_t rlim)
+{
+    struct rlimit newval(orig);
+    newval.rlim_cur = rlim;
+    setrlimit(resource, newval);
+}
+
 }
 }

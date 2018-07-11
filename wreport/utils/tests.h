@@ -133,6 +133,10 @@ struct TestFailed : public std::exception
  */
 struct TestSkipped : public std::exception
 {
+    std::string reason;
+
+    TestSkipped();
+    TestSkipped(const std::string& reason);
 };
 
 /**
@@ -143,6 +147,13 @@ struct TestSkipped : public std::exception
     wreport::tests::LocationInfo wreport_test_location_info; \
     wreport::tests::LocationInfo& name = wreport_test_location_info
 
+
+/**
+ * The following assert_* functions throw TestFailed without capturing
+ * file/line numbers, and need to be used inside wassert to give good error
+ * messages. Do not use them in actual test cases, but you can use them to
+ * implement test assertions.
+ */
 
 /// Test function that ensures that the actual value is true
 template<typename A>
@@ -307,6 +318,10 @@ struct ActualStdString : public Actual<std::string>
 {
     ActualStdString(const std::string& s) : Actual<std::string>(s) {}
 
+    using Actual<std::string>::operator==;
+    void operator==(const std::vector<uint8_t>& expected) const;
+    using Actual<std::string>::operator!=;
+    void operator!=(const std::vector<uint8_t>& expected) const;
     void startswith(const std::string& expected) const;
     void endswith(const std::string& expected) const;
     void contains(const std::string& expected) const;
@@ -328,6 +343,7 @@ inline Actual<A> actual(const A& actual) { return Actual<A>(actual); }
 inline ActualCString actual(const char* actual) { return ActualCString(actual); }
 inline ActualCString actual(char* actual) { return ActualCString(actual); }
 inline ActualStdString actual(const std::string& actual) { return ActualStdString(actual); }
+inline ActualStdString actual(const std::vector<uint8_t>& actual) { return ActualStdString(std::string(actual.begin(), actual.end())); }
 inline ActualDouble actual(double actual) { return ActualDouble(actual); }
 
 struct ActualFunction : public Actual<std::function<void()>>
@@ -346,6 +362,13 @@ struct ActualFile : public Actual<std::string>
     void exists() const;
     void not_exists() const;
     void startswith(const std::string& data) const;
+    void empty() const;
+    void not_empty() const;
+    void contents_equal(const std::string& data) const;
+    void contents_equal(const std::vector<uint8_t>& data) const;
+    void contents_equal(const std::initializer_list<std::string>& lines) const;
+    void contents_match(const std::string& data_re) const;
+    void contents_match(const std::initializer_list<std::string>& lines_re) const;
 };
 
 inline ActualFile actual_file(const std::string& pathname) { return ActualFile(pathname); }
@@ -374,6 +397,26 @@ inline ActualFile actual_file(const std::string& pathname) { return ActualFile(p
 #define wassert_false(...) wassert(actual(__VA_ARGS__).isfalse())
 
 /**
+ * Ensure that the expression throws the given exception.
+ *
+ * Returns a copy of the exception, which can be used for further evaluation.
+ */
+#define wassert_throws(exc, ...) \
+    [&]() { try { \
+        __VA_ARGS__ ; \
+        wfail_test(#__VA_ARGS__ " did not throw " #exc); \
+    } catch (TestFailed& e) { \
+        throw; \
+    } catch (exc& e) { \
+        return e; \
+    } catch (std::exception& e) { \
+        std::string msg(#__VA_ARGS__ " did not throw " #exc " but threw "); \
+        msg += typeid(e).name(); \
+        msg += " instead"; \
+        wfail_test(msg); \
+    } }()
+
+/**
  * Call a function returning its result, and raising TestFailed with the
  * appropriate backtrace information if it threw an exception.
  *
@@ -390,231 +433,18 @@ inline ActualFile actual_file(const std::string& pathname) { return ActualFile(p
         throw wreport::tests::TestFailed(e, __FILE__, __LINE__, #func, wreport_test_location_info); \
     } }()
 
+/**
+ * Fail a test with an error message
+ */
+#define wfail_test(msg) wassert(throw wreport::tests::TestFailed((msg)))
 
 struct TestCase;
-
-/**
- * Result of running a test method.
- */
-struct TestMethodResult
-{
-    /// Name of the test case
-    std::string test_case;
-
-    /// Name of the test method
-    std::string test_method;
-
-    /// If non-empty, the test failed with this error
-    std::string error_message;
-
-    /// Stack frame of where the error happened
-    TestStack error_stack;
-
-    /// If non-empty, the test threw an exception and this is its type ID
-    std::string exception_typeid;
-
-    /// True if the test has been skipped
-    bool skipped = false;
-
-
-    TestMethodResult(const std::string& test_case, const std::string& test_method)
-        : test_case(test_case), test_method(test_method) {}
-
-    void set_failed(TestFailed& e)
-    {
-        error_message = e.what();
-        error_stack = e.stack;
-        if (error_message.empty())
-            error_message = "test failed with an empty error message";
-    }
-
-    void set_exception(std::exception& e)
-    {
-        error_message = e.what();
-        if (error_message.empty())
-            error_message = "test threw an exception with an empty error message";
-        exception_typeid = typeid(e).name();
-    }
-
-    void set_unknown_exception()
-    {
-        error_message = "unknown exception caught";
-    }
-
-    void set_setup_exception(std::exception& e)
-    {
-        error_message = "[setup failed: ";
-        error_message += e.what();
-        error_message += "]";
-    }
-
-    void set_teardown_exception(std::exception& e)
-    {
-        error_message = "[teardown failed: ";
-        error_message += e.what();
-        error_message += "]";
-    }
-
-    bool is_success() const
-    {
-        return error_message.empty();
-    }
-};
-
-/**
- * Result of running a whole test case
- */
-struct TestCaseResult
-{
-    /// Name of the test case
-    std::string test_case;
-    /// Outcome of all the methods that have been run
-    std::vector<TestMethodResult> methods;
-    /// Set to a non-empty string if the setup method of the test case failed
-    std::string fail_setup;
-    /// Set to a non-empty string if the teardown method of the test case
-    /// failed
-    std::string fail_teardown;
-    /// Set to true if this test case has been skipped
-    bool skipped = false;
-
-    TestCaseResult(const std::string& test_case) : test_case(test_case) {}
-
-    void set_setup_failed()
-    {
-        fail_setup = "test case setup method threw an unknown exception";
-    }
-
-    void set_setup_failed(std::exception& e)
-    {
-        fail_setup = "test case setup method threw an exception: ";
-        fail_setup += e.what();
-    }
-
-    void set_teardown_failed()
-    {
-        fail_teardown = "test case teardown method threw an unknown exception";
-    }
-
-    void set_teardown_failed(std::exception& e)
-    {
-        fail_teardown = "test case teardown method threw an exception: ";
-        fail_teardown += e.what();
-    }
-
-    void add_test_method(TestMethodResult&& e)
-    {
-        methods.emplace_back(std::move(e));
-    }
-
-    bool is_success() const
-    {
-        if (!fail_setup.empty() || !fail_teardown.empty()) return false;
-        for (const auto& m: methods)
-            if (!m.is_success())
-                return false;
-        return true;
-    }
-};
-
-struct TestCase;
+struct TestController;
+struct TestRegistry;
 struct TestCaseResult;
 struct TestMethod;
 struct TestMethodResult;
 
-/**
- * Abstract interface for the objects that supervise test execution.
- *
- * This can be used for printing progress, or to skip test methods or test
- * cases.
- */
-struct TestController
-{
-    virtual ~TestController() {}
-
-    /**
-     * Called before running a test case.
-     *
-     * @returns true if the test case should be run, false if it should be skipped
-     */
-    virtual bool test_case_begin(const TestCase& test_case, const TestCaseResult& test_case_result) { return true; }
-
-    /**
-     * Called after running a test case.
-     */
-    virtual void test_case_end(const TestCase& test_case, const TestCaseResult& test_case_result) {}
-
-    /**
-     * Called before running a test method.
-     *
-     * @returns true if the test method should be run, false if it should be skipped
-     */
-    virtual bool test_method_begin(const TestMethod& test_method, const TestMethodResult& test_method_result) { return true; }
-
-    /**
-     * Called after running a test method.
-     */
-    virtual void test_method_end(const TestMethod& test_method, const TestMethodResult& test_method_result) {}
-};
-
-/**
- * Simple default implementation of TestController.
- *
- * It does progress printing to stdout and basic glob-based test method
- * filtering.
- */
-struct SimpleTestController : public TestController
-{
-    /// Any method not matching this glob expression will not be run
-    std::string whitelist;
-
-    /// Any method matching this glob expression will not be run
-    std::string blacklist;
-
-    bool test_case_begin(const TestCase& test_case, const TestCaseResult& test_case_result) override;
-    void test_case_end(const TestCase& test_case, const TestCaseResult& test_case_result) override;
-    bool test_method_begin(const TestMethod& test_method, const TestMethodResult& test_method_result) override;
-    void test_method_end(const TestMethod& test_method, const TestMethodResult& test_method_result) override;
-
-    bool test_method_should_run(const std::string& fullname) const;
-};
-
-
-/**
- * Test registry.
- *
- * It collects information about all known test cases and takes care of running
- * them.
- */
-struct TestRegistry
-{
-    /// All known test cases
-    std::vector<TestCase*> entries;
-
-    /**
-     * Register a new test case.
-     *
-     * No memory management is done: test_case needs to exist for the whole
-     * lifetime of TestRegistry.
-     */
-    void register_test_case(TestCase& test_case);
-
-    /**
-     * Iterate on all test methods known by this registry.
-     *
-     * This method does not change the tests, but it cannot be const because it
-     * calls register_tests_once on each TestCase.
-     */
-    void iterate_test_methods(std::function<void(const TestCase&, const TestMethod&)>);
-
-    /**
-     * Run all the registered tests using the given controller
-     */
-    std::vector<TestCaseResult> run_tests(TestController& controller);
-
-    /// Get the singleton instance of TestRegistry
-    static TestRegistry& get();
-};
 
 /**
  * Test method information
@@ -658,11 +488,7 @@ struct TestCase
     bool tests_registered = false;
 
 
-    TestCase(const std::string& name)
-        : name(name)
-    {
-        TestRegistry::get().register_test_case(*this);
-    }
+    TestCase(const std::string& name);
     virtual ~TestCase() {}
 
     /**
@@ -845,19 +671,6 @@ public:
     }
 };
 
-#if 0
-    struct Test
-    {
-        std::string name;
-        std::function<void()> test_func;
-    };
-
-    /// Add tests to the test case
-    virtual void add_tests() {}
-#endif
-
-
 }
 }
-
 #endif

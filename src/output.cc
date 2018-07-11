@@ -36,6 +36,27 @@ struct PrintContents : public BulletinFullHandler
     }
 };
 
+struct PrintTrace : public BulletinFullHandler
+{
+    FILE* out;
+    PrintTrace(FILE* out=stderr) : out(out) {}
+
+    void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset) override
+    {
+        try {
+            // Decode the raw data. fname and offset are optional and we pass
+            // them just to have nicer error messages
+            auto bulletin = wreport::BufrBulletin::decode_verbose(raw_data, out, fname, offset);
+
+            // Do something with the decoded information
+            handle(*bulletin);
+        } catch (std::exception& e) {
+            fprintf(stderr, "%s:%ld:%s\n", fname, offset, e.what());
+        }
+    }
+    void handle(wreport::Bulletin& b) override {}
+};
+
 struct PrintStructure : public BulletinFullHandler
 {
     FILE* out;

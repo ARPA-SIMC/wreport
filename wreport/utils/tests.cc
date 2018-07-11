@@ -7,9 +7,9 @@
  */
 
 #include "tests.h"
+#include "testrunner.h"
 #include "string.h"
 #include "sys.h"
-#include <fnmatch.h>
 #include <cmath>
 #include <iomanip>
 #include <sys/types.h>
@@ -72,6 +72,14 @@ TestFailed::TestFailed(const std::exception& e)
    message += ": ";
    message += e.what();
 }
+
+
+/*
+ * TestSkipped
+ */
+
+TestSkipped::TestSkipped() {}
+TestSkipped::TestSkipped(const std::string& reason) : reason(reason) {}
 
 
 #if 0
@@ -143,11 +151,14 @@ namespace {
 
 struct Regexp
 {
+    std::string regex;
     regex_t compiled;
+    regmatch_t matches[2];
 
     Regexp(const char* regex)
+        : regex(regex)
     {
-        if (int err = regcomp(&compiled, regex, REG_EXTENDED | REG_NOSUB))
+        if (int err = regcomp(&compiled, this->regex.c_str(), REG_EXTENDED))
             raise_error(err);
     }
     ~Regexp()
@@ -157,7 +168,7 @@ struct Regexp
 
     bool search(const char* s)
     {
-        return regexec(&compiled, s, 0, nullptr, 0) != REG_NOMATCH;
+        return regexec(&compiled, s, 2, matches, 0) != REG_NOMATCH;
     }
 
     void raise_error(int code)
@@ -309,6 +320,16 @@ void ActualCString::not_contains(const std::string& expected) const
     assert_not_contains(_actual, expected);
 }
 
+void ActualStdString::operator==(const std::vector<uint8_t>& expected) const
+{
+    return operator==(std::string(expected.begin(), expected.end()));
+}
+
+void ActualStdString::operator!=(const std::vector<uint8_t>& expected) const
+{
+    return operator!=(std::string(expected.begin(), expected.end()));
+}
+
 void ActualStdString::startswith(const std::string& expected) const
 {
     assert_startswith(_actual, expected);
@@ -392,88 +413,111 @@ void ActualFile::startswith(const std::string& data) const
         throw TestFailed("file " + _actual + " starts with '" + str::encode_cstring(buf) + "' instead of '" + str::encode_cstring(data) + "'");
 }
 
-#if 0
-void test_assert_file_exists(WIBBLE_TEST_LOCPRM, const std::string& fname)
+void ActualFile::empty() const
 {
-    if (not sys::fs::exists(fname))
+    size_t size = sys::size(_actual);
+    if (size > 0)
+        throw TestFailed("file " + _actual + " is " + std::to_string(size) + "b instead of being empty");
+}
+
+void ActualFile::not_empty() const
+{
+    size_t size = sys::size(_actual);
+    if (size == 0)
+        throw TestFailed("file " + _actual + " is empty and it should not be");
+}
+
+void ActualFile::contents_equal(const std::string& data) const
+{
+    std::string content = sys::read_file(_actual);
+    if (content != data)
+        throw TestFailed("file " + _actual + " contains '" + str::encode_cstring(content) + "' instead of '" + str::encode_cstring(data) + "'");
+}
+
+void ActualFile::contents_equal(const std::vector<uint8_t>& data) const
+{
+    return contents_equal(std::string(data.begin(), data.end()));
+}
+
+void ActualFile::contents_equal(const std::initializer_list<std::string>& lines) const
+{
+    std::vector<std::string> actual_lines;
+    std::string content = str::rstrip(sys::read_file(_actual));
+
+    str::Split splitter(content, "\n");
+    std::copy(splitter.begin(), splitter.end(), back_inserter(actual_lines));
+
+    if (actual_lines.size() != lines.size())
+        throw TestFailed("file " + _actual + " contains " + std::to_string(actual_lines.size()) + " lines ('" + str::encode_cstring(content) + "') instead of " + std::to_string(lines.size()) + " lines ('" + str::encode_cstring(content) + "')");
+
+    auto ai = actual_lines.begin();
+    auto ei = lines.begin();
+    for (unsigned i = 0; i < actual_lines.size(); ++i, ++ai, ++ei)
     {
+        string actual_line = str::rstrip(*ai);
+        string expected_line = str::rstrip(*ei);
+        if (*ai != *ei)
+            throw TestFailed("file " + _actual + " actual contents differ from expected at line #" + std::to_string(i + 1) + " ('" + str::encode_cstring(actual_line) + "' instead of '" + str::encode_cstring(expected_line) + "')");
+
+    }
+}
+
+void ActualFile::contents_match(const std::string& data_re) const
+{
+    std::string content = sys::read_file(_actual);
+    Regexp re(data_re.c_str());
+    if (re.search(content.c_str())) return;
+    std::stringstream ss;
+    ss << "file " + _actual << " contains " << str::encode_cstring(content)
+       << " which does not match " << data_re;
+    throw TestFailed(ss.str());
+}
+
+void ActualFile::contents_match(const std::initializer_list<std::string>& lines_re) const
+{
+    std::vector<std::string> actual_lines;
+    std::string content = str::rstrip(sys::read_file(_actual));
+
+    str::Split splitter(content, "\n");
+    std::copy(splitter.begin(), splitter.end(), back_inserter(actual_lines));
+
+    auto ai = actual_lines.begin();
+    auto ei = lines_re.begin();
+    unsigned lineno = 1;
+    while (ei != lines_re.end())
+    {
+        Regexp re(ei->c_str());
+        string actual_line = ai == actual_lines.end() ? "" : str::rstrip(*ai);
+        if (re.search(content.c_str()))
+        {
+            if (re.matches[0].rm_so == re.matches[0].rm_eo)
+                ++ei;
+            else
+            {
+                if (ai != actual_lines.end()) ++ai;
+                ++ei;
+                ++lineno;
+            }
+            continue;
+        }
+
         std::stringstream ss;
-        ss << "file '" << fname << "' does not exists";
-        wreport_test_location.fail_test(ss.str());
+        ss << "file " << _actual << " actual contents differ from expected at line #" << lineno
+           << " ('" << str::encode_cstring(actual_line)
+           << "' does not match '" << str::encode_cstring(*ei) << "')";
+        throw TestFailed(ss.str());
     }
 }
 
-void test_assert_not_file_exists(WIBBLE_TEST_LOCPRM, const std::string& fname)
-{
-    if (sys::fs::exists(fname))
-    {
-        std::stringstream ss;
-        ss << "file '" << fname << "' does exists";
-        wreport_test_location.fail_test(ss.str());
-    }
-}
 
-#if 0
-struct TestFileExists
-{
-    std::string pathname;
-    bool inverted;
-    TestFileExists(const std::string& pathname, bool inverted=false) : pathname(pathname), inverted(inverted) {}
-    TestFileExists operator!() { return TestFileExists(pathname, !inverted); }
-    void check(WREPORT_TEST_LOCPRM) const;
-};
-#endif
+/*
+ * TestCase
+ */
 
-void TestFileExists::check(WIBBLE_TEST_LOCPRM) const
+TestCase::TestCase(const std::string& name)
+    : name(name)
 {
-    if (!inverted)
-    {
-        if (sys::fs::exists(pathname)) return;
-        std::stringstream ss;
-        ss << "file '" << pathname << "' does not exists";
-        wreport_test_location.fail_test(ss.str());
-    } else {
-        if (not sys::fs::exists(pathname)) return;
-        std::stringstream ss;
-        ss << "file '" << pathname << "' exists";
-        wreport_test_location.fail_test(ss.str());
-    }
-}
-#endif
-
-TestRegistry& TestRegistry::get()
-{
-    static TestRegistry* instance = 0;
-    if (!instance)
-        instance = new TestRegistry();
-    return *instance;
-}
-
-void TestRegistry::register_test_case(TestCase& test_case)
-{
-    entries.emplace_back(&test_case);
-}
-
-void TestRegistry::iterate_test_methods(std::function<void(const TestCase&, const TestMethod&)> f)
-{
-    for (auto& e: entries)
-    {
-        e->register_tests_once();
-        for (const auto& m: e->methods)
-            f(*e, m);
-    }
-}
-
-std::vector<TestCaseResult> TestRegistry::run_tests(TestController& controller)
-{
-    std::vector<TestCaseResult> res;
-    for (auto& e: entries)
-    {
-        e->register_tests_once();
-        // TODO: filter on e.name
-        res.emplace_back(std::move(e->run_tests(controller)));
-    }
-    return res;
+    TestRegistry::get().register_test_case(*this);
 }
 
 void TestCase::register_tests_once()
@@ -494,22 +538,33 @@ TestCaseResult TestCase::run_tests(TestController& controller)
         return res;
     }
 
+    bool skip_all = false;
+    string skip_all_reason;
     try {
         setup();
-    } catch (TestSkipped) {
-        res.skipped = true;
-        controller.test_case_end(*this, res);
-        return res;
+    } catch (TestSkipped& e) {
+        skip_all = true;
+        skip_all_reason = e.reason;
     } catch (std::exception& e) {
         res.set_setup_failed(e);
         controller.test_case_end(*this, res);
         return res;
     }
 
-    for (auto& m: methods)
+    if (skip_all)
     {
-        // TODO: filter on m.name
-        res.add_test_method(run_test(controller, m));
+        for (auto& method: methods)
+        {
+            TestMethodResult tmr(name, method.name);
+            controller.test_method_begin(method, tmr);
+            tmr.skipped = true;
+            tmr.skipped_reason = skip_all_reason;
+            controller.test_method_end(method, tmr);
+            res.add_test_method(move(tmr));
+        }
+    } else {
+        for (auto& m: methods)
+            res.add_test_method(run_test(controller, m));
     }
 
     try {
@@ -542,10 +597,14 @@ TestMethodResult TestCase::run_test(TestController& controller, TestMethod& meth
         return res;
     }
 
+    // Take time now for measuring elapsed time of the test method
+    sys::Clock timer(CLOCK_MONOTONIC);
+
     try {
         method_setup(res);
-    } catch (TestSkipped) {
+    } catch (TestSkipped& e) {
         res.skipped = true;
+        res.skipped_reason = e.reason;
         controller.test_method_end(method, res);
         return res;
     } catch (std::exception& e) {
@@ -557,8 +616,9 @@ TestMethodResult TestCase::run_test(TestController& controller, TestMethod& meth
     {
         try {
             method.test_function();
-        } catch (TestSkipped) {
+        } catch (TestSkipped& e) {
             res.skipped = true;
+            res.skipped_reason = e.reason;
         } catch (TestFailed& e) {
             // Location::fail_test() was called
             res.set_failed(e);
@@ -577,60 +637,10 @@ TestMethodResult TestCase::run_test(TestController& controller, TestMethod& meth
         res.set_teardown_exception(e);
     }
 
+    res.elapsed_ns = timer.elapsed();
+
     controller.test_method_end(method, res);
     return res;
-}
-
-bool SimpleTestController::test_method_should_run(const std::string& fullname) const
-{
-    if (!whitelist.empty() && fnmatch(whitelist.c_str(), fullname.c_str(), 0) == FNM_NOMATCH)
-        return false;
-
-    if (!blacklist.empty() && fnmatch(blacklist.c_str(), fullname.c_str(), 0) != FNM_NOMATCH)
-        return false;
-
-    return true;
-}
-
-bool SimpleTestController::test_case_begin(const TestCase& test_case, const TestCaseResult& test_case_result)
-{
-    // Skip test case if all its methods should not run
-    bool should_run = false;
-    for (const auto& m : test_case.methods)
-        should_run |= test_method_should_run(test_case.name + "." + m.name);
-    if (!should_run) return false;
-
-    fprintf(stdout, "%s: ", test_case.name.c_str());
-    fflush(stdout);
-    return true;
-}
-
-void SimpleTestController::test_case_end(const TestCase& test_case, const TestCaseResult& test_case_result)
-{
-    if (test_case_result.skipped)
-        ;
-    else if (test_case_result.is_success())
-        fprintf(stdout, "\n");
-    else
-        fprintf(stdout, "\n");
-    fflush(stdout);
-}
-
-bool SimpleTestController::test_method_begin(const TestMethod& test_method, const TestMethodResult& test_method_result)
-{
-    string name = test_method_result.test_case + "." + test_method.name;
-    return test_method_should_run(name);
-}
-
-void SimpleTestController::test_method_end(const TestMethod& test_method, const TestMethodResult& test_method_result)
-{
-    if (test_method_result.skipped)
-        putc('s', stdout);
-    else if (test_method_result.is_success())
-        putc('.', stdout);
-    else
-        putc('x', stdout);
-    fflush(stdout);
 }
 
 }

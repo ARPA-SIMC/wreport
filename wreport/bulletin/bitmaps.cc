@@ -5,6 +5,11 @@
 namespace wreport {
 namespace bulletin {
 
+Bitmap::Bitmap(const Var& bitmap, const Subset& subset)
+    : Bitmap(bitmap, subset, subset.size())
+{
+}
+
 Bitmap::Bitmap(const Var& bitmap, const Subset& subset, unsigned anchor)
     : bitmap(bitmap)
 {
@@ -80,6 +85,11 @@ unsigned Bitmaps::next()
         current = nullptr;
     }
     return res;
+}
+
+void Bitmaps::define(const Var& bitmap, const Subset& subset)
+{
+    define(bitmap, subset, subset.size());
 }
 
 void Bitmaps::define(const Var& bitmap, const Subset& subset, unsigned anchor_point)
