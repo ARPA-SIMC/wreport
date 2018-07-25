@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Enrico Zini <enrico@debian.org>
 Build-Depends:
-  debhelper (>= 10), dh-buildinfo, dh-autoreconf, dh-python,
+  debhelper (>= 10), dh-buildinfo, dh-python,
   doxygen, pkg-config,
   liblua5.1-0-dev,
   python-all-dev, python3-all-dev, python-docutils, python-numpy, python3-numpy,
