@@ -1,3 +1,11 @@
+wreport (3.12-1) UNRELEASED; urgency=medium
+
+  * New upstream version
+  * Remove absolute paths from doxygen tags file, thanks Chris Lamb for the
+    patch. Closes: #890487
+
+ -- Enrico Zini <enrico@debian.org>  Wed, 25 Jul 2018 09:27:02 +0800
+
 wreport (3.6-1) unstable; urgency=medium
 
   * New upstream version

@@ -26,6 +26,9 @@ override_dh_auto_install:
 	done
 	# Remove python modules .la files
 	rm -f debian/tmp/usr/lib/python*/dist-packages/*.la
+	# Remove absolute build path from tag file, resulting in <path>.</path>
+	sed -i -e 's@$(CURDIR)@/usr/include@g' \
+		debian/tmp/usr/share/doc/wreport/libwreport.doxytags
 
 vercheck:
 	debian/vercheck > /dev/null
