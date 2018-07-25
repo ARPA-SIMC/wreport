@@ -3,12 +3,13 @@ Section: misc
 Priority: optional
 Maintainer: Enrico Zini <enrico@debian.org>
 Build-Depends:
-  debhelper (>= 9), dh-buildinfo, dh-autoreconf, dh-python,
+  debhelper (>= 10), dh-buildinfo, dh-autoreconf, dh-python,
   doxygen, pkg-config,
   liblua5.1-0-dev,
   python-all-dev, python3-all-dev, python-docutils, python-numpy, python3-numpy,
   python-six, python3-six
-Standards-Version: 3.9.8.0
+Standards-Version: 4.1.5
+Rules-Requires-Root: no
 Homepage: https://github.com/ARPA-SIMC/wreport
 Vcs-Git: https://github.com/ARPA-SIMC/wreport.git
 

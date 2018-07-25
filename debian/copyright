@@ -1,7 +1,7 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: wreport
 Upstream-Contact: Enrico Zini <enrico@enricozini.org>
-Source: http://sourceforge.net/projects/wreport/
+Source: https://github.com/ARPA-SIMC/wreport/
 
 Files: *
 Copyright: (C) 2005--2015 ARPA-SIM <urpsim@smr.arpa.emr.it>
