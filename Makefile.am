@@ -17,5 +17,5 @@ pkgconfig_DATA = libwreport.pc
 EXTRA_DIST = libwreport.pc.in run-local run-bench testenv TODO-threads \
 	     INSTALL BENCHMARKS LICENSE README.md \
 	     fedora/README fedora/SPECS/wreport.spec \
-	     python/MANIFEST.in python/setup.py
+	     python/MANIFEST.in python/setup.py fabfile.py
 

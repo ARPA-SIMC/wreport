@@ -1,0 +1,38 @@
+American Fuzzy Lop run that ended on 2016-09-14:
+
+Setup:
+
+   CXX=/usr/bin/afl-g++ ./configure --disable-shared
+   make AFL_HARDEN=1
+   afl-cmin  -i testdata/bufr/ -o afl-bufr -- src/afl-test @@
+   afl-fuzz -t 100 -i afl-bufr -o afl-bufr-out src/afl-test @@
+
+Output
+
+                      american fuzzy lop 2.04b (afl-test)
+
+┌─ process timing ─────────────────────────────────────┬─ overall results ─────┐
+│        run time : 12 days, 19 hrs, 15 min, 25 sec    │  cycles done : 346    │
+│   last new path : 10 days, 16 hrs, 55 min, 28 sec    │  total paths : 55     │
+│ last uniq crash : none seen yet                      │ uniq crashes : 0      │
+│  last uniq hang : 1 days, 6 hrs, 0 min, 33 sec       │   uniq hangs : 27     │
+├─ cycle progress ────────────────────┬─ map coverage ─┴───────────────────────┤
+│  now processing : 42 (76.36%)       │    map density : 379 (0.58%)           │
+│ paths timed out : 0 (0.00%)         │ count coverage : 1.42 bits/tuple       │
+├─ stage progress ────────────────────┼─ findings in depth ────────────────────┤
+│  now trying : splice 1              │ favored paths : 25 (45.45%)            │
+│ stage execs : 291/750 (38.80%)      │  new edges on : 30 (54.55%)            │
+│ total execs : 161M                  │ total crashes : 0 (0 unique)           │
+│  exec speed : 147.8/sec             │   total hangs : 749 (27 unique)        │
+├─ fuzzing strategy yields ───────────┴───────────────┬─ path geometry ────────┤
+│   bit flips : 13/171k, 2/171k, 0/171k               │    levels : 5          │
+│  byte flips : 0/21.4k, 0/2094, 0/2177               │   pending : 0          │
+│ arithmetics : 2/114k, 0/75.5k, 0/34.1k              │  pend fav : 0          │
+│  known ints : 0/8810, 4/43.2k, 0/82.2k              │ own finds : 41         │
+│  dictionary : 0/0, 0/0, 0/18.0k                     │  imported : n/a        │
+│       havoc : 15/56.9M, 5/103M                      │  variable : 0          │
+│        trim : 20.85%/9088, 89.91%                   ├────────────────────────┘
+└─────────────────────────────────────────────────────┘             [cpu:102%]
+
+
+One of the hangs is a genuine bug: id:000019,src:000048+000024,op:splice,rep:8

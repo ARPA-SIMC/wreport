@@ -29,7 +29,7 @@ libwreport.doxytags apidocs/index.html: $(cdoxdeps) $(mainpages)
 	doxygen $<
 endif
 
-EXTRA_DIST = libwreport.dox examples
+EXTRA_DIST = libwreport.dox examples 20160914-american-fuzzy-lop.txt
 
 CLEANFILES = libwreport.doxytags
 
