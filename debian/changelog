@@ -1,3 +1,9 @@
+wreport (3.13-1) unstable; urgency=medium
+
+  * New upstream version
+
+ -- Enrico Zini <enrico@debian.org>  Thu, 26 Jul 2018 20:54:17 +0800
+
 wreport (3.12-1) unstable; urgency=medium
 
   * New upstream version
