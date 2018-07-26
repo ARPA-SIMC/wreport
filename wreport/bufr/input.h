@@ -230,7 +230,23 @@ public:
      *   Name of what we are about to decode, used for generating nice error
      *   messages
      */
-    void check_available_data(unsigned section, unsigned pos, size_t datalen, const char* expected);
+    void check_available_message_data(unsigned section, unsigned pos, size_t datalen, const char* expected);
+
+    /**
+     * Check that the given section in the input buffer contains at least \a
+     * datalen characters after offset \a pos; throw error_parse otherwise.
+     *
+     * @param section
+     *   Number of the section to check
+     * @param pos
+     *   Starting offset inside the section of the required data
+     * @param datalen
+     *   Required amount of data expected starting from \a pos
+     * @param expected
+     *   Name of what we are about to decode, used for generating nice error
+     *   messages
+     */
+    void check_available_section_data(unsigned section, unsigned pos, size_t datalen, const char* expected);
 
     /**
      * Decode a compressed number as described by dest.info(), ad set it as

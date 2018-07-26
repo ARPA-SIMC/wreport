@@ -1,4 +1,4 @@
-#include "tests.h"
+#include "wreport/tests.h"
 #include "dds-validator.h"
 #include "wreport/utils/string.h"
 #include <set>
@@ -44,6 +44,10 @@ class Tests : public TestCase
             blacklist.insert("bufr/bad-edition.bufr");
             blacklist.insert("bufr/corrupted.bufr");
             blacklist.insert("bufr/test-soil1.bufr");
+            blacklist.insert("bufr/short0.bufr");
+            blacklist.insert("bufr/short1.bufr");
+            blacklist.insert("bufr/short2.bufr");
+            blacklist.insert("bufr/short3.bufr");
 
             std::vector<std::string> files = tests::all_test_files("bufr");
             for (const auto& i: files)

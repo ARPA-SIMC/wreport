@@ -678,8 +678,12 @@ class Tests : public TestCase
             wassert(actual(msg.subsets.size()) == 1u);
         });
 
-        declare_test_decode_fail("bufr/afl-src01flip1-pos10.bufr", "looking for data descriptor list");
+        declare_test_decode_fail("bufr/afl-src01flip1-pos10.bufr", "but it must be at least 7");
         declare_test_decode_fail("bufr/afl-src4824splice-rep8.bufr", "Optional section length is 3 but it must be at least 4");
+        declare_test_decode_fail("bufr/short0.bufr", "looking for section 0 of BUFR message");
+        declare_test_decode_fail("bufr/short1.bufr", "looking for section 0 of BUFR message");
+        declare_test_decode_fail("bufr/short2.bufr", "Only BUFR edition 2, 3, and 4 are supported");
+        declare_test_decode_fail("bufr/short3.bufr", "section 1 (Identification section) claims to end past the end of the BUFR message");
 
         declare_test("bufr/issue16-onenull.bufr", [](const BufrBulletin& msg) {
             wassert(actual(msg.edition_number) == 4);

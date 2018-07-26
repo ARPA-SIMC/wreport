@@ -27,8 +27,8 @@ Input::Input(const std::string& in)
 {
     data = (const unsigned char*)in.data();
     data_len = in.size();
-    for (unsigned i = 0; i < sizeof(sec)/sizeof(sec[0]); ++i)
-        sec[i] = 0;
+    for (auto& s: sec)
+        s = 0;
 }
 
 void Input::scan_section_length(unsigned sec_no)
@@ -46,7 +46,6 @@ void Input::scan_section_length(unsigned sec_no)
 
 void Input::scan_lead_sections()
 {
-    check_available_data(sec[0], 8, "section 0 of BUFR message (indicator section)");
     sec[1] = sec[0] + 8;
     scan_section_length(1);
 }
@@ -159,13 +158,22 @@ void Input::check_available_data(unsigned pos, size_t datalen, const char* expec
         parse_error(pos, "end of BUFR message while looking for %s", expected);
 }
 
-void Input::check_available_data(unsigned section, unsigned pos, size_t datalen, const char* expected)
+void Input::check_available_message_data(unsigned section, unsigned pos, size_t datalen, const char* expected)
 {
-    // TODO: check that sec[section] + pos + datalen > sec[section + 1] instead?
-    // TODO: in that case, make a fake section 6 which starts at the end of
-    // TODO: BUFR data
     if (sec[section] + pos + datalen > data_len)
         parse_error(section, pos, "end of BUFR message while looking for %s", expected);
+}
+
+void Input::check_available_section_data(unsigned section, unsigned pos, size_t datalen, const char* expected)
+{
+    if (section < 5)
+    {
+        if (sec[section] + pos + datalen > sec[section + 1])
+            parse_error(section, pos, "end of BUFR section while looking for %s", expected);
+    } else {
+        if (sec[section] + pos + datalen > data_len)
+            parse_error(section, pos, "end of BUFR message while looking for %s", expected);
+    }
 }
 
 bool Input::decode_string(unsigned bit_len, char* str, size_t& len)

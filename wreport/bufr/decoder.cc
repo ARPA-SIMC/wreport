@@ -78,7 +78,12 @@ void Decoder::decode_sec1ed4()
     in.scan_other_sections(in.read_byte(1, 9) & 0x80);
     optional_section_length = in.sec[3] - in.sec[2];
     if (optional_section_length)
-        optional_section_length -= 4;
+    {
+        if (optional_section_length >= 4)
+            optional_section_length -= 4;
+        else
+            error_consistency::throwf("Section 2 length is %u but, if present, it must be at least 4", optional_section_length);
+    }
     // category in sec1[10]
     out.data_category = in.read_byte(1, 10);
     // international data sub-category in sec1[11]
@@ -106,6 +111,8 @@ void Decoder::decode_sec1ed4()
 /* Decode the message header only */
 void Decoder::decode_header()
 {
+    in.check_available_data(0, 8, "section 0 of BUFR message (indicator section)");
+
     // Read BUFR section 0 (Indicator section)
     if (memcmp(in.data + in.sec[0], "BUFR", 4) != 0)
         in.parse_error(0, 0, "data does not start with BUFR header (\"%.4s\" was read instead)", in.data + in.sec[0]);
@@ -119,7 +126,7 @@ void Decoder::decode_header()
     in.scan_lead_sections();
 
     // Read bufr section 1 (Identification section)
-    in.check_available_data(1, 0, out.edition_number == 4 ? 22 : 18, "section 1 of BUFR message (identification section)");
+    in.check_available_message_data(1, 0, out.edition_number == 4 ? 22 : 18, "section 1 of BUFR message (identification section)");
 
     switch (out.edition_number)
     {
@@ -141,20 +148,22 @@ void Decoder::decode_header()
     // Read BUFR section 2 (Optional section)
     if (optional_section_length)
     {
-        in.check_available_data(2, 0, 3, "section 2 of BUFR message (optional section length)");
+        in.check_available_section_data(2, 0, 3, "section 2 of BUFR message (optional section length)");
         unsigned s2_length = in.read_number(2, 0, 3);
-        in.check_available_data(2, 0, s2_length, "section 2 of BUFR message (optional section)");
+        in.check_available_section_data(2, 0, s2_length, "section 2 of BUFR message (optional section)");
         if (s2_length < 4)
             error_consistency::throwf("Optional section length is %u but it must be at least 4", s2_length);
         out.optional_section = std::string((const char*)in.data + in.sec[2] + 4, s2_length - 4);
     }
 
     /* Read BUFR section 3 (Data description section) */
-    in.check_available_data(3, 0, 8, "section 3 of BUFR message (data description section)");
+    if (in.sec[4] - in.sec[3] < 7)
+        error_consistency::throwf("Data descriptor section length is %u but it must be at least 7", in.sec[4] - in.sec[3]);
+    in.check_available_section_data(3, 0, 8, "section 3 of BUFR message (data description section)");
     expected_subsets = in.read_number(3, 4, 2);
     out.compression = (in.read_byte(3, 6) & 0x40) ? 1 : 0;
     unsigned descriptor_count = (in.sec[4] - in.sec[3] - 7) / 2;
-    in.check_available_data(3, 7, descriptor_count * 2, "data descriptor list");
+    in.check_available_section_data(3, 7, descriptor_count * 2, "data descriptor list");
     for (unsigned i = 0; i < descriptor_count; i++)
         out.datadesc.push_back((Varcode)in.read_number(3, 7 + i * 2, 2));
     TRACE("     s3length %d subsets %zd observed %d compression %d byte7 %x\n",
@@ -224,7 +233,7 @@ void Decoder::decode_data()
     }
 
     /* Read BUFR section 5 (Data section) */
-    in.check_available_data(5, 0, 4, "section 5 of BUFR message (end section)");
+    in.check_available_section_data(5, 0, 4, "section 5 of BUFR message (end section)");
 
     if (memcmp(in.data + in.sec[5], "7777", 4) != 0)
         in.parse_error(5, 0, "section 5 does not contain '7777'");
