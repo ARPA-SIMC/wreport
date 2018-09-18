@@ -12,7 +12,16 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %else
 %define python3_vers python3
 %endif
-BuildRequires: doxygen, libtool, lua-devel >= 5.1.1, python-devel, %{python3_vers}-devel, python-six, %{python3_vers}-six
+
+BuildRequires: doxygen
+BuildRequires: libtool
+BuildRequires: lua-devel >= 5.1.1
+BuildRequires: python-devel
+BuildRequires: %{python3_vers}-devel
+BuildRequires: python-six
+BuildRequires: %{python3_vers}-six
+BuildRequires: python-docutils
+
 Summary: Tools for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}-common
@@ -49,7 +58,6 @@ Group: Applications/Meteo
 %package -n lib%{name}-doc
 Summary: documentation for libwreport
 Group: Applications/Meteo
-BuildRequires: python-docutils
 
 %description -n lib%{name}-doc
 libwreport is a C++ library to read and write weather reports in BUFR and CREX
