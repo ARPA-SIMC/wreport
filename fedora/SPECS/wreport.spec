@@ -15,9 +15,9 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
 BuildRequires: doxygen
 BuildRequires: libtool
-BuildRequires: lua-devel >= 5.1.1
-BuildRequires: python-devel
-BuildRequires: %{python3_vers}-devel
+BuildRequires: pkgconfig(lua) >= 5.1.1
+BuildRequires: python2-devel
+BuildRequires: python3-devel
 BuildRequires: python-six
 BuildRequires: %{python3_vers}-six
 BuildRequires: python-docutils
