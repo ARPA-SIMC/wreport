@@ -17,7 +17,7 @@ BuildRequires: doxygen
 BuildRequires: libtool
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: python2-devel
-BuildRequires: python3-devel
+BuildRequires: %{python3_vers}-devel
 BuildRequires: python2-six
 BuildRequires: %{python3_vers}-six
 BuildRequires: python-docutils
