@@ -712,18 +712,6 @@ class Tests : public TestCase
             wassert_true(attr);
             wassert(actual(attr->enqi()) == 87);
         });
-
-        declare_test("bufr/issue15.bufr", [](const BufrBulletin& msg) {
-            wassert(actual(msg.edition_number) == 3);
-            wassert(actual((unsigned)msg.data_category) == 0u);
-            wassert(actual((unsigned)msg.data_subcategory) == 255u);
-            wassert(actual((unsigned)msg.data_subcategory_local) == 28u);
-            wassert(actual(msg.subsets.size()) == 1u);
-            wassert(actual(msg.subset(0).size()) == 18u);
-            const Var& state_id = msg.subset(0)[0];
-            wassert(actual(state_id.code()) == WR_VAR(0, 1, 101));
-            wassert(actual(state_id.enqi()) == 644);
-        });
     }
 } testnewtg("bufr_decoder");
 
