@@ -1,3 +1,11 @@
+wreport (3.16-1) unstable; urgency=medium
+
+  * New upstream version
+     - Fixed unexpected truncation of variable descriptitons introduced with a
+       bounds checking fix
+
+ -- Enrico Zini <enrico@debian.org>  Wed, 19 Sep 2018 15:58:10 +0200
+
 wreport (3.15-1) unstable; urgency=medium
 
   * New upstream version
