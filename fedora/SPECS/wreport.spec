@@ -68,7 +68,7 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %package -n lib%{name}-devel
 Summary:  Library for working with (coded) weather reports
 Group: Applications/Meteo
-Requires: lib%{name}3 = %{version}, lua-devel >= 5.1.1
+Requires: lib%{name}3 = %{version}
 
 %description -n lib%{name}-devel
 libwreport is a C++ library to read and write weather reports in BUFR and CREX

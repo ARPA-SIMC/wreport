@@ -9,5 +9,6 @@ tabledir=@tabledir@
 Name: libwreport
 Description: Weather report library
 Version: @VERSION@
+Requires: @PKGCONFIG_REQUIRES@
 Cflags: -I${includedir}
-Libs: -L${libdir} -lwreport @DEP_LIBS@
+Libs: -L${libdir} -lwreport @PKGCONFIG_LIBS@

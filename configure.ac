@@ -83,24 +83,30 @@ then
 	fi
 fi
 
-DEP_LIBS=""
-AC_SUBST(DEP_LIBS)
+PKGCONFIG_LIBS="-lm"
+PKGCONFIG_REQUIRES=""
+AC_SUBST(PKGCONFIG_LIBS)
+AC_SUBST(PKGCONFIG_REQUIRES)
 
 dnl Check for lua
+PKGCONFIG_LUA_MODULE="lua >= 5.1.1"
 PKG_CHECK_EXISTS([lua5.2], [have_lua=yes], [have_lua=no])
 if test x$have_lua = xyes
 then
         PKG_CHECK_MODULES(LUA,lua5.2,,[have_lua=no])
+        PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES $PKGCONFIG_LUA_MODULE"
 else
 	PKG_CHECK_EXISTS([lua5.1], [have_lua=yes], [have_lua=no])
 	if test x$have_lua = xyes
 	then
 		PKG_CHECK_MODULES(LUA,lua5.1,,[have_lua=no])
+        PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES $PKGCONFIG_LUA_MODULE"
 	else
 		PKG_CHECK_EXISTS([lua], [have_lua=yes], [have_lua=no])
 		if test x$have_lua = xyes
 		then
-			PKG_CHECK_MODULES(LUA,lua,,[have_lua=no])
+			PKG_CHECK_MODULES(LUA,[$PKGCONFIG_LUA_MODULE],,[have_lua=no])
+            PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES $PKGCONFIG_LUA_MODULE"
 		else
 			dnl We don't always have the luxury of .pc files for lua, it seems
 			have_lua=yes
@@ -108,13 +114,13 @@ else
 			AC_CHECK_HEADER([lua.h], [true], [have_lua=no])
 			LUA_CFLAGS=
 			LUA_LIBS="-llua"
+            PKGCONFIG_LIBS="$PKGCONFIG_LIBS $LUA_LIBS"
 		fi
 	fi
 fi
 if test x$have_lua = xyes
 then
         AC_DEFINE([HAVE_LUA], 1, [lua is available])
-        DEP_LIBS="$DEP_LIBS $LUA_LIBS"
 fi
 AM_CONDITIONAL([LUA], [test x"$have_lua" = x"yes"])
 
