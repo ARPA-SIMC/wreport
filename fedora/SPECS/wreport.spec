@@ -1,7 +1,7 @@
 %global releaseno 1
 
 Name: wreport
-Version: 3.13
+Version: 3.14
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -201,6 +201,11 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Wed Sep 19 2018 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.14-1
+- Fixed #19
+- Fixed parallel build
+- Fixed off by one bound checkings
+
 * Thu Jul 26 2018 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.13-1
 - Added stricter and more straightforward message tests
 
