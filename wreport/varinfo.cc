@@ -98,7 +98,7 @@ void _Varinfo::set_bufr(Varcode code,
 {
     this->code = code;
     strncpy(this->desc, desc, 63); this->desc[63] = 0;
-    strncpy(this->unit, unit, 23); this->desc[23] = 0;
+    strncpy(this->unit, unit, 23); this->unit[23] = 0;
     this->scale = scale;
     this->len = len;
     this->bit_ref = bit_ref;
@@ -119,7 +119,7 @@ void _Varinfo::set_crex(Varcode code,
 {
     this->code = code;
     strncpy(this->desc, desc, 63); this->desc[63] = 0;
-    strncpy(this->unit, unit, 23); this->desc[23] = 0;
+    strncpy(this->unit, unit, 23); this->unit[23] = 0;
     this->scale = scale;
     this->len = len;
     this->bit_ref = 0;
