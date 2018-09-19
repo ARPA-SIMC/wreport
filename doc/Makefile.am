@@ -22,11 +22,17 @@ uninstall-local:
 
 mainpages = ../wreport/main.dox  ../wreport/style.dox ../wreport/features.dox
 
-libwreport.doxytags apidocs/index.html: $(cdoxdeps) $(mainpages)
+# See https://stackoverflow.com/questions/19822435/multiple-targets-from-one-recipe-and-parallel-execution#19822767
+.INTERMEDIATE: doxygen-run
+
+doxygen-run: $(cdoxdeps) $(mainpages)
 	@test $(DOXYGEN_WARN_IF_UNDOCUMENTED) = NO && \
 		echo "No doxygen warnings about undocumented functions. Use ./configure --enable-doxy-undoc-warnings to turn them on" \
 		|| true
 	doxygen $<
+
+libwreport.doxytags: doxygen-run
+apidocs/index.html: doxygen-run
 endif
 
 EXTRA_DIST = libwreport.dox examples 20160914-american-fuzzy-lop.txt
