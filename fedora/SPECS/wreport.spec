@@ -1,7 +1,7 @@
 %global releaseno 1
 
 Name: wreport
-Version: 3.15
+Version: 3.16
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -201,6 +201,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Wed Sep 19 2018 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.16-1
+- Fixed typo
+
 * Wed Sep 19 2018 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.15-1
 - Fixed luaX.Y check in configure.ac
 
