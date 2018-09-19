@@ -97,8 +97,8 @@ void _Varinfo::set_bufr(Varcode code,
                    int bit_ref, int bit_len)
 {
     this->code = code;
-    strncpy(this->desc, desc, 64);
-    strncpy(this->unit, unit, 24);
+    strncpy(this->desc, desc, 63); this->desc[63] = 0;
+    strncpy(this->unit, unit, 23); this->desc[23] = 0;
     this->scale = scale;
     this->len = len;
     this->bit_ref = bit_ref;
@@ -118,8 +118,8 @@ void _Varinfo::set_crex(Varcode code,
                    int scale, unsigned len)
 {
     this->code = code;
-    strncpy(this->desc, desc, 64);
-    strncpy(this->unit, unit, 24);
+    strncpy(this->desc, desc, 63); this->desc[63] = 0;
+    strncpy(this->unit, unit, 23); this->desc[23] = 0;
     this->scale = scale;
     this->len = len;
     this->bit_ref = 0;
@@ -136,7 +136,7 @@ void _Varinfo::set_crex(Varcode code,
 void _Varinfo::set_string(Varcode code, const char* desc, unsigned len)
 {
     this->code = code;
-    strncpy(this->desc, desc, 64);
+    strncpy(this->desc, desc, 63); this->desc[63] = 0;
     strncpy(this->unit, "CCITTIA5", 24);
     this->scale = 0;
     this->len = len;
@@ -149,7 +149,7 @@ void _Varinfo::set_string(Varcode code, const char* desc, unsigned len)
 void _Varinfo::set_binary(Varcode code, const char* desc, unsigned bit_len)
 {
     this->code = code;
-    strncpy(this->desc, desc, 64);
+    strncpy(this->desc, desc, 63); this->desc[63] = 0;
     strncpy(this->unit, "UNKNOWN", 24);
     this->scale = 0;
     this->len = ceil(bit_len / 8.0);
