@@ -14,25 +14,25 @@ LT_LANG([C++])
 AM_PROG_LIBTOOL
 
 AC_ARG_ENABLE([docs],
-    [AS_HELP_STRING(
-        [--enable-docs],
-        [enable building of the documentation])],
-    [],
-    [enable_docs="yes"])
+	[AS_HELP_STRING(
+		[--enable-docs],
+		[enable building of the documentation])],
+	[],
+	[enable_docs="yes"])
 
 AC_ARG_ENABLE([doxy-undoc-warnings],
-    [AS_HELP_STRING(
-    [--enable-doxy-undoc-warnings],
-        [enable building of the documentation])],
-    [],
-    [enable_doxy_undoc_warnings="no"])
+	[AS_HELP_STRING(
+	[--enable-doxy-undoc-warnings],
+		[enable building of the documentation])],
+	[],
+	[enable_doxy_undoc_warnings="no"])
 
 AC_ARG_ENABLE([python],
-    [AS_HELP_STRING(
-        [--enable-python],
-        [build Python bindings])],
-    [],
-    [enable_python="yes"])
+	[AS_HELP_STRING(
+		[--enable-python],
+		[build Python bindings])],
+	[],
+	[enable_python="yes"])
 
 dnl To use subdirs
 AC_PROG_MAKE_SET
@@ -52,7 +52,7 @@ dnl See http://www.gossamer-threads.com/lists/xen/devel/275132
 FILE_OFFSET_BITS_64=
 if test $ac_cv_sys_file_offset_bits = 64
 then
-    FILE_OFFSET_BITS_64=yes
+	FILE_OFFSET_BITS_64=yes
 fi
 AM_CONDITIONAL([FILE_OFFSET_BITS_64], [test x"$FILE_OFFSET_BITS_64" = x"yes"])
 
@@ -126,14 +126,14 @@ AM_CONDITIONAL([LUA], [test x"$have_lua" = x"yes"])
 dnl Check for python
 if test x$enable_python = xyes
 then
-    dnl Check for python
-    AM_PATH_PYTHON([], [], [enable_python=no])
+	dnl Check for python
+	AM_PATH_PYTHON([], [], [enable_python=no])
 fi
 if test x$enable_python = xyes
 then
-    PYTHON_CFLAGS=`unset CFLAGS; $PYTHON-config --cflags`
-    AC_SUBST(PYTHON_CFLAGS)
-    AC_DEFINE(HAVE_PYTHON,[],[Have Python bindings])
+	PYTHON_CFLAGS=`unset CFLAGS; $PYTHON-config --cflags`
+	AC_SUBST(PYTHON_CFLAGS)
+	AC_DEFINE(HAVE_PYTHON,[],[Have Python bindings])
 fi
 AM_CONDITIONAL([PYTHON], [test x"$enable_python" = x"yes"])
 
