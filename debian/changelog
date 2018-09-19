@@ -1,3 +1,10 @@
+wreport (3.14-1) unstable; urgency=medium
+
+  * New upstream version
+     - Fixed parallel build of documentation. Closes: #904714
+
+ -- Enrico Zini <enrico@debian.org>  Wed, 19 Sep 2018 14:13:57 +0200
+
 wreport (3.13-1) unstable; urgency=medium
 
   * New upstream version
