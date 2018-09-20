@@ -1,4 +1,4 @@
-%global releaseno 1
+%global releaseno 2
 
 Name: wreport
 Version: 3.16
@@ -201,6 +201,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Thu Sep 20 2018 Daniele Branchini <dbranchini@arpae.it> - 3.16-2
+- Too many 3.16-1 releases... bogus release to work around copr cache
+
 * Wed Sep 19 2018 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.16-1
 - Fixed typo
 
