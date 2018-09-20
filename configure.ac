@@ -104,7 +104,7 @@ else
 		PKG_CHECK_EXISTS([lua], [have_lua=yes], [have_lua=no])
 		if test x$have_lua = xyes
 		then
-			PKG_CHECK_MODULES(LUA,[$PKGCONFIG_LUA_MODULE],,[have_lua=no])
+                        PKG_CHECK_MODULES(LUA,[lua >= 5.1.1],,[have_lua=no])
 			PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES lua >= 5.1.1"
 		else
 			dnl We don't always have the luxury of .pc files for lua, it seems
