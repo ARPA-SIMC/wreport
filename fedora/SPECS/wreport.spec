@@ -21,7 +21,7 @@ BuildRequires: python2-devel
 BuildRequires: %{python3_vers}-devel
 BuildRequires: python2-six
 BuildRequires: %{python3_vers}-six
-BuildRequires: python2-docutils
+BuildRequires: /usr/bin/rst2html
 
 Summary: Tools for working with weather reports
 Group: Applications/Meteo
