@@ -119,12 +119,12 @@ cp -a . %{py3dir}
 
 autoreconf -ifv
 
-%configure
+%configure --disable-static
 make
 
 pushd %{py3dir}
 autoreconf -ifv
-%configure PYTHON=%{__python3}
+%configure PYTHON=%{__python3} --disable-static
 make
 popd
 
@@ -163,8 +163,7 @@ make install DESTDIR="%{buildroot}"
 
 %files -n lib%{name}-devel
 %defattr(-,root,root,-)
-%{_libdir}/libwreport.a
-%{_libdir}/libwreport.la
+%exclude %{_libdir}/libwreport.la
 %{_libdir}/pkgconfig/libwreport.pc
 %{_libdir}/libwreport.so
 
@@ -183,8 +182,7 @@ make install DESTDIR="%{buildroot}"
 %dir %{python2_sitelib}/wreport
 %{python2_sitelib}/wreport/*
 %dir %{python2_sitearch}
-%{python2_sitearch}/*.a
-%{python2_sitearch}/*.la
+%exclude %{python2_sitearch}/*.la
 %{python2_sitearch}/*.so*
 
 %doc %{_docdir}/wreport/python-wreport.html
@@ -196,8 +194,7 @@ make install DESTDIR="%{buildroot}"
 %dir %{python3_sitelib}/wreport
 %{python3_sitelib}/wreport/*
 %dir %{python3_sitearch}
-%{python3_sitearch}/*.a
-%{python3_sitearch}/*.la
+%exclude %{python3_sitearch}/*.la
 %{python3_sitearch}/*.so*
 
 
