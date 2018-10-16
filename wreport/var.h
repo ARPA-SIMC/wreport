@@ -331,11 +331,24 @@ public:
     void lua_push(struct lua_State* L);
 
     /**
+     * Push the variable as an object in the lua stack, with only read-only
+     * methods
+     */
+    void lua_push(struct lua_State* L) const;
+
+    /**
      * Check that the element at \a idx is a Var
      *
      * @return the Var element, or NULL if the check failed
      */
     static Var* lua_check(struct lua_State* L, int idx);
+
+    /**
+     * Check that the element at \a idx is a Var
+     *
+     * @return the Var element, or NULL if the check failed
+     */
+    static const Var* lua_const_check(struct lua_State* L, int idx);
 };
 
 template<> inline int Var::enq() const { return enqi(); }
