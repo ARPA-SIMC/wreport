@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 import zipfile
-import urllib.request
 import sys
 import re
-import tempfile
 import xml.dom.minidom as xmd
 import xml.dom as xdom
+import argparse
+import logging
+
+log = logging.getLogger("wrep-importtable")
+
 
 # This seems to change from time to time, you may be better off downloading zip
 # files normally. Note: the version 17 zip file was published without XML files
@@ -19,23 +22,8 @@ BUFR_UNIT_MAP = {"CCITT IA5": "CCITTIA5"}
 CREX_UNIT_MAP = {}
 
 
-def verbose(s):
-    print(s)
-
-
-def wrap_in_tempfile(fd):
-    """
-    Copy all the contents of a fd to a tempfile, then seek it to the beginning.
-
-    This is helpful to turn a non-seekable stream into a seekable stream, or to
-    work around bugs in the zipfile decompression library
-    """
-    tfd = tempfile.TemporaryFile()
-    buf = fd.read()
-    tfd.write(buf)
-    tfd.flush()
-    tfd.seek(0)
-    return tfd
+class Fail(BaseException):
+    pass
 
 
 def normalise_bufr_unit(unit):
@@ -140,10 +128,10 @@ class TableB(Table):
                     int(data["CREX_DataWidth_Char"]))
 
     def write_files(self):
-        out1 = open("B0000000000000%03d%03d.txt" % (self.v, self.sv), "w")
-        print("Writing %s..." % out1.name)
-        out2 = open("B00%02d%02d.txt" % (self.v, self.sv), "w")
-        print("Writing %s..." % out2.name)
+        out1 = open("B0000000000000{:03d}{:03d}.txt".format(self.v, self.sv), "w")
+        log.info("Writing %s...", out1.name)
+        out2 = open("B00{:02d}{:02d}.txt".format(self.v, self.sv), "w")
+        log.info("Writing %s...", out2.name)
         try:
             for line in self.make_xml_b_lines():
                 print(line, file=out1)
@@ -198,8 +186,8 @@ class TableD(Table):
 
 class TableDBUFR(TableD):
     def write_files(self):
-        out = open("D0000000000000%03d%03d.txt" % (self.v, self.sv), "w")
-        print("Writing %s..." % out.name)
+        out = open("D0000000000000{:03d}{:03d}.txt".format(self.v, self.sv), "w")
+        log.info("Writing %s...", out.name)
         try:
             for line in self.output_lines():
                 print(line, file=out)
@@ -209,8 +197,8 @@ class TableDBUFR(TableD):
 
 class TableDCREX(TableD):
     def write_files(self):
-        out = open("D00%02d%02d.txt" % (self.v, self.sv), "w")
-        print("Writing %s..." % out.name)
+        out = open("D00{:02d}{:02d}.txt".format(self.v, self.sv), "w")
+        log.info("Writing %s...", out.name)
         try:
             for line in self.output_lines():
                 print(line, file=out)
@@ -241,26 +229,26 @@ class Tables(object):
             for i in zf.infolist():
                 mo = self.re_fname_b.match(i.filename)
                 if mo is not None:
-                    verbose("Processing BUFR/CREX B table {}".format(i.filename))
+                    log.info("Processing BUFR/CREX B table %s", i.filename)
                     fd = zf.open(i, "r")
                     self.table_b = TableB(*read_version(mo), text=fd.read())
                     fd.close()
                     continue
                 mo = self.re_fname_bufr_d.match(i.filename)
                 if mo is not None:
-                    verbose("Processing BUFR D table {}".format(i.filename))
+                    log.info("Processing BUFR D table %s", i.filename)
                     fd = zf.open(i, "r")
                     self.table_d_bufr = TableDBUFR(*read_version(mo), text=fd.read())
                     fd.close()
                     continue
                 mo = self.re_fname_crex_d.match(i.filename)
                 if mo is not None:
-                    verbose("Processing CREX D table {}".format(i.filename))
+                    log.info("Processing CREX D table %s", i.filename)
                     fd = zf.open(i, "r")
                     self.table_d_crex = TableDCREX(*read_version(mo), text=fd.read())
                     fd.close()
                     continue
-                verbose("Skipping {}".format(i.filename))
+                log.info("Skipping %s", i.filename)
         finally:
             zf.close()
 
@@ -270,33 +258,41 @@ class Tables(object):
         self.table_d_crex.write_files()
 
 
-if len(sys.argv) == 1:
+def main():
+    parser = argparse.ArgumentParser(
+            description="builds ECMWF-style BUFR/CREX table files from zipped WMO XML table information."
+                        " Files are written in the current directory."
+                        " New files can be found at http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/LatestVERSION.html"
+            )
+    parser.add_argument("--verbose", "-v", action="store_true", help="verbose output")
+    parser.add_argument("--debug", action="store_true", help="debug output")
+    parser.add_argument("zipfile", action="store", help="zip file to open")
+    args = parser.parse_args()
+
+    log_format = "%(asctime)-15s %(levelname)s %(message)s"
+    level = logging.WARN
+    if args.debug:
+        level = logging.DEBUG
+    elif args.verbose:
+        level = logging.INFO
+    logging.basicConfig(level=level, stream=sys.stderr, format=log_format)
+
     tables = Tables()
-    infd = urllib.request.urlopen(DOWNLOAD_URL)
-    try:
-        # Download to a temp file: zipfile doesn't document it, but wants to
-        # seek on its input
-        tables.read_zip(wrap_in_tempfile(infd))
-    finally:
-        infd.close()
-    tables.write_files()
-elif sys.argv[1].endswith(".zip"):
-    tables = Tables()
-    infd = open(sys.argv[1], "rb")
+    infd = open(args.zipfile, "rb")
     try:
         tables.read_zip(infd)
     finally:
         infd.close()
     tables.write_files()
-else:
-    print("Usage: %s [file.zip]" % sys.argv[0], file=sys.stderr)
-    print(file=sys.stderr)
-    print("Builds ECMWF-style BUFR/CREX table files from zipped WMO XML table information.", file=sys.stderr)
-    print("Files are written in the current directory.", file=sys.stderr)
-    print(file=sys.stderr)
-    print("If no zip file is given as argument, it is downloaded from:", file=sys.stderr)
-    print(" ", DOWNLOAD_URL, file=sys.stderr)
-    sys.exit(1)
 
-print("Done. You can copy the table files to the table directory (see wrep --info for its location).")
-sys.exit(0)
+    log.info("Done. You can copy the table files to the table directory (see wrep --info for its location).")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except Fail as e:
+        print(e, file=sys.stderr)
+        sys.exit(1)
+    except Exception:
+        log.exception("uncaught exception")
