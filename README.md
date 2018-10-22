@@ -6,6 +6,8 @@
 [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/wreport?branch=master&env=DOCKER_IMAGE=fedora:29&label=fedora29)](https://travis-ci.org/ARPA-SIMC/wreport)
 [![Build Status](https://badges.herokuapp.com/travis/ARPA-SIMC/wreport?branch=master&env=DOCKER_IMAGE=fedora:rawhide&label=fedorarawhide)](https://travis-ci.org/ARPA-SIMC/wreport)
 
+[![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/)
+
 ## Introduction
 
 wreport is a C++ library for working with weather reports.
