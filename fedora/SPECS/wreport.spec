@@ -1,7 +1,7 @@
-%global releaseno 2
+%global releaseno 1
 
 Name: wreport
-Version: 3.16
+Version: 3.17
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -199,6 +199,11 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Mon Oct 22 2018 Daniele Branchini <dbranchini@arpae.it> - 3.17-1
+- Added new WMO tables
+- Ported to python3
+- Removed .la and .a files
+
 * Thu Sep 20 2018 Daniele Branchini <dbranchini@arpae.it> - 3.16-2
 - Too many 3.16-1 releases... bogus release to work around copr cache
 
