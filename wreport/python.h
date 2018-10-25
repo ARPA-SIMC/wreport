@@ -96,6 +96,21 @@ struct wrpy_c_api {
 
     /// Create a wreport:Vartable object from a C++ Vartable
     wrpy_Vartable* (*vartable_create)(const wreport::Vartable*);
+
+    /// C API major version (updated on incompatible changes)
+    unsigned version_major;
+
+    /// C API minor version (updated on backwards-compatible changes)
+    unsigned version_minor;
+
+    /// Varinfo type
+    PyTypeObject* varinfo_type;
+
+    /// Vartable type
+    PyTypeObject* vartable_type;
+
+    /// Var type
+    PyTypeObject* var_type;
 };
 
 }

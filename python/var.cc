@@ -403,6 +403,9 @@ int register_var(PyObject* m, wrpy_c_api& c_api)
     c_api.var_create_copy = wrpy_var_create_copy;
     c_api.var_value_to_python = var_value_to_python;
     c_api.var_value_from_python = var_value_from_python;
+    c_api.varinfo_type = &wrpy_Varinfo_Type;
+    c_api.vartable_type = &wrpy_Vartable_Type;
+    c_api.var_type = &wrpy_Var_Type;
 
     Py_INCREF(&wrpy_Var_Type);
     return PyModule_AddObject(m, "Var", (PyObject*)&wrpy_Var_Type);

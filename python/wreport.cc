@@ -112,6 +112,8 @@ PyMODINIT_FUNC init_wreport(void)
 
 static wrpy_c_api c_api;
     memset(&c_api, 0, sizeof(wrpy_c_api));
+    c_api.version_major = 1;
+    c_api.version_minor = 0;
 
     PyObject* m;
 
