@@ -1,7 +1,7 @@
 %global releaseno 1
 
 Name: wreport
-Version: 3.17
+Version: 3.18
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -199,6 +199,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Fri Oct 26 2018 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.18-1
+- Version python C API and export type objects
+
 * Mon Oct 22 2018 Daniele Branchini <dbranchini@arpae.it> - 3.17-1
 - Added new WMO tables
 - Ported to python3
