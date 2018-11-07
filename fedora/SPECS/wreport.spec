@@ -1,11 +1,13 @@
 %global releaseno 1
+# Note: define srcarchivename in Travis build only.
+%{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
 Version: 3.18
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
-Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{releaseno}.tar.gz#/%{name}-%{version}-%{releaseno}.tar.gz
+Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{releaseno}.tar.gz#/%{srcarchivename}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %if 0%{?rhel} == 7
 %define python3_vers python34
@@ -110,7 +112,7 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 
 
 %prep
-%setup -q -n %{name}-%{version}-%{releaseno}
+%setup -q -n %{srcarchivename}
 
 rm -rf %{py3dir}
 cp -a . %{py3dir}
