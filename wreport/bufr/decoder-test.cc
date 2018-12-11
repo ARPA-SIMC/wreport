@@ -712,6 +712,18 @@ class Tests : public TestCase
             wassert_true(attr);
             wassert(actual(attr->enqi()) == 87);
         });
+
+        declare_test("bufr/truncated-unicode.bufr", [](const BufrBulletin& msg) {
+            wassert(actual(msg.edition_number) == 4);
+            wassert(actual((unsigned)msg.data_category) == 0u);
+            wassert(actual((unsigned)msg.data_subcategory) == 255u);
+            wassert(actual((unsigned)msg.data_subcategory_local) == 255u);
+            wassert(actual(msg.subsets.size()) == 1u);
+            wassert(actual(msg.subset(0).size()) == 1u);
+            const Var& name = msg.subset(0)[0];
+            wassert(actual(name.code()) == WR_VAR(0, 1, 19));
+            wassert(actual(name.enqc()) == "Rocca San Giovanni, C.da Vallev\xc3");
+        });
     }
 } testnewtg("bufr_decoder");
 
