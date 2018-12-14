@@ -337,18 +337,23 @@ static inline void int32_to_str(int32_t val, char* buf, unsigned size)
 static inline std::string int32_to_stdstr(int32_t val)
 {
     std::string res;
-    res.reserve(10);
     uint32_t dec;
     if (val < 0)
     {
         dec = -val;
-        res += '-';
-    } else
+        unsigned digits = count_digits(dec);
+        res.resize(digits + 1);
+        char* dest = (char*)res.data();
+        dest[0] = '-';
+        uint32_to_str(dec, digits, dest + 1);
+    } else {
         dec = val;
 
-    unsigned digits = count_digits(dec);
-    res.resize(res.size() + digits);
-    uint32_to_str(dec, digits, (char*)res.data());
+        unsigned digits = count_digits(dec);
+        res.resize(digits);
+        char* dest = (char*)res.data();
+        uint32_to_str(dec, digits, dest);
+    }
     return res;
 }
 

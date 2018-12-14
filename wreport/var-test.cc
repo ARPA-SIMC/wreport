@@ -198,6 +198,12 @@ class Tests : public TestCase
             wassert(actual(var.enq<int>()) == 100);
             wassert(actual(var.enq<const char*>()) == "100");
             wassert(actual(var.enq<string>()) == "100");
+
+            var.set(-1.0);
+            wassert(actual(var.enq<double>()) == -1.0);
+            wassert(actual(var.enq<int>()) == -100);
+            wassert(actual(var.enq<const char*>()) == "-100");
+            wassert(actual(var.enq<string>()) == "-100");
         }),
         add_method("format", []() {
             // Test formatting and reparsing
