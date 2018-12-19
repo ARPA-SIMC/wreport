@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.18
+Version: 3.19
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -201,6 +201,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Wed Dec 19 2018 Daniele Branchini <dbranchini@arpae.it> - 3.19-1
+- Correct decoding of a BUFR containing an invalid unicode sequence
+
 * Fri Oct 26 2018 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.18-1
 - Version python C API and export type objects
 
