@@ -325,7 +325,7 @@ void UncompressedDecoderTarget::decode_and_add_b_value(Varinfo info)
 void UncompressedDecoderTarget::decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field)
 {
     /// If set, it is the associated field for the next variable to be decoded
-    TRACE("decode_b_data:reading %d bits of C04 information\n", associated_field.bit_count);
+    TRACE("decode_b_data:reading %d bits of C04 information\n", field.bit_count);
     uint32_t val = in.get_bits(field.bit_count);
     TRACE("decode_b_data:read C04 information %x\n", val);
     auto cur_associated_field = field.make_attribute(val);
@@ -350,7 +350,7 @@ void UncompressedDecoderTarget::decode_and_add_raw_character_data(Varinfo info)
 {
     std::string buf;
     buf.resize(info->len);
-    TRACE("decode_c_data:character data %d long\n", cdatalen);
+    TRACE("decode_c_data:character data %d long\n", info->len);
     for (unsigned i = 0; i < info->len; ++i)
     {
         uint32_t bitval = in.get_bits(8);
