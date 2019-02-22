@@ -126,7 +126,7 @@ struct VartableEntry
 
     VartableEntry() = default;
 
-    VartableEntry(const VartableEntry& other, int new_scale, unsigned new_bit_len)
+    VartableEntry(const VartableEntry& other, int new_scale, unsigned new_bit_len, int new_bit_ref)
         : varinfo(other.varinfo), alterations(other.alterations)
     {
 #if 0
@@ -165,6 +165,8 @@ struct VartableEntry
                 break;
         }
 
+        varinfo.bit_ref = new_bit_ref;
+
 #if 0
         fprintf(stderr, "After alteration(w:%d,s:%d): bl %d len %d scale %d\n",
                 WR_ALT_WIDTH(change), WR_ALT_SCALE(change),
@@ -180,13 +182,13 @@ struct VartableEntry
      *
      * Returns nullptr if it was not found
      */
-    const VartableEntry* get_alteration(int new_scale, unsigned new_bit_len) const
+    const VartableEntry* get_alteration(int new_scale, unsigned new_bit_len, int new_bit_ref) const
     {
-        if (varinfo.scale == new_scale && varinfo.bit_len == new_bit_len)
+        if (varinfo.scale == new_scale && varinfo.bit_len == new_bit_len && varinfo.bit_ref == new_bit_ref)
             return this;
         if (alterations == nullptr)
             return nullptr;
-        return alterations->get_alteration(new_scale, new_bit_len);
+        return alterations->get_alteration(new_scale, new_bit_len, new_bit_ref);
     }
 };
 
@@ -269,7 +271,7 @@ struct VartableBase : public Vartable
         return query_entry(code) != nullptr;
     }
 
-    Varinfo query_altered(Varcode code, int new_scale, unsigned new_bit_len) const override
+    Varinfo query_altered(Varcode code, int new_scale, unsigned new_bit_len, int new_bit_ref) const override
     {
         // Get the normal variable
         const VartableEntry* start = query_entry(code);
@@ -279,7 +281,7 @@ struct VartableBase : public Vartable
                     WR_VAR_FXY(code), m_pathname.c_str());
 
         // Look for an existing alteration
-        const VartableEntry* alt = start->get_alteration(new_scale, new_bit_len);
+        const VartableEntry* alt = start->get_alteration(new_scale, new_bit_len, new_bit_ref);
         if (alt) return &(alt->varinfo);
 
         switch (start->varinfo.type)
@@ -298,7 +300,7 @@ struct VartableBase : public Vartable
 
 
         // Not found: we need to create it, duplicating the original varinfo
-        unique_ptr<VartableEntry> newvi(new VartableEntry(*start, new_scale, new_bit_len));
+        unique_ptr<VartableEntry> newvi(new VartableEntry(*start, new_scale, new_bit_len, new_bit_ref));
 
         // Add the new alteration as the first alteration in the list after the
         // original value

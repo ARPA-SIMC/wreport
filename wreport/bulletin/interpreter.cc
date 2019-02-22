@@ -81,7 +81,8 @@ Varinfo Interpreter::get_varinfo(Varcode code)
 {
     Varinfo peek = tables.btable->query(code);
 
-    if (!c_scale_change && !c_width_change && !c_string_len_override && !c_scale_ref_width_increase)
+    if (!c_scale_change && !c_width_change && !c_string_len_override &&
+            !c_scale_ref_width_increase && c03_refval_overrides.empty())
         return peek;
 
     int scale = peek->scale;
@@ -103,17 +104,27 @@ Varinfo Interpreter::get_varinfo(Varcode code)
         bit_len += c_width_change;
     }
 
+    int bit_ref = peek->bit_ref;
     if (c_scale_ref_width_increase)
     {
+        static int pow10[10] = {
+            1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000
+        };
         TRACE("get_varinfo:applying %d increase of scale, ref, width\n", c_scale_ref_width_increase);
-        // TODO: misses reference value adjustment
         scale += c_scale_ref_width_increase;
         bit_len += (10 * c_scale_ref_width_increase + 2) / 3;
-        // c_ref *= 10**code
+        bit_ref *= pow10[code];
     }
 
-    TRACE("get_info:requesting alteration scale:%d, bit_len:%d\n", scale, bit_len);
-    return tables.btable->query_altered(code, scale, bit_len);
+    auto refval = c03_refval_overrides.find(code);
+    if (refval != c03_refval_overrides.end())
+    {
+        TRACE("get_varinfo:applying new reference value %d\n", refval->second);
+        bit_ref = refval->second;
+    }
+
+    TRACE("get_info:requesting alteration scale:%d, bit_len:%d, bit_ref: %d\n", scale, bit_len, bit_ref);
+    return tables.btable->query_altered(code, scale, bit_len, bit_ref);
 }
 
 void Interpreter::b_variable(Varcode code)
