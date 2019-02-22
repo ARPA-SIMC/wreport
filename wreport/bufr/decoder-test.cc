@@ -724,6 +724,29 @@ class Tests : public TestCase
             wassert(actual(name.code()) == WR_VAR(0, 1, 19));
             wassert(actual(name.enqc()) == "Rocca San Giovanni, C.da Vallev\xc3");
         });
+
+        declare_test("bufr/wigos.bufr", [](const BufrBulletin& msg) {
+            wassert(actual(msg.edition_number) == 4);
+            wassert(actual((unsigned)msg.data_category) == 0u);
+            wassert(actual((unsigned)msg.data_subcategory) == 2u);
+            wassert(actual((unsigned)msg.data_subcategory_local) == 255u);
+            wassert(actual(msg.subsets.size()) == 1u);
+
+            const Subset& s = msg.subset(0);
+            wassert(actual(s.size()) == 111u);
+
+            wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 125));
+            wassert(actual(s[0].enqi()) == 0);
+            wassert(actual_varcode(s[1].code()) == WR_VAR(0, 1, 126));
+            wassert(actual(s[1].enqi()) == 376);
+            wassert(actual_varcode(s[6].code()) == WR_VAR(0, 1, 15));
+            wassert(actual(s[6].enqc()) == "Afeq");
+
+            wassert(actual_varcode(s[15].code()) == WR_VAR(0, 7, 30));
+            wassert(actual(s[15].enqd()) == 10.0);
+            wassert(actual_varcode(s[16].code()) == WR_VAR(0, 7, 31));
+            wassert(actual(s[16].enqd()) == 11.0);
+        });
     }
 } testnewtg("bufr_decoder");
 
