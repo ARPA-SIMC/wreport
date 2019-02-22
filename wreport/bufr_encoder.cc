@@ -1,6 +1,7 @@
 #include "bulletin.h"
 #include "bulletin/internals.h"
 #include "buffers/bufr.h"
+#include "vartable.h"
 #include <netinet/in.h>
 #include <cstring>
 #include "config.h"
@@ -94,6 +95,52 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
         const Var& var = get_var();
         const char* val = var.enq("");
         ob.append_string(val, WR_VAR_Y(code) * 8);
+    }
+
+    void define_c03_refval_override(Varcode code) override
+    {
+        // Scan the subset looking for a variables with the given code, to see what
+        // is its bit_ref
+        bool found = false;
+        int bit_ref = 0;
+        for (const auto& var: current_subset)
+        {
+            Varinfo info = var.info();
+            if (info->code == code)
+            {
+                bit_ref = info->bit_ref;
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+        {
+            // If not found, take the default
+            Varinfo info = current_subset.tables->btable->query(code);
+            bit_ref = info->bit_ref;
+        }
+
+
+        // Encode
+        uint32_t encoded;
+        unsigned nbits;
+        if (bit_ref < 0)
+        {
+            encoded = -bit_ref;
+            nbits = 32 - __builtin_clz(encoded);
+            encoded |= 1 << (c03_refval_override_bits - 1);
+        } else {
+            encoded = bit_ref;
+            nbits = 32 - __builtin_clz(encoded);
+        }
+
+        // Check if it fits (encoded bits plus 1 for the sign)
+        if (nbits + 1 > c03_refval_override_bits)
+            error_consistency::throwf("C03 reference value override requested for value %d, encoded as %u, which does not fit in %u bits (requires %u bits)", bit_ref, encoded, c03_refval_override_bits, nbits + 1);
+
+        ob.add_bits(encoded, c03_refval_override_bits);
+        c03_refval_overrides[code] = bit_ref;
     }
 };
 

@@ -256,7 +256,7 @@ class Tests : public TestCase
             // STATION OR SITE NAME, 20 chars
             Varinfo info = table->query(WR_VAR(0, 1, 15));
             // Create an amended version for longer site names
-            Varinfo extended = table->query_altered(WR_VAR(0, 1, 15), 0, 40*8);
+            Varinfo extended = table->query_altered(WR_VAR(0, 1, 15), 0, 40 * 8, 0);
 
             // Create a variable with an absurdly long value
             Var ext(extended, "Budapest Pestszentlorinc-kulterulet");

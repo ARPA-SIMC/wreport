@@ -50,18 +50,20 @@ struct Vartable
     /**
      * Query an altered version of the vartable
      *
-     * @param var
+     * @param code
      *    wreport::Varcode to query
-     * @param scale
+     * @param new_scale
      *   Scale to use instead of the default
-     * @param bit_len
+     * @param new_bit_len
      *   Bit length to use instead of the default
+     * @param new_bit_ref
+     *   bit_ref to use instead of the default
      * @return
      *   the wreport::Varinfo with the results of the query.
      *   The resulting Varinfo is stored inside the Vartable, can be freely
      *   copied around and does not need to be deallocated.
      */
-    virtual Varinfo query_altered(Varcode code, int new_scale, unsigned new_bit_len) const = 0;
+    virtual Varinfo query_altered(Varcode code, int new_scale, unsigned new_bit_len, int new_bit_ref) const = 0;
 
     /**
      * Iterate the whole contents of the table.

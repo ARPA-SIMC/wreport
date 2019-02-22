@@ -325,7 +325,7 @@ void UncompressedDecoderTarget::decode_and_add_b_value(Varinfo info)
 void UncompressedDecoderTarget::decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field)
 {
     /// If set, it is the associated field for the next variable to be decoded
-    TRACE("decode_b_data:reading %d bits of C04 information\n", associated_field.bit_count);
+    TRACE("decode_b_data:reading %d bits of C04 information\n", field.bit_count);
     uint32_t val = in.get_bits(field.bit_count);
     TRACE("decode_b_data:read C04 information %x\n", val);
     auto cur_associated_field = field.make_attribute(val);
@@ -350,7 +350,7 @@ void UncompressedDecoderTarget::decode_and_add_raw_character_data(Varinfo info)
 {
     std::string buf;
     buf.resize(info->len);
-    TRACE("decode_c_data:character data %d long\n", cdatalen);
+    TRACE("decode_c_data:character data %d long\n", info->len);
     for (unsigned i = 0; i < info->len; ++i)
     {
         uint32_t bitval = in.get_bits(8);
@@ -365,6 +365,17 @@ void UncompressedDecoderTarget::decode_and_add_raw_character_data(Varinfo info)
     out.store_variable(cdata);
 
     TRACE("decode_c_data:decoded string %s\n", buf.c_str());
+}
+
+int UncompressedDecoderTarget::decode_c03_refval_override(unsigned bits)
+{
+    uint32_t res = in.get_bits(bits);
+    uint32_t sign_bit = 1 << (bits - 1);
+
+    if (res & (1 << (bits - 1)))
+        return -(res & ~sign_bit);
+    else
+        return res;
 }
 
 void UncompressedDecoderTarget::print_last_variable_added(FILE* out)
@@ -508,6 +519,13 @@ void CompressedDecoderTarget::decode_and_add_raw_character_data(Varinfo info)
     error_unimplemented::throwf("C05%03d character data found in compressed message and it is not clear how it should be handled", WR_VAR_Y(info->code));
 }
 
+int CompressedDecoderTarget::decode_c03_refval_override(unsigned bits)
+{
+    // TODO: if compressed, take the overrides only once? We have a compressed
+    // integer value that could give a different override for each subset?
+    error_unimplemented::throwf("C03%03u reference value override found in compressed message and it is not clear how it should be handled", bits);
+}
+
 void CompressedDecoderTarget::print_last_variable_added(FILE* out)
 {
     for (const auto& s: this->out.subsets)
@@ -554,6 +572,12 @@ unsigned DataSectionDecoder::define_delayed_replication_factor(Varinfo info)
 unsigned DataSectionDecoder::define_associated_field_significance(Varinfo info)
 {
     return target.decode_and_add_to_all(info).enq(63);
+}
+
+void DataSectionDecoder::define_c03_refval_override(Varcode code)
+{
+    int refval = target.decode_c03_refval_override(c03_refval_override_bits);
+    c03_refval_overrides[code] = refval;
 }
 
 void DataSectionDecoder::define_bitmap(unsigned bitmap_size)
@@ -685,6 +709,13 @@ unsigned VerboseDataSectionDecoder::define_bitmap_delayed_replication_factor(Var
     return DataSectionDecoder::define_bitmap_delayed_replication_factor(info);
     // TODO: print results
 }
+
+void VerboseDataSectionDecoder::define_c03_refval_override(Varcode code)
+{
+    DataSectionDecoder::define_c03_refval_override(code);
+    fprintf(out, "C03 reference value override for %d%02d%03d: %d\n", WR_VAR_FXY(code), c03_refval_overrides[code]);
+}
+
 void VerboseDataSectionDecoder::define_bitmap(unsigned bitmap_size)
 {
     DataSectionDecoder::define_bitmap(bitmap_size);

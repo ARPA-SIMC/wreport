@@ -101,6 +101,12 @@ struct DecoderTarget
      */
     virtual void decode_and_add_raw_character_data(Varinfo info) = 0;
 
+    /**
+     * Decode the given number of bits a signed integer, to use as a new value
+     * for B table reference value
+     */
+    virtual int decode_c03_refval_override(unsigned bits) = 0;
+
     /// Print the value(s) of the last variable(s) added to \a out
     virtual void print_last_variable_added(FILE* out) = 0;
 
@@ -124,6 +130,7 @@ struct UncompressedDecoderTarget : public DecoderTarget
     void decode_and_add_b_value(Varinfo info) override;
     void decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field) override;
     void decode_and_add_raw_character_data(Varinfo info) override;
+    int decode_c03_refval_override(unsigned bits) override;
 
     void print_last_variable_added(FILE* out) override;
     void print_last_attribute_added(FILE* out, Varcode code, unsigned pos) override;
@@ -148,6 +155,7 @@ struct CompressedDecoderTarget : public DecoderTarget
     void decode_and_add_b_value(Varinfo info) override;
     void decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field) override;
     void decode_and_add_raw_character_data(Varinfo info) override;
+    int decode_c03_refval_override(unsigned bits) override;
 
     void print_last_variable_added(FILE* out) override;
     void print_last_attribute_added(FILE* out, Varcode code, unsigned pos) override;
@@ -165,6 +173,7 @@ struct DataSectionDecoder : public bulletin::Interpreter
     unsigned define_delayed_replication_factor(Varinfo info) override;
     unsigned define_associated_field_significance(Varinfo info) override;
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
+    void define_c03_refval_override(Varcode code) override;
     void define_bitmap(unsigned bitmap_size) override;
     void define_attribute(Varinfo info, unsigned pos) override;
     void define_substituted_value(unsigned pos) override;
@@ -208,6 +217,7 @@ public:
     unsigned define_delayed_replication_factor(Varinfo info) override;
     unsigned define_associated_field_significance(Varinfo info) override;
     unsigned define_bitmap_delayed_replication_factor(Varinfo info) override;
+    void define_c03_refval_override(Varcode code) override;
     void define_bitmap(unsigned bitmap_size) override;
     void define_attribute(Varinfo info, unsigned pos) override;
     void define_substituted_value(unsigned pos) override;
