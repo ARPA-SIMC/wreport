@@ -99,6 +99,5 @@ unsigned UncompressedEncoder::define_bitmap_delayed_replication_factor(Varinfo i
     return var.info()->len;
 }
 
-
 }
 }
