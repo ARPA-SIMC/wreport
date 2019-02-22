@@ -118,22 +118,29 @@ Varinfo Interpreter::get_varinfo(Varcode code)
 
 void Interpreter::b_variable(Varcode code)
 {
-    Varinfo info = get_varinfo(code);
-    // Choose which value we should encode
-    if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && bitmaps.active())
+    if (c03_refval_override_bits)
     {
-        // Attribute of the variable pointed by the bitmap
-        unsigned pos = bitmaps.next();
-        TRACE("b_variable attribute %01d%02d%03d subset pos %u\n", WR_VAR_FXY(code), pos);
-        define_attribute(info, pos);
+        define_c03_refval_override(code);
+        TRACE("C03 reference value override for %01d%02d%03d (%u bits) read as %d\n",
+                WR_VAR_FXY(code), c03_refval_override_bits, c03_refval_overrides[code]);
     } else {
-        // Proper variable
-        TRACE("b_variable variable %01d%02d%03d\n",
-                WR_VAR_F(info->code), WR_VAR_X(info->code), WR_VAR_Y(info->code));
-        if (associated_field.bit_count)
-            define_variable_with_associated_field(info);
-        else
-            define_variable(info);
+        Varinfo info = get_varinfo(code);
+        // Choose which value we should encode
+        if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && bitmaps.active())
+        {
+            // Attribute of the variable pointed by the bitmap
+            unsigned pos = bitmaps.next();
+            TRACE("b_variable attribute %01d%02d%03d subset pos %u\n", WR_VAR_FXY(code), pos);
+            define_attribute(info, pos);
+        } else {
+            // Proper variable
+            TRACE("b_variable variable %01d%02d%03d\n",
+                    WR_VAR_F(info->code), WR_VAR_X(info->code), WR_VAR_Y(info->code));
+            if (associated_field.bit_count)
+                define_variable_with_associated_field(info);
+            else
+                define_variable(info);
+        }
     }
 }
 
@@ -162,6 +169,38 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
             TRACE("Set scale change from %d to %d\n", c_scale_change, change);
             c_scale_change = change;
 
+            break;
+        }
+        case 3: {
+            /*
+             * Change reference values.
+             *
+             * Subsequent element descriptors define new reference values for
+             * corresponding Table B entries. Each new reference value is
+             * represented by YYY bits in the Data section. Definition of new
+             * reference values is concluded by coding this operator with YYY =
+             * 255. Negative reference values shall be represented by a
+             * positive integer with the left-most bit (bit 1) set to 1.
+             * are not code or flag tables.
+             *
+             * Until C03255 is specified, the B codes in the data descriptor
+             * table stand for YYY bits each of reference value change for data
+             * encoded with those B codes. The values decoded replace the
+             * previous reference values. Negative values have the first bit
+             * set to 1.
+             */
+            unsigned bits = WR_VAR_Y(code);
+            if (bits == 255)
+            {
+                TRACE("End of reference value changes\n");
+                c03_refval_override_bits = 0;
+            } else {
+                TRACE("Change reference values, %u bit reference values follow\n", bits);
+                // Change decoded mode:
+                // B codes now store overridden reference values
+                // Overridden reference values must then be used when those B codes are found again
+                c03_refval_override_bits = bits;
+            }
             break;
         }
         case 4: {
@@ -458,6 +497,11 @@ unsigned Interpreter::define_bitmap_delayed_replication_factor(Varinfo info)
 unsigned Interpreter::define_associated_field_significance(Varinfo info)
 {
     throw error_unimplemented("define_associated_field_significance is not implemented in this interpreter");
+}
+
+void Interpreter::define_c03_refval_override(Varcode code)
+{
+    throw error_unimplemented("define_c03_refval_override is not implemented in this interpreter");
 }
 
 void Interpreter::define_variable(Varinfo info)

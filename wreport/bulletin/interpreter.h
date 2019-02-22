@@ -48,6 +48,13 @@ struct Interpreter
      */
     int c_string_len_override = 0;
 
+    /// Current reference value overrides
+    std::map<wreport::Varcode, uint32_t> c03_refval_overrides;
+
+    /// Set to the number of reference value override bits while reading the
+    /// override values
+    unsigned c03_refval_override_bits = 0;
+
 protected:
     /**
      * Return a Varinfo for the given Varcode, applying all relevant C
@@ -197,6 +204,12 @@ public:
 
     /// Request processing of C05yyy raw character data
     virtual void define_raw_character_data(Varcode code);
+
+    /**
+     * Request processing of a new value for the reference value of the given B
+     * code.
+     */
+    virtual void define_c03_refval_override(Varcode code);
 
     /// Print a description of this C modifier
     static void print_c_modifier(FILE* out, Varcode code, Opcodes& nex);
