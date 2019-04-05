@@ -3,14 +3,14 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.19
+Version: 3.20
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
 Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{releaseno}.tar.gz#/%{srcarchivename}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %if 0%{?rhel} == 7
-%define python3_vers python34
+%define python3_vers python36
 %else
 %define python3_vers python3
 %endif
@@ -201,6 +201,10 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Fri Apr  5 2019 Daniele Branchini <dbranchini@arpae.it> - 3.20-1
+- Implemented decoding and encoding of C03 reference value change modifiers (#26)
+- moving to python 3.6 on Centos7
+
 * Wed Dec 19 2018 Daniele Branchini <dbranchini@arpae.it> - 3.19-1
 - Correct decoding of a BUFR containing an invalid unicode sequence
 
