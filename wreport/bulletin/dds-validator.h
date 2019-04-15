@@ -54,6 +54,7 @@ public:
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;
     void define_raw_character_data(Varcode code) override;
+    void define_c03_refval_override(Varcode code) override;
     void encode_var(Varinfo info, const Var& var) override;
 };
 
