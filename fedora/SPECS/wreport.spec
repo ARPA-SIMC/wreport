@@ -11,6 +11,8 @@ Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{releaseno}.t
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 %if 0%{?rhel} == 7
 %define python3_vers python36
+# being sure to have python 3.6 interpreter
+BuildRequires: python3-rpm-macros >= 3-23
 %else
 %define python3_vers python3
 %endif
