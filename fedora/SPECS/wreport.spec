@@ -203,7 +203,7 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
-* Fri Apr  5 2019 Daniele Branchini <dbranchini@arpae.it> - 3.20-1
+* Tue Apr 16 2019 Daniele Branchini <dbranchini@arpae.it> - 3.20-1
 - Implemented decoding and encoding of C03 reference value change modifiers (#26)
 - moving to python 3.6 on Centos7
 
