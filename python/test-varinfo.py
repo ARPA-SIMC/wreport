@@ -1,11 +1,7 @@
-#!/usr/bin/python
-# coding: utf-8
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+#!/usr/bin/python3
 import wreport
 import unittest
+
 
 class Varinfo(unittest.TestCase):
     def testEmptyVarinfo(self):
@@ -28,6 +24,7 @@ class Varinfo(unittest.TestCase):
         info = table["B01001"]
         self.assertTrue(str(info).startswith("B01001"))
         self.assertTrue(repr(info).startswith("Varinfo('B01001"))
+
 
 if __name__ == "__main__":
     from testlib import main
