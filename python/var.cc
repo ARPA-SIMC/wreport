@@ -204,7 +204,7 @@ static PyObject* wrpy_Var_format(wrpy_Var* self, PyObject* args, PyObject* kw)
 
 static PyMethodDef wrpy_Var_methods[] = {
     {"enqi", (PyCFunction)wrpy_Var_enqi, METH_NOARGS, R"(
-        enqi() -> long
+        enqi() -> int
 
         get the value of the variable, as an int
     )" },
@@ -219,7 +219,7 @@ static PyMethodDef wrpy_Var_methods[] = {
         get the value of the variable, as a str
     )" },
     {"enq", (PyCFunction)wrpy_Var_enq, METH_NOARGS, R"(
-        enq() -> str|float|long
+        enq() -> Union[str,float,int]
 
         get the value of the variable, as int, float or str according the variable definition
     )" },
