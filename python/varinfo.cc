@@ -3,11 +3,6 @@
 #include "common.h"
 #include "config.h"
 
-#if PY_MAJOR_VERSION >= 3
-    #define PyInt_FromLong PyLong_FromLong
-    #define PyInt_AsLong PyLong_AsLong
-#endif
-
 using namespace wreport;
 using namespace wreport::python;
 using namespace wreport;
@@ -26,12 +21,12 @@ static PyObject* wrpy_Varinfo_code(wrpy_Varinfo *self, void* closure)
 {
     return wrpy_varcode_format(self->info->code);
 }
-static PyObject* wrpy_Varinfo_len(wrpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->len); }
+static PyObject* wrpy_Varinfo_len(wrpy_Varinfo* self, void* closure) { return PyLong_FromLong(self->info->len); }
 static PyObject* wrpy_Varinfo_unit(wrpy_Varinfo* self, void* closure) { return PyUnicode_FromString(self->info->unit); }
 static PyObject* wrpy_Varinfo_desc(wrpy_Varinfo* self, void* closure) { return PyUnicode_FromString(self->info->desc); }
-static PyObject* wrpy_Varinfo_scale(wrpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->scale); }
-static PyObject* wrpy_Varinfo_bit_ref(wrpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->bit_ref); }
-static PyObject* wrpy_Varinfo_bit_len(wrpy_Varinfo* self, void* closure) { return PyInt_FromLong(self->info->bit_len); }
+static PyObject* wrpy_Varinfo_scale(wrpy_Varinfo* self, void* closure) { return PyLong_FromLong(self->info->scale); }
+static PyObject* wrpy_Varinfo_bit_ref(wrpy_Varinfo* self, void* closure) { return PyLong_FromLong(self->info->bit_ref); }
+static PyObject* wrpy_Varinfo_bit_len(wrpy_Varinfo* self, void* closure) { return PyLong_FromLong(self->info->bit_len); }
 
 static PyGetSetDef wrpy_Varinfo_getsetters[] = {
     {"type", (getter)wrpy_Varinfo_type, NULL, "return a string describing the type of the variable (string, binary, integer, decimal)", NULL },

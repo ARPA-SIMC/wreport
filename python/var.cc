@@ -1,13 +1,6 @@
 #include "var.h"
 #include "common.h"
 #include "varinfo.h"
-#include "config.h"
-
-#if PY_MAJOR_VERSION >= 3
-    #define PyInt_Check PyLong_Check
-    #define PyInt_FromLong PyLong_FromLong
-    #define PyInt_AsLong PyLong_AsLong
-#endif
 
 using namespace std;
 using namespace wreport::python;
@@ -92,7 +85,7 @@ static PyGetSetDef wrpy_Var_getsetters[] = {
 static PyObject* wrpy_Var_enqi(wrpy_Var* self)
 {
     try {
-        return PyInt_FromLong(self->var.enqi());
+        return PyLong_FromLong(self->var.enqi());
     } WREPORT_CATCH_RETURN_PYO
 }
 
@@ -348,7 +341,7 @@ PyObject* var_value_to_python(const wreport::Var& v)
             case Vartype::Binary:
                 return PyBytes_FromString(v.enqc());
             case Vartype::Integer:
-                return PyInt_FromLong(v.enqi());
+                return PyLong_FromLong(v.enqi());
             case Vartype::Decimal:
                 return PyFloat_FromDouble(v.enqd());
         }
@@ -359,9 +352,9 @@ PyObject* var_value_to_python(const wreport::Var& v)
 int var_value_from_python(PyObject* o, wreport::Var& var)
 {
     try {
-        if (PyInt_Check(o))
+        if (PyLong_Check(o))
         {
-            var.seti(PyInt_AsLong(o));
+            var.seti(PyLong_AsLong(o));
         } else if (PyFloat_Check(o)) {
             var.setd(PyFloat_AsDouble(o));
         } else if (PyBytes_Check(o)) {

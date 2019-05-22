@@ -22,21 +22,6 @@ static int wrpy_Vartable_init(wrpy_Vartable* self, PyObject* args, PyObject* kw)
     return -1;
 }
 
-#if 0
-static int wrpy_Vartable_init(wrpy_Vartable* self, PyObject* args, PyObject* kw)
-{
-    const char* table_name = 0;
-    if (!PyArg_ParseTuple(args, "s", &table_name))
-        return -1;
-
-    try {
-        // Make it point to the table we want
-        self->table = wreport::Vartable::load_bufr(table_name);
-        return 0;
-    } WREPORT_CATCH_RETURN_INT
-}
-#endif
-
 static PyObject* wrpy_Vartable_pathname(wrpy_Vartable* self, void* closure)
 {
     return PyUnicode_FromString(self->table->pathname().c_str());
@@ -65,34 +50,11 @@ static int wrpy_Vartable_len(wrpy_Vartable* self)
 
 static PyObject* wrpy_Vartable_item(wrpy_Vartable* self, Py_ssize_t i)
 {
-#if 0
-    // We can cast to size_t: since we provide sq_length, i is supposed to
-    // always be positive
-    if ((size_t)i >= self->table->size())
-    {
-        PyErr_SetString(PyExc_IndexError, "table index out of range");
-        return NULL;
-    }
-    try {
-        return (PyObject*)varinfo_create(Varinfo((*self->table)[i]));
-    } WREPORT_CATCH_RETURN_PYO
-#endif
     Py_RETURN_NONE;
 }
 
 static PyObject* wrpy_Vartable_getitem(wrpy_Vartable* self, PyObject* key)
 {
-#if 0
-    if (PyIndex_Check(key)) {
-        Py_ssize_t i = PyNumber_AsSsize_t(key, PyExc_IndexError);
-        if (i == -1 && PyErr_Occurred())
-            return NULL;
-        if (i < 0)
-            i += self->table->size();
-        return wrpy_Vartable_item(self, i);
-    }
-#endif
-
     string varname;
     if (string_from_python(key, varname))
         return NULL;
