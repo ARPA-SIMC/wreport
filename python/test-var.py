@@ -1,12 +1,5 @@
-#!/usr/bin/python
-# coding: utf-8
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 import wreport
 import unittest
-from six import string_types
 
 
 class Var(unittest.TestCase):
@@ -63,7 +56,7 @@ class Var(unittest.TestCase):
         self.assertEqual(type(var.enq()), float)
         self.assertEqual(var.enq(), 1.12345)
         var = wreport.Var(self.table["B01019"], "ciao")
-        self.assertIsInstance(var.enq(), string_types)
+        self.assertIsInstance(var.enq(), str)
         self.assertEqual(var.enq(), "ciao")
 
     def testGet(self):
@@ -85,6 +78,7 @@ class Var(unittest.TestCase):
         self.assertNotEqual(var, wreport.Var(self.table["B01002"], 1))
         self.assertIsNot(var, None)
         self.assertIsNot(wreport.Var(self.table["B01001"]), None)
+
 
 if __name__ == "__main__":
     from testlib import main
