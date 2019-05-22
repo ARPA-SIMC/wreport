@@ -110,7 +110,72 @@ static PyObject* wrpy_Var_enq(wrpy_Var* self)
     return var_value_to_python(self->var);
 }
 
+static PyObject* wrpy_Var_get_attrs(wrpy_Var* self)
+{
+    pyo_unique_ptr res(PyList_New(0));
+    if (!res)
+        return nullptr;
+
+    try {
+        for (const Var* a = self->var.next_attr(); a != nullptr; a = a->next_attr())
+        {
+            // Create an empty variable, then set value from the attribute. This is
+            // to avoid copying the rest of the attribute chain for every attribute
+            // we are returning
+            py_unique_ptr<wrpy_Var> var(var_create(a->info()));
+            if (!var)
+                return nullptr;
+            var.get()->var.setval(*a);
+
+            if (PyList_Append(res, (PyObject*)var.get()) == -1)
+                return nullptr;
+        }
+        return res.release();
+    } WREPORT_CATCH_RETURN_PYO
+}
+
 #define PYFIXME (char**)
+static PyObject* wrpy_Var_enqa(wrpy_Var* self, PyObject* args, PyObject* kw)
+{
+    static const char* kwlist[] = { "code", nullptr };
+    const char* code;
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "s", PYFIXME kwlist, &code))
+        return nullptr;
+
+    try {
+        const Var* attr = self->var.enqa(varcode_parse(code));
+        if (!attr)
+            Py_RETURN_NONE;
+        return (PyObject*)var_create(*attr);
+    } WREPORT_CATCH_RETURN_PYO
+}
+
+static PyObject* wrpy_Var_seta(wrpy_Var* self, PyObject* args, PyObject* kw)
+{
+    static const char* kwlist[] = { "var", nullptr };
+    wrpy_Var* var;
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "O!", PYFIXME kwlist, &wrpy_Var_Type, &var))
+        return nullptr;
+
+    try {
+        self->var.seta(var->var);
+        Py_RETURN_NONE;
+    } WREPORT_CATCH_RETURN_PYO
+}
+
+static PyObject* wrpy_Var_unseta(wrpy_Var* self, PyObject* args, PyObject* kw)
+{
+    static const char* kwlist[] = { "code", nullptr };
+    const char* code;
+    if (!PyArg_ParseTupleAndKeywords(args, kw, "s", PYFIXME kwlist, &code))
+        return nullptr;
+
+    try {
+        self->var.unseta(varcode_parse(code));
+        Py_RETURN_NONE;
+    } WREPORT_CATCH_RETURN_PYO
+}
+
 static PyObject* wrpy_Var_get(wrpy_Var* self, PyObject* args, PyObject* kw)
 {
     static const char* kwlist[] = { "default", nullptr };
@@ -158,10 +223,30 @@ static PyMethodDef wrpy_Var_methods[] = {
 
         get the value of the variable, as int, float or str according the variable definition
     )" },
+    {"enqa", (PyCFunction)wrpy_Var_enqa, METH_VARARGS | METH_KEYWORDS, R"(
+        enqa(code: str) -> Optional[wreport.Var]
+
+        get the variable for the attribute with the given code, or None if not found
+    )" },
+    {"seta", (PyCFunction)wrpy_Var_seta, METH_VARARGS | METH_KEYWORDS, R"(
+        seta(var: wreport.Var) -> None
+
+        set an attribute in the variable
+    )" },
+    {"unseta", (PyCFunction)wrpy_Var_unseta, METH_VARARGS | METH_KEYWORDS, R"(
+        unseta(code: str) -> None
+
+        unset the given attribute from the variable
+    )" },
     {"get", (PyCFunction)wrpy_Var_get, METH_VARARGS | METH_KEYWORDS, R"(
         get(default=None) -> str|float|long|default
 
         get the value of the variable, with a default if it is unset
+    )" },
+    {"get_attrs", (PyCFunction)wrpy_Var_get_attrs, METH_NOARGS, R"(
+        get_attrs() -> List[wreport.Var]
+
+        get the attributes of this variable
     )" },
     {"format", (PyCFunction)wrpy_Var_format, METH_VARARGS | METH_KEYWORDS, R"(
         format(default="") -> str

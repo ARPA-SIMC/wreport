@@ -80,6 +80,37 @@ class Var(unittest.TestCase):
         self.assertIsNot(var, None)
         self.assertIsNot(wreport.Var(self.table["B01001"]), None)
 
+    def testAttrs(self):
+        var = wreport.Var(self.table["B01001"], 1)
+
+        # Querying a nonexisting attribute returns None
+        self.assertIsNone(var.enqa("B33007"))
+
+        # Querying attributes when there are none returns an empty list
+        self.assertEqual(var.get_attrs(), [])
+
+        # Removing a non existing attribute does nothing
+        var.unseta("B33007")
+
+        # Add an attribute
+        var.seta(wreport.Var(self.table["B33007"], 50))
+
+        # Query it
+        attr = var.enqa("B33007")
+        self.assertEqual(attr.code, "B33007")
+        self.assertEqual(attr.enqd(), 50.0)
+
+        # List attributes
+        attrs = var.get_attrs()
+        self.assertEqual(len(attrs), 1)
+        self.assertEqual(attrs[0].code, "B33007")
+        self.assertEqual(attrs[0].enqd(), 50.0)
+
+        # Remove it
+        var.unseta("B33007")
+        self.assertIsNone(var.enqa("B33007"))
+        self.assertEqual(var.get_attrs(), [])
+
 
 if __name__ == "__main__":
     from testlib import main
