@@ -1,12 +1,5 @@
 #include "common.h"
 #include <Python.h>
-#include "config.h"
-
-#if PY_MAJOR_VERSION >= 3
-    #define PyInt_FromLong PyLong_FromLong
-    #define PyInt_AsLong PyLong_AsLong
-    #define PyInt_Type PyLong_Type
-#endif
 
 using namespace wreport;
 
@@ -96,39 +89,17 @@ PyObject* raise_std_exception(const std::exception& e)
 
 int string_from_python(PyObject* o, std::string& out)
 {
-#if PY_MAJOR_VERSION >= 3
     if (PyBytes_Check(o)) {
         const char* v = PyBytes_AsString(o);
         if (v == NULL) return -1;
         out = v;
         return 0;
     }
-#else
-    if (PyString_Check(o)) {
-        const char* v = PyString_AsString(o);
-        if (v == NULL) return -1;
-        out = v;
-        return 0;
-    }
-#endif
     if (PyUnicode_Check(o)) {
-#if PY_MAJOR_VERSION >= 3
         const char* v = PyUnicode_AsUTF8(o);
         if (v == NULL) return -1;
         out = v;
         return 0;
-#else
-        PyObject *utf8 = PyUnicode_AsUTF8String(o);
-        const char* v = PyString_AsString(utf8);
-        if (v == NULL)
-        {
-            Py_DECREF(utf8);
-            return -1;
-        }
-        out = v;
-        Py_DECREF(utf8);
-        return 0;
-#endif
     }
     PyErr_SetString(PyExc_TypeError, "value must be an instance of str, bytes or unicode");
     return -1;
@@ -150,12 +121,12 @@ int file_get_fileno(PyObject* o)
     }
 
     // fileno = int(fileno_value)
-    if (!PyObject_TypeCheck(fileno_value, &PyInt_Type)) {
+    if (!PyObject_TypeCheck(fileno_value, &PyLong_Type)) {
         PyErr_SetString(PyExc_ValueError, "fileno() function must return an integer");
         return -1;
     }
 
-    return PyInt_AsLong(fileno_value);
+    return PyLong_AsLong(fileno_value);
 }
 
 PyObject* file_get_data(PyObject* o, char*&buf, Py_ssize_t& len)
@@ -166,22 +137,12 @@ PyObject* file_get_data(PyObject* o, char*&buf, Py_ssize_t& len)
     pyo_unique_ptr data(PyObject_Call(read_meth, read_args, NULL));
     if (!data) return nullptr;
 
-#if PY_MAJOR_VERSION >= 3
     if (!PyObject_TypeCheck(data, &PyBytes_Type)) {
         PyErr_SetString(PyExc_ValueError, "read() function must return a bytes object");
         return nullptr;
     }
     if (PyBytes_AsStringAndSize(data, &buf, &len))
         return nullptr;
-#else
-    if (!PyObject_TypeCheck(data, &PyString_Type)) {
-        Py_DECREF(data);
-        PyErr_SetString(PyExc_ValueError, "read() function must return a string object");
-        return nullptr;
-    }
-    if (PyString_AsStringAndSize(data, &buf, &len))
-        return nullptr;
-#endif
 
     return data.release();
 }

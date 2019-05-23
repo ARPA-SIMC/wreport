@@ -6,8 +6,7 @@ Build-Depends:
   debhelper (>= 10), dh-buildinfo, dh-python,
   doxygen, pkg-config,
   liblua5.1-0-dev,
-  python-all-dev, python3-all-dev, python-docutils, python-numpy, python3-numpy,
-  python-six, python3-six
+  python3-all-dev, python-docutils
 Standards-Version: 4.1.5
 Rules-Requires-Root: no
 Homepage: https://github.com/ARPA-SIMC/wreport
@@ -68,14 +67,6 @@ Description: common data files for libwreport
  .
  This package contains common wreport data files, such as variable metadata and
  BUFR and CREX decoding tables.
-
-Package: python-wreport
-Section: python
-Architecture: any
-Depends: wreport-common, ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
-Description: Python library to work with BUFR and CREX weather bulletins
- Python bindings for wreport, a library to read and write weather reports in
- BUFR and CREX formats.
 
 Package: python3-wreport
 Section: python

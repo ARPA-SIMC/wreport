@@ -22,30 +22,17 @@ static int wrpy_Vartable_init(wrpy_Vartable* self, PyObject* args, PyObject* kw)
     return -1;
 }
 
-#if 0
-static int wrpy_Vartable_init(wrpy_Vartable* self, PyObject* args, PyObject* kw)
-{
-    const char* table_name = 0;
-    if (!PyArg_ParseTuple(args, "s", &table_name))
-        return -1;
-
-    try {
-        // Make it point to the table we want
-        self->table = wreport::Vartable::load_bufr(table_name);
-        return 0;
-    } WREPORT_CATCH_RETURN_INT
-}
-#endif
-
 static PyObject* wrpy_Vartable_pathname(wrpy_Vartable* self, void* closure)
 {
     return PyUnicode_FromString(self->table->pathname().c_str());
 }
 
+#define PYFIXME (char*)
 static PyGetSetDef wrpy_Vartable_getsetters[] = {
-    {"pathname", (getter)wrpy_Vartable_pathname, NULL, "name of the table", NULL},
-    {NULL}
+    {PYFIXME "pathname", (getter)wrpy_Vartable_pathname, nullptr, PYFIXME "name of the table", nullptr},
+    {nullptr}
 };
+#undef PYFIXME
 
 static PyObject* wrpy_Vartable_str(wrpy_Vartable* self)
 {
@@ -65,37 +52,14 @@ static int wrpy_Vartable_len(wrpy_Vartable* self)
 
 static PyObject* wrpy_Vartable_item(wrpy_Vartable* self, Py_ssize_t i)
 {
-#if 0
-    // We can cast to size_t: since we provide sq_length, i is supposed to
-    // always be positive
-    if ((size_t)i >= self->table->size())
-    {
-        PyErr_SetString(PyExc_IndexError, "table index out of range");
-        return NULL;
-    }
-    try {
-        return (PyObject*)varinfo_create(Varinfo((*self->table)[i]));
-    } WREPORT_CATCH_RETURN_PYO
-#endif
     Py_RETURN_NONE;
 }
 
 static PyObject* wrpy_Vartable_getitem(wrpy_Vartable* self, PyObject* key)
 {
-#if 0
-    if (PyIndex_Check(key)) {
-        Py_ssize_t i = PyNumber_AsSsize_t(key, PyExc_IndexError);
-        if (i == -1 && PyErr_Occurred())
-            return NULL;
-        if (i < 0)
-            i += self->table->size();
-        return wrpy_Vartable_item(self, i);
-    }
-#endif
-
     string varname;
     if (string_from_python(key, varname))
-        return NULL;
+        return nullptr;
 
     try {
         return (PyObject*)varinfo_create(self->table->query(varcode_parse(varname.c_str())));
@@ -139,7 +103,7 @@ static PyObject* wrpy_Vartable_get_bufr(PyTypeObject *type, PyObject *args, PyOb
     static const char* kwlist[] = {
         "basename", "originating_centre", "originating_subcentre",
         "master_table_number", "master_table_version_number",
-        "master_table_version_number_local", NULL };
+        "master_table_version_number_local", nullptr };
     const char* basename = nullptr;
     int originating_centre = 0;
     int originating_subcentre = 0;
@@ -176,7 +140,7 @@ static PyObject* wrpy_Vartable_get_crex(PyTypeObject *type, PyObject *args, PyOb
         "basename", "edition_number", "originating_centre", "originating_subcentre",
         "master_table_number", "master_table_version_number",
         "master_table_version_number_bufr",
-        "master_table_version_number_local", NULL };
+        "master_table_version_number_local", nullptr };
     const char* basename = nullptr;
     int edition_number = 2;
     int originating_centre = 0;
@@ -252,7 +216,7 @@ static PyMethodDef wrpy_Vartable_methods[] = {
             You need to provide either basename or master_table_version_number
             or master_table_version_number_bufr.
         )" },
-    {NULL}
+    {nullptr}
 };
 
 
@@ -274,7 +238,7 @@ static PyMappingMethods wrpy_Vartable_mapping = {
 };
 
 PyTypeObject wrpy_Vartable_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
+    PyVarObject_HEAD_INIT(nullptr, 0)
     "wreport.Vartable",         // tp_name
     sizeof(wrpy_Vartable),  // tp_basicsize
     0,                         // tp_itemsize

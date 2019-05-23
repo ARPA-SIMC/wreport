@@ -127,7 +127,7 @@ dnl Check for python
 if test x$enable_python = xyes
 then
 	dnl Check for python
-	AM_PATH_PYTHON([], [], [enable_python=no])
+	AM_PATH_PYTHON([3], [], [enable_python=no])
 fi
 if test x$enable_python = xyes
 then

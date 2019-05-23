@@ -1,12 +1,6 @@
-#!/usr/bin/python
-# coding: utf-8
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+#!/usr/bin/python3
 import wreport
 import unittest
-from six import string_types
 
 
 class Var(unittest.TestCase):
@@ -63,7 +57,7 @@ class Var(unittest.TestCase):
         self.assertEqual(type(var.enq()), float)
         self.assertEqual(var.enq(), 1.12345)
         var = wreport.Var(self.table["B01019"], "ciao")
-        self.assertIsInstance(var.enq(), string_types)
+        self.assertIsInstance(var.enq(), str)
         self.assertEqual(var.enq(), "ciao")
 
     def testGet(self):
@@ -85,6 +79,38 @@ class Var(unittest.TestCase):
         self.assertNotEqual(var, wreport.Var(self.table["B01002"], 1))
         self.assertIsNot(var, None)
         self.assertIsNot(wreport.Var(self.table["B01001"]), None)
+
+    def testAttrs(self):
+        var = wreport.Var(self.table["B01001"], 1)
+
+        # Querying a nonexisting attribute returns None
+        self.assertIsNone(var.enqa("B33007"))
+
+        # Querying attributes when there are none returns an empty list
+        self.assertEqual(var.get_attrs(), [])
+
+        # Removing a non existing attribute does nothing
+        var.unseta("B33007")
+
+        # Add an attribute
+        var.seta(wreport.Var(self.table["B33007"], 50))
+
+        # Query it
+        attr = var.enqa("B33007")
+        self.assertEqual(attr.code, "B33007")
+        self.assertEqual(attr.enqd(), 50.0)
+
+        # List attributes
+        attrs = var.get_attrs()
+        self.assertEqual(len(attrs), 1)
+        self.assertEqual(attrs[0].code, "B33007")
+        self.assertEqual(attrs[0].enqd(), 50.0)
+
+        # Remove it
+        var.unseta("B33007")
+        self.assertIsNone(var.enqa("B33007"))
+        self.assertEqual(var.get_attrs(), [])
+
 
 if __name__ == "__main__":
     from testlib import main
