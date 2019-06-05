@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.20
+Version: 3.21
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -21,9 +21,7 @@ BuildRequires: doxygen
 BuildRequires: libtool
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
-BuildRequires: python2-devel
 BuildRequires: %{python3_vers}-devel
-BuildRequires: python2-six
 BuildRequires: %{python3_vers}-six
 BuildRequires: /usr/bin/rst2html
 
@@ -89,17 +87,6 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
   * Handling of physical variables
   * Read and write BUFR version 2, 3, and 4
   * Read and write CREX
-
-%package -n python-%{name}3
-Summary: shared library for working with weather reports
-Group: Applications/Meteo
-Requires: lib%{name}3
-
-%description -n python-%{name}3
-libwreport is a C++ library to read and write weather reports in BUFR and CREX
- formats.
-
- This is the Python library
 
 %package -n %{python3_vers}-%{name}3
 Summary: shared library for working with weather reports
@@ -181,18 +168,6 @@ make install DESTDIR="%{buildroot}"
 %doc %{_docdir}/%{name}/apidocs/*
 %doc %{_docdir}/%{name}/examples/*
 
-%files -n python-%{name}3
-%defattr(-,root,root,-)
-%dir %{python2_sitelib}/wreport
-%{python2_sitelib}/wreport/*
-%dir %{python2_sitearch}
-%exclude %{python2_sitearch}/*.la
-%{python2_sitearch}/*.so*
-
-%doc %{_docdir}/wreport/python-wreport.html
-%doc %{_docdir}/wreport/python-wreport.rst
-
-
 %files -n %{python3_vers}-%{name}3
 %defattr(-,root,root,-)
 %dir %{python3_sitelib}/wreport
@@ -201,8 +176,15 @@ make install DESTDIR="%{buildroot}"
 %exclude %{python3_sitearch}/*.la
 %{python3_sitearch}/*.so*
 
+%doc %{_docdir}/wreport/python-wreport.html
+%doc %{_docdir}/wreport/python-wreport.rst
+
 
 %changelog
+* Wed Jun 5 2019 Daniele Branchini <dbranchini@arpae.it> - 3.21-1
+- Implemented python bindings to iterate over attributes of variables (#27)
+- removed python2 bindings and package
+
 * Tue Apr 16 2019 Daniele Branchini <dbranchini@arpae.it> - 3.20-1
 - Implemented decoding and encoding of C03 reference value change modifiers (#26)
 - moving to python 3.6 on Centos7
