@@ -1,6 +1,7 @@
 #ifndef WREPORT_PYTHON_H
 #define WREPORT_PYTHON_H
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <wreport/varinfo.h>
 #include <wreport/var.h>

@@ -1,7 +1,6 @@
 #ifndef WREPORT_PYTHON_VAR_H
 #define WREPORT_PYTHON_VAR_H
 
-#include <Python.h>
 #include <wreport/var.h>
 #include <wreport/python.h>
 

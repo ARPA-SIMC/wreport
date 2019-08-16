@@ -12,12 +12,12 @@ typedef struct {
 } wrpy_Vartable;
 
 /// wreport.Vartable python type
-PyAPI_DATA(PyTypeObject) wrpy_Vartable_Type;
+extern PyTypeObject* wrpy_Vartable_Type;
 
 /// Check if an object is of wreport.Vartable type or subtype
 #define wrpy_Vartable_Check(ob) \
-    (Py_TYPE(ob) == &wrpy_Vartable_Type || \
-     PyType_IsSubtype(Py_TYPE(ob), &wrpy_Vartable_Type))
+    (Py_TYPE(ob) == wrpy_Vartable_Type || \
+     PyType_IsSubtype(Py_TYPE(ob), wrpy_Vartable_Type))
 
 }
 
