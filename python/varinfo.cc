@@ -114,12 +114,12 @@ PyTypeObject wrpy_Varinfo_Type = {
 namespace wreport {
 namespace python {
 
-wrpy_Varinfo* varinfo_create(Varinfo v)
+PyObject* varinfo_create(Varinfo v)
 {
     wrpy_Varinfo* result = PyObject_New(wrpy_Varinfo, &wrpy_Varinfo_Type);
-    if (!result) return NULL;
+    if (!result) return nullptr;
     result->info = v;
-    return result;
+    return (PyObject*)result;
 }
 
 void register_varinfo(PyObject* m, wrpy_c_api& c_api)
@@ -130,6 +130,7 @@ void register_varinfo(PyObject* m, wrpy_c_api& c_api)
 
     // Initialize the C api struct
     c_api.varinfo_create = varinfo_create;
+    c_api.varinfo_type = &wrpy_Varinfo_Type;
 
     Py_INCREF(&wrpy_Varinfo_Type);
     if (PyModule_AddObject(m, "Varinfo", (PyObject*)&wrpy_Varinfo_Type) == -1)

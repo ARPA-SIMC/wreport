@@ -5,14 +5,33 @@
 #include <wreport/var.h>
 #include <wreport/python.h>
 
+extern "C" {
+
+/// wreport.Var python object
+typedef struct {
+    PyObject_HEAD
+    wreport::Var var;
+} wrpy_Var;
+
+/// wreport.Var python type
+PyAPI_DATA(PyTypeObject) wrpy_Var_Type;
+
+/// Check if an object is of wreport.Var type or subtype
+#define wrpy_Var_Check(ob) \
+    (Py_TYPE(ob) == &wrpy_Var_Type || \
+     PyType_IsSubtype(Py_TYPE(ob), &wrpy_Var_Type))
+
+}
+
+
 namespace wreport {
 namespace python {
 
-wrpy_Var* var_create(const wreport::Varinfo& v);
-wrpy_Var* var_create(const wreport::Varinfo& v, int val);
-wrpy_Var* var_create(const wreport::Varinfo& v, double val);
-wrpy_Var* var_create(const wreport::Varinfo& v, const char* val);
-wrpy_Var* var_create(const wreport::Var& v);
+PyObject* var_create(const wreport::Varinfo& v);
+PyObject* var_create(const wreport::Varinfo& v, int val);
+PyObject* var_create(const wreport::Varinfo& v, double val);
+PyObject* var_create(const wreport::Varinfo& v, const char* val);
+PyObject* var_create(const wreport::Var& v);
 
 PyObject* var_value_to_python(const wreport::Var& v);
 int var_value_from_python(PyObject* o, wreport::Var& var);

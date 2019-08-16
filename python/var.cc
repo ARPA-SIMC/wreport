@@ -11,52 +11,52 @@ extern "C" {
 
 static _Varinfo dummy_var;
 
-static wrpy_Var* wrpy_var_create(const wreport::Varinfo& v)
+static PyObject* wrpy_var_create(const wreport::Varinfo& v)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return nullptr;
     new (&result->var) Var(v);
-    return result;
+    return (PyObject*)result;
 }
 
-static wrpy_Var* wrpy_var_create_i(const wreport::Varinfo& v, int val)
+static PyObject* wrpy_var_create_i(const wreport::Varinfo& v, int val)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return nullptr;
     new (&result->var) Var(v, val);
-    return result;
+    return (PyObject*)result;
 }
 
-static wrpy_Var* wrpy_var_create_d(const wreport::Varinfo& v, double val)
+static PyObject* wrpy_var_create_d(const wreport::Varinfo& v, double val)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return nullptr;
     new (&result->var) Var(v, val);
-    return result;
+    return (PyObject*)result;
 }
 
-static wrpy_Var* wrpy_var_create_c(const wreport::Varinfo& v, const char* val)
+static PyObject* wrpy_var_create_c(const wreport::Varinfo& v, const char* val)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return nullptr;
     new (&result->var) Var(v, val);
-    return result;
+    return (PyObject*)result;
 }
 
-static wrpy_Var* wrpy_var_create_s(const wreport::Varinfo& v, const std::string& val)
+static PyObject* wrpy_var_create_s(const wreport::Varinfo& v, const std::string& val)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return nullptr;
     new (&result->var) Var(v, val);
-    return result;
+    return (PyObject*)result;
 }
 
-static wrpy_Var* wrpy_var_create_copy(const wreport::Var& v)
+static PyObject* wrpy_var_create_copy(const wreport::Var& v)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, &wrpy_Var_Type);
     if (!result) return nullptr;
     new (&result->var) Var(v);
-    return result;
+    return (PyObject*)result;
 }
 
 
@@ -123,7 +123,7 @@ static PyObject* wrpy_Var_get_attrs(wrpy_Var* self)
             // Create an empty variable, then set value from the attribute. This is
             // to avoid copying the rest of the attribute chain for every attribute
             // we are returning
-            py_unique_ptr<wrpy_Var> var(var_create(a->info()));
+            py_unique_ptr<wrpy_Var> var((wrpy_Var*)var_create(a->info()));
             if (!var)
                 return nullptr;
             var.get()->var.setval(*a);
@@ -413,11 +413,11 @@ PyTypeObject wrpy_Var_Type = {
 namespace wreport {
 namespace python {
 
-wrpy_Var* var_create(const wreport::Varinfo& v) { return wrpy_var_create(v); }
-wrpy_Var* var_create(const wreport::Varinfo& v, int val) { return wrpy_var_create_i(v, val); }
-wrpy_Var* var_create(const wreport::Varinfo& v, double val) { return wrpy_var_create_d(v, val); }
-wrpy_Var* var_create(const wreport::Varinfo& v, const char* val) { return wrpy_var_create_c(v, val); }
-wrpy_Var* var_create(const wreport::Var& v) { return wrpy_var_create_copy(v); }
+PyObject* var_create(const wreport::Varinfo& v) { return wrpy_var_create(v); }
+PyObject* var_create(const wreport::Varinfo& v, int val) { return wrpy_var_create_i(v, val); }
+PyObject* var_create(const wreport::Varinfo& v, double val) { return wrpy_var_create_d(v, val); }
+PyObject* var_create(const wreport::Varinfo& v, const char* val) { return wrpy_var_create_c(v, val); }
+PyObject* var_create(const wreport::Var& v) { return wrpy_var_create_copy(v); }
 
 PyObject* var_value_to_python(const wreport::Var& v)
 {
@@ -477,8 +477,6 @@ void register_var(PyObject* m, wrpy_c_api& c_api)
     c_api.var_create_copy = wrpy_var_create_copy;
     c_api.var_value_to_python = var_value_to_python;
     c_api.var_value_from_python = var_value_from_python;
-    c_api.varinfo_type = &wrpy_Varinfo_Type;
-    c_api.vartable_type = &wrpy_Vartable_Type;
     c_api.var_type = &wrpy_Var_Type;
 
     Py_INCREF(&wrpy_Var_Type);
