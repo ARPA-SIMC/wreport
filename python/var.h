@@ -13,12 +13,12 @@ typedef struct {
 } wrpy_Var;
 
 /// wreport.Var python type
-PyAPI_DATA(PyTypeObject) wrpy_Var_Type;
+extern PyTypeObject* wrpy_Var_Type;
 
 /// Check if an object is of wreport.Var type or subtype
 #define wrpy_Var_Check(ob) \
-    (Py_TYPE(ob) == &wrpy_Var_Type || \
-     PyType_IsSubtype(Py_TYPE(ob), &wrpy_Var_Type))
+    (Py_TYPE(ob) == wrpy_Var_Type || \
+     PyType_IsSubtype(Py_TYPE(ob), wrpy_Var_Type))
 
 }
 
