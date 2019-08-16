@@ -10,7 +10,7 @@ namespace python {
 
 wrpy_Varinfo* varinfo_create(wreport::Varinfo v);
 
-int register_varinfo(PyObject* m, wrpy_c_api& c_c_api);
+void register_varinfo(PyObject* m, wrpy_c_api& c_c_api);
 
 }
 }

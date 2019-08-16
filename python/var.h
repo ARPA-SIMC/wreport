@@ -17,7 +17,7 @@ wrpy_Var* var_create(const wreport::Var& v);
 PyObject* var_value_to_python(const wreport::Var& v);
 int var_value_from_python(PyObject* o, wreport::Var& var);
 
-int register_var(PyObject* m, wrpy_c_api& c_c_api);
+void register_var(PyObject* m, wrpy_c_api& c_c_api);
 
 }
 }

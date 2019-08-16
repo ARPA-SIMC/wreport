@@ -1,6 +1,7 @@
 #include "vartable.h"
 #include "varinfo.h"
 #include "common.h"
+#include "utils/values.h"
 #include <wreport/vartable.h>
 #include <wreport/tableinfo.h>
 #include "config.h"
@@ -11,8 +12,6 @@ using namespace wreport::python;
 using namespace wreport;
 
 extern "C" {
-
-static PyObject* wrpy_Vartable_get(PyTypeObject *type, PyObject *args, PyObject *kw);
 
 static int wrpy_Vartable_init(wrpy_Vartable* self, PyObject* args, PyObject* kw)
 {
@@ -57,21 +56,16 @@ static PyObject* wrpy_Vartable_item(wrpy_Vartable* self, Py_ssize_t i)
 
 static PyObject* wrpy_Vartable_getitem(wrpy_Vartable* self, PyObject* key)
 {
-    string varname;
-    if (string_from_python(key, varname))
-        return nullptr;
-
     try {
+        std::string varname = from_python<std::string>(key);
         return (PyObject*)varinfo_create(self->table->query(varcode_parse(varname.c_str())));
     } WREPORT_CATCH_RETURN_PYO
 }
 
 static int wrpy_Vartable_contains(wrpy_Vartable* self, PyObject *value)
 {
-    string varname;
-    if (string_from_python(value, varname))
-        return -1;
     try {
+        std::string varname = from_python<std::string>(value);
         return self->table->contains(varcode_parse(varname.c_str())) ? 1 : 0;
     } WREPORT_CATCH_RETURN_INT
 }
@@ -303,17 +297,18 @@ wrpy_Vartable* vartable_create(const wreport::Vartable* table)
     return result;
 }
 
-int register_vartable(PyObject* m, wrpy_c_api& c_api)
+void register_vartable(PyObject* m, wrpy_c_api& c_api)
 {
     wrpy_Vartable_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&wrpy_Vartable_Type) < 0)
-        return 0;
+        throw PythonException();
 
     // Initialize the C api struct
     c_api.vartable_create = vartable_create;
 
     Py_INCREF(&wrpy_Vartable_Type);
-    return PyModule_AddObject(m, "Vartable", (PyObject*)&wrpy_Vartable_Type);
+    if (PyModule_AddObject(m, "Vartable", (PyObject*)&wrpy_Vartable_Type) == -1)
+        throw PythonException();
 }
 
 }

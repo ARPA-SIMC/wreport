@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <fcntl.h>
 #include <sys/types.h>
+#include <sys/sendfile.h>
 #include <utime.h>
 #include <alloca.h>
 
@@ -164,6 +165,23 @@ std::string getcwd()
         throw std::system_error(errno, std::system_category(), "cannot get the current working directory");
     return buf;
 #endif
+}
+
+void chdir(const std::string& dir)
+{
+    if (::chdir(dir.c_str()) == -1)
+        throw std::system_error(errno, std::system_category(), "cannot change the current working directory to " + dir);
+}
+
+void chroot(const std::string& dir)
+{
+    if (::chroot(dir.c_str()) == -1)
+        throw std::system_error(errno, std::system_category(), "cannot chroot to " + dir);
+}
+
+mode_t umask(mode_t mask)
+{
+    return ::umask(mask);
 }
 
 std::string abspath(const std::string& pathname)
@@ -383,6 +401,64 @@ bool FileDescriptor::ofd_getlk(struct flock& lk)
 #endif
         throw_error("cannot test lock");
     return lk.l_type == F_UNLCK;
+}
+
+namespace {
+
+struct TransferBuffer
+{
+    char* buf = nullptr;
+
+    ~TransferBuffer()
+    {
+        delete[] buf;
+    }
+
+    void allocate()
+    {
+        if (buf)
+            return;
+        buf = new char[40960];
+    }
+
+    operator char*() { return buf; }
+};
+
+}
+
+void FileDescriptor::sendfile(FileDescriptor& out_fd, off_t offset, size_t count)
+{
+    bool has_sendfile = true;
+    TransferBuffer buffer;
+    while (count > 0)
+    {
+        if (has_sendfile)
+        {
+            ssize_t res = ::sendfile(out_fd, fd, &offset, count);
+            if (res < 0)
+            {
+                if (errno == EINVAL || errno == ENOSYS)
+                {
+                    has_sendfile = false;
+                    buffer.allocate();
+                }
+                else
+                {
+                    std::stringstream msg;
+                    msg << "cannot sendfile() " << count << " bytes from offset" << offset;
+                    throw_error(msg.str().c_str());
+                }
+            } else {
+                offset += res;
+                count -= res;
+            }
+        } else {
+            size_t res = pread(buffer, count, offset);
+            out_fd.write_all_or_retry(buffer, res);
+            offset += res;
+            count -= res;
+        }
+    }
 }
 
 void FileDescriptor::futimens(const struct ::timespec ts[2])
@@ -819,6 +895,28 @@ File File::mkstemp(char* pathname_template)
         throw std::system_error(errno, std::system_category(), std::string("cannot create temporary file ") + pathname_template);
     return File(fd, pathname_template);
 }
+
+
+Tempfile::Tempfile() : sys::File(sys::File::mkstemp("")) {}
+Tempfile::Tempfile(const std::string& prefix) : sys::File(sys::File::mkstemp(prefix)) {}
+Tempfile::Tempfile(const char* prefix) : sys::File(sys::File::mkstemp(prefix)) {}
+
+Tempfile::~Tempfile()
+{
+    if (m_unlink_on_exit)
+        ::unlink(name().c_str());
+}
+
+void Tempfile::unlink_on_exit(bool val)
+{
+    m_unlink_on_exit = val;
+}
+
+void Tempfile::unlink()
+{
+    sys::unlink(name());
+}
+
 
 std::string read_file(const std::string& file)
 {

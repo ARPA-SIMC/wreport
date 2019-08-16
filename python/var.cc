@@ -1,6 +1,7 @@
 #include "var.h"
 #include "common.h"
 #include "varinfo.h"
+#include "utils/values.h"
 
 using namespace std;
 using namespace wreport::python;
@@ -447,17 +448,10 @@ int var_value_from_python(PyObject* o, wreport::Var& var)
         } else if (PyBytes_Check(o)) {
             var.setc(PyBytes_AsString(o));
         } else if (PyUnicode_Check(o)) {
-            string val;
-            if (string_from_python(o, val))
-                return -1;
-            var.sets(val);
+            var.sets(from_python<std::string>(o));
         } else {
-            string repr;
-            if (object_repr(o, repr))
-                return -1;
-            string type_repr;
-            if (object_repr((PyObject*)o->ob_type, type_repr))
-                return -1;
+            std::string repr = object_repr(o);
+            std::string type_repr = object_repr((PyObject*)o->ob_type);
             string errmsg = "Value " + repr + " must be an instance of int, long, float, str, bytes, or unicode, instead of " + type_repr;
             PyErr_SetString(PyExc_TypeError, errmsg.c_str());
             return -1;
@@ -466,13 +460,13 @@ int var_value_from_python(PyObject* o, wreport::Var& var)
     } WREPORT_CATCH_RETURN_INT
 }
 
-int register_var(PyObject* m, wrpy_c_api& c_api)
+void register_var(PyObject* m, wrpy_c_api& c_api)
 {
     dummy_var.set_bufr(0, "Invalid variable", "?", 0, 1, 0, 1);
 
     wrpy_Var_Type.tp_new = PyType_GenericNew;
     if (PyType_Ready(&wrpy_Var_Type) < 0)
-        return 0;
+        throw PythonException();
 
     // Initialize the C api struct
     c_api.var_create = wrpy_var_create;
@@ -488,7 +482,8 @@ int register_var(PyObject* m, wrpy_c_api& c_api)
     c_api.var_type = &wrpy_Var_Type;
 
     Py_INCREF(&wrpy_Var_Type);
-    return PyModule_AddObject(m, "Var", (PyObject*)&wrpy_Var_Type);
+    if (PyModule_AddObject(m, "Var", (PyObject*)&wrpy_Var_Type) == -1)
+        throw PythonException();
 }
 
 }
