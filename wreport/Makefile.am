@@ -13,6 +13,7 @@ wreportincludedir = $(includedir)/wreport
 
 # Include the .cc files that contain template definitions
 nobase_dist_wreportinclude_HEADERS = \
+	fwd.h \
 	codetables.h \
 	conv.h \
 	dtable.h \

@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <wreport/fwd.h>
 
 namespace wreport {
 

@@ -2,6 +2,7 @@
 #define WREPORT_VAR_H
 
 #include <wreport/error.h>
+#include <wreport/fwd.h>
 #include <wreport/varinfo.h>
 #include <cstdio>
 #include <string>

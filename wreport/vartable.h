@@ -4,6 +4,7 @@
 #include <wreport/varinfo.h>
 #include <string>
 #include <functional>
+#include <wreport/fwd.h>
 
 namespace wreport {
 struct BufrTableID;
