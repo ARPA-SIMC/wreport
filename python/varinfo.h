@@ -3,6 +3,7 @@
 
 #include <wreport/varinfo.h>
 #include <wreport/python.h>
+#include "utils/core.h"
 
 extern "C" {
 

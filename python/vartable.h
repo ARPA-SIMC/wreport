@@ -2,6 +2,7 @@
 #define WREPORT_PYTHON_VARTABLE_H
 
 #include <wreport/python.h>
+#include "utils/core.h"
 
 extern "C" {
 

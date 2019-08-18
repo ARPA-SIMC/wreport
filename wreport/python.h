@@ -1,14 +1,19 @@
 #ifndef WREPORT_PYTHON_H
 #define WREPORT_PYTHON_H
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
-#include <wreport/varinfo.h>
-#include <wreport/var.h>
+#include <wreport/fwd.h>
+#include <string>
 
-namespace wreport {
-struct Vartable;
+#ifndef PyObject_HEAD
+// Forward-declare PyObjetc and PyTypeObject
+// see https://mail.python.org/pipermail/python-dev/2003-August/037601.html
+extern "C" {
+struct _object;
+typedef _object PyObject;
+struct _typeobject;
+typedef _typeobject PyTypeObject;
 }
+#endif
 
 extern "C" {
 
