@@ -1,5 +1,5 @@
-#ifndef WREPORT_PYTHON_MODULE_H
-#define WREPORT_PYTHON_MODULE_H
+#ifndef WREPORT_PYTHON_METHODS_H
+#define WREPORT_PYTHON_METHODS_H
 
 #include "core.h"
 #include <array>
