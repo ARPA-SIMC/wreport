@@ -53,12 +53,39 @@ static PyObject* wrpy_var_create_s(const wreport::Varinfo& v, const std::string&
     return (PyObject*)result;
 }
 
+static PyObject* wrpy_var_create_v(const wreport::Varinfo& v, const wreport::Var& val)
+{
+    wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
+    if (!result) return nullptr;
+    new (&result->var) Var(v);
+    result->var.setval(val);
+    return (PyObject*)result;
+}
+
 static PyObject* wrpy_var_create_copy(const wreport::Var& v)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
     if (!result) return nullptr;
     new (&result->var) Var(v);
     return (PyObject*)result;
+}
+
+static PyObject* wrpy_var_create_move(wreport::Var&& v)
+{
+    wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
+    if (!result) return nullptr;
+    new (&result->var) Var(std::move(v));
+    return (PyObject*)result;
+}
+
+static wreport::Var* wrpy_var(PyObject* o)
+{
+    if (!wrpy_Var_Check(o))
+    {
+        PyErr_Format(PyExc_TypeError, "expected object of type wreport.Var, got %R", o);
+        return nullptr;
+    }
+    return &((wrpy_Var*)o)->var;
 }
 
 }
@@ -501,10 +528,13 @@ void register_var(PyObject* m, wrpy_c_api& c_api)
     c_api.var_create_d = wrpy_var_create_d;
     c_api.var_create_c = wrpy_var_create_c;
     c_api.var_create_s = wrpy_var_create_s;
+    c_api.var_create_v = wrpy_var_create_v;
     c_api.var_create_copy = wrpy_var_create_copy;
     c_api.var_value_to_python = var_value_to_python;
     c_api.var_value_from_python = var_value_from_python;
     c_api.var_type = wrpy_Var_Type;
+    c_api.var_create_move = wrpy_var_create_move;
+    c_api.var = wrpy_var;
 }
 
 }

@@ -28,6 +28,9 @@ extern "C" {
  * 
  */
 struct wrpy_c_api {
+
+// API version 1.x
+
     /// Create a new unset wreport.Var object
     PyObject* (*var_create)(const wreport::Varinfo&);
 
@@ -72,6 +75,17 @@ struct wrpy_c_api {
 
     /// Var type
     PyTypeObject* var_type;
+
+// API version 1.1
+
+    /// Create a new wreport.Var object, moving an existing var
+    PyObject* (*var_create_move)(wreport::Var&&);
+
+    /// Return the variable for a wreport.Var object
+    wreport:: Var* (*var)(PyObject* o);
+
+    /// Create a new wreport.Var object with the value from another variable
+    PyObject* (*var_create_v)(const wreport::Varinfo&, const wreport::Var&);
 };
 
 }

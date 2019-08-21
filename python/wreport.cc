@@ -36,7 +36,7 @@ PyMODINIT_FUNC PyInit__wreport(void)
     try {
         memset(&c_api, 0, sizeof(wrpy_c_api));
         c_api.version_major = 1;
-        c_api.version_minor = 0;
+        c_api.version_minor = 1;
 
         pyo_unique_ptr m(throw_ifnull(PyModule_Create(&wreport_module)));
 
@@ -46,7 +46,6 @@ PyMODINIT_FUNC PyInit__wreport(void)
 
         // Create a Capsule containing the API struct's address
         pyo_unique_ptr c_api_object(throw_ifnull(PyCapsule_New((void *)&c_api, "_wreport._C_API", nullptr)));
-
         int res = PyModule_AddObject(m, "_C_API", c_api_object.release());
         if (res)
             return nullptr;
