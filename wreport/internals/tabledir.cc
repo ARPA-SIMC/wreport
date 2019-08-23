@@ -1,9 +1,9 @@
 #include "tabledir.h"
 #include "error.h"
-#include "vartable.h"
-#include "dtable.h"
-#include "notes.h"
-#include "fs.h"
+#include "wreport/vartable.h"
+#include "wreport/dtable.h"
+#include "wreport/notes.h"
+#include "wreport/utils/sys.h"
 #include "config.h"
 #include <map>
 #include <cstddef>
@@ -65,12 +65,16 @@ Dir::~Dir()
 // Reread the directory contents if it has changed
 void Dir::refresh()
 {
-    fs::Directory reader(pathname);
-    if (!reader.exists()) return;
+    if (!sys::exists(pathname))
+        return;
+
+    sys::Path dir(pathname);
     struct stat st;
-    reader.stat(st);
-    if (mtime >= st.st_mtime) return;
-    for (auto& e: reader)
+    dir.fstat(st);
+    if (mtime >= st.st_mtime)
+        return;
+
+    for (auto& e: dir)
     {
         size_t name_len = strlen(e.d_name);
 

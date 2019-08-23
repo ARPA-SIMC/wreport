@@ -5,6 +5,7 @@
 #include <wreport/subset.h>
 #include <wreport/opcodes.h>
 #include <wreport/tables.h>
+#include <wreport/fwd.h>
 #include <vector>
 #include <memory>
 

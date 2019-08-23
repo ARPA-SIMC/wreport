@@ -1,27 +1,6 @@
-/*
- * wreport/test-utils-wreport - Unit test utilities
- *
- * Copyright (C) 2005--2010  ARPA-SIM <urpsim@smr.arpa.emr.it>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
- */
-
 #include "tests.h"
 #include "utils/string.h"
-#include "internals/fs.h"
+#include "utils/sys.h"
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
@@ -69,10 +48,10 @@ std::vector<std::string> all_test_files(const std::string& encoding)
     testdatadir = str::joinpath(testdatadir, encoding);
 
     vector<string> res;
-    fs::Directory dir(testdatadir);
-    for (fs::Directory::const_iterator i = dir.begin(); i != dir.end(); ++i)
-        if (str::endswith(i->d_name, "." + encoding))
-            res.push_back(str::joinpath(encoding, i->d_name));
+    sys::Path dir(testdatadir);
+    for (const auto& i: dir)
+        if (str::endswith(i.d_name, "." + encoding))
+            res.push_back(str::joinpath(encoding, i.d_name));
     return res;
 }
 

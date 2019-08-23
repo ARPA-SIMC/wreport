@@ -13,6 +13,7 @@ wreportincludedir = $(includedir)/wreport
 
 # Include the .cc files that contain template definitions
 nobase_dist_wreportinclude_HEADERS = \
+	fwd.h \
 	codetables.h \
 	conv.h \
 	dtable.h \
@@ -34,7 +35,6 @@ nobase_dist_wreportinclude_HEADERS = \
 	opcodes.h \
 	options.h \
 	subset.h \
-	internals/fs.h \
 	internals/tabledir.h \
 	tableinfo.h \
 	tables.h \
@@ -72,7 +72,6 @@ libwreport_la_SOURCES = \
 	utils/term.cc \
 	utils/tests.cc \
 	utils/testrunner.cc \
-	internals/fs.cc \
 	internals/tabledir.cc \
 	subset.cc \
 	buffers/bufr.cc \
@@ -128,7 +127,6 @@ test_wreport_SOURCES = \
 	opcodes-test.cc \
 	dtable-test.cc \
 	tables-test.cc \
-	internals/fs-test.cc \
 	internals/tabledir-test.cc \
 	subset-test.cc \
 	bulletin-test.cc \

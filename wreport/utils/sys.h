@@ -87,6 +87,15 @@ bool exists(const std::string& s);
 /// Get the absolute path of the current working directory
 std::string getcwd();
 
+/// Change working directory
+void chdir(const std::string& dir);
+
+/// Change root directory
+void chroot(const std::string& dir);
+
+/// Change umask (always succeeds and returns the previous umask)
+mode_t umask(mode_t mask);
+
 /// Get the absolute path of a file
 std::string abspath(const std::string& pathname);
 
@@ -262,6 +271,14 @@ public:
      * Returns true if the lock would have been obtainable, false if not.
      */
     bool ofd_getlk(struct ::flock&);
+
+    /**
+     * Call sendfile with this file as in_fd, falling back on write if it is
+     * not available.
+     *
+     * Perform retry if data was partially written.
+     */
+    void sendfile(FileDescriptor& out_fd, off_t offset, size_t count);
 
     operator int() const { return fd; }
 };
@@ -487,6 +504,31 @@ public:
     static File mkstemp(const char* prefix);
     static File mkstemp(char* pathname_template);
 };
+
+
+/**
+ * Open a temporary file.
+ *
+ * By default, the temporary file will be deleted when the object is deleted.
+ */
+class Tempfile : public File
+{
+protected:
+    bool m_unlink_on_exit = true;
+
+public:
+    Tempfile();
+    Tempfile(const std::string& prefix);
+    Tempfile(const char* prefix);
+    ~Tempfile();
+
+    /// Change the unlink-on-exit behaviour
+    void unlink_on_exit(bool val);
+
+    /// Unlink the file right now
+    void unlink();
+};
+
 
 /// Read whole file into memory. Throws exceptions on failure.
 std::string read_file(const std::string &file);

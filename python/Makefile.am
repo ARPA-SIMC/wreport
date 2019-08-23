@@ -9,6 +9,11 @@ python_tests = test-varinfo.py test-vartable.py test-var.py
 pythonincludedir = $(includedir)/wreport/python
 EXTRA_DIST = \
     doc-wreport \
+    utils/core.h \
+    utils/dict.h \
+    utils/methods.h \
+    utils/type.h \
+    utils/values.h \
     common.h \
     vartable.h \
     varinfo.h \
@@ -19,6 +24,9 @@ pkgpython_PYTHON = wreport/__init__.py
 pyexec_LTLIBRARIES = _wreport.la
 
 _wreport_la_SOURCES = \
+    utils/core.cc \
+    utils/methods.cc \
+    utils/values.cc \
     common.cc \
     varinfo.cc \
     vartable.cc \

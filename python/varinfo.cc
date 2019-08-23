@@ -1,7 +1,9 @@
 #include "varinfo.h"
 #include "wreport/var.h"
 #include "common.h"
-#include "config.h"
+#include "utils/type.h"
+#include "utils/methods.h"
+#include "utils/values.h"
 
 using namespace wreport;
 using namespace wreport::python;
@@ -9,130 +11,191 @@ using namespace wreport;
 
 extern "C" {
 
-static PyMethodDef wrpy_Varinfo_methods[] = {
-    {NULL}
+PyTypeObject* wrpy_Varinfo_Type = nullptr;
+
+}
+
+namespace {
+
+struct type : public Getter<type, wrpy_Varinfo>
+{
+    constexpr static const char* name = "type";
+    constexpr static const char* doc = "return a string describing the type of the variable (string, binary, integer, decimal)";
+    constexpr static void* closure = nullptr;
+
+    static PyObject* get(Impl* self, void* closure)
+    {
+        try {
+            return to_python(vartype_format(self->info->type));
+        } WREPORT_CATCH_RETURN_PYO;
+    }
 };
 
-static PyObject* wrpy_Varinfo_type(wrpy_Varinfo *self, void* closure)
+struct code : public Getter<code, wrpy_Varinfo>
 {
-    return PyUnicode_FromString(vartype_format(self->info->type));
-}
-static PyObject* wrpy_Varinfo_code(wrpy_Varinfo *self, void* closure)
-{
-    return wrpy_varcode_format(self->info->code);
-}
-static PyObject* wrpy_Varinfo_len(wrpy_Varinfo* self, void* closure) { return PyLong_FromLong(self->info->len); }
-static PyObject* wrpy_Varinfo_unit(wrpy_Varinfo* self, void* closure) { return PyUnicode_FromString(self->info->unit); }
-static PyObject* wrpy_Varinfo_desc(wrpy_Varinfo* self, void* closure) { return PyUnicode_FromString(self->info->desc); }
-static PyObject* wrpy_Varinfo_scale(wrpy_Varinfo* self, void* closure) { return PyLong_FromLong(self->info->scale); }
-static PyObject* wrpy_Varinfo_bit_ref(wrpy_Varinfo* self, void* closure) { return PyLong_FromLong(self->info->bit_ref); }
-static PyObject* wrpy_Varinfo_bit_len(wrpy_Varinfo* self, void* closure) { return PyLong_FromLong(self->info->bit_len); }
+    constexpr static const char* name = "code";
+    constexpr static const char* doc = "variable code";
+    constexpr static void* closure = nullptr;
 
-static PyGetSetDef wrpy_Varinfo_getsetters[] = {
-    {"type", (getter)wrpy_Varinfo_type, NULL, "return a string describing the type of the variable (string, binary, integer, decimal)", NULL },
-    {"code", (getter)wrpy_Varinfo_code, NULL, "variable code", NULL },
-    {"len", (getter)wrpy_Varinfo_len, NULL, "number of significant digits", NULL},
-    {"unit", (getter)wrpy_Varinfo_unit, NULL, "measurement unit", NULL},
-    {"desc", (getter)wrpy_Varinfo_desc, NULL, "description", NULL},
-    {"scale", (getter)wrpy_Varinfo_scale, NULL, "scale of the value as a power of 10", NULL},
-    {"bit_ref", (getter)wrpy_Varinfo_bit_ref, NULL, "reference value added after scaling, for BUFR decoding", NULL},
-    {"bit_len", (getter)wrpy_Varinfo_bit_len, NULL, "number of bits used to encode the value in BUFR", NULL},
-    {NULL}
+    static PyObject* get(Impl* self, void* closure)
+    {
+        try {
+            return wrpy_varcode_format(self->info->code);
+        } WREPORT_CATCH_RETURN_PYO;
+    }
 };
 
-static int wrpy_Varinfo_init(wrpy_Varinfo* self, PyObject* args, PyObject* kw)
+struct len : public Getter<len, wrpy_Varinfo>
 {
-    // People should not invoke Varinfo() as a constructor, but if they do,
-    // this is better than a segfault later on
-    PyErr_SetString(PyExc_NotImplementedError, "Varinfo objects cannot be constructed explicitly");
-    return -1;
-}
+    constexpr static const char* name = "len";
+    constexpr static const char* doc = "number of significant digits";
+    constexpr static void* closure = nullptr;
 
-static PyObject* wrpy_Varinfo_str(wrpy_Varinfo* self)
-{
-    return wrpy_varcode_format(self->info->code);
-}
-
-static PyObject* wrpy_Varinfo_repr(wrpy_Varinfo* self)
-{
-    std::string res = "Varinfo('";
-    res += varcode_format(self->info->code);
-    res += "')";
-    return PyUnicode_FromString(res.c_str());
-}
-
-
-PyTypeObject wrpy_Varinfo_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    "wreport.Varinfo",         // tp_name
-    sizeof(wrpy_Varinfo),       // tp_basicsize
-    0,                         // tp_itemsize
-    0,                         // tp_dealloc
-    0,                         // tp_print
-    0,                         // tp_getattr
-    0,                         // tp_setattr
-    0,                         // tp_compare
-    (reprfunc)wrpy_Varinfo_repr, // tp_repr
-    0,                         // tp_as_number
-    0,                         // tp_as_sequence
-    0,                         // tp_as_mapping
-    0,                         // tp_hash
-    0,                         // tp_call
-    (reprfunc)wrpy_Varinfo_str, // tp_str
-    0,                         // tp_getattro
-    0,                         // tp_setattro
-    0,                         // tp_as_buffer
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, // tp_flags
-    R"(
-    Varinfo object holds all possible information about a variable, such as its
-    measurement unit, description and number of significant digits.
-
-    Varinfo objects cannot be instantiated directly, and are created by
-    querying `wreport.Vartable`_ objects.
-    )",                        // tp_doc
-    0,                         // tp_traverse
-    0,                         // tp_clear
-    0,                         // tp_richcompare
-    0,                         // tp_weaklistoffset
-    0,                         // tp_iter
-    0,                         // tp_iternext
-    wrpy_Varinfo_methods,       // tp_methods
-    0,                         // tp_members
-    wrpy_Varinfo_getsetters,    // tp_getset
-    0,                         // tp_base
-    0,                         // tp_dict
-    0,                         // tp_descr_get
-    0,                         // tp_descr_set
-    0,                         // tp_dictoffset
-    (initproc)wrpy_Varinfo_init, // tp_init
-    0,                         // tp_alloc
-    0,                         // tp_new
+    static PyObject* get(Impl* self, void* closure)
+    {
+        try {
+            return to_python(self->info->len);
+        } WREPORT_CATCH_RETURN_PYO;
+    }
 };
+
+struct unit : public Getter<unit, wrpy_Varinfo>
+{
+    constexpr static const char* name = "unit";
+    constexpr static const char* doc = "measurement unit";
+    constexpr static void* closure = nullptr;
+
+    static PyObject* get(Impl* self, void* closure)
+    {
+        try {
+            return to_python(self->info->unit);
+        } WREPORT_CATCH_RETURN_PYO;
+    }
+};
+
+struct desc : public Getter<desc, wrpy_Varinfo>
+{
+    constexpr static const char* name = "desc";
+    constexpr static const char* doc = "description";
+    constexpr static void* closure = nullptr;
+
+    static PyObject* get(Impl* self, void* closure)
+    {
+        try {
+            return to_python(self->info->desc);
+        } WREPORT_CATCH_RETURN_PYO;
+    }
+};
+
+struct scale : public Getter<scale, wrpy_Varinfo>
+{
+    constexpr static const char* name = "scale";
+    constexpr static const char* doc = "scale of the value as a power of 10";
+    constexpr static void* closure = nullptr;
+
+    static PyObject* get(Impl* self, void* closure)
+    {
+        try {
+            return to_python(self->info->scale);
+        } WREPORT_CATCH_RETURN_PYO;
+    }
+};
+
+struct bit_ref : public Getter<bit_ref, wrpy_Varinfo>
+{
+    constexpr static const char* name = "bit_ref";
+    constexpr static const char* doc = "reference value added after scaling, for BUFR decoding";
+    constexpr static void* closure = nullptr;
+
+    static PyObject* get(Impl* self, void* closure)
+    {
+        try {
+            return to_python(self->info->bit_ref);
+        } WREPORT_CATCH_RETURN_PYO;
+    }
+};
+
+struct bit_len : public Getter<bit_len, wrpy_Varinfo>
+{
+    constexpr static const char* name = "bit_len";
+    constexpr static const char* doc = "number of bits used to encode the value in BUFR";
+    constexpr static void* closure = nullptr;
+
+    static PyObject* get(Impl* self, void* closure)
+    {
+        try {
+            return to_python(self->info->bit_len);
+        } WREPORT_CATCH_RETURN_PYO;
+    }
+};
+
+
+struct VarinfoDef : public Type<VarinfoDef, wrpy_Varinfo>
+{
+    constexpr static const char* name = "Varinfo";
+    constexpr static const char* qual_name = "wreport.Varinfo";
+    constexpr static const char* doc = R"(
+Varinfo object holds all possible information about a variable, such as its
+measurement unit, description and number of significant digits.
+
+Varinfo objects cannot be instantiated directly, and are created by
+querying `wreport.Vartable`_ objects.
+)";
+    GetSetters<type, code, len, unit, desc, scale, bit_ref, bit_len> getsetters;
+    Methods<> methods;
+
+    static void _dealloc(Impl* self)
+    {
+        Py_TYPE(self)->tp_free(self);
+    }
+
+    static PyObject* _str(Impl* self)
+    {
+        try {
+            return wrpy_varcode_format(self->info->code);
+        } WREPORT_CATCH_RETURN_PYO;
+    }
+
+    static PyObject* _repr(Impl* self)
+    {
+        std::string res = "Varinfo('";
+        res += varcode_format(self->info->code);
+        res += "')";
+        return PyUnicode_FromString(res.c_str());
+    }
+
+    static int _init(Impl* self, PyObject* args, PyObject* kw)
+    {
+        // People should not invoke Varinfo() as a constructor, but if they do,
+        // this is better than a segfault later on
+        PyErr_SetString(PyExc_NotImplementedError, "Varinfo objects cannot be constructed explicitly");
+        return -1;
+    }
+};
+
+VarinfoDef* varinfo_def = nullptr;
 
 }
 
 namespace wreport {
 namespace python {
 
-wrpy_Varinfo* varinfo_create(Varinfo v)
+PyObject* varinfo_create(Varinfo v)
 {
-    wrpy_Varinfo* result = PyObject_New(wrpy_Varinfo, &wrpy_Varinfo_Type);
-    if (!result) return NULL;
+    wrpy_Varinfo* result = PyObject_New(wrpy_Varinfo, wrpy_Varinfo_Type);
+    if (!result) return nullptr;
     result->info = v;
-    return result;
+    return (PyObject*)result;
 }
 
-int register_varinfo(PyObject* m, wrpy_c_api& c_api)
+void register_varinfo(PyObject* m, wrpy_c_api& c_api)
 {
-    wrpy_Varinfo_Type.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&wrpy_Varinfo_Type) < 0)
-        return 0;
+    varinfo_def = new VarinfoDef;
+    varinfo_def->define(wrpy_Varinfo_Type, m);
 
     // Initialize the C api struct
     c_api.varinfo_create = varinfo_create;
-
-    Py_INCREF(&wrpy_Varinfo_Type);
-    return PyModule_AddObject(m, "Varinfo", (PyObject*)&wrpy_Varinfo_Type);
+    c_api.varinfo_type = wrpy_Varinfo_Type;
 }
 
 }

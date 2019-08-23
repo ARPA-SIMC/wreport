@@ -1,5 +1,5 @@
 #include "common.h"
-#include <Python.h>
+#include "utils/values.h"
 
 using namespace wreport;
 
@@ -87,24 +87,6 @@ PyObject* raise_std_exception(const std::exception& e)
     return NULL;
 }
 
-int string_from_python(PyObject* o, std::string& out)
-{
-    if (PyBytes_Check(o)) {
-        const char* v = PyBytes_AsString(o);
-        if (v == NULL) return -1;
-        out = v;
-        return 0;
-    }
-    if (PyUnicode_Check(o)) {
-        const char* v = PyUnicode_AsUTF8(o);
-        if (v == NULL) return -1;
-        out = v;
-        return 0;
-    }
-    PyErr_SetString(PyExc_TypeError, "value must be an instance of str, bytes or unicode");
-    return -1;
-}
-
 int file_get_fileno(PyObject* o)
 {
     // fileno_value = obj.fileno()
@@ -148,15 +130,9 @@ PyObject* file_get_data(PyObject* o, char*&buf, Py_ssize_t& len)
 }
 
 
-int object_repr(PyObject* o, std::string& out)
+std::string object_repr(PyObject* o)
 {
-    pyo_unique_ptr repr(PyObject_Repr(o));
-    if (!repr) return -1;
-
-    if (string_from_python(repr, out))
-        return -1;
-
-    return 0;
+    return from_python<std::string>(throw_ifnull(PyObject_Repr(o)));
 }
 
 }

@@ -1,46 +1,16 @@
 #ifndef WREPORT_PYTHON_H
 #define WREPORT_PYTHON_H
 
-#include <Python.h>
-#include <wreport/varinfo.h>
+#define WREPORT_3_21_COMPAT
+
+#ifdef WREPORT_3_21_COMPAT
+// TODO: remove when DB-All.e as deployed does not need this anymore
 #include <wreport/var.h>
 
-namespace wreport {
-struct Vartable;
-}
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
 
 extern "C" {
-
-/// wreport.Varinfo python object
-typedef struct {
-    PyObject_HEAD
-    wreport::Varinfo info;
-} wrpy_Varinfo;
-
-/// wreport.Varinfo python type
-PyAPI_DATA(PyTypeObject) wrpy_Varinfo_Type;
-
-/// Check if an object is of wreport.Varinfo type or subtype
-#define wrpy_Varinfo_Check(ob) \
-    (Py_TYPE(ob) == &wrpy_Varinfo_Type || \
-     PyType_IsSubtype(Py_TYPE(ob), &wrpy_Varinfo_Type))
-
-
-/// wreport.Vartable python object
-typedef struct {
-    PyObject_HEAD
-    const wreport::Vartable* table;
-} wrpy_Vartable;
-
-/// wreport.Vartable python type
-PyAPI_DATA(PyTypeObject) wrpy_Vartable_Type;
-
-/// Check if an object is of wreport.Vartable type or subtype
-#define wrpy_Vartable_Check(ob) \
-    (Py_TYPE(ob) == &wrpy_Vartable_Type || \
-     PyType_IsSubtype(Py_TYPE(ob), &wrpy_Vartable_Type))
-
-
 /// wreport.Var python object
 typedef struct {
     PyObject_HEAD
@@ -48,13 +18,26 @@ typedef struct {
 } wrpy_Var;
 
 /// wreport.Var python type
-PyAPI_DATA(PyTypeObject) wrpy_Var_Type;
+extern PyTypeObject* wrpy_Var_Type;
+}
+#endif
 
-/// Check if an object is of wreport.Var type or subtype
-#define wrpy_Var_Check(ob) \
-    (Py_TYPE(ob) == &wrpy_Var_Type || \
-     PyType_IsSubtype(Py_TYPE(ob), &wrpy_Var_Type))
 
+#include <wreport/fwd.h>
+#include <string>
+
+#ifndef PyObject_HEAD
+// Forward-declare PyObjetc and PyTypeObject
+// see https://mail.python.org/pipermail/python-dev/2003-August/037601.html
+extern "C" {
+struct _object;
+typedef _object PyObject;
+struct _typeobject;
+typedef _typeobject PyTypeObject;
+}
+#endif
+
+extern "C" {
 
 /**
  * C++ functions exported by the wreport python bindings, to be used by other
@@ -67,23 +50,27 @@ PyAPI_DATA(PyTypeObject) wrpy_Var_Type;
  * 
  */
 struct wrpy_c_api {
+
+// API version 1.x
+
     /// Create a new unset wreport.Var object
+    // TODO: return PyObject* when we drop legacy support
     wrpy_Var* (*var_create)(const wreport::Varinfo&);
 
     /// Create a new wreport.Var object with an integer value
-    wrpy_Var* (*var_create_i)(const wreport::Varinfo&, int);
+    PyObject* (*var_create_i)(const wreport::Varinfo&, int);
 
     /// Create a new wreport.Var object with a double value
-    wrpy_Var* (*var_create_d)(const wreport::Varinfo&, double);
+    PyObject* (*var_create_d)(const wreport::Varinfo&, double);
 
     /// Create a new wreport.Var object with a C string value
-    wrpy_Var* (*var_create_c)(const wreport::Varinfo&, const char*);
+    PyObject* (*var_create_c)(const wreport::Varinfo&, const char*);
 
     /// Create a new wreport.Var object with a std::string value
-    wrpy_Var* (*var_create_s)(const wreport::Varinfo&, const std::string&);
+    PyObject* (*var_create_s)(const wreport::Varinfo&, const std::string&);
 
     /// Create a new wreport.Var object as a copy of an existing var
-    wrpy_Var* (*var_create_copy)(const wreport::Var&);
+    PyObject* (*var_create_copy)(const wreport::Var&);
 
     /// Read the value of a variable as a new Python object
     PyObject* (*var_value_to_python)(const wreport::Var&);
@@ -92,10 +79,10 @@ struct wrpy_c_api {
     int (*var_value_from_python)(PyObject* o, wreport::Var&);
 
     /// Create a wreport.Varinfo object from a C++ Varinfo
-    wrpy_Varinfo* (*varinfo_create)(wreport::Varinfo);
+    PyObject* (*varinfo_create)(wreport::Varinfo);
 
     /// Create a wreport:Vartable object from a C++ Vartable
-    wrpy_Vartable* (*vartable_create)(const wreport::Vartable*);
+    PyObject* (*vartable_create)(const wreport::Vartable*);
 
     /// C API major version (updated on incompatible changes)
     unsigned version_major;
@@ -111,6 +98,17 @@ struct wrpy_c_api {
 
     /// Var type
     PyTypeObject* var_type;
+
+// API version 1.1
+
+    /// Create a new wreport.Var object, moving an existing var
+    PyObject* (*var_create_move)(wreport::Var&&);
+
+    /// Return the variable for a wreport.Var object
+    wreport:: Var* (*var)(PyObject* o);
+
+    /// Create a new wreport.Var object with the value from another variable
+    PyObject* (*var_create_v)(const wreport::Varinfo&, const wreport::Var&);
 };
 
 }
