@@ -7,6 +7,7 @@
 
 extern "C" {
 
+#ifndef WREPORT_3_21_COMPAT
 /// wreport.Var python object
 typedef struct {
     PyObject_HEAD
@@ -15,6 +16,7 @@ typedef struct {
 
 /// wreport.Var python type
 extern PyTypeObject* wrpy_Var_Type;
+#endif
 
 /// Check if an object is of wreport.Var type or subtype
 #define wrpy_Var_Check(ob) \

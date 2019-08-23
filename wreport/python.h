@@ -1,6 +1,28 @@
 #ifndef WREPORT_PYTHON_H
 #define WREPORT_PYTHON_H
 
+#define WREPORT_3_21_COMPAT
+
+#ifdef WREPORT_3_21_COMPAT
+// TODO: remove when DB-All.e as deployed does not need this anymore
+#include <wreport/var.h>
+
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
+extern "C" {
+/// wreport.Var python object
+typedef struct {
+    PyObject_HEAD
+    wreport::Var var;
+} wrpy_Var;
+
+/// wreport.Var python type
+extern PyTypeObject* wrpy_Var_Type;
+}
+#endif
+
+
 #include <wreport/fwd.h>
 #include <string>
 
@@ -32,7 +54,8 @@ struct wrpy_c_api {
 // API version 1.x
 
     /// Create a new unset wreport.Var object
-    PyObject* (*var_create)(const wreport::Varinfo&);
+    // TODO: return PyObject* when we drop legacy support
+    wrpy_Var* (*var_create)(const wreport::Varinfo&);
 
     /// Create a new wreport.Var object with an integer value
     PyObject* (*var_create_i)(const wreport::Varinfo&, int);

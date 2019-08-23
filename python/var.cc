@@ -13,12 +13,13 @@ extern "C" {
 
 PyTypeObject* wrpy_Var_Type = nullptr;
 
-static PyObject* wrpy_var_create(const wreport::Varinfo& v)
+// TODO: return PyObject* when we remove legacy support
+static wrpy_Var* wrpy_var_create(const wreport::Varinfo& v)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
     if (!result) return nullptr;
     new (&result->var) Var(v);
-    return (PyObject*)result;
+    return result;
 }
 
 static PyObject* wrpy_var_create_i(const wreport::Varinfo& v, int val)
@@ -468,7 +469,7 @@ VarDef* var_def = nullptr;
 namespace wreport {
 namespace python {
 
-PyObject* var_create(const wreport::Varinfo& v) { return wrpy_var_create(v); }
+PyObject* var_create(const wreport::Varinfo& v) { return (PyObject*)wrpy_var_create(v); }
 PyObject* var_create(const wreport::Varinfo& v, int val) { return wrpy_var_create_i(v, val); }
 PyObject* var_create(const wreport::Varinfo& v, double val) { return wrpy_var_create_d(v, val); }
 PyObject* var_create(const wreport::Varinfo& v, const char* val) { return wrpy_var_create_c(v, val); }
