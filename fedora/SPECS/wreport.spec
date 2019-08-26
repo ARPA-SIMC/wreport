@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.21
+Version: 3.22
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -181,6 +181,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Mon Aug 26 2019 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.22-1
+- Ported python bindings to wobblepy
+
 * Wed Jun 5 2019 Daniele Branchini <dbranchini@arpae.it> - 3.21-1
 - Implemented python bindings to iterate over attributes of variables (#27)
 - removed python2 bindings and package
