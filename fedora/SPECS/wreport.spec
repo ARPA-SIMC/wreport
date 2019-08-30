@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.22
+Version: 3.23
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -181,6 +181,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Fri Aug 30 2019 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.23-1
+- Fix 32 bit builds
+
 * Mon Aug 26 2019 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.22-1
 - Ported python bindings to wobblepy
 
