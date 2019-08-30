@@ -6,7 +6,7 @@ Build-Depends:
   debhelper (>= 10), dh-buildinfo, dh-python,
   doxygen, pkg-config,
   liblua5.1-0-dev,
-  python3-all-dev, python-docutils
+  python3-all-dev, python3-docutils
 Standards-Version: 4.1.5
 Rules-Requires-Root: no
 Homepage: https://github.com/ARPA-SIMC/wreport

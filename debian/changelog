@@ -1,3 +1,11 @@
+wreport (3.23-1) unstable; urgency=medium
+
+  * New upstream version
+     - Fixed build on 32bit machines
+  * Depend on python3-docutils instead of python-docutils. Closes: #938832
+
+ -- Enrico Zini <enrico@debian.org>  Fri, 30 Aug 2019 18:53:13 +0200
+
 wreport (3.22-1) unstable; urgency=medium
 
   * New upstream version
