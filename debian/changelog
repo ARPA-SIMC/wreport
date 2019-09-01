@@ -1,3 +1,9 @@
+wreport (3.23-2) unstable; urgency=medium
+
+  * Added missing liblua5.1-0-dev dependency on libwreport-dev
+
+ -- Enrico Zini <enrico@debian.org>  Sun, 01 Sep 2019 07:55:59 +0200
+
 wreport (3.23-1) unstable; urgency=medium
 
   * New upstream version

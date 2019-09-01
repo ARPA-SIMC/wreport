@@ -15,7 +15,7 @@ Vcs-Git: https://github.com/ARPA-SIMC/wreport.git
 Package: libwreport-dev
 Section: libdevel
 Architecture: any
-Depends: libwreport3 (= ${binary:Version}), ${misc:Depends}
+Depends: libwreport3 (= ${binary:Version}), liblua5.1-0-dev, ${misc:Depends}
 Recommends: pkg-config
 Description: library for working with weather reports
  libwreport is a C++ library for working with weather reports.
