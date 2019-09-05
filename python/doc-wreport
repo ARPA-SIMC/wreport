@@ -1,25 +1,20 @@
 #!/usr/bin/python
-# coding: utf-8
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import os
-os.environ["WREPORT_BUILDING_DOCS"] = "true"
-
 import sys
 import inspect
+os.environ["WREPORT_BUILDING_DOCS"] = "true" # noqa
 import wreport
+
 
 def print_indented(spaces, *args):
     "Print a string, indented by the given number of spaces"
     for s in args:
         for line in s.split("\n"):
-            for i in range(1,spaces):
+            for i in range(1, spaces):
                 sys.stdout.write(" ")
             sys.stdout.write(line)
             sys.stdout.write("\n")
+
 
 def document_class(cls):
     name = cls.__name__
@@ -33,8 +28,10 @@ def document_class(cls):
     print("```````")
     document_members(cls)
 
+
 def document(obj):
-    if obj.__doc__ == None: return
+    if obj.__doc__ is None:
+        return
 
     if inspect.ismodule(obj):
         print_indented(0, inspect.getdoc(obj))
@@ -47,6 +44,7 @@ def document(obj):
         print_indented(2, obj.__name__)
         print_indented(4, inspect.getdoc(obj))
 
+
 def format_argspec(f):
     # TODO: if formatargspec gives nothing (what is nothing?) then look at the
     # first line of the docstring
@@ -55,13 +53,15 @@ def format_argspec(f):
     else:
         return ""
 
+
 def document_members(cls):
     # List and classify members
     member_vars = []
     member_funcs = []
 
     for name, m in inspect.getmembers(cls):
-        if name[0] == '_': continue
+        if name[0] == '_':
+            continue
         fullname = cls.__name__ + "." + name
         if inspect.isroutine(m) and inspect.isfunction(m):
             member_funcs.append((fullname, name, m))

@@ -4,7 +4,7 @@ TESTS_ENVIRONMENT = $(top_srcdir)/testenv
 
 #export PYTHONPATH=.
 
-python_tests = test-varinfo.py test-vartable.py test-var.py
+python_tests = test-varinfo.py test-vartable.py test-var.py test-wreport.py
 
 pythonincludedir = $(includedir)/wreport/python
 EXTRA_DIST = \

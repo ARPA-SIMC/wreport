@@ -3,6 +3,8 @@
 #include "varinfo.h"
 #include "var.h"
 #include "utils/methods.h"
+#include "utils/values.h"
+#include "wreport/conv.h"
 
 using namespace std;
 using namespace wreport;
@@ -10,7 +12,31 @@ using namespace wreport::python;
 
 namespace {
 
-Methods<> methods;
+struct convert_units : public MethKwargs<convert_units, PyObject>
+{
+    constexpr static const char* name = "convert_units";
+    constexpr static const char* signature = "from_unit: str, to_unit: str, value: float";
+    constexpr static const char* returns = "float";
+    constexpr static const char* summary = "convert a value from a unit to another, as understood by wreport";
+    constexpr static const char* doc = nullptr;
+
+    static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
+    {
+        static const char* kwlist[] = { "from_unit", "to_unit", "value", nullptr };
+        const char* from_unit = nullptr;
+        const char* to_unit = nullptr;
+        double value;
+        if (!PyArg_ParseTupleAndKeywords(args, kw, "ssd", const_cast<char**>(kwlist),
+                    &from_unit, &to_unit, &value))
+            return nullptr;
+
+        try {
+            return to_python(wreport::convert_units(from_unit, to_unit, value));
+        } WREPORT_CATCH_RETURN_PYO;
+    }
+};
+
+Methods<convert_units> methods;
 
 }
 
