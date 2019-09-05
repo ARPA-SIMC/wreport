@@ -42,6 +42,8 @@ struct load_bufr : public ClassMethKwargs<load_bufr>
     constexpr static const char* summary = R"(
 Load BUFR information from a Table B file and return it as a
 wreport.Vartable.
+
+:arg pathname: pathname of the file to load
 )";
 
     static PyObject* run(PyTypeObject* cls, PyObject* args, PyObject* kw)
@@ -64,6 +66,8 @@ struct load_crex : public ClassMethKwargs<load_crex>
     constexpr static const char* summary = R"(
 Load CREX information from a Table B file and return it as a
 wreport.Vartable.
+
+:arg pathname: pathname of the file to load
 )";
 
     static PyObject* run(PyTypeObject* cls, PyObject* args, PyObject* kw)
@@ -91,6 +95,13 @@ information from it.
 )";
     constexpr static const char* doc = R"(
 You need to provide either basename or master_table_version_number.
+
+:arg basename: load the table with the given name in ``/usr/share/wreport/``
+:arg originating_centre: originating centre for the table data
+:arg originating_subcentre: originating subcentre for the table data
+:arg master_table_number: master table number for the table data
+:arg master_table_version_number: master table version number for the table data
+:arg master_table_version_number_local: local master table version number for the table data
 )";
 
     static PyObject* run(PyTypeObject* cls, PyObject* args, PyObject* kw)
@@ -147,6 +158,15 @@ information from it.
     constexpr static const char* doc = R"(
 You need to provide either basename or master_table_version_number
 or master_table_version_number_bufr.
+
+:arg basename: load the table with the given name in ``/usr/share/wreport/``
+:arg edition_number: edition number for the table data
+:arg originating_centre: originating centre for the table data
+:arg originating_subcentre: originating subcentre for the table data
+:arg master_table_number: master table number for the table data
+:arg master_table_version_number: master table version number for the table data
+:arg master_table_version_number_bufr: BUFR master table version number for the table data
+:arg master_table_version_number_local: local master table version number for the table data
 )";
 
     static PyObject* run(PyTypeObject* cls, PyObject* args, PyObject* kw)
@@ -202,11 +222,10 @@ struct VartableDef : public Type<VartableDef, wrpy_Vartable>
     constexpr static const char* doc = R"(
 Collection of Varinfo objects indexed by WMO BUFR/CREX table B code.
 
-A Vartable is instantiated by the name (without extension) of the table
-file installed in wreport's data directory (normally,
-``/usr/share/wreport/``)::
+A Vartable is instantiated by one of the :meth:`get_bufr`, :meth:`get_crex`,
+:meth:`load_bufr`, :meth:`load_crex` class methods::
 
-    table = wreport.Vartable("B0000000000000023000")
+    table = wreport.Vartable.get_bufr(master_table_version_number=23)
     print(table["B12101"].desc)
 
     for i in table:
