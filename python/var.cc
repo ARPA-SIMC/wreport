@@ -347,10 +347,10 @@ struct VarDef : public Type<VarDef, wrpy_Var>
     constexpr static const char* qual_name = "wreport.Var";
     constexpr static const char* doc = R"(
 Var holds a measured value, which can be integer, float or string, and
-a `wreport.Varinfo`_ with all available information (description, unit,
+a :class:`Varinfo` with all available information (description, unit,
 precision, ...) related to it.
 
-Var objects can be created from a `wreport.Varinfo`_ object, and an
+Var objects can be created from a :class:`Varinfo` object, and an
 optional value. Omitting the value creates an unset variable.
 
 Examples::
