@@ -137,9 +137,6 @@ then
 fi
 AM_CONDITIONAL([PYTHON], [test x"$enable_python" = x"yes"])
 
-AC_CHECK_PROG(have_rst2html, rst2html, yes, no)
-AM_CONDITIONAL([HAVE_RST2HTML], [test x$have_rst2html = xyes])
-
 LIBS="$LIBS -lm"
 
 confdir='${sysconfdir}'"/$PACKAGE"
@@ -215,6 +212,5 @@ AC_MSG_NOTICE([
 $PACKAGE_NAME-$PACKAGE_VERSION configuration:
 AS_HELP_STRING([lua:], [$have_lua])
 AS_HELP_STRING([python:], [$enable_python])
-AS_HELP_STRING([rst2html:], [$have_rst2html])
 AS_HELP_STRING([documentation:], [$enable_docs])
 ===================================================])
