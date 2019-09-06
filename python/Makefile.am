@@ -35,10 +35,8 @@ _wreport_la_CPPFLAGS = $(PYTHON_CFLAGS)
 _wreport_la_LDFLAGS = -module -avoid-version -export-symbols-regex init_wreport
 _wreport_la_LIBADD = ../wreport/libwreport.la
 
-noinst_DATA =
 if HAVE_SPHINX
-noinst_DATA += apidocs
-endif
+noinst_DATA = apidocs
 
 install-data-hook:
 	cp -r "$(builddir)/apidocs" "$(docdir)/python"
@@ -48,6 +46,8 @@ install-data-hook:
 apidocs: _wreport.so doc/index.rst doc/wreport.rst
 	rm -rf $@
 	$(top_srcdir)/run-local sphinx-build -b html doc $@
+
+endif
 
 _wreport.so: _wreport.la
 	ln -fs .libs/_wreport.so $@
