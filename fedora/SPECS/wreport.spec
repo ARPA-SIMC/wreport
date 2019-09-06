@@ -176,8 +176,7 @@ make install DESTDIR="%{buildroot}"
 %exclude %{python3_sitearch}/*.la
 %{python3_sitearch}/*.so*
 
-%doc %{_docdir}/wreport/python-wreport.html
-%doc %{_docdir}/wreport/python-wreport.rst
+%doc %{_docdir}/wreport/python
 
 
 %changelog
