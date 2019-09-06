@@ -1,9 +1,6 @@
 wreport package
 ===============
 
-Subpackages
------------
-
 .. toctree::
     :maxdepth: 2
 

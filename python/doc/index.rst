@@ -13,6 +13,7 @@ Welcome to wreport's documentation!
    wreport
 
 
+
 Indices and tables
 ==================
 

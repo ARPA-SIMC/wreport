@@ -137,6 +137,9 @@ then
 fi
 AM_CONDITIONAL([PYTHON], [test x"$enable_python" = x"yes"])
 
+AC_CHECK_PROG(have_sphinx, sphinx-build, yes, no)
+AM_CONDITIONAL([HAVE_SPHINX], [test x$have_sphinx = xyes])
+
 LIBS="$LIBS -lm"
 
 confdir='${sysconfdir}'"/$PACKAGE"
@@ -213,4 +216,5 @@ $PACKAGE_NAME-$PACKAGE_VERSION configuration:
 AS_HELP_STRING([lua:], [$have_lua])
 AS_HELP_STRING([python:], [$enable_python])
 AS_HELP_STRING([documentation:], [$enable_docs])
+AS_HELP_STRING([sphinx:], [$have_sphinx])
 ===================================================])
