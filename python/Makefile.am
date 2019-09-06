@@ -39,9 +39,11 @@ if HAVE_SPHINX
 noinst_DATA = apidocs
 
 install-data-hook:
-	cp -r "$(builddir)/apidocs" "$(docdir)/python"
-	-chown -R root:root "$(docdir)/python"
-	chmod u=rwX,g=rX,o=rX "$(docdir)/python"
+	rm -rf "$(DESTDIR)$(docdir)/python"
+	install -d "$(DESTDIR)$(docdir)/python"
+	tar -C "$(builddir)/apidocs" --exclude='*/.*' -cf - . | tar -C "$(DESTDIR)$(docdir)/python" -xf -
+	-chown -R root:root "$(DESTDIR)$(docdir)/python"
+	chmod u=rwX,g=rX,o=rX "$(DESTDIR)$(docdir)/python"
 
 apidocs: _wreport.so doc/index.rst doc/wreport.rst
 	rm -rf $@
