@@ -22,7 +22,7 @@ BuildRequires: libtool
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
-BuildRequires: %{python3_vers}-six
+BuildRequires: %{python3_vers}-sphinx
 BuildRequires: /usr/bin/rst2html
 
 Summary: Tools for working with weather reports
