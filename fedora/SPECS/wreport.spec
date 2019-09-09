@@ -180,7 +180,7 @@ make install DESTDIR="%{buildroot}"
 
 %if ! 0%{?el7}
 %doc %{_docdir}/wreport/python
-$endif
+%endif
 
 
 %changelog
