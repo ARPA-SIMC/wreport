@@ -153,7 +153,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'wreport', 'wreport Documentation',
-     author, 'wreport', 'One line description of project.',
+     author, 'wreport', 'library for working with weather reports.',
      'Miscellaneous'),
 ]
 
