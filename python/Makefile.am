@@ -47,7 +47,7 @@ install-data-hook:
 
 apidocs: _wreport.so doc/index.rst doc/wreport.rst
 	rm -rf $@
-	$(top_srcdir)/run-local sphinx-build -b html doc $@
+	$(top_srcdir)/run-local $(SPHINX_BUILD) -b html doc $@
 
 endif
 

@@ -137,7 +137,14 @@ then
 fi
 AM_CONDITIONAL([PYTHON], [test x"$enable_python" = x"yes"])
 
-AC_CHECK_PROG(have_sphinx, sphinx-build, yes, no)
+AC_CHECK_PROGS(SPHINX_BUILD, [sphinx-build sphinx-build-3 sphinx-build-3.6], [no])
+if test $SPHINX_BUILD = no
+then
+    have_sphinx=no
+else
+    have_sphinx=yes
+    AC_SUBST(SPHINX_BUILD)
+fi
 AM_CONDITIONAL([HAVE_SPHINX], [test x$have_sphinx = xyes])
 
 LIBS="$LIBS -lm"
