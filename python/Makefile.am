@@ -16,7 +16,10 @@ EXTRA_DIST = \
     common.h \
     vartable.h \
     varinfo.h \
-    var.h
+    var.h \
+    doc/conf.py \
+    doc/index.rst \
+    doc/wreport.rst
 
 pkgpython_PYTHON = wreport/__init__.py
 
