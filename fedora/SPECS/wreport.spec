@@ -22,7 +22,9 @@ BuildRequires: libtool
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
-BuildRequires: %{python3_vers}-six
+%if ! 0%{?el7}
+BuildRequires: %{python3_vers}-sphinx
+%endif
 BuildRequires: /usr/bin/rst2html
 
 Summary: Tools for working with weather reports
@@ -176,8 +178,9 @@ make install DESTDIR="%{buildroot}"
 %exclude %{python3_sitearch}/*.la
 %{python3_sitearch}/*.so*
 
-%doc %{_docdir}/wreport/python-wreport.html
-%doc %{_docdir}/wreport/python-wreport.rst
+%if ! 0%{?el7}
+%doc %{_docdir}/wreport/python
+%endif
 
 
 %changelog

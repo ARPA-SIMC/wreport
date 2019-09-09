@@ -347,10 +347,10 @@ struct VarDef : public Type<VarDef, wrpy_Var>
     constexpr static const char* qual_name = "wreport.Var";
     constexpr static const char* doc = R"(
 Var holds a measured value, which can be integer, float or string, and
-a `wreport.Varinfo`_ with all available information (description, unit,
+a :class:`Varinfo` with all available information (description, unit,
 precision, ...) related to it.
 
-Var objects can be created from a `wreport.Varinfo`_ object, and an
+Var objects can be created from a :class:`Varinfo` object, and an
 optional value. Omitting the value creates an unset variable.
 
 Examples::
@@ -358,15 +358,21 @@ Examples::
     v = wreport.Var(table["B12101"], 32.5)
     # v.info returns detailed informations about the variable in a Varinfo object.
     print("%s: %s %s %s" % (v.code, str(v), v.info.unit, v.info.desc))
+
+**Constructor**: Var(varinfo: Union[wreport.Varinfo, wreport.Var], value: Union[str, int, float] = None)
+
+:arg varinfo: :class:`Varinfo` or :class:`Var` to use to create the variable
+:arg value: value for the variable
 )";
     GetSetters<code, isset, info> getsetters;
     Methods<enqi, enqd, enqc, enq, enqa, seta, unseta, get_attrs, get, format> methods;
 
     static int _init(Impl* self, PyObject* args, PyObject* kw)
     {
+        static const char* kwlist[] = { "varinfo", "value", nullptr };
         PyObject* varinfo_or_var = nullptr;
         PyObject* val = nullptr;
-        if (!PyArg_ParseTuple(args, "O|O", &varinfo_or_var, &val))
+        if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", const_cast<char**>(kwlist), &varinfo_or_var, &val))
             return -1;
 
         try {

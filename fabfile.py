@@ -2,17 +2,19 @@ from __future__ import print_function
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import unicode_literals
-from fabric.api import local, run, sudo, cd, env, hosts, shell_env
-from fabric.contrib.files import exists
+from fabric.api import local, run, cd, env, hosts
 import git
 import re
-from six.moves import shlex_quote
+import shlex
+
 
 env.hosts = ["venti", "ventiquattro"]
 env.use_ssh_config = True
 
+
 def cmd(*args):
-    return " ".join(shlex_quote(a) for a in args)
+    return " ".join(shlex.quote(a) for a in args)
+
 
 @hosts("venti")
 def test_venti():
@@ -53,6 +55,7 @@ def test_venti():
                 "LDFLAGS=" + fedora_ldflags))
         run(cmd("make"))
         run(cmd("make", "check"))
+
 
 @hosts("ventiquattro")
 def test_ventiquattro():

@@ -8,7 +8,6 @@ python_tests = test-varinfo.py test-vartable.py test-var.py test-wreport.py
 
 pythonincludedir = $(includedir)/wreport/python
 EXTRA_DIST = \
-    doc-wreport \
     utils/core.h \
     utils/dict.h \
     utils/methods.h \
@@ -17,7 +16,10 @@ EXTRA_DIST = \
     common.h \
     vartable.h \
     varinfo.h \
-    var.h
+    var.h \
+    doc/conf.py \
+    doc/index.rst \
+    doc/wreport.rst
 
 pkgpython_PYTHON = wreport/__init__.py
 
@@ -36,24 +38,29 @@ _wreport_la_CPPFLAGS = $(PYTHON_CFLAGS)
 _wreport_la_LDFLAGS = -module -avoid-version -export-symbols-regex init_wreport
 _wreport_la_LIBADD = ../wreport/libwreport.la
 
-doc_DATA = python-wreport.rst
+if HAVE_SPHINX
+noinst_DATA = apidocs
 
-if HAVE_RST2HTML
-doc_DATA += python-wreport.html
+install-data-hook:
+	rm -rf "$(DESTDIR)$(docdir)/python"
+	install -d "$(DESTDIR)$(docdir)/python"
+	tar -C "$(builddir)/apidocs" --exclude='*/.*' -cf - . | tar -C "$(DESTDIR)$(docdir)/python" -xf -
+	-chown -R root:root "$(DESTDIR)$(docdir)/python"
+	chmod u=rwX,g=rX,o=rX "$(DESTDIR)$(docdir)/python"
+
+apidocs: _wreport.so doc/index.rst doc/wreport.rst
+	rm -rf $@
+	$(top_srcdir)/run-local $(SPHINX_BUILD) -b html doc $@
+
 endif
 
 _wreport.so: _wreport.la
 	ln -fs .libs/_wreport.so $@
 
-python-wreport.rst: doc-wreport $(pkgpython_PYTHON) _wreport.so
-	$(PYTHON) $(srcdir)/doc-wreport > $@ || (rm -f $@; false)
-
-python-wreport.html: python-wreport.rst
-	rst2html $< > $@ || (rm -f $@; false)
-
 clean-local:
 	rm -f *.pyc wreport/*.pyc _wreport.so
 	rm -rf __pycache__ wreport/__pycache__
+	rm -rf apidocs
 
 EXTRA_DIST += testlib.py $(python_tests)
 
@@ -63,5 +70,3 @@ check-local: _wreport.so
 	for test in $(python_tests); do \
 		PYTHON="$(PYTHON)" $(TESTS_ENVIRONMENT) $$test ; \
 	done
-
-CLEANFILES = python-wreport.rst python-wreport.html

@@ -139,7 +139,7 @@ Varinfo object holds all possible information about a variable, such as its
 measurement unit, description and number of significant digits.
 
 Varinfo objects cannot be instantiated directly, and are created by
-querying `wreport.Vartable`_ objects.
+querying :class:`Vartable` objects.
 )";
     GetSetters<type, code, len, unit, desc, scale, bit_ref, bit_len> getsetters;
     Methods<> methods;

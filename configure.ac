@@ -137,8 +137,15 @@ then
 fi
 AM_CONDITIONAL([PYTHON], [test x"$enable_python" = x"yes"])
 
-AC_CHECK_PROG(have_rst2html, rst2html, yes, no)
-AM_CONDITIONAL([HAVE_RST2HTML], [test x$have_rst2html = xyes])
+AC_CHECK_PROGS(SPHINX_BUILD, [sphinx-build sphinx-build-3 sphinx-build-3.6], [no])
+if test $SPHINX_BUILD = no
+then
+    have_sphinx=no
+else
+    have_sphinx=yes
+    AC_SUBST(SPHINX_BUILD)
+fi
+AM_CONDITIONAL([HAVE_SPHINX], [test x$have_sphinx = xyes])
 
 LIBS="$LIBS -lm"
 
@@ -215,6 +222,6 @@ AC_MSG_NOTICE([
 $PACKAGE_NAME-$PACKAGE_VERSION configuration:
 AS_HELP_STRING([lua:], [$have_lua])
 AS_HELP_STRING([python:], [$enable_python])
-AS_HELP_STRING([rst2html:], [$have_rst2html])
 AS_HELP_STRING([documentation:], [$enable_docs])
+AS_HELP_STRING([sphinx:], [$have_sphinx])
 ===================================================])
