@@ -72,17 +72,6 @@ AC_CHECK_FUNC(getopt_long, [
 	AC_DEFINE([HAS_GETOPT_LONG], 1, [we can use long options])
 ])
 
-if test x$enable_docs = xyes
-then
-	dnl Check for doxygen
-	AC_CHECK_PROG(have_doxygen, doxygen, true)
-	if test x$have_doxygen != xtrue
-	then
-		AC_MSG_WARN([doxygen was not found: documentation will not be built])
-		enable_docs=no
-	fi
-fi
-
 PKGCONFIG_LIBS="-lm"
 PKGCONFIG_REQUIRES=""
 AC_SUBST(PKGCONFIG_LIBS)
@@ -137,15 +126,25 @@ then
 fi
 AM_CONDITIONAL([PYTHON], [test x"$enable_python" = x"yes"])
 
-AC_CHECK_PROGS(SPHINX_BUILD, [sphinx-build sphinx-build-3 sphinx-build-3.6], [no])
-if test $SPHINX_BUILD = no
+if test x$enable_docs = xyes
 then
-    have_sphinx=no
-else
-    have_sphinx=yes
-    AC_SUBST(SPHINX_BUILD)
+    dnl Check for doxygen
+    AC_CHECK_PROGS(DOXYGEN, [doxygen], [no])
+    if test $DOXYGEN = no
+    then
+        AC_MSG_WARN([doxygen was not found: documentation will not be built])
+        enable_docs=no
+    fi
+
+    AC_CHECK_PROGS(SPHINX_BUILD, [sphinx-build sphinx-build-3 sphinx-build-3.6], [no])
+    if test $SPHINX_BUILD = no
+    then
+        enable_docs=no
+    fi
 fi
-AM_CONDITIONAL([HAVE_SPHINX], [test x$have_sphinx = xyes])
+
+AC_SUBST(DOXYGEN)
+AC_SUBST(SPHINX_BUILD)
 
 LIBS="$LIBS -lm"
 
@@ -223,5 +222,4 @@ $PACKAGE_NAME-$PACKAGE_VERSION configuration:
 AS_HELP_STRING([lua:], [$have_lua])
 AS_HELP_STRING([python:], [$enable_python])
 AS_HELP_STRING([documentation:], [$enable_docs])
-AS_HELP_STRING([sphinx:], [$have_sphinx])
 ===================================================])
