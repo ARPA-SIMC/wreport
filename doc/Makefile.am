@@ -40,4 +40,4 @@ EXTRA_DIST = libwreport.dox examples 20160914-american-fuzzy-lop.txt
 CLEANFILES = libwreport.doxytags
 
 clean-local:
-	rm -rf apidocs
+	rm -rf apidocs xml
