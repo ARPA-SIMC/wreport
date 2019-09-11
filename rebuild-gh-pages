@@ -48,7 +48,7 @@ class Builder:
                 shutil.rmtree(pathname)
             else:
                 os.unlink(pathname)
-        # Add the python documentation
+        # Add the actual documentation
         for fn in os.listdir(built_pages):
             src = os.path.join(built_pages, fn)
             dst = os.path.join(self.pagesdir, fn)
