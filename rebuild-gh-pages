@@ -29,7 +29,7 @@ class Builder:
 
     def build_docs(self):
         log.info("Creating documentation from master branch")
-        run(self.workdir, ["git", "clone", "-b", "master", self.srcdir, "build"])
+        run(self.workdir, ["git", "clone", "-o", "local", "-b", "master", self.srcdir, "build"])
         run(self.builddir, ["autoreconf", "-ifv"])
         run(self.builddir, ["./configure"])
         run(self.builddir, ["make", "-j{}".format(multiprocessing.cpu_count())])
@@ -37,7 +37,10 @@ class Builder:
     def publish(self, built_pages):
         log.info("Updating gh-pages branch")
         ref = self.src_repo.refs["origin/gh-pages"].commit.hexsha
-        run(self.workdir, ["git", "clone", self.srcdir, "pages"])
+        run(self.workdir, ["git", "clone", "-o", "local", self.srcdir, "pages"])
+        pages_repo = git.Repo(self.pagesdir)
+        push_url = self.src_repo.remotes["origin"].config_reader.get("url")
+        pages_repo.create_remote("origin", push_url)
         run(self.pagesdir, ["git", "checkout", "-b", "gh-pages", ref])
         # Remove all checked out content
         for fn in os.listdir(self.pagesdir):
