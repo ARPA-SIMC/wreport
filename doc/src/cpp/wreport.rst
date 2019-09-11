@@ -5,6 +5,8 @@ C++ wreport namespace
     :maxdepth: 2
 
     errors
+    conv
+    var
 
 
 Namespace contents

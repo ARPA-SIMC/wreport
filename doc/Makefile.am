@@ -8,7 +8,9 @@ sphinx_doc_sources = \
     src/index.rst \
     src/python/wreport.rst \
     src/cpp/wreport.rst \
-    src/cpp/errors.rst
+    src/cpp/errors.rst \
+    src/cpp/conv.rst \
+    src/cpp/var.rst
 
 doc_DATA =
 noinst_DATA =

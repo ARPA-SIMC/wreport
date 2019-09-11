@@ -10,8 +10,9 @@ namespace wreport {
 /**
  * BUFR/CREX table D with Dxxyyy aggregate code expansions
  */
-struct DTable
+class DTable
 {
+public:
     virtual ~DTable();
 
     /// Return the pathname of the file from which this table has been loaded
