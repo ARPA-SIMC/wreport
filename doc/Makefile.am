@@ -6,7 +6,9 @@ cdoxdeps = libwreport.dox \
 sphinx_doc_sources = \
     src/conf.py \
     src/index.rst \
-    src/wreport.rst
+    src/python/wreport.rst \
+    src/cpp/wreport.rst \
+    src/cpp/errors.rst
 
 doc_DATA =
 noinst_DATA =

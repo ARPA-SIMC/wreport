@@ -27,8 +27,9 @@ struct DTable;
  * Extra values like quality control statistics or replaced values are
  * represented as 'attributes' to the wreport::Var objects.
  */
-struct Bulletin
+class Bulletin
 {
+public:
     /**
      * Input file name (optional).
      *
@@ -99,20 +100,18 @@ struct Bulletin
      */
     uint8_t update_sequence_number = 0;
 
-    /**
-     * Most typical time for the BUFR message contents.
-     *
-     * When accuracy of the time does not define a time unit, then the value
-     * for this unit shall be set to zero (e.g. for a SYNOP observation at 09
-     * UTC, minute = 0, second = 0).
-     * @{ */
+    /// Reference year in bulletin header
     uint16_t rep_year = 0;
+    /// Reference month in bulletin header
     uint8_t rep_month = 0;
+    /// Reference day in bulletin header
     uint8_t rep_day = 0;
+    /// Reference hour in bulletin header
     uint8_t rep_hour = 0;
+    /// Reference minute in bulletin header
     uint8_t rep_minute = 0;
+    /// Reference second in bulletin header
     uint8_t rep_second = 0;
-    /** @} */
 
     /// Varcode and opcode tables used for encoding or decoding
     Tables tables;

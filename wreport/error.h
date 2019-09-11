@@ -21,31 +21,31 @@ namespace wreport {
 enum ErrorCode {
     /// No error
     WR_ERR_NONE                 =  0,
-    // Item not found
+    /// Item not found
     WR_ERR_NOTFOUND             =  1,
-    // Wrong variable type
+    /// Wrong variable type
     WR_ERR_TYPE                 =  2,
-    // Cannot allocate memory
+    /// Cannot allocate memory
     WR_ERR_ALLOC                =  3,
-    // ODBC error
+    /// ODBC error
     WR_ERR_ODBC                 =  4,
-    // Handle management error
+    /// Handle management error
     WR_ERR_HANDLES              =  5,
-    // Buffer is too short to fit data
+    /// Buffer is too short to fit data
     WR_ERR_TOOLONG              =  6,
-    // Error reported by the system
+    /// Error reported by the system
     WR_ERR_SYSTEM               =  7,
-    // Consistency check failed
+    /// Consistency check failed
     WR_ERR_CONSISTENCY          =  8,
-    // Parse error
+    /// Parse error
     WR_ERR_PARSE                =  9,
-    // Write error
+    /// Write error
     WR_ERR_WRITE                = 10,
-    // Regular expression error
+    /// Regular expression error
     WR_ERR_REGEX                = 11,
-    // Feature not implemented
+    /// Feature not implemented
     WR_ERR_UNIMPLEMENTED        = 12,
-    // Value outside acceptable domain
+    /// Value outside acceptable domain
     WR_ERR_DOMAIN               = 13
 };
 
@@ -56,8 +56,9 @@ enum ErrorCode {
 #define WREPORT_THROWF_ATTRS(a, b) __attribute__ ((noreturn, format(printf, a, b)))
 
 /// Base class for DB-All.e exceptions
-struct error : public std::exception
+class error : public std::exception
 {
+public:
     /**
      * Exception-specific error code
      *
@@ -73,8 +74,9 @@ struct error : public std::exception
 };
 
 /// Reports that memory allocation has failed.
-struct error_alloc : public error
+class error_alloc : public error
 {
+public:
     /// error message returned by what()
     const char* msg;
 
@@ -95,8 +97,9 @@ struct error_alloc : public error
 
 namespace errors {
 template<ErrorCode ERROR_CODE>
-struct StringBase : public error
+class StringBase : public error
 {
+public:
     /// error message returned by what()
     std::string msg;
 
@@ -111,24 +114,26 @@ struct StringBase : public error
 }
 
 /// Reports that a search-like function could not find what was requested.
-struct error_notfound : public errors::StringBase<WR_ERR_NOTFOUND>
+class error_notfound : public errors::StringBase<WR_ERR_NOTFOUND>
 {
+public:
     using StringBase::StringBase;
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
+    /// Throw the exception, building the message printf-style
+    static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /**
  * For functions handling data with multiple types, reports a mismatch
  * between the type requested and the type found.
  */
-struct error_type : public errors::StringBase<WR_ERR_TYPE>
+class error_type : public errors::StringBase<WR_ERR_TYPE>
 {
+public:
     using StringBase::StringBase;
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
+    /// Throw the exception, building the message printf-style
+    static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /**
@@ -136,29 +141,32 @@ struct error_type : public errors::StringBase<WR_ERR_TYPE>
  * such as impossibility to allocate a new one, or an invalid handle being
  * passed to the function.
  */
-struct error_handles : public errors::StringBase<WR_ERR_HANDLES>
+class error_handles : public errors::StringBase<WR_ERR_HANDLES>
 {
+public:
     using StringBase::StringBase;
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
+    /// Throw the exception, building the message printf-style
+    static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /// Report an error with a buffer being to short for the data it needs to fit.
-struct error_toolong : public errors::StringBase<WR_ERR_TOOLONG>
+class error_toolong : public errors::StringBase<WR_ERR_TOOLONG>
 {
+public:
     using StringBase::StringBase;
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
+    /// Throw the exception, building the message printf-style
+    static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /**
  * Report a system error message.  The message description will be looked up
  * using the current value of errno.
  */
-struct error_system : public errors::StringBase<WR_ERR_SYSTEM>
+class error_system : public errors::StringBase<WR_ERR_SYSTEM>
 {
+public:
     /**
      * Create an exception taking further information from errno.
      *
@@ -175,22 +183,24 @@ struct error_system : public errors::StringBase<WR_ERR_SYSTEM>
      */
     error_system(const std::string& msg, int errno_val);
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
+    /// Throw the exception, building the message printf-style
+    static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /// Report an error when a consistency check failed.
-struct error_consistency : public errors::StringBase<WR_ERR_CONSISTENCY>
+class error_consistency : public errors::StringBase<WR_ERR_CONSISTENCY>
 {
+public:
     using StringBase::StringBase;
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
+    /// Throw the exception, building the message printf-style
+    static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /// Report an error when parsing informations.
-struct error_parse : public errors::StringBase<WR_ERR_PARSE>
+class error_parse : public errors::StringBase<WR_ERR_PARSE>
 {
+public:
     using StringBase::StringBase;
 
     /**
@@ -203,13 +213,14 @@ struct error_parse : public errors::StringBase<WR_ERR_PARSE>
      */
     error_parse(const char* file, int line, const std::string& msg);
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(const char* file, int line, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4);
+    /// Throw the exception, building the message printf-style
+    static void throwf(const char* file, int line, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4);
 };
 
 /// Report an error while handling regular expressions
-struct error_regexp : public errors::StringBase<WR_ERR_REGEX>
+class error_regexp : public errors::StringBase<WR_ERR_REGEX>
 {
+public:
     /**
      * @param code
      *   The error code returned by the regular expression functions.
@@ -221,26 +232,28 @@ struct error_regexp : public errors::StringBase<WR_ERR_REGEX>
      */
     error_regexp(int code, void* re, const std::string& msg);
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(int code, void* re, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4);
+    /// Throw the exception, building the message printf-style
+    static void throwf(int code, void* re, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4);
 };
 
 /// Reports that a feature is still not implemented.
-struct error_unimplemented : public errors::StringBase<WR_ERR_UNIMPLEMENTED>
+class error_unimplemented : public errors::StringBase<WR_ERR_UNIMPLEMENTED>
 {
+public:
     using StringBase::StringBase;
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
+    /// Throw the exception, building the message printf-style
+    static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 /// Report that a parameter is outside the acceptable domain
-struct error_domain : public errors::StringBase<WR_ERR_DOMAIN>
+class error_domain : public errors::StringBase<WR_ERR_DOMAIN>
 {
+public:
     using StringBase::StringBase;
 
-	/// Throw the exception, building the message printf-style
-	static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
+    /// Throw the exception, building the message printf-style
+    static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
 }

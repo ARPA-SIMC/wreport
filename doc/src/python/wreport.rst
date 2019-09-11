@@ -1,5 +1,5 @@
-wreport package
-===============
+Python wreport package
+======================
 
 .. toctree::
     :maxdepth: 2
