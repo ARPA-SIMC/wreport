@@ -1,3 +1,2 @@
-debian/tmp/usr/share/doc/wreport/apidocs
+debian/tmp/usr/share/doc/wreport/html
 debian/tmp/usr/share/doc/wreport/libwreport.doxytags
-debian/tmp/usr/share/doc/wreport/python
