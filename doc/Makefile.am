@@ -37,7 +37,7 @@ html/index.html: build-docs
 
 install-data-local:
 	find html -type d -exec $(mkinstalldirs) '$(DESTDIR)$(docdir)/{}'  \; ;
-	find html -type f --exclude='*/.*' -exec $(INSTALL_DATA) '{}' '$(DESTDIR)$(docdir)/{}' \; ;
+	find html -type f -not -name '.*' -exec $(INSTALL_DATA) '{}' '$(DESTDIR)$(docdir)/{}' \; ;
 	$(mkinstalldirs) $(DESTDIR)$(docdir)/examples
 	find examples -type f -exec $(INSTALL_DATA) '{}' $(DESTDIR)$(docdir)/examples/ \; ;
 
