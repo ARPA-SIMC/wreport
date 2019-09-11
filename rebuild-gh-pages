@@ -56,8 +56,8 @@ class Builder:
                 shutil.copytree(src, dst)
             else:
                 shutil.copy2(src, dst)
-        # Add .nojekill file to tell github not to process our html with jekill
-        with open(os.path.join(self.pagesdir, ".nojekill"), "wb"):
+        # Add .nojekyll file to tell github not to process our html with jekyll
+        with open(os.path.join(self.pagesdir, ".nojekyll"), "wb"):
             pass
         # Add files and push
         run(self.pagesdir, ["git", "add", "."])
