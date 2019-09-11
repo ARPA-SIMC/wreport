@@ -167,9 +167,11 @@ make install DESTDIR="%{buildroot}"
 
 %files -n lib%{name}-doc
 %defattr(-,root,root,-)
+%if ! 0%{?el7}
 %doc %{_docdir}/%{name}/libwreport.doxytags
-%doc %{_docdir}/%{name}/apidocs/*
+%doc %{_docdir}/%{name}/html/*
 %doc %{_docdir}/%{name}/examples/*
+%endif
 
 %files -n %{python3_vers}-%{name}3
 %defattr(-,root,root,-)
@@ -178,10 +180,6 @@ make install DESTDIR="%{buildroot}"
 %dir %{python3_sitearch}
 %exclude %{python3_sitearch}/*.la
 %{python3_sitearch}/*.so*
-
-%if ! 0%{?el7}
-%doc %{_docdir}/wreport/python
-%endif
 
 
 %changelog
