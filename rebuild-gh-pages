@@ -88,10 +88,10 @@ def main():
         builder = Builder(srcdir, workdir)
 
         if args.reuse_built:
-            builder.publish(os.path.join(srcdir, "python", "apidocs"))
+            builder.publish(os.path.join(srcdir, "doc", "html"))
         else:
             builder.build_docs()
-            builder.publish(os.path.join(builder.builddir, "python", "apidocs"))
+            builder.publish(os.path.join(builder.builddir, "doc", "html"))
 
 
 if __name__ == "__main__":
