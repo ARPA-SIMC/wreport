@@ -56,5 +56,17 @@ Variable
 Variable metadata tables
 ------------------------
 
+Variable tables can be identified by :cpp:class:`wreport::BufrTableID` and
+:cpp:class:`wreport::CrexTableID`, and are accessed via a
+:cpp:class:`wreport::Vartable`:
+
+.. doxygenclass:: wreport::BufrTableID
+   :members:
+   :undoc-members:
+
+.. doxygenclass:: wreport::CrexTableID
+   :members:
+   :undoc-members:
+
 .. doxygenclass:: wreport::Vartable
    :members:

@@ -2,14 +2,11 @@
 #define WREPORT_TABLES_H
 
 #include <wreport/varinfo.h>
+#include <wreport/fwd.h>
 #include <map>
 #include <string>
 
 namespace wreport {
-struct BufrTableID;
-struct CrexTableID;
-struct Vartable;
-struct DTable;
 
 /**
  * Collection of BUFR/CREX tables used to work on a bulletin

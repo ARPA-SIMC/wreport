@@ -10,7 +10,6 @@
 #include <memory>
 
 namespace wreport {
-struct DTable;
 
 /**
  * Storage for the decoded data of a BUFR or CREX message.
@@ -197,8 +196,9 @@ public:
 
 
 /// Options used to configure BUFR decoding
-struct BufrCodecOptions
+class BufrCodecOptions
 {
+public:
     /**
      * By default (false) undefined attributes are not added to variables, and
      * there is no difference between an undefined or a missing attribute.
@@ -225,8 +225,9 @@ protected:
 
 
 /// BUFR bulletin implementation
-struct BufrBulletin : public Bulletin
+class BufrBulletin : public Bulletin
 {
+public:
     /// BUFR edition number
     uint8_t edition_number = 4;
 
@@ -392,8 +393,9 @@ protected:
 
 
 /// CREX bulletin implementation
-struct CrexBulletin : public Bulletin
+class CrexBulletin : public Bulletin
 {
+public:
     /// CREX Edition number
     uint8_t edition_number = 2;
 

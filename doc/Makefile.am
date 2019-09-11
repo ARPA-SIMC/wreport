@@ -10,7 +10,8 @@ sphinx_doc_sources = \
     src/cpp/wreport.rst \
     src/cpp/errors.rst \
     src/cpp/conv.rst \
-    src/cpp/var.rst
+    src/cpp/var.rst \
+    src/cpp/bulletin.rst
 
 doc_DATA =
 noinst_DATA =

@@ -7,8 +7,6 @@
 #include <wreport/fwd.h>
 
 namespace wreport {
-struct BufrTableID;
-struct CrexTableID;
 
 /**
  * Holds a variable information table

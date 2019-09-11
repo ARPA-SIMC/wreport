@@ -7,10 +7,4 @@ C++ wreport namespace
     errors
     conv
     var
-
-
-Namespace contents
-------------------
-
-.. doxygenclass:: wreport::Bulletin
-   :members:
+    bulletin
