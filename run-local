@@ -3,7 +3,7 @@
 TOP_SRCDIR=$(cd $(dirname $0) && pwd)
 export LD_LIBRARY_PATH="$TOP_SRCDIR/wreport:$LD_LIBRARY_PATH"
 export WREPORT_TABLES=$TOP_SRCDIR/tables/
-export PYTHONPATH=$TOP_SRCDIR/python
+export PYTHONPATH=$TOP_SRCDIR/python/.libs:$TOP_SRCDIR/python
 export PATH="$TOP_SRCDIR/tools:$PATH"
 
-exec "$@"
+exec "$TOP_SRCDIR"/libtool --mode=execute "$@"
