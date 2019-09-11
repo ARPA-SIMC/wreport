@@ -25,6 +25,8 @@ Features provided:
 - Unit conversion
 - Handling of physical variables
 
+[C++ and Python API documentation](https://arpa-simc.github.io/wreport/).
+
 ## Building wreport
 
 You need to install the automake/autoconf/libtool packages, which are usually 
