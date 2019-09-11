@@ -1,0 +1,383 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Python wreport package &#8212; wreport 3.23 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="C++ wreport namespace" href="../cpp/wreport.html" />
+    <link rel="prev" title="Welcome to wreport’s documentation!" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="python-wreport-package">
+<h1>Python wreport package<a class="headerlink" href="#python-wreport-package" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="module-wreport">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-wreport" title="Permalink to this headline">¶</a></h2>
+<p>wreport provides access to weather data in BUFR and CREX formats.</p>
+<p>This is the Python interface to it</p>
+<dl class="function">
+<dt id="wreport.convert_units">
+<code class="descclassname">wreport.</code><code class="descname">convert_units</code><span class="sig-paren">(</span><em>from_unit: str</em>, <em>to_unit: str</em>, <em>value: float</em><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#wreport.convert_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert a value from a unit to another, as understood by wreport</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="wreport.Var">
+<em class="property">class </em><code class="descclassname">wreport.</code><code class="descname">Var</code><a class="headerlink" href="#wreport.Var" title="Permalink to this definition">¶</a></dt>
+<dd><p>Var holds a measured value, which can be integer, float or string, and
+a <a class="reference internal" href="#wreport.Varinfo" title="wreport.Varinfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">Varinfo</span></code></a> with all available information (description, unit,
+precision, …) related to it.</p>
+<p>Var objects can be created from a <a class="reference internal" href="#wreport.Varinfo" title="wreport.Varinfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">Varinfo</span></code></a> object, and an
+optional value. Omitting the value creates an unset variable.</p>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">v</span> <span class="o">=</span> <span class="n">wreport</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;B12101&quot;</span><span class="p">],</span> <span class="mf">32.5</span><span class="p">)</span>
+<span class="c1"># v.info returns detailed informations about the variable in a Varinfo object.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">: </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="n">v</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">unit</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">desc</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><strong>Constructor</strong>: Var(varinfo: Union[wreport.Varinfo, wreport.Var], value: Union[str, int, float] = None)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>varinfo</strong> – <a class="reference internal" href="#wreport.Varinfo" title="wreport.Varinfo"><code class="xref py py-class docutils literal notranslate"><span class="pre">Varinfo</span></code></a> or <a class="reference internal" href="#wreport.Var" title="wreport.Var"><code class="xref py py-class docutils literal notranslate"><span class="pre">Var</span></code></a> to use to create the variable</li>
+<li><strong>value</strong> – value for the variable</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="wreport.Var.code">
+<code class="descname">code</code><a class="headerlink" href="#wreport.Var.code" title="Permalink to this definition">¶</a></dt>
+<dd><p>variable code</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.enq">
+<code class="descname">enq</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Union[str, float, int]<a class="headerlink" href="#wreport.Var.enq" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the value of the variable, as int, float or str according the variable definition</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.enqa">
+<code class="descname">enqa</code><span class="sig-paren">(</span><em>code: str</em><span class="sig-paren">)</span> &#x2192; Optional[wreport.Var]<a class="headerlink" href="#wreport.Var.enqa" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the variable for the attribute with the given code, or None if not found</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.enqc">
+<code class="descname">enqc</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#wreport.Var.enqc" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the value of the variable, as a str</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.enqd">
+<code class="descname">enqd</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; float<a class="headerlink" href="#wreport.Var.enqd" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the value of the variable, as a float</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.enqi">
+<code class="descname">enqi</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; int<a class="headerlink" href="#wreport.Var.enqi" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the value of the variable, as an int</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.format">
+<code class="descname">format</code><span class="sig-paren">(</span><em>default: str=</em><span class="sig-paren">)</span> &#x2192; str<a class="headerlink" href="#wreport.Var.format" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a string with the formatted value of the variable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>default: Any=None</em><span class="sig-paren">)</span> &#x2192; Union[str, float, long, Any]<a class="headerlink" href="#wreport.Var.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the value of the variable, with a default if it is unset</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.get_attrs">
+<code class="descname">get_attrs</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; List[wreport.Var]<a class="headerlink" href="#wreport.Var.get_attrs" title="Permalink to this definition">¶</a></dt>
+<dd><p>get the attributes of this variable</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Var.info">
+<code class="descname">info</code><a class="headerlink" href="#wreport.Var.info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Varinfo for this variable</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Var.isset">
+<code class="descname">isset</code><a class="headerlink" href="#wreport.Var.isset" title="Permalink to this definition">¶</a></dt>
+<dd><p>true if the value is set</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.seta">
+<code class="descname">seta</code><span class="sig-paren">(</span><em>var: wreport.Var</em><span class="sig-paren">)</span><a class="headerlink" href="#wreport.Var.seta" title="Permalink to this definition">¶</a></dt>
+<dd><p>set an attribute in the variable</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Var.unseta">
+<code class="descname">unseta</code><span class="sig-paren">(</span><em>code: str</em><span class="sig-paren">)</span><a class="headerlink" href="#wreport.Var.unseta" title="Permalink to this definition">¶</a></dt>
+<dd><p>unset the given attribute from the variable</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wreport.Varinfo">
+<em class="property">class </em><code class="descclassname">wreport.</code><code class="descname">Varinfo</code><a class="headerlink" href="#wreport.Varinfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Varinfo object holds all possible information about a variable, such as its
+measurement unit, description and number of significant digits.</p>
+<p>Varinfo objects cannot be instantiated directly, and are created by
+querying <a class="reference internal" href="#wreport.Vartable" title="wreport.Vartable"><code class="xref py py-class docutils literal notranslate"><span class="pre">Vartable</span></code></a> objects.</p>
+<dl class="attribute">
+<dt id="wreport.Varinfo.bit_len">
+<code class="descname">bit_len</code><a class="headerlink" href="#wreport.Varinfo.bit_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of bits used to encode the value in BUFR</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Varinfo.bit_ref">
+<code class="descname">bit_ref</code><a class="headerlink" href="#wreport.Varinfo.bit_ref" title="Permalink to this definition">¶</a></dt>
+<dd><p>reference value added after scaling, for BUFR decoding</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Varinfo.code">
+<code class="descname">code</code><a class="headerlink" href="#wreport.Varinfo.code" title="Permalink to this definition">¶</a></dt>
+<dd><p>variable code</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Varinfo.desc">
+<code class="descname">desc</code><a class="headerlink" href="#wreport.Varinfo.desc" title="Permalink to this definition">¶</a></dt>
+<dd><p>description</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Varinfo.len">
+<code class="descname">len</code><a class="headerlink" href="#wreport.Varinfo.len" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of significant digits</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Varinfo.scale">
+<code class="descname">scale</code><a class="headerlink" href="#wreport.Varinfo.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>scale of the value as a power of 10</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Varinfo.type">
+<code class="descname">type</code><a class="headerlink" href="#wreport.Varinfo.type" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a string describing the type of the variable (string, binary, integer, decimal)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Varinfo.unit">
+<code class="descname">unit</code><a class="headerlink" href="#wreport.Varinfo.unit" title="Permalink to this definition">¶</a></dt>
+<dd><p>measurement unit</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="wreport.Vartable">
+<em class="property">class </em><code class="descclassname">wreport.</code><code class="descname">Vartable</code><a class="headerlink" href="#wreport.Vartable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collection of Varinfo objects indexed by WMO BUFR/CREX table B code.</p>
+<p>A Vartable is instantiated by one of the <a class="reference internal" href="#wreport.Vartable.get_bufr" title="wreport.Vartable.get_bufr"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_bufr()</span></code></a>, <a class="reference internal" href="#wreport.Vartable.get_crex" title="wreport.Vartable.get_crex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_crex()</span></code></a>,
+<a class="reference internal" href="#wreport.Vartable.load_bufr" title="wreport.Vartable.load_bufr"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_bufr()</span></code></a>, <a class="reference internal" href="#wreport.Vartable.load_crex" title="wreport.Vartable.load_crex"><code class="xref py py-meth docutils literal notranslate"><span class="pre">load_crex()</span></code></a> class methods:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">wreport</span><span class="o">.</span><span class="n">Vartable</span><span class="o">.</span><span class="n">get_bufr</span><span class="p">(</span><span class="n">master_table_version_number</span><span class="o">=</span><span class="mi">23</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">table</span><span class="p">[</span><span class="s2">&quot;B12101&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">i</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="wreport.Vartable.get_bufr">
+<code class="descname">get_bufr</code><span class="sig-paren">(</span><em>basename: str=None</em>, <em>originating_centre: int=0</em>, <em>originating_subcentre: int=0</em>, <em>master_table_number: int=0</em>, <em>master_table_version_number: int=None</em>, <em>master_table_version_number_local: int=0</em><span class="sig-paren">)</span> &#x2192; wreport.Vartable<a class="headerlink" href="#wreport.Vartable.get_bufr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Look up a table B file using the information given, then load BUFR
+information from it.</p>
+<p>You need to provide either basename or master_table_version_number.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>basename</strong> – load the table with the given name in <code class="docutils literal notranslate"><span class="pre">/usr/share/wreport/</span></code></li>
+<li><strong>originating_centre</strong> – originating centre for the table data</li>
+<li><strong>originating_subcentre</strong> – originating subcentre for the table data</li>
+<li><strong>master_table_number</strong> – master table number for the table data</li>
+<li><strong>master_table_version_number</strong> – master table version number for the table data</li>
+<li><strong>master_table_version_number_local</strong> – local master table version number for the table data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Vartable.get_crex">
+<code class="descname">get_crex</code><span class="sig-paren">(</span><em>basename: str=None</em>, <em>edition_number=2</em>, <em>originating_centre: int=0</em>, <em>originating_subcentre: int=0</em>, <em>master_table_number: int=0</em>, <em>master_table_version_number: int=None</em>, <em>master_table_version_number_bufr: int=None</em>, <em>master_table_version_number_local: int=0</em><span class="sig-paren">)</span> &#x2192; wreport.Vartable<a class="headerlink" href="#wreport.Vartable.get_crex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Look up a table B file using the information given, then load CREX
+information from it.</p>
+<p>You need to provide either basename or master_table_version_number
+or master_table_version_number_bufr.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>basename</strong> – load the table with the given name in <code class="docutils literal notranslate"><span class="pre">/usr/share/wreport/</span></code></li>
+<li><strong>edition_number</strong> – edition number for the table data</li>
+<li><strong>originating_centre</strong> – originating centre for the table data</li>
+<li><strong>originating_subcentre</strong> – originating subcentre for the table data</li>
+<li><strong>master_table_number</strong> – master table number for the table data</li>
+<li><strong>master_table_version_number</strong> – master table version number for the table data</li>
+<li><strong>master_table_version_number_bufr</strong> – BUFR master table version number for the table data</li>
+<li><strong>master_table_version_number_local</strong> – local master table version number for the table data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Vartable.load_bufr">
+<code class="descname">load_bufr</code><span class="sig-paren">(</span><em>pathname: str</em><span class="sig-paren">)</span> &#x2192; wreport.Vartable<a class="headerlink" href="#wreport.Vartable.load_bufr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load BUFR information from a Table B file and return it as a
+wreport.Vartable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pathname</strong> – pathname of the file to load</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="wreport.Vartable.load_crex">
+<code class="descname">load_crex</code><span class="sig-paren">(</span><em>pathname: str</em><span class="sig-paren">)</span> &#x2192; wreport.Vartable<a class="headerlink" href="#wreport.Vartable.load_crex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load CREX information from a Table B file and return it as a
+wreport.Vartable.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>pathname</strong> – pathname of the file to load</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="wreport.Vartable.pathname">
+<code class="descname">pathname</code><a class="headerlink" href="#wreport.Vartable.pathname" title="Permalink to this definition">¶</a></dt>
+<dd><p>name of the table</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">wreport</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Python wreport package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-wreport">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cpp/wreport.html">C++ wreport namespace</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">Welcome to wreport’s documentation!</a></li>
+      <li>Next: <a href="../cpp/wreport.html" title="next chapter">C++ wreport namespace</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Enrico Zini.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="../_sources/python/wreport.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,288 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Unit conversion &#8212; wreport 3.23 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Variables" href="var.html" />
+    <link rel="prev" title="Error handling" href="errors.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="unit-conversion">
+<h1>Unit conversion<a class="headerlink" href="#unit-conversion" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<div class="section" id="unit-conversion-functions">
+<h2>Unit conversion functions<a class="headerlink" href="#unit-conversion-functions" title="Permalink to this headline">¶</a></h2>
+<p>wreport has its own domain-specific unit conversion functions, working with
+unit names from BUFR/CREX B tables.</p>
+<dl class="function">
+<dt id="_CPPv4N7wreport13convert_unitsEPKcPKcd">
+<span id="_CPPv3N7wreport13convert_unitsEPKcPKcd"></span><span id="_CPPv2N7wreport13convert_unitsEPKcPKcd"></span><span id="wreport::convert_units__cCP.cCP.double"></span><span class="target" id="namespacewreport_1ae89db44f018ca4e17b81c7bfff4d98ab"></span>double <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_units</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>from</em>, <em class="property">const</em> char *<em>to</em>, double <em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport13convert_unitsEPKcPKcd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Convert between different units. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>The error indicator for the function (See error.h) </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">from</span></code>: Unit of the value to convert (see <a class="reference internal" href="var.html#namespacewreport_1ab56051168442bfb0c18ef00affeb525a"><span class="std std-ref">wreport::Varinfo</span></a>) </li>
+<li><code class="docutils literal notranslate"><span class="pre">to</span></code>: Unit to convert to (see <a class="reference internal" href="var.html#namespacewreport_1ab56051168442bfb0c18ef00affeb525a"><span class="std std-ref">wreport::Varinfo</span></a>) </li>
+<li><code class="docutils literal notranslate"><span class="pre">val</span></code>: Value to convert </li>
+</ul>
+</dd>
+<dt><strong>Return Value</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">res</span></code>: Converted value </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport21convert_icao_to_pressEd">
+<span id="_CPPv3N7wreport21convert_icao_to_pressEd"></span><span id="_CPPv2N7wreport21convert_icao_to_pressEd"></span><span id="wreport::convert_icao_to_press__double"></span><span class="target" id="namespacewreport_1ad7e785820e3913035b8e3224a73a8b7f"></span>double <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_icao_to_press</code><span class="sig-paren">(</span>double <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport21convert_icao_to_pressEd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Convert ICAO height (in meters) to pressure (in hpa) and back. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport21convert_press_to_icaoEd">
+<span id="_CPPv3N7wreport21convert_press_to_icaoEd"></span><span id="_CPPv2N7wreport21convert_press_to_icaoEd"></span><span id="wreport::convert_press_to_icao__double"></span><span class="target" id="namespacewreport_1a4a29e1e7f1f6fd42e083e3435cd15534"></span>double <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_press_to_icao</code><span class="sig-paren">(</span>double <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport21convert_press_to_icaoEd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Convert pressure (in hpa) to ICAO height (in meters) </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport26convert_octants_to_degreesEi">
+<span id="_CPPv3N7wreport26convert_octants_to_degreesEi"></span><span id="_CPPv2N7wreport26convert_octants_to_degreesEi"></span><span id="wreport::convert_octants_to_degrees__i"></span><span class="target" id="namespacewreport_1af5bff7346d9ae412b1f9ffb430195fe7"></span>double <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_octants_to_degrees</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport26convert_octants_to_degreesEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Convert wind direction (in octants) to degrees. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport26convert_degrees_to_octantsEd">
+<span id="_CPPv3N7wreport26convert_degrees_to_octantsEd"></span><span id="_CPPv2N7wreport26convert_degrees_to_octantsEd"></span><span id="wreport::convert_degrees_to_octants__double"></span><span class="target" id="namespacewreport_1a5586771d69e64a395cf54f6ed798645f"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_degrees_to_octants</code><span class="sig-paren">(</span>double <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport26convert_degrees_to_octantsEd" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Convert wind direction (in degrees) to octancts. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport27convert_AOFVSS_to_BUFR08042Ej">
+<span id="_CPPv3N7wreport27convert_AOFVSS_to_BUFR08042Ej"></span><span id="_CPPv2N7wreport27convert_AOFVSS_to_BUFR08042Ej"></span><span id="wreport::convert_AOFVSS_to_BUFR08042__unsigned"></span><span class="target" id="namespacewreport_1a19568d6ec150fa8dc0d81f4bf0f18f9a"></span>unsigned <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_AOFVSS_to_BUFR08042</code><span class="sig-paren">(</span>unsigned <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport27convert_AOFVSS_to_BUFR08042Ej" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Convert vertical sounding significance from the AOF encoding to BUFR code table 08001. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_WMO0500_to_BUFR20012Ei">
+<span id="_CPPv3N7wreport28convert_WMO0500_to_BUFR20012Ei"></span><span id="_CPPv2N7wreport28convert_WMO0500_to_BUFR20012Ei"></span><span id="wreport::convert_WMO0500_to_BUFR20012__i"></span><span class="target" id="namespacewreport_1a0a8590f08b6e872c206b84eb9f064a9a"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_WMO0500_to_BUFR20012</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_WMO0500_to_BUFR20012Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Conversion functions between various code tables. </p>
+<p>Cloud type </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_WMO0509_to_BUFR20012Ei">
+<span id="_CPPv3N7wreport28convert_WMO0509_to_BUFR20012Ei"></span><span id="_CPPv2N7wreport28convert_WMO0509_to_BUFR20012Ei"></span><span id="wreport::convert_WMO0509_to_BUFR20012__i"></span><span class="target" id="namespacewreport_1aadd077dfc2a0256db68a5a2d8ae35e1b"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_WMO0509_to_BUFR20012</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_WMO0509_to_BUFR20012Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Cloud type (CH) </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_WMO0515_to_BUFR20012Ei">
+<span id="_CPPv3N7wreport28convert_WMO0515_to_BUFR20012Ei"></span><span id="_CPPv2N7wreport28convert_WMO0515_to_BUFR20012Ei"></span><span id="wreport::convert_WMO0515_to_BUFR20012__i"></span><span class="target" id="namespacewreport_1ad27cfb59ab548bf01409514a757fdca8"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_WMO0515_to_BUFR20012</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_WMO0515_to_BUFR20012Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Cloud type (CM) </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_WMO0513_to_BUFR20012Ei">
+<span id="_CPPv3N7wreport28convert_WMO0513_to_BUFR20012Ei"></span><span id="_CPPv2N7wreport28convert_WMO0513_to_BUFR20012Ei"></span><span id="wreport::convert_WMO0513_to_BUFR20012__i"></span><span class="target" id="namespacewreport_1a82d2ad18829c871422e4b829105a6113"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_WMO0513_to_BUFR20012</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_WMO0513_to_BUFR20012Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Cloud type (CL) </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_WMO4677_to_BUFR20003Ei">
+<span id="_CPPv3N7wreport28convert_WMO4677_to_BUFR20003Ei"></span><span id="_CPPv2N7wreport28convert_WMO4677_to_BUFR20003Ei"></span><span id="wreport::convert_WMO4677_to_BUFR20003__i"></span><span class="target" id="namespacewreport_1abe7b493d155a377044faf8db67109080"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_WMO4677_to_BUFR20003</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_WMO4677_to_BUFR20003Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Present weather. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_WMO4561_to_BUFR20004Ei">
+<span id="_CPPv3N7wreport28convert_WMO4561_to_BUFR20004Ei"></span><span id="_CPPv2N7wreport28convert_WMO4561_to_BUFR20004Ei"></span><span id="wreport::convert_WMO4561_to_BUFR20004__i"></span><span class="target" id="namespacewreport_1ada50fe22e39e955ae76d7752dab53c96"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_WMO4561_to_BUFR20004</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_WMO4561_to_BUFR20004Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Past weather. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_BUFR20012_to_WMO0500Ei">
+<span id="_CPPv3N7wreport28convert_BUFR20012_to_WMO0500Ei"></span><span id="_CPPv2N7wreport28convert_BUFR20012_to_WMO0500Ei"></span><span id="wreport::convert_BUFR20012_to_WMO0500__i"></span><span class="target" id="namespacewreport_1a4011f065b0ad37c0157dbc99c7f72219"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_BUFR20012_to_WMO0500</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_BUFR20012_to_WMO0500Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Cloud type. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_BUFR20012_to_WMO0509Ei">
+<span id="_CPPv3N7wreport28convert_BUFR20012_to_WMO0509Ei"></span><span id="_CPPv2N7wreport28convert_BUFR20012_to_WMO0509Ei"></span><span id="wreport::convert_BUFR20012_to_WMO0509__i"></span><span class="target" id="namespacewreport_1ad7af05582a7af80ee8680cd2ffe63e75"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_BUFR20012_to_WMO0509</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_BUFR20012_to_WMO0509Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Cloud type (CH) </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_BUFR20012_to_WMO0515Ei">
+<span id="_CPPv3N7wreport28convert_BUFR20012_to_WMO0515Ei"></span><span id="_CPPv2N7wreport28convert_BUFR20012_to_WMO0515Ei"></span><span id="wreport::convert_BUFR20012_to_WMO0515__i"></span><span class="target" id="namespacewreport_1ae1dba0600fa5ba007433db41538bd453"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_BUFR20012_to_WMO0515</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_BUFR20012_to_WMO0515Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Cloud type (CM) </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_BUFR20012_to_WMO0513Ei">
+<span id="_CPPv3N7wreport28convert_BUFR20012_to_WMO0513Ei"></span><span id="_CPPv2N7wreport28convert_BUFR20012_to_WMO0513Ei"></span><span id="wreport::convert_BUFR20012_to_WMO0513__i"></span><span class="target" id="namespacewreport_1a0c0be7b21c24e6c91ab4e302b0323a90"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_BUFR20012_to_WMO0513</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_BUFR20012_to_WMO0513Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Cloud type (CL) </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_BUFR20003_to_WMO4677Ei">
+<span id="_CPPv3N7wreport28convert_BUFR20003_to_WMO4677Ei"></span><span id="_CPPv2N7wreport28convert_BUFR20003_to_WMO4677Ei"></span><span id="wreport::convert_BUFR20003_to_WMO4677__i"></span><span class="target" id="namespacewreport_1a0ff8265e09b649f346b64dc98e1aba1a"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_BUFR20003_to_WMO4677</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_BUFR20003_to_WMO4677Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Present weather. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport28convert_BUFR20004_to_WMO4561Ei">
+<span id="_CPPv3N7wreport28convert_BUFR20004_to_WMO4561Ei"></span><span id="_CPPv2N7wreport28convert_BUFR20004_to_WMO4561Ei"></span><span id="wreport::convert_BUFR20004_to_WMO4561__i"></span><span class="target" id="namespacewreport_1a4ab537210c09b186eed9ed4112c8cb6b"></span>int <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_BUFR20004_to_WMO4561</code><span class="sig-paren">(</span>int <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport28convert_BUFR20004_to_WMO4561Ei" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Past weather. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport30convert_BUFR08001_to_BUFR08042Ej">
+<span id="_CPPv3N7wreport30convert_BUFR08001_to_BUFR08042Ej"></span><span id="_CPPv2N7wreport30convert_BUFR08001_to_BUFR08042Ej"></span><span id="wreport::convert_BUFR08001_to_BUFR08042__unsigned"></span><span class="target" id="namespacewreport_1a52e927d3f9bf60dcaecc17721ce2d54d"></span>unsigned <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_BUFR08001_to_BUFR08042</code><span class="sig-paren">(</span>unsigned <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport30convert_BUFR08001_to_BUFR08042Ej" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Vertical sounding significance. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport30convert_BUFR08042_to_BUFR08001Ej">
+<span id="_CPPv3N7wreport30convert_BUFR08042_to_BUFR08001Ej"></span><span id="_CPPv2N7wreport30convert_BUFR08042_to_BUFR08001Ej"></span><span id="wreport::convert_BUFR08042_to_BUFR08001__unsigned"></span><span class="target" id="namespacewreport_1a1b6bc545480afacab74662b45a50ab66"></span>unsigned <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_BUFR08042_to_BUFR08001</code><span class="sig-paren">(</span>unsigned <em>from</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport30convert_BUFR08042_to_BUFR08001Ej" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Vertical sounding significance. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport21convert_units_get_mulEPKcPKc">
+<span id="_CPPv3N7wreport21convert_units_get_mulEPKcPKc"></span><span id="_CPPv2N7wreport21convert_units_get_mulEPKcPKc"></span><span id="wreport::convert_units_get_mul__cCP.cCP"></span><span class="target" id="namespacewreport_1a55f6e733b28d4ea5a606a6d177a0a8fa"></span>double <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_units_get_mul</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>from</em>, <em class="property">const</em> char *<em>to</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport21convert_units_get_mulEPKcPKc" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Get the multiplier used in the given conversion. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>Multiplier factor used in the conversion </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">from</span></code>: Unit of the value to convert (see <a class="reference internal" href="var.html#namespacewreport_1ab56051168442bfb0c18ef00affeb525a"><span class="std std-ref">wreport::Varinfo</span></a>) </li>
+<li><code class="docutils literal notranslate"><span class="pre">to</span></code>: Unit to convert to (see <a class="reference internal" href="var.html#namespacewreport_1ab56051168442bfb0c18ef00affeb525a"><span class="std std-ref">wreport::Varinfo</span></a>) </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7wreport21convert_units_allowedEPKcPKc">
+<span id="_CPPv3N7wreport21convert_units_allowedEPKcPKc"></span><span id="_CPPv2N7wreport21convert_units_allowedEPKcPKc"></span><span id="wreport::convert_units_allowed__cCP.cCP"></span><span class="target" id="namespacewreport_1a338fa9f54b1ce6e32e6e8e6d4ed290f9"></span>bool <code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">convert_units_allowed</code><span class="sig-paren">(</span><em class="property">const</em> char *<em>from</em>, <em class="property">const</em> char *<em>to</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport21convert_units_allowedEPKcPKc" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Check if conversion is possible among the given units. </p>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>True if conversion is supported, else false. </dd>
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last simple">
+<li><code class="docutils literal notranslate"><span class="pre">from</span></code>: Unit of the value to convert (see <a class="reference internal" href="var.html#namespacewreport_1ab56051168442bfb0c18ef00affeb525a"><span class="std std-ref">wreport::Varinfo</span></a>) </li>
+<li><code class="docutils literal notranslate"><span class="pre">to</span></code>: Unit to convert to (see <a class="reference internal" href="var.html#namespacewreport_1ab56051168442bfb0c18ef00affeb525a"><span class="std std-ref">wreport::Varinfo</span></a>) </li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">wreport</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../python/wreport.html">Python wreport package</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="wreport.html">C++ wreport namespace</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="errors.html">Error handling</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Unit conversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="var.html">Variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bulletin.html">Bulletin</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="wreport.html">C++ wreport namespace</a><ul>
+      <li>Previous: <a href="errors.html" title="previous chapter">Error handling</a></li>
+      <li>Next: <a href="var.html" title="next chapter">Variables</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Enrico Zini.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      
+      |
+      <a href="../_sources/cpp/conv.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
