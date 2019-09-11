@@ -3,6 +3,11 @@
 cdoxdeps = libwreport.dox \
 	  ../wreport/libwreport.la
 
+python_doc_sources = \
+    doc/conf.py \
+    doc/index.rst \
+    doc/wreport.rst
+
 doc_DATA =
 noinst_DATA =
 
@@ -33,6 +38,22 @@ doxygen-run: $(cdoxdeps) $(mainpages)
 
 libwreport.doxytags: doxygen-run
 apidocs/index.html: doxygen-run
+
+if HAVE_SPHINX
+noinst_DATA += apidocs
+
+install-data-hook:
+	rm -rf "$(DESTDIR)$(docdir)/python"
+	install -d "$(DESTDIR)$(docdir)/python"
+	tar -C "$(builddir)/python_html" --exclude='*/.*' -cf - . | tar -C "$(DESTDIR)$(docdir)/python" -xf -
+	-chown -R root:root "$(DESTDIR)$(docdir)/python"
+	chmod u=rwX,g=rX,o=rX "$(DESTDIR)$(docdir)/python"
+
+python_html: _wreport.so doc/index.rst doc/wreport.rst
+	rm -rf $@
+	$(top_srcdir)/run-local $(SPHINX_BUILD) -b html doc $@
+
+endif
 endif
 
 EXTRA_DIST = libwreport.dox examples 20160914-american-fuzzy-lop.txt
@@ -40,4 +61,4 @@ EXTRA_DIST = libwreport.dox examples 20160914-american-fuzzy-lop.txt
 CLEANFILES = libwreport.doxytags
 
 clean-local:
-	rm -rf apidocs xml
+	rm -rf apidocs xml python_html
