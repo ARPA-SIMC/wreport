@@ -24,6 +24,7 @@ BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
 %if ! 0%{?el7}
 BuildRequires: %{python3_vers}-sphinx
+BuildRequires: %{python3_vers}-breathe
 %endif
 BuildRequires: /usr/bin/rst2html
 
