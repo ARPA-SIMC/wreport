@@ -8,3 +8,7 @@ C++ wreport namespace
     conv
     var
     bulletin
+
+
+The C++ API is documentation is also available as `doxgen documentation
+<../doxygen/index.html>`_.
