@@ -5,13 +5,13 @@
 #include <vector>
 
 namespace wreport {
-struct Tables;
 
 /**
  * Represent a BUFR/CREX data subset as a list of decoded variables
  */
-struct Subset : public std::vector<Var>
+class Subset : public std::vector<Var>
 {
+public:
     /// Tables used for creating variables in this subset
     const Tables* tables;
 

@@ -13,6 +13,12 @@ typedef uint16_t Varcode;
 class Bulletin;
 class BufrBulletin;
 class CrexBulletin;
+
+class BufrTableID;
+class CrexTableID;
+
+class Tables;
+class DTable;
 }
 
 #endif

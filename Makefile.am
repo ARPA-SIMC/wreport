@@ -3,11 +3,11 @@
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = wreport src tables testdata
-if DO_DOCS
-SUBDIRS += doc
-endif
 if PYTHON
 SUBDIRS += python
+endif
+if DO_DOCS
+SUBDIRS += doc
 endif
 SUBDIRS += .
 

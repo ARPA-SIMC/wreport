@@ -49,5 +49,4 @@ Makefile
 /src/wrep
 /src/examples
 /python/_wreport.so
-/python/apidocs
 /py-compile

@@ -10,8 +10,12 @@ Welcome to wreport's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   wreport
+   python/wreport
+   cpp/wreport
 
+
+The C++ API is documentation is also available as `doxgen documentation
+<doxygen/index.html>`_.
 
 
 Indices and tables

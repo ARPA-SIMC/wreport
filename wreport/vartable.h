@@ -7,8 +7,6 @@
 #include <wreport/fwd.h>
 
 namespace wreport {
-struct BufrTableID;
-struct CrexTableID;
 
 /**
  * Holds a variable information table
@@ -28,8 +26,9 @@ struct CrexTableID;
  * cause of memory leaks, since a software would only need to access a limited
  * amount of distinct variable informations during its lifetime.
  */
-struct Vartable
+class Vartable
 {
+public:
     virtual ~Vartable();
 
     /// Return the pathname of the file from which this table has been loaded

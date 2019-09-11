@@ -3,16 +3,16 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <wreport/fwd.h>
 
 namespace wreport {
-
-struct CrexTableID;
 
 /**
  * Identifying information for one distinct instance of BUFR tables.
  */
-struct BufrTableID
+class BufrTableID
 {
+public:
     uint16_t originating_centre = 0xffff;
     uint16_t originating_subcentre = 0xffff;
     uint8_t master_table_number = 0xff;
@@ -40,8 +40,9 @@ struct BufrTableID
 /**
  * Identifying information for one distinct instance of CREX tables.
  */
-struct CrexTableID
+class CrexTableID
 {
+public:
     uint8_t edition_number = 0xff;
     uint16_t originating_centre = 0xffff;
     uint16_t originating_subcentre = 0xffff;
