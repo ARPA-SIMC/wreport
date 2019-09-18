@@ -141,8 +141,8 @@ then
     then
         enable_docs=no
     fi
-    AC_MSG_CHECKING(for python3-breathe)
-    if `python3 -c "import breathe" 2>/dev/null >/dev/null`
+    AC_MSG_CHECKING(for Python module breathe)
+    if `$PYTHON -c "import breathe" 2>/dev/null >/dev/null`
     then
         AC_MSG_RESULT(yes)
     else
