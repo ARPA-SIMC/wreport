@@ -141,6 +141,14 @@ then
     then
         enable_docs=no
     fi
+    AC_MSG_CHECKING(for python3-breathe)
+    if `python3 -c "import breathe" 2>/dev/null >/dev/null`
+    then
+        AC_MSG_RESULT(yes)
+    else
+        AC_MSG_RESULT(no)
+        enable_docs=no
+    fi
 fi
 
 AC_SUBST(DOXYGEN)
