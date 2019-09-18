@@ -1,3 +1,4 @@
+#include "config.h"
 #include "common.h"
 #include "vartable.h"
 #include "varinfo.h"
@@ -65,6 +66,7 @@ PyMODINIT_FUNC PyInit__wreport(void)
         c_api.version_minor = 1;
 
         pyo_unique_ptr m(throw_ifnull(PyModule_Create(&wreport_module)));
+        PyModule_AddStringConstant(m, "__version__", PACKAGE_VERSION);
 
         register_varinfo(m, c_api);
         register_vartable(m, c_api);
