@@ -141,12 +141,9 @@ then
     then
         enable_docs=no
     fi
-    AC_MSG_CHECKING(for Python module breathe)
-    if `$PYTHON -c "import breathe" 2>/dev/null >/dev/null`
+    AX_PYTHON_MODULE(breathe, [], $PYTHON)
+    if test x$HAVE_PYMOD_BREATHE != xyes
     then
-        AC_MSG_RESULT(yes)
-    else
-        AC_MSG_RESULT(no)
         enable_docs=no
     fi
 fi
