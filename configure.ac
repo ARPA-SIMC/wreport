@@ -141,7 +141,7 @@ then
     then
         enable_docs=no
     fi
-    AX_PYTHON_MODULE(breathe, [], $PYTHON)
+    AX_PYTHON_MODULE(breathe)
     if test x$HAVE_PYMOD_BREATHE != xyes
     then
         enable_docs=no
