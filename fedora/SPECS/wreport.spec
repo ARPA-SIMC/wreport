@@ -1,4 +1,4 @@
-%global releaseno 1
+%global releaseno 2
 # Note: define srcarchivename in Travis build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
@@ -22,7 +22,7 @@ BuildRequires: libtool
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
-%if ! 0%{?el7}
+%if ! 0%{?rhel}
 BuildRequires: %{python3_vers}-sphinx
 BuildRequires: %{python3_vers}-breathe
 %endif
@@ -167,7 +167,7 @@ make install DESTDIR="%{buildroot}"
 
 %files -n lib%{name}-doc
 %defattr(-,root,root,-)
-%if ! 0%{?el7}
+%if ! 0%{?rhel}
 %doc %{_docdir}/%{name}/libwreport.doxytags
 %doc %{_docdir}/%{name}/html/*
 %doc %{_docdir}/%{name}/examples/*
@@ -183,6 +183,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Mon Sep 30 2019 Daniele Branchini <dbranchini@arpae.it> - 3.23-2
+- Removed doc for CentOs8 (#31)
+
 * Fri Aug 30 2019 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.23-1
 - Fix 32 bit builds
 
