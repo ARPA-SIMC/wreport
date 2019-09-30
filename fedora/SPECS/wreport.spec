@@ -1,4 +1,4 @@
-%global releaseno 2
+%global releaseno 1
 # Note: define srcarchivename in Travis build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
@@ -183,9 +183,6 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
-* Mon Sep 30 2019 Daniele Branchini <dbranchini@arpae.it> - 3.23-2
-- Removed doc for CentOs8 (#31)
-
 * Fri Aug 30 2019 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.23-1
 - Fix 32 bit builds
 
