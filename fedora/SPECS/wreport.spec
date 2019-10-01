@@ -31,6 +31,7 @@ BuildRequires: /usr/bin/rst2html
 Summary: Tools for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}-common
+Requires: lib%{name}3 = %{?epoch:%epoch:}%{version}-%{release}
 
 %description
  libwreport is a C++ library to read and write weather reports in BUFR and CREX
