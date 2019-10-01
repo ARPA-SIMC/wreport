@@ -42,7 +42,7 @@ The tools provide simple weather bulletin handling functions
 %package -n lib%{name}3
 Summary: shared library for working with weather reports
 Group: Applications/Meteo
-Requires: lib%{name}-common
+Requires: lib%{name}-common = %{?epoch:%epoch:}%{version}-%{release}
 
 %description -n lib%{name}3
  libwreport is a C++ library to read and write weather reports in BUFR and CREX
@@ -74,7 +74,7 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %package -n lib%{name}-devel
 Summary:  Library for working with (coded) weather reports
 Group: Applications/Meteo
-Requires: lib%{name}3 = %{version}
+Requires: lib%{name}3 = %{?epoch:%epoch:}%{version}-%{release}
 
 %description -n lib%{name}-devel
 libwreport is a C++ library to read and write weather reports in BUFR and CREX
@@ -94,7 +94,7 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %package -n %{python3_vers}-%{name}3
 Summary: shared library for working with weather reports
 Group: Applications/Meteo
-Requires: lib%{name}3
+Requires: lib%{name}3 = %{?epoch:%epoch:}%{version}-%{release}
 
 %description -n %{python3_vers}-%{name}3
 libwreport is a C++ library to read and write weather reports in BUFR and CREX
