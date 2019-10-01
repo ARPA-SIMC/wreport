@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.23
+Version: 3.24
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -184,6 +184,10 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Tue Oct  1 2019 Daniele Branchini <dbranchini@arpae.it> - 3.24-1
+- Added python bindings for convert_units (#30)
+- Added sphinx infrastructure for documentation
+
 * Fri Aug 30 2019 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.23-1
 - Fix 32 bit builds
 
