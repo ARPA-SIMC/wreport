@@ -299,7 +299,7 @@ struct get : public MethKwargs<get, wrpy_Var>
     constexpr static const char* name = "get";
     constexpr static const char* signature = "default: Any=None";
     constexpr static const char* returns = "Union[str, float, long, Any]";
-    constexpr static const char* summary = "get the value of the variable, with a default if it is unset";
+    constexpr static const char* summary = "get the value of the variable. If the variable is unset, ``default`` is returned";
 
     static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
     {
