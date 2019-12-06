@@ -355,6 +355,7 @@ optional value. Omitting the value creates an unset variable.
 
 Examples::
 
+    table = wreport.Vartable.get_bufr(master_table_version_number=24)
     v = wreport.Var(table["B12101"], 32.5)
     # v.info returns detailed informations about the variable in a Varinfo object.
     print("%s: %s %s %s" % (v.code, str(v), v.info.unit, v.info.desc))
