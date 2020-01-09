@@ -227,9 +227,6 @@ A Vartable is instantiated by one of the :meth:`get_bufr`, :meth:`get_crex`,
 
     table = wreport.Vartable.get_bufr(master_table_version_number=23)
     print(table["B12101"].desc)
-
-    for i in table:
-        print(i.code, i.desc)
 )";
     GetSetters<pathname> getsetters;
     Methods<get_bufr, get_crex, load_bufr, load_crex> methods;
