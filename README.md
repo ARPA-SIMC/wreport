@@ -37,7 +37,7 @@ For CentOS and Fedora, rpm files are hosted in a copr repo:
 https://copr.fedorainfracloud.org/coprs/simc/stable/
 
 For Debian, wreport is available in the testing distribution:
-https://packages.debian.org/testing/dballe
+https://packages.debian.org/testing/libwreport3
 
 Using docker images with wreport preinstalled is also possible:
 
