@@ -28,16 +28,34 @@ Features provided:
 
 [C++ and Python API documentation](https://arpa-simc.github.io/wreport/).
 
-## Building wreport
+## Installing wreport
 
-You need to install the automake/autoconf/libtool packages, which are usually 
-available on any linux distribution, and, in the wreport directory, execute 
-the commands:
+wreport is already packaged in both .rpm and .deb formats, and that provides
+easy installation for most Linux distributions.
 
-    autoreconf -if 
-    ./configure
-    make
-    make install
+For CentOS and Fedora, rpm files are hosted in a copr repo:
+https://copr.fedorainfracloud.org/coprs/simc/stable/
+
+For Debian, wreport is available in the testing distribution:
+https://packages.debian.org/testing/dballe
+
+Using docker images with wreport preinstalled is also possible:
+
+```
+docker run -it arpaesimc/fedora:31 /bin/bash
+docker run -it arpaesimc/centos:8 /bin/bash
+```
+
+If you want to build and install wreport yourself, you'll need to install the
+automake/autoconf/libtool packages then you can proceed as in most other Unix 
+software:
+
+```
+autoreconf -if 
+./configure
+make
+make install
+```
 
 if you're familiar with .rpm and .deb packaging you'll find the packaging 
 files in the `debian` and `fedora` directories
@@ -55,7 +73,7 @@ To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
 
 The author of wreport is Enrico Zini <enrico@enricozini.com>
 
-wreport is Copyright (C) 2005-2018 ARPAE-SIMC <urpsim@arpae.it>
+wreport is Copyright (C) 2005-2020 ARPAE-SIMC <urpsim@arpae.it>
 
 wreport is licensed under the terms of the GNU General Public License version
 2.
