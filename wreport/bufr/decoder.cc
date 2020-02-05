@@ -48,6 +48,13 @@ void Decoder::decode_sec1ed3()
     out.data_subcategory = 0xff;
     out.data_subcategory_local = in.read_byte(1, 9);
 
+    // Some sources use the 18th byte (in.read_byte(1, 17)) for the century,
+    // but they do so inconsistently, sometimes using 20 for 20xx, sometimes
+    // using 21 for "21st century". Some other sources store other values in
+    // that byte.
+    // We revert to ignoring it and perform an educated guess, hopefully by
+    // 2050 nobody will write BUFR ed3 anymore, and we'll only have to deal
+    // with historical data written before that time.
     out.rep_year = in.read_byte(1, 12);
     // Fix the century with a bit of euristics
     if (out.rep_year > 50)
@@ -58,8 +65,6 @@ void Decoder::decode_sec1ed3()
     out.rep_day = in.read_byte(1, 14);
     out.rep_hour = in.read_byte(1, 15);
     out.rep_minute = in.read_byte(1, 16);
-    if (in.read_byte(1, 17) != 0)
-        out.rep_year = in.read_byte(1, 17) * 100 + (out.rep_year % 100);
 }
 
 void Decoder::decode_sec1ed4()
