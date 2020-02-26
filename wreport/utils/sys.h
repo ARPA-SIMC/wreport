@@ -197,6 +197,15 @@ public:
     size_t read(void* buf, size_t count);
 
     /**
+     * Read `count` bytes into bufr, retrying partial reads, stopping at EOF.
+     *
+     * Return true if `count` bytes have been read, false in case of eof, and
+     * raise an exception in case EOF was found after reading between 0 and
+     * count-1 bytes.
+     */
+    bool read_all_or_retry(void* buf, size_t count);
+
+    /**
      * Read all the data into buf, throwing runtime_error in case of a partial
      * read
      */
@@ -279,6 +288,12 @@ public:
      * Perform retry if data was partially written.
      */
     void sendfile(FileDescriptor& out_fd, off_t offset, size_t count);
+
+    /// Get open flags for the file
+    int getfl();
+
+    /// Set open flags for the file
+    void setfl(int flags);
 
     operator int() const { return fd; }
 };
