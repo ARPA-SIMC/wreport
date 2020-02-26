@@ -113,7 +113,7 @@ Varinfo Interpreter::get_varinfo(Varcode code)
         TRACE("get_varinfo:applying %d increase of scale, ref, width\n", c_scale_ref_width_increase);
         scale += c_scale_ref_width_increase;
         bit_len += (10 * c_scale_ref_width_increase + 2) / 3;
-        bit_ref *= pow10[code];
+        bit_ref *= pow10[c_scale_ref_width_increase];
     }
 
     auto refval = c03_refval_overrides.find(code);
