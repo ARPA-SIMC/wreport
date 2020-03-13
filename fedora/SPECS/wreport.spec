@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.24
+Version: 3.25
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -184,6 +184,12 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Fri Mar 13 2020 Daniele Branchini <dbranchini@arpae.it> - 3.25-1
+- Added NEWS.md (#34)
+- Updated lookup/guessing of reference year century on BUFR ed.3 (#36)
+- Fix bug with C table modifier 207YYY (#37)
+- Improved documentation
+
 * Tue Oct  1 2019 Daniele Branchini <dbranchini@arpae.it> - 3.24-1
 - Added python bindings for convert_units (#30)
 - Added sphinx infrastructure for documentation
