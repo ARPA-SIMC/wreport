@@ -30,4 +30,4 @@ deploy:
 
     on:
         branch: master
-        condition: $DOCKER_IMAGE = centos:7
+        condition: $DOCKER_IMAGE = centos:8
