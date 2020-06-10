@@ -148,6 +148,7 @@ void CrexInput::debug_dump_next(const char* desc) const
         {
             case '\r':
                 fputs("\\r", stderr);
+                break;
             case '\n':
                 fputs("\\n", stderr);
                 break;

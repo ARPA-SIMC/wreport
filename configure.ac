@@ -197,6 +197,8 @@ AC_SUBST(LIBWREPORT_VERSION_INFO)
 dnl Give me warnings
 AX_CXXFLAGS_WARN_ALL
 
+AX_APPEND_FLAG([-Wextra -Wno-unused-parameter])
+
 if test x"$enable_doxy_undoc_warnings" = x"no"
 then
 	DOXYGEN_WARN_IF_UNDOCUMENTED=NO

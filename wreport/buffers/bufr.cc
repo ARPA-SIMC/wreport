@@ -17,15 +17,6 @@ using namespace std;
 
 namespace {
 
-const char* bufr_sec_names[] = {
-    "Indicator section",
-    "Identification section",
-    "Optional section",
-    "Data desription section",
-    "Data section",
-    "End section"
-};
-
 // Return a value with bitlen bits set to 1
 static inline uint32_t all_ones(int bitlen)
 {
