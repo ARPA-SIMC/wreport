@@ -14,6 +14,7 @@ wreportincludedir = $(includedir)/wreport
 # Include the .cc files that contain template definitions
 nobase_dist_wreportinclude_HEADERS = \
 	fwd.h \
+	version.h \
 	codetables.h \
 	conv.h \
 	dtable.h \
@@ -99,7 +100,7 @@ libwreport_la_SOURCES += utils/lua.cc var-lua.cc
 libwreport_la_LIBADD += $(LUA_LIBS)
 endif
 
-EXTRA_DIST = internals/compat.h main.dox style.dox features.dox examples.dox
+EXTRA_DIST = internals/compat.h main.dox style.dox features.dox examples.dox version.h.in
 
 #
 # Unit testing

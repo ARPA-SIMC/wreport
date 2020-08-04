@@ -1,9 +1,14 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_INIT(wreport, [3.25], [enrico@enricozini.org])
+# There seem to be no simple way to remove this redundancy in autotools.
+# Remember to edit both AC_INIT and here when changing version number
+VERSION_MAJOR=3
+VERSION_MINOR=25
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(wreport/version.h)
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Use libtool
@@ -61,6 +66,9 @@ AC_HEADER_STDC
 
 dnl Needed by subdir-objects
 AM_PROG_CC_C_O
+
+AC_DEFINE_UNQUOTED([WREPORT_VERSION_MAJOR], $VERSION_MAJOR, [Major version of wreport])
+AC_DEFINE_UNQUOTED([WREPORT_VERSION_MINOR], $VERSION_MINOR, [Minor version of wreport])
 
 dnl Check for missing functions in libc
 AC_CHECK_FUNC(vasprintf, , [

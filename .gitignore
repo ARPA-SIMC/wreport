@@ -30,6 +30,7 @@ Makefile
 /m4/lt*.m4
 /m4/libtool.m4
 /test-driver
+/wreport/version.h
 /wreport/btable.dox
 /wreport/uniconv.cc
 /wreport/tut_test
