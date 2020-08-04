@@ -1,6 +1,7 @@
 #ifndef WREPORT_FWD_H
 #define WREPORT_FWD_H
 
+#include <wreport/version.h>
 #include <cstdint>
 
 namespace wreport {
