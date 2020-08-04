@@ -1,0 +1,10 @@
+#ifndef WREPORT_VERSION_H
+#define WREPORT_VERSION_H
+
+/* Major version of wreport */
+#undef WREPORT_VERSION_MAJOR
+
+/* Minor version of wreport */
+#undef WREPORT_VERSION_MINOR
+
+#endif
