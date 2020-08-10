@@ -799,6 +799,32 @@ declare_test("bufr/issue36.bufr", [](const BufrBulletin& msg) {
     wassert(actual(s[0].enqi()) == 6);
 });
 
+declare_test("bufr/GPSR_work.bufr", [](const BufrBulletin& msg) {
+    wassert(actual((int)msg.edition_number) == 3);
+    wassert(actual(msg.rep_year) == 2020);
+    wassert(actual((unsigned)msg.data_subcategory_local) == 110u);
+    wassert(actual(msg.subsets.size()) == 4u);
+
+    const Subset& s = msg.subset(0);
+    wassert(actual(s.size()) == 175u);
+
+    wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 15));
+    wassert(actual(s[0].enqc()) == "NCAS-MTRS");
+});
+
+declare_test("bufr/GPSR_fail.bufr", [](const BufrBulletin& msg) {
+    wassert(actual((int)msg.edition_number) == 3);
+    wassert(actual(msg.rep_year) == 2020);
+    wassert(actual((unsigned)msg.data_subcategory_local) == 110u);
+    wassert(actual(msg.subsets.size()) == 4u);
+
+    const Subset& s = msg.subset(0);
+    wassert(actual(s.size()) == 175u);
+
+    wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 15));
+    wassert(actual(s[0].enqc()) == "NCAS-MTRS");
+});
+
 }
 
 #if 0

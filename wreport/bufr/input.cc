@@ -450,16 +450,11 @@ void Input::decode_string(Varinfo info, unsigned subsets, std::function<void(uns
     {
         Var var(info);
 
-        /* For compressed strings, the reference value must be all zeros */
-        for (size_t i = 0; i < len; ++i)
-            if (str[i] != 0)
-                error_unimplemented::throwf("compressed strings with %d bit deltas have non-zero reference value", diffbits);
-
         /* Let's also check that the number of
          * difference characters is the same length as
          * the reference string */
-        if (diffbits > len)
-            error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
+        if (diffbits * 8 > info->bit_len)
+            error_unimplemented::throwf("compressed strings with %d bits have %d bit deltas (deltas should not be longer than field)", info->bit_len, diffbits);
 
         for (unsigned i = 0; i < subsets; ++i)
         {
@@ -512,16 +507,11 @@ void Input::decode_string(Var& dest, unsigned subsets)
         if (!missing)
             dest.setc(str);
     } else {
-        /* For compressed strings, the reference value must be all zeros */
-        for (size_t i = 0; i < len; ++i)
-            if (str[i] != 0)
-                error_unimplemented::throwf("compressed strings with %d bit deltas have non-zero reference value", diffbits);
-
         /* Let's also check that the number of
          * difference characters is the same length as
          * the reference string */
-        if (diffbits > len)
-            error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
+        if (diffbits * 8 > info->bit_len)
+            error_unimplemented::throwf("compressed strings with %d bits have %d bit deltas (deltas should not be longer than field)", info->bit_len, diffbits);
 
         // Set the variable value
         if (decode_string(diffbits * 8, str, len))
@@ -613,16 +603,12 @@ void Input::decode_string(Varinfo info, unsigned subsets, DispatchToSubsets& des
         // Add the same string to all the subsets
         dest.add_same(Var(info, str));
     } else {
-        /* For compressed strings, the reference value must be all zeros */
-        for (size_t i = 0; i < len; ++i)
-            if (str[i] != 0)
-                error_unimplemented::throwf("compressed strings with %d bit deltas have non-zero reference value", diffbits);
-
         /* Let's also check that the number of
          * difference characters is the same length as
          * the reference string */
-        if (diffbits > len)
-            error_unimplemented::throwf("compressed strings with %zd characters have %d bit deltas (deltas should not be longer than field)", len, diffbits);
+        if (diffbits * 8 > info->bit_len)
+            error_unimplemented::throwf("compressed strings with %d bits have %d bit deltas (deltas should not be longer than field)",
+                    info->bit_len, diffbits * 8);
 
         for (unsigned i = 0; i < subsets; ++i)
         {
