@@ -805,11 +805,27 @@ declare_test("bufr/GPSR_work.bufr", [](const BufrBulletin& msg) {
     wassert(actual((unsigned)msg.data_subcategory_local) == 110u);
     wassert(actual(msg.subsets.size()) == 4u);
 
-    const Subset& s = msg.subset(0);
-    wassert(actual(s.size()) == 175u);
+    {
+        const Subset& s = msg.subset(0);
+        wassert(actual(s.size()) == 175u);
+        wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 15));
+        wassert(actual(s[0].enqc()) == "NCAS-MTRS");
+    }
 
-    wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 15));
-    wassert(actual(s[0].enqc()) == "NCAS-MTRS");
+    {
+        const Subset& s = msg.subset(1);
+        wassert(actual(s[0].enqc()) == "NCAS-MTRS");
+    }
+
+    {
+        const Subset& s = msg.subset(2);
+        wassert(actual(s[0].enqc()) == "NWMR-MTRS");
+    }
+
+    {
+        const Subset& s = msg.subset(2);
+        wassert(actual(s[0].enqc()) == "NWMR-MTRS");
+    }
 });
 
 declare_test("bufr/GPSR_fail.bufr", [](const BufrBulletin& msg) {
@@ -818,11 +834,27 @@ declare_test("bufr/GPSR_fail.bufr", [](const BufrBulletin& msg) {
     wassert(actual((unsigned)msg.data_subcategory_local) == 110u);
     wassert(actual(msg.subsets.size()) == 4u);
 
-    const Subset& s = msg.subset(0);
-    wassert(actual(s.size()) == 175u);
+    {
+        const Subset& s = msg.subset(0);
+        wassert(actual(s.size()) == 175u);
+        wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 15));
+        wassert(actual(s[0].enqc()) == "NCAS-MTRS");
+    }
 
-    wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 15));
-    wassert(actual(s[0].enqc()) == "NCAS-MTRS");
+    {
+        const Subset& s = msg.subset(1);
+        wassert(actual(s[0].enqc()) == "NCAS-MTRS");
+    }
+
+    {
+        const Subset& s = msg.subset(2);
+        wassert(actual(s[0].enqc()) == "NWMR-MTRS");
+    }
+
+    {
+        const Subset& s = msg.subset(2);
+        wassert(actual(s[0].enqc()) == "NWMR-MTRS");
+    }
 });
 
 }
