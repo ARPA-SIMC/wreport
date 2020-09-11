@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.25
+Version: 3.26
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -184,6 +184,11 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Fri Sep 11 2020 Daniele Branchini <dbranchini@Branchini-L-SMR.smr.arpa.emr.net> - 3.26-1%{?dist}
+- Decode compressed string with non-empty reference values (#38)
+- Updated wobble and wobblepy
+- Always include wreport/version.h so that code that needs it can be compatibile with old versions
+
 * Fri Mar 13 2020 Daniele Branchini <dbranchini@arpae.it> - 3.25-1
 - Added NEWS.md (#34)
 - Updated lookup/guessing of reference year century on BUFR ed.3 (#36)

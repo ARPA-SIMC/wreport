@@ -1,3 +1,9 @@
+# New in version 3.26
+
+* Decode compressed string with non-empty reference values (#38)
+* Updated wobble and wobblepy
+* Always include wreport/version.h so that code that needs it can be compatibile with old versions
+
 # New in version 3.25
 
 * Added NEWS.md (#34)
