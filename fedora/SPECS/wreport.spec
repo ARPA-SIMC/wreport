@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.26
+Version: 3.27
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -184,7 +184,10 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
-* Fri Sep 11 2020 Daniele Branchini <dbranchini@Branchini-L-SMR.smr.arpa.emr.net> - 3.26-1%{?dist}
+* Wed Sep 30 2020 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.27-1
+- Support Lua 5.4
+
+* Fri Sep 11 2020 Daniele Branchini <dbranchini@arpae.it> - 3.26-1
 - Decode compressed string with non-empty reference values (#38)
 - Updated wobble and wobblepy
 - Always include wreport/version.h so that code that needs it can be compatibile with old versions

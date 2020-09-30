@@ -1,3 +1,7 @@
+# New in version 3.27
+
+* Support Lua 5.4
+
 # New in version 3.26
 
 * Decode compressed string with non-empty reference values (#38)
