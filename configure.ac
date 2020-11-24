@@ -154,15 +154,15 @@ then
     then
         enable_docs=no
     fi
+
+    DOXYGEN_OUTPUT_DIR="$top_builddir/doc/"
+    AC_SUBST(DOXYGEN_OUTPUT_DIR)
 fi
 
 AC_SUBST(DOXYGEN)
 AC_SUBST(SPHINX_BUILD)
 
 LIBS="$LIBS -lm"
-
-confdir='${sysconfdir}'"/$PACKAGE"
-AC_SUBST(confdir)
 
 tabledir='${datadir}'"/$PACKAGE"
 AC_SUBST(tabledir)

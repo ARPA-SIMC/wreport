@@ -17,5 +17,30 @@ table_dir = get_option('datadir') / 'wreport'
 pymod = import('python')
 python3 = pymod.find_installation('python3', required: false)
 
+if python3.found()
+    # FIXME: python3.path() is only available from meson 0.50: this is a workaround
+    python3_path = python3.get_variable('BINDIR') / python3.get_variable('PYTHON') + python3.language_version()
+
+    sphinx = find_program('sphinx-build', 'sphinx-build-3', 'sphinx-build-' + python3.language_version(), required: false)
+
+    # TODO: check if breathe is installed
+    # TODO AX_PYTHON_MODULE(breathe)
+
+    doxygen = find_program('doxygen', required : false)
+
+    build_docs = sphinx.found() and doxygen.found()
+    docdir = get_option('datadir') / 'doc' / meson.project_name()
+else
+    warning('Documentation disabled, requires doxygen, sphinx, and the breathe python module')
+    build_docs = false
+endif
+
 subdir('wreport')
-subdir('python')
+
+if python3.found()
+    subdir('python')
+endif
+
+if build_docs
+    subdir('doc')
+endif

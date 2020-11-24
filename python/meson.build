@@ -28,8 +28,6 @@ python_tests = [
 testenv = find_program('../testenv')
 
 foreach t: python_tests
-    # TODO: python3.path() is only available from meson 0.50: this is a workaround
-    python3_path = python3.get_variable('BINDIR') / python3.get_variable('PYTHON') + python3.get_variable('VERSION')
     test(t, testenv, args: [files(t)], env: [
         'PYTHON=' + python3_path,
         'PYTHONPATH=' + meson.current_build_dir(),
