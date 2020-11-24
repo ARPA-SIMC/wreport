@@ -2,7 +2,7 @@
 
 TOP_SRCDIR=$(readlink -f $(dirname $0))
 
-CMD=`pwd`/"$1"
+CMD=$(readlink -f "$1")
 
 ## Set up the test environment
 
