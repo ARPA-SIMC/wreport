@@ -15,6 +15,7 @@ override_dh_auto_install:
 	# Remove absolute build path from tag file, resulting in <path>.</path>
 	sed -i -e 's@$(CURDIR)@/usr/include@g' \
 		debian/tmp/usr/share/doc/wreport/libwreport.doxytags
+	rm -r debian/tmp/usr/share/doc/wreport/xml
 
 vercheck:
 	debian/vercheck > /dev/null
