@@ -30,7 +30,7 @@ build-docs: $(cdoxdeps) $(sphinx_doc_sources) $(mainpages)
 		echo "No doxygen warnings about undocumented functions. Use ./configure --enable-doxy-undoc-warnings to turn them on" \
 		|| true
 	$(DOXYGEN) $<
-	$(top_srcdir)/run-local $(SPHINX_BUILD) -b html src html/
+	top_builddir=$(abs_top_builddir) $(top_srcdir)/run-local $(SPHINX_BUILD) -b html src html/
 
 libwreport.doxytags: build-docs
 html/index.html: build-docs

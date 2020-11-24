@@ -155,7 +155,7 @@ then
         enable_docs=no
     fi
 
-    DOXYGEN_OUTPUT_DIR="$top_builddir/doc/"
+    DOXYGEN_OUTPUT_DIR="$ac_abs_confdir/doc/"
     AC_SUBST(DOXYGEN_OUTPUT_DIR)
 fi
 
