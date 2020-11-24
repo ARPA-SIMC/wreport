@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-TOP_SRCDIR=`pwd`/`dirname $0`
+TOP_SRCDIR=$(readlink -f $(dirname $0))
 
 CMD=`pwd`/"$1"
 
