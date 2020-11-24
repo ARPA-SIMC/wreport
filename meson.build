@@ -45,3 +45,12 @@ endif
 if build_docs
     subdir('doc')
 endif
+
+
+# Generate pkg-config metadata
+pkg = import('pkgconfig')
+pkg.generate(libwreport,
+    description: 'Weather report library',
+    filebase: 'libwreport',
+    requires: [lua_dep],
+)
