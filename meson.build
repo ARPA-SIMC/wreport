@@ -9,4 +9,6 @@ conf_data.set('HAVE_LUA', lua_dep.found())
 # Generate config.h
 configure_file(output: 'config.h', configuration: conf_data)
 
+table_dir = get_option('datadir') / 'wreport'
+
 subdir('wreport')

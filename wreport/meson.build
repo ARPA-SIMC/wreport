@@ -52,8 +52,7 @@ libwreport = both_libraries('wreport',
         libwreport_sources,
         install: true,
         include_directories: toplevel_inc,
-	# TODO: set the right table_dir
-        cpp_args: '-DTABLE_DIR="."',
+        cpp_args: '-DTABLE_DIR="${table_dir}"',
         dependencies: [
                 lua_dep,
         ])
@@ -102,7 +101,7 @@ endif
 test_wreport = executable('test-wreport', test_wreport_sources,
         include_directories: toplevel_inc,
 	# TODO: set the right table_dir
-        cpp_args: '-DTABLE_DIR="."',
+        cpp_args: '-DTABLE_DIR="${table_dir}"',
         link_with: [
                 libwreport,
         ],
