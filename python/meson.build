@@ -13,6 +13,7 @@ py_wreport = python3.extension_module('_wreport',
     dependencies: python3.dependency(),
     link_with: libwreport,
     install: true,
+    install_dir: python3.get_path('platlib'),
 )
 
 python3.install_sources('wreport/__init__.py', pure: false, subdir: 'wreport')
