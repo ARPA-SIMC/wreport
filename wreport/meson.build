@@ -1,3 +1,9 @@
+# Generate header with version information
+configure_file(output: 'version.h', configuration: {
+	'WREPORT_VERSION_MAJOR': version_array[0],
+	'WREPORT_VERSION_MINOR': version_array[1],
+})
+
 libwreport_sources = [
 	'options.cc',
 	'error.cc',

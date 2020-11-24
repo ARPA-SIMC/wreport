@@ -1,5 +1,7 @@
 project('wreport', 'cpp', version: '3.25', license : 'GPL-2.0-or-later')
 
+version_array = meson.project_version().split('.')
+
 conf_data = configuration_data()
 
 # Dependencies
