@@ -13,6 +13,8 @@ py_wreport = python3.extension_module('_wreport',
     dependencies: python3.dependency(),
     link_with: libwreport,
     install: true,
+    # Meson does not currently autodetect the right target for python modules:
+    # https://github.com/mesonbuild/meson/issues/6331
     install_dir: python3.get_path('platlib'),
 )
 
