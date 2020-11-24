@@ -1,6 +1,7 @@
 project('wreport', 'cpp', version: '3.25', license : 'GPL-2.0-or-later')
 
 version_array = meson.project_version().split('.')
+libwreport_so_version = '3.0.3'
 
 conf_data = configuration_data()
 conf_data.set_quoted('PACKAGE_VERSION', meson.project_version())

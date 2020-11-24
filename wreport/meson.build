@@ -56,6 +56,7 @@ toplevel_inc = include_directories('..')
 
 libwreport = both_libraries('wreport',
         libwreport_sources,
+        version: libwreport_so_version,
         install: true,
         include_directories: toplevel_inc,
         cpp_args: '-DTABLE_DIR="${table_dir}"',
