@@ -203,6 +203,7 @@ struct Query
         fprintf(out, "\n");
     }
 
+    virtual ~Query() {}
     virtual bool is_acceptable(const BufrTableID& id) const = 0;
     virtual bool is_acceptable(const CrexTableID& id) const = 0;
     virtual BufrTable* choose_best(BufrTable& first, BufrTable& second) const = 0;
