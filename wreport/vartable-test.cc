@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "vartable.h"
 #include "utils/string.h"
+#include "config.h"
 #include <cstring>
 #include <cstdlib>
 

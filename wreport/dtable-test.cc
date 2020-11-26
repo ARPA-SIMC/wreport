@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "dtable.h"
 #include "utils/string.h"
+#include "config.h"
 
 using namespace wreport;
 using namespace wreport::tests;

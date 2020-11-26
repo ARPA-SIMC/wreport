@@ -1,8 +1,9 @@
-#include "tests.h"
+#include "wreport/tests.h"
 #include "interpreter.h"
 #include "wreport/vartable.h"
 #include "wreport/dtable.h"
-#include "utils/string.h"
+#include "wreport/utils/string.h"
+#include "config.h"
 
 using namespace wreport;
 using namespace wreport::tests;
