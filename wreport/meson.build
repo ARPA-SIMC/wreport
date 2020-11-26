@@ -71,12 +71,35 @@ install_headers(
         'dtable.h',
         'error.h',
         'notes.h',
+        'bulletin.h',
+        'opcodes.h',
+        'options.h',
+        'subset.h',
+        'tableinfo.h',
+        'tables.h',
+        'var.h',
+        'varinfo.h',
+        'vartable.h',
+        'tests.h',
+        'benchmark.h',
+        'python.h',
+        subdir: 'wreport',
+)
+
+install_headers(
         'buffers/bufr.h',
         'buffers/crex.h',
+        subdir: 'wreport/buffers',
+)
+
+install_headers(
         'bufr/trace.h',
         'bufr/input.h',
         'bufr/decoder.h',
-        'bulletin.h',
+        subdir: 'wreport/bufr',
+)
+
+install_headers(
         'bulletin/associated_fields.h',
         'bulletin/bitmaps.h',
         'bulletin/interpreter.h',
@@ -84,15 +107,15 @@ install_headers(
         'bulletin/dds-validator.h',
         'bulletin/dds-printer.h',
         'bulletin/dds-scanfeatures.h',
-        'opcodes.h',
-        'options.h',
-        'subset.h',
+        subdir: 'wreport/bulletin',
+)
+
+install_headers(
         'internals/tabledir.h',
-        'tableinfo.h',
-        'tables.h',
-        'var.h',
-        'varinfo.h',
-        'vartable.h',
+        subdir: 'wreport/internals',
+)
+
+install_headers(
         'utils/lua.h',
         'utils/string.h',
         'utils/sys.h',
@@ -100,10 +123,7 @@ install_headers(
         'utils/term.h',
         'utils/testrunner.h',
         'utils/tests.h',
-        'tests.h',
-        'benchmark.h',
-        'python.h',
-        subdir: 'wreport',
+        subdir: 'wreport/utils',
 )
 
 

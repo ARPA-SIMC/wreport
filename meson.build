@@ -27,6 +27,7 @@ if python3.found()
 
     # TODO: check if breathe is installed
     # TODO AX_PYTHON_MODULE(breathe)
+    # See https://gitlab.freedesktop.org/wayland/weston/-/blob/master/doc/sphinx/meson.build
 
     doxygen = find_program('doxygen', required : false)
 
