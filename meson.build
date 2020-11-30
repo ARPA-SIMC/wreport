@@ -10,7 +10,15 @@ conf_data.set_quoted('PACKAGE_VERSION', meson.project_version())
 conf_data.set_quoted('TABLE_DIR', get_option('prefix') / table_dir)
 
 # Dependencies
-lua_dep = dependency('lua5.2', required: false)
+foreach name : ['lua', 'lua5.1', 'lua5.2', 'lua5.3']
+    lua_dep = dependency(name, version: '>=5.1.11', required: false)
+    if lua_dep.found()
+        break
+    endif
+endforeach
+if not lua_dep.found()
+    error('Lua could not be found!')
+endif
 conf_data.set('HAVE_LUA', lua_dep.found())
 
 # Generate config.h
