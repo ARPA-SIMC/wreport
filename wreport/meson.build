@@ -2,7 +2,7 @@
 configure_file(output: 'version.h', configuration: {
         'WREPORT_VERSION_MAJOR': version_array[0],
         'WREPORT_VERSION_MINOR': version_array[1],
-})
+}, install_dir: join_paths(get_option('includedir'), 'wreport'))
 
 libwreport_sources = [
         'options.cc',
@@ -65,7 +65,6 @@ libwreport = both_libraries('wreport',
 
 install_headers(
         'fwd.h',
-        'version.h',
         'codetables.h',
         'conv.h',
         'dtable.h',
