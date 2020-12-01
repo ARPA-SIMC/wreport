@@ -18,7 +18,7 @@ BuildRequires: python3-rpm-macros >= 3-23
 %endif
 
 BuildRequires: doxygen
-BuildRequires: libtool
+BuildRequires: meson
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
@@ -112,32 +112,15 @@ cp -a . %{py3dir}
 
 %build
 
-autoreconf -ifv
-
-%configure --disable-static
-make
-
-pushd %{py3dir}
-autoreconf -ifv
-%configure PYTHON=%{__python3} --disable-static
-make
-popd
+%meson
+%meson_build
 
 %check
-make check
-pushd %{py3dir}
-make check
-popd
+%meson_test
 
 
 %install
-[ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
-
-pushd %{py3dir}
-make install DESTDIR="%{buildroot}"
-popd
-
-make install DESTDIR="%{buildroot}"
+%meson_install
 
 %clean
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
