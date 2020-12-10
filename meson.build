@@ -21,6 +21,11 @@ if not lua_dep.found()
 endif
 conf_data.set('HAVE_LUA', lua_dep.found())
 
+compiler = meson.get_compiler('cpp')
+if compiler.has_function('getopt_long')
+    conf_data.set('HAS_GETOPT_LONG', true)
+endif
+
 # Generate config.h
 configure_file(output: 'config.h', configuration: conf_data)
 
@@ -47,6 +52,7 @@ else
 endif
 
 subdir('wreport')
+subdir('src')
 
 if python3.found()
     subdir('python')
