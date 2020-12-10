@@ -17,6 +17,9 @@
  * code is also changed.
  */
 
+/// Newly introduced options get a way for code to test for their existance
+#define WREPORT_OPTIONS_HAS_VAR_CLAMP_DOMAIN_ERRORS
+
 namespace wreport {
 namespace options {
 
@@ -27,6 +30,15 @@ namespace options {
  * variable gets set to undefined. If false (default), error_domain is raised.
  */
 extern thread_local bool var_silent_domain_errors;
+
+/**
+ * Whether domain errors on Var assignments raise exceptions.
+ *
+ * If true, domain errors on variable assignments are silent, and the target
+ * variable gets set to the minimum or maximum extreme value of the domain
+ * corresponding to the direction the value is overflowing.
+ */
+extern thread_local bool var_clamp_domain_errors;
 
 /**
  * Temporarily override a variable while this object is in scope.

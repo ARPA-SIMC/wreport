@@ -407,11 +407,21 @@ void Var::assign_i_checked(int32_t val)
     // Guard against overflows
     if (val < m_info->imin || val > m_info->imax)
     {
-        unset();
         if (options::var_silent_domain_errors)
+        {
+            unset();
             return;
-        error_domain::throwf("Value %i is outside the range [%i,%i] for %01d%02d%03d (%s)",
-                (int)val, m_info->imin, m_info->imax, WR_VAR_FXY(m_info->code), m_info->desc);
+        } else if (options::var_clamp_domain_errors) {
+            if (val < m_info->imin)
+                val = m_info->imin;
+            else if (val > m_info->imax)
+                val = m_info->imax;
+            // flow continues to setting value
+        } else {
+            unset();
+            error_domain::throwf("Value %i is outside the range [%i,%i] for %01d%02d%03d (%s)",
+                    (int)val, m_info->imin, m_info->imax, WR_VAR_FXY(m_info->code), m_info->desc);
+        }
     }
     m_value.i = val;
     m_isset = true;
@@ -422,23 +432,37 @@ void Var::assign_d_checked(double val)
     // Guard against NaNs
     if (std::isnan(val))
     {
-        unset();
         if (options::var_silent_domain_errors)
+        {
+            unset();
             return;
-        error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
-                val, m_info->dmin, m_info->dmax,
-                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
+        } else {
+            unset();
+            error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
+                    val, m_info->dmin, m_info->dmax,
+                    WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
+        }
     }
 
     // Guard against overflows
     if (val < m_info->dmin || val > m_info->dmax)
     {
-        unset();
         if (options::var_silent_domain_errors)
+        {
+            unset();
             return;
-        error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
-                val, m_info->dmin, m_info->dmax,
-                WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
+        } else if (options::var_clamp_domain_errors) {
+            if (val < m_info->dmin)
+                val = m_info->dmin;
+            else if (val > m_info->dmax)
+                val = m_info->dmax;
+            // flow continues to setting value
+        } else {
+            unset();
+            error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",
+                    val, m_info->dmin, m_info->dmax,
+                    WR_VAR_X(m_info->code), WR_VAR_Y(m_info->code), m_info->desc);
+        }
     }
     m_value.i = m_info->encode_decimal(val);
     m_isset = true;
