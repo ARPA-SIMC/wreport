@@ -11,7 +11,7 @@ conf_data.set_quoted('TABLE_DIR', get_option('prefix') / table_dir)
 
 # Dependencies
 foreach name : ['lua', 'lua5.1', 'lua5.2', 'lua5.3']
-    lua_dep = dependency(name, version: '>=5.1.11', required: false)
+    lua_dep = dependency(name, version: '>=5.1.1', required: false)
     if lua_dep.found()
         break
     endif
