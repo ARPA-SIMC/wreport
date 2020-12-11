@@ -141,7 +141,6 @@ cp -a . %{py3dir}
 
 %files -n lib%{name}-devel
 %defattr(-,root,root,-)
-%exclude %{_libdir}/libwreport.la
 %{_libdir}/pkgconfig/libwreport.pc
 %{_libdir}/libwreport.so
 
@@ -159,10 +158,7 @@ cp -a . %{py3dir}
 
 %files -n %{python3_vers}-%{name}3
 %defattr(-,root,root,-)
-%dir %{python3_sitelib}/wreport
-%{python3_sitelib}/wreport/*
 %dir %{python3_sitearch}
-%exclude %{python3_sitearch}/*.la
 %{python3_sitearch}/*.so*
 
 
