@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.27
+Version: 3.28
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -184,6 +184,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Fri Dec 11 2020 Daniele Branchini <dbranchini@arpae.it> - 3.28-1
+- Implemented var_clamp_domain_errors option, required by dballe#241
+
 * Wed Sep 30 2020 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.27-1
 - Support Lua 5.4
 

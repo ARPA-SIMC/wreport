@@ -1,3 +1,7 @@
+# New in version 3.28
+
+* Implemented var_clamp_domain_errors option, required by dballe:#241
+
 # New in version 3.27
 
 * Support Lua 5.4
