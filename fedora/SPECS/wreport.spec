@@ -142,6 +142,7 @@ cp -a . %{py3dir}
 %files -n lib%{name}-devel
 %defattr(-,root,root,-)
 %{_libdir}/pkgconfig/libwreport.pc
+%exclude %{_libdir}/libwreport.a
 %{_libdir}/libwreport.so
 
 %dir %{_includedir}/%{name}
