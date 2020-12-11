@@ -158,8 +158,9 @@ cp -a . %{py3dir}
 
 %files -n %{python3_vers}-%{name}3
 %defattr(-,root,root,-)
-%dir %{python3_sitearch}
+%dir %{python3_sitearch}/wreport/
 %{python3_sitearch}/*.so*
+%{python3_sitearch}/wreport/*
 
 
 %changelog
