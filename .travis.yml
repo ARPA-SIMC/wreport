@@ -9,8 +9,11 @@ deploy:
     simc/stable fedora/SPECS/wreport.spec"
   true:
     branch: master
-    condition: $DOCKER_IMAGE = centos:8
+    condition: $DOCKER_IMAGE = centos:8 && $TRAVIS_CPU_ARCH != ppc64le # Diabling deploy for ppc64le
 dist: bionic
+arch:
+- amd64
+- ppc64le
 env:
 - DOCKER_IMAGE=centos:7
 - DOCKER_IMAGE=centos:8
@@ -22,6 +25,9 @@ language: generic
 matrix:
   allow_failures:
   - env: DOCKER_IMAGE=fedora:rawhide
+  exclude:
+  - arch: ppc64le
+    env: DOCKER_IMAGE=fedora:rawhide  # ppc doesn't have this image
 script:
 - docker run -v ${TRAVIS_BUILD_DIR}:/root/src/ -w /root/src/ $DOCKER_IMAGE /bin/bash
   .travis-build.sh $DOCKER_IMAGE
