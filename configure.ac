@@ -1,10 +1,10 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(wreport, [3.28], [enrico@enricozini.org])
+AC_INIT(wreport, [3.29], [enrico@enricozini.org])
 # There seem to be no simple way to remove this redundancy in autotools.
 # Remember to edit both AC_INIT and here when changing version number
 VERSION_MAJOR=3
-VERSION_MINOR=25
+VERSION_MINOR=29
 AC_CONFIG_SRCDIR([configure.ac])
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_CONFIG_HEADER(config.h)

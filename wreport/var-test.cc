@@ -348,7 +348,7 @@ add_method("truncation", []() {
     wassert(actual(norm) == "Budapest Pestszentlo");
 });
 add_method("domain", []() {
-    // Test domain erros and var_silent_domain_errors
+    // Test domain errors and var_silent_domain_errors
     const Vartable* table = Vartable::get_bufr("B0000000000000014000");
 
     Varinfo info = table->query(WR_VAR(0, 1, 1));
@@ -357,6 +357,82 @@ add_method("domain", []() {
     info = table->query(WR_VAR(0, 2, 106));
     wassert(test_domain_error<double>(info, 0, 6.2));
 });
+
+add_method("domain_hook", []() {
+    // Test domain errors and var_silent_domain_errors
+    struct Hook : public wreport::options::DomainErrorHook
+    {
+        unsigned int_called = 0;
+        unsigned double_called = 0;
+
+        void handle_domain_error_int(Var& var, int32_t val) override
+        {
+            const Vartable* table = Vartable::get_bufr("B0000000000000014000");
+            Varinfo qinfo = table->query(WR_VAR(0, 33, 7));
+
+            ++int_called;
+            var.seti(0);
+            var.seta(Var(qinfo, 1));
+        }
+        void handle_domain_error_double(Var& var, double val) override
+        {
+            const Vartable* table = Vartable::get_bufr("B0000000000000014000");
+            Varinfo qinfo = table->query(WR_VAR(0, 33, 7));
+
+            ++double_called;
+            var.setd(0.0);
+            var.seta(Var(qinfo, 1));
+        }
+    } hook;
+
+    const Vartable* table = Vartable::get_bufr("B0000000000000014000");
+
+    Varinfo info = table->query(WR_VAR(0, 1, 1));
+    // wassert(test_domain_error<int>(info, 0, 126));
+    {
+        Var var(info, 1);
+        auto o = options::local_override(options::var_hook_domain_errors, &hook);
+        wassert(var.set(127));
+        wassert(actual(var.enqi()) == 0);
+        wassert(actual(hook.int_called) == 1u);
+        wassert(actual(hook.double_called) == 0u);
+
+        const Var* q = var.enqa(WR_VAR(0, 33, 7));
+        wassert_true(q);
+        wassert(actual_varcode(q->code()) == WR_VAR(0, 33, 7));
+        wassert(actual(q->enqi()) == 1);
+    }
+
+    info = table->query(WR_VAR(0, 2, 106));
+    // wassert(test_domain_error<double>(info, 0, 6.2));
+    {
+        Var var(info, 1.0);
+        auto o = options::local_override(options::var_hook_domain_errors, &hook);
+        wassert(var.set(6.3));
+        wassert(actual(var.enqd()) == 0.0);
+        wassert(actual(hook.int_called) == 1u);
+        wassert(actual(hook.double_called) == 1u);
+
+        const Var* q = var.enqa(WR_VAR(0, 33, 7));
+        wassert_true(q);
+        wassert(actual_varcode(q->code()) == WR_VAR(0, 33, 7));
+        wassert(actual(q->enqi()) == 1);
+
+        var.unset();
+        var.clear_attrs();
+
+        wassert(var.set(nan("")));
+        wassert(actual(var.enqd()) == 0.0);
+        wassert(actual(hook.int_called) == 1u);
+        wassert(actual(hook.double_called) == 2u);
+
+        q = var.enqa(WR_VAR(0, 33, 7));
+        wassert_true(q);
+        wassert(actual_varcode(q->code()) == WR_VAR(0, 33, 7));
+        wassert(actual(q->enqi()) == 1);
+    }
+});
+
 add_method("binary", []() {
     // Test binary values
     _Varinfo info06; info06.set_binary(WR_VAR(0, 0, 0), "TEST BINARY 06 bits", 6);

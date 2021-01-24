@@ -417,6 +417,9 @@ void Var::assign_i_checked(int32_t val)
             else if (val > m_info->imax)
                 val = m_info->imax;
             // flow continues to setting value
+        } else if (options::var_hook_domain_errors) {
+            options::var_hook_domain_errors->handle_domain_error_int(*this, val);
+            return;
         } else {
             unset();
             error_domain::throwf("Value %i is outside the range [%i,%i] for %01d%02d%03d (%s)",
@@ -435,6 +438,9 @@ void Var::assign_d_checked(double val)
         if (options::var_silent_domain_errors)
         {
             unset();
+            return;
+        } else if (options::var_hook_domain_errors) {
+            options::var_hook_domain_errors->handle_domain_error_double(*this, val);
             return;
         } else {
             unset();
@@ -457,6 +463,9 @@ void Var::assign_d_checked(double val)
             else if (val > m_info->dmax)
                 val = m_info->dmax;
             // flow continues to setting value
+        } else if (options::var_hook_domain_errors) {
+            options::var_hook_domain_errors->handle_domain_error_double(*this, val);
+            return;
         } else {
             unset();
             error_domain::throwf("Value %g is outside the range [%g,%g] for B%02d%03d (%s)",

@@ -1,6 +1,8 @@
 #ifndef WREPORT_OPTIONS_H
 #define WREPORT_OPTIONS_H
 
+#include <cstdint>
+
 /** @file
  *
  * Configuration variables to control configurable aspects of wreport's
@@ -19,8 +21,11 @@
 
 /// Newly introduced options get a way for code to test for their existance
 #define WREPORT_OPTIONS_HAS_VAR_CLAMP_DOMAIN_ERRORS
+#define WREPORT_OPTIONS_HAS_VAR_HOOK_DOMAIN_ERRORS
 
 namespace wreport {
+class Var;
+
 namespace options {
 
 /**
@@ -41,6 +46,26 @@ extern thread_local bool var_silent_domain_errors;
 extern thread_local bool var_clamp_domain_errors;
 
 /**
+ * Interface for a callback hook system to delegate handling domain errors to
+ * the code using wreport.
+ */
+struct DomainErrorHook
+{
+    virtual ~DomainErrorHook();
+    virtual void handle_domain_error_int(Var& var, int32_t val) = 0;
+    virtual void handle_domain_error_double(Var& var, double val) = 0;
+};
+
+/**
+ * If set, delegate handling domain errors to this object.
+ *
+ * Other than calling the hook functions, setting an out-of-domain value will
+ * do nothing. The object will have responsibility for setting or unsetting the
+ * Var as needed.
+ */
+extern thread_local DomainErrorHook* var_hook_domain_errors;
+
+/**
  * Temporarily override a variable while this object is in scope.
  *
  * Note that if the variable is global, then the override is temporally limited
@@ -55,13 +80,13 @@ extern thread_local bool var_clamp_domain_errors;
  * }
  * \endcode
  */
-template<typename T>
+template<typename T, typename T1 = T>
 struct LocalOverride
 {
     T old_value;
     T& param;
 
-    LocalOverride(T& param, const T& new_value)
+    LocalOverride(T& param, T1 new_value)
         : old_value(param), param(param)
     {
         param = new_value;
@@ -72,7 +97,7 @@ struct LocalOverride
     }
 };
 
-template<typename T> static inline LocalOverride<T> local_override(T& param, const T& new_value)
+template<typename T, typename T1 = T> static inline LocalOverride<T> local_override(T& param, T1 new_value)
 {
     return LocalOverride<T>(param, new_value);
 }

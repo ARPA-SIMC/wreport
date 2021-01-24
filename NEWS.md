@@ -1,6 +1,10 @@
+# New in version 3.29
+
+* Implemented `var_hook_domain_errors` option, required by dballe:#241
+
 # New in version 3.28
 
-* Implemented var_clamp_domain_errors option, required by dballe:#241
+* Implemented `var_clamp_domain_errors` option, required by dballe:#241
 
 # New in version 3.27
 
