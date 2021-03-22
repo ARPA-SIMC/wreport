@@ -111,6 +111,11 @@ class Var(unittest.TestCase):
         self.assertIsNone(var.enqa("B33007"))
         self.assertEqual(var.get_attrs(), [])
 
+    def testIssue42(self):
+        table = wreport.Vartable.get_bufr(master_table_version_number=24)
+        var = wreport.Var(table["B13011"], "-9")
+        self.assertEqual(var.enqd(), -0.9)
+
 
 if __name__ == "__main__":
     from testlib import main
