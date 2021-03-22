@@ -135,7 +135,7 @@ add_method("long_sequence", []() {
 
     Opcodes chain = table->query(WR_VAR(3, 10, 77));
     wassert(actual(chain.size()) == 127u);
-    wassert(actual(chain.head()) == WR_VAR(0, 10, 33));
+    wassert(actual(chain.head()) == WR_VAR(0, 01, 33));
 });
 
 }
