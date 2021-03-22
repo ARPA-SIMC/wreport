@@ -80,7 +80,8 @@ struct DTableBase : public DTable
                 if (last_count != nentries_check)
                     error_parse::throwf(pathname.c_str(), line_no, "advertised number of expansion items (%d) does not match the number of items found (%d)", nentries_check, last_count);
 
-                nentries_check = strtol(line + 7, 0, 10);
+                char* next = nullptr;
+                nentries_check = strtol(line + 7, &next, 10);
                 if (nentries_check < 1)
                     throw error_parse(pathname.c_str(), line_no, "less than one entry advertised in the expansion");
 
@@ -88,7 +89,10 @@ struct DTableBase : public DTable
                     entries.push_back(Entry(dcode, begin, varcodes.size()));
                 begin = varcodes.size();
                 dcode = varcode_parse(line + 1);
-                varcodes.push_back(varcode_parse(line + 11));
+
+                while (*next && isspace(*next))
+                    ++next;
+                varcodes.push_back(varcode_parse(next));
 
                 // fprintf(stderr, "Debug: D%05d %d entries\n", dcode, nentries);
             }

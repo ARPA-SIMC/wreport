@@ -857,6 +857,20 @@ declare_test("bufr/GPSR_fail.bufr", [](const BufrBulletin& msg) {
     }
 });
 
+declare_test("bufr/issue43.bufr", [](const BufrBulletin& msg) {
+    wassert(actual((int)msg.edition_number) == 4);
+    wassert(actual(msg.rep_year) == 2021);
+    wassert(actual((unsigned)msg.data_subcategory_local) == 10u);
+    wassert(actual(msg.subsets.size()) == 46u);
+
+    {
+        const Subset& s = msg.subset(0);
+        wassert(actual(s.size()) == 205u);
+        wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 33));
+        wassert(actual(s[0].enqi()) == 254);
+    }
+});
+
 }
 
 #if 0
