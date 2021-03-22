@@ -451,6 +451,7 @@ add_method("binary", []() {
     var06a.setc("\xff");
     wassert(actual(memcmp(var06a.enqc(), "\x3f", 1) == 0).istrue());
 });
+
 add_method("seti", []() {
     _Varinfo vi;
     vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 0, 10, 0, 32);
@@ -466,6 +467,7 @@ add_method("seti", []() {
     var.seti(-11000000); wassert(actual(var.enqc()) == "-11000000");
     var.seti(-2147483647); wassert(actual(var.enqc()) == "-2147483647");
 });
+
 add_method("setd", []() {
     _Varinfo vi;
     vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 2, 5, 0, 16);
@@ -491,6 +493,7 @@ add_method("setd", []() {
     wassert(actual(var.enqi()) == 123);
     wassert(actual(var.enqd()) == 1.23);
 });
+
 add_method("setc", []() {
     _Varinfo vi;
     vi.set_string(WR_VAR(0, 0, 0), "TEST", 5);
@@ -509,6 +512,7 @@ add_method("setc", []() {
     Var var3(move(var2));
     wassert(actual(var3.enqc()) == "ciaon");
 });
+
 add_method("sets", []() {
     _Varinfo vi;
     vi.set_string(WR_VAR(0, 0, 0), "TEST", 5);
@@ -527,6 +531,7 @@ add_method("sets", []() {
     Var var3(move(var2));
     wassert(actual(var3.enqc()) == "ciaon");
 });
+
 add_method("issue17", []() {
     _Varinfo vi;
     vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 2, 5, 0, 16);
@@ -535,6 +540,13 @@ add_method("issue17", []() {
     wassert_false(var.isset());
     wassert(var.setc("None"));
     wassert_false(var.isset());
+});
+
+add_method("issue42", []() {
+    const Vartable* table = Vartable::get_bufr("B0000000000000031000");
+    Varinfo info = table->query(WR_VAR(0, 13, 11));
+    Var var(info, "-9");
+    wassert(actual(var.enqd()) == -0.9);
 });
 
 }
