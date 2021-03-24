@@ -147,6 +147,11 @@ struct enqi : public MethNoargs<enqi, wrpy_Var>
     constexpr static const char* signature = "";
     constexpr static const char* returns = "int";
     constexpr static const char* summary = "get the value of the variable, as an int";
+    constexpr static const char* doc = R"(If the variable is a scaled decimal value,
+this returns its unscaled integer representation. This provides a way to work
+with the exact underlying representation of values, without dealing with the
+potential limitations of floating point representations.
+)";
 
     static PyObject* run(Impl* self)
     {
@@ -177,6 +182,11 @@ struct enqc : public MethNoargs<enqc, wrpy_Var>
     constexpr static const char* signature = "";
     constexpr static const char* returns = "str";
     constexpr static const char* summary = "get the value of the variable, as a str";
+    constexpr static const char* doc = R"(If the variable is a scaled decimal value,
+this returns its unscaled integer representation. This provides a way to work
+with the exact underlying representation of values, without dealing with the
+potential limitations of floating point representations.
+)";
 
     static PyObject* run(Impl* self)
     {
@@ -364,6 +374,12 @@ Examples::
 
 :arg varinfo: :class:`Varinfo` or :class:`Var` to use to create the variable
 :arg value: value for the variable
+
+If the variable is a scaled decimal, getting and setting its value using
+integers or strings will use the raw unscaled representation of its value.
+This provides a way to work with the exact underlying representation of values,
+without dealing with the potential limitations of floating point
+representations.
 )";
     GetSetters<code, isset, info> getsetters;
     Methods<enqi, enqd, enqc, enq, enqa, seta, unseta, get_attrs, get, format> methods;
