@@ -110,6 +110,28 @@ class Tests : public TestCase
             wassert(actual(info.dmin) == 0);
             wassert(actual(info.dmax) == 0);
         });
+        add_method("issue42", []() {
+            // Test binary varinfos
+            _Varinfo info;
+            info.code = WR_VAR(0, 13, 11);
+            strncpy(info.desc, "TEST", 63);
+            strncpy(info.unit, "UNKNOWN", 24);
+            info.scale = 1;
+            info.bit_ref = -1;
+            info.bit_len = 14;
+            info.len = 1;
+            info.type = Vartype::Decimal;
+            info.compute_range();
+            wassert(actual(info.imin) == -1);
+            wassert(actual(info.imax) == 8);
+            wassert(actual(info.dmin) == -0.1);
+            wassert(actual(info.dmax) == 0.8);
+
+            wassert(actual(info.decode_decimal(1)) == 0.1);
+            wassert(actual(info.decode_decimal(-1)) == -0.1);
+            wassert(actual(info.decode_binary(0)) == -0.1);
+            wassert(actual(info.decode_binary(0x3fff)) == 1638.2);
+        });
     }
 } tests("varinfo");
 
