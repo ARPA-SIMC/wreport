@@ -65,16 +65,30 @@ public:
     /// Create a new Var, with undefined value
     Var(Varinfo info);
 
-    /// Create a new Var, with integer value
+    /**
+     * Create a new Var, with integer value.
+     *
+     * The value is taken as the unscaled raw version.
+     * See :func:`seti` for details.
+     */
     Var(Varinfo info, int val);
 
     /// Create a new Var, with double value
     Var(Varinfo info, double val);
 
-    /// Create a new Var, with character value
+    /**
+     * Create a new Var, with character value.
+     *
+     * The value is taken as the unscaled raw version.
+     * See :func:`setc` for details.
+     */
     Var(Varinfo info, const char* val);
 
-    /// Create a new Var, with character value
+    /** Create a new Var, with character value
+     *
+     * The value is taken as the unscaled raw version.
+     * See :func:`setc` for details.
+     */
     Var(Varinfo info, const std::string& val);
 
     /**
@@ -132,16 +146,34 @@ public:
     bool isset() const throw () { return m_isset; }
 
 
-    /// Get the value as an integer
+    /**
+     * Get the value as an integer.
+     *
+     * If the variable is a scaled decimal value, it is returned unscaled. This
+     * can be used to access the exact underlying representation without
+     * hitting limits from the floating point representation
+     */
     int enqi() const;
 
     /// Get the value as a double
     double enqd() const;
 
-    /// Get the value as a string
+    /**
+     * Get the value as a string
+     *
+     * If the variable is a scaled decimal value, it is returned unscaled. This
+     * can be used to access the exact underlying representation without
+     * hitting limits from the floating point representation
+     */
     const char* enqc() const;
 
-    /// Get the value as a std::string
+    /**
+     * Get the value as a std::string
+     *
+     * If the variable is a scaled decimal value, it is returned unscaled. This
+     * can be used to access the exact underlying representation without
+     * hitting limits from the floating point representation
+     */
     std::string enqs() const;
 
     /// Templated version of enq
@@ -162,19 +194,42 @@ public:
         return enq<T>();
     }
 
-    /// Set the value from an integer value
+    /**
+     * Set the value from an integer value
+     *
+     * If the variable is a scaled decimal value, it sets its unscaled version,
+     * making it possible, together with :func:`enqi`, to work with the exact
+     * underlying representation of values.
+     */
     void seti(int val);
 
     /// Set the value from a double value
     void setd(double val);
 
-    /// Set the value from a string or opaque binary value
+    /**
+     * Set the value from a string or opaque binary value
+     *
+     * If the variable is a scaled decimal value, it sets its unscaled version,
+     * making it possible, together with :func:`enqc`, to work with the exact
+     * underlying representation of values.
+     */
     void setc(const char* val);
 
-    /// Set the value from a string or opaque binary value
+    /**
+     * Set the value from a string or opaque binary value
+     *
+     * If the variable is a scaled decimal value, it sets its unscaled version,
+     * making it possible, together with :func:`enqs`, to work with the exact
+     * underlying representation of values.
+     */
     void sets(const std::string& val);
 
-    /// Set from a value formatted with the format() method
+    /**
+     * Set from a value formatted with the format() method
+     *
+     * This will assume the input value is represented as scaled to its actual
+     * physical value
+     */
     void setf(const char* val);
 
     /**
@@ -271,6 +326,9 @@ public:
 
     /**
      * Create a formatted string representation of the variable value
+     *
+     * If the variable is a scaled decimal value, it is formatted as a scaled
+     * decimal value with the right amount of digits.
      *
      * @param ifundef
      *   String to use if the variable is undefiend
