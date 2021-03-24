@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Error handling &#8212; wreport 3.23 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -21,6 +19,7 @@
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
@@ -29,6 +28,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="error-handling">
@@ -39,92 +40,92 @@
 <h2>Error management<a class="headerlink" href="#error-management" title="Permalink to this headline">¶</a></h2>
 <p>wreport defines its own exception hierarchy, rooted at <code class="xref py py-class docutils literal notranslate"><span class="pre">wreport::error</span></code>.</p>
 <p>Each wreport exception has a numeric identification code:</p>
-<dl class="type">
+<dl class="enum">
 <dt id="_CPPv4N7wreport9ErrorCodeE">
-<span id="_CPPv3N7wreport9ErrorCodeE"></span><span id="_CPPv2N7wreport9ErrorCodeE"></span><span id="wreport::ErrorCode"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0"></span><em class="property">enum </em><code class="descclassname">wreport<code class="descclassname">::</code></code><code class="descname">ErrorCode</code><a class="headerlink" href="#_CPPv4N7wreport9ErrorCodeE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport9ErrorCodeE"></span><span id="_CPPv2N7wreport9ErrorCodeE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0"></span><em class="property">enum </em><code class="sig-prename descclassname">wreport<code class="sig-prename descclassname">::</code></code><code class="sig-name descname">ErrorCode</code><a class="headerlink" href="#_CPPv4N7wreport9ErrorCodeE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>C-style error codes used by exceptions. </p>
 <p><em>Values:</em></p>
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport11WR_ERR_NONEE">
-<span id="_CPPv3N7wreport11WR_ERR_NONEE"></span><span id="_CPPv2N7wreport11WR_ERR_NONEE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a0a6009ec05f8781f071f1059556be8fb"></span><code class="descname">WR_ERR_NONE</code> =  0<a class="headerlink" href="#_CPPv4N7wreport11WR_ERR_NONEE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport11WR_ERR_NONEE"></span><span id="_CPPv2N7wreport11WR_ERR_NONEE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a0a6009ec05f8781f071f1059556be8fb"></span><code class="sig-name descname">WR_ERR_NONE</code> = 0<a class="headerlink" href="#_CPPv4N7wreport11WR_ERR_NONEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>No error. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport15WR_ERR_NOTFOUNDE">
-<span id="_CPPv3N7wreport15WR_ERR_NOTFOUNDE"></span><span id="_CPPv2N7wreport15WR_ERR_NOTFOUNDE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0ac94b18d3e1f1831c1601382b405aea55"></span><code class="descname">WR_ERR_NOTFOUND</code> =  1<a class="headerlink" href="#_CPPv4N7wreport15WR_ERR_NOTFOUNDE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport15WR_ERR_NOTFOUNDE"></span><span id="_CPPv2N7wreport15WR_ERR_NOTFOUNDE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0ac94b18d3e1f1831c1601382b405aea55"></span><code class="sig-name descname">WR_ERR_NOTFOUND</code> = 1<a class="headerlink" href="#_CPPv4N7wreport15WR_ERR_NOTFOUNDE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Item not found. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport11WR_ERR_TYPEE">
-<span id="_CPPv3N7wreport11WR_ERR_TYPEE"></span><span id="_CPPv2N7wreport11WR_ERR_TYPEE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a9eeccb195f70f939dd850dbc1aa5c213"></span><code class="descname">WR_ERR_TYPE</code> =  2<a class="headerlink" href="#_CPPv4N7wreport11WR_ERR_TYPEE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport11WR_ERR_TYPEE"></span><span id="_CPPv2N7wreport11WR_ERR_TYPEE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a9eeccb195f70f939dd850dbc1aa5c213"></span><code class="sig-name descname">WR_ERR_TYPE</code> = 2<a class="headerlink" href="#_CPPv4N7wreport11WR_ERR_TYPEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Wrong variable type. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport12WR_ERR_ALLOCE">
-<span id="_CPPv3N7wreport12WR_ERR_ALLOCE"></span><span id="_CPPv2N7wreport12WR_ERR_ALLOCE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0aef39e92a55d9c0e38b62cb582bdbd35d"></span><code class="descname">WR_ERR_ALLOC</code> =  3<a class="headerlink" href="#_CPPv4N7wreport12WR_ERR_ALLOCE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12WR_ERR_ALLOCE"></span><span id="_CPPv2N7wreport12WR_ERR_ALLOCE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0aef39e92a55d9c0e38b62cb582bdbd35d"></span><code class="sig-name descname">WR_ERR_ALLOC</code> = 3<a class="headerlink" href="#_CPPv4N7wreport12WR_ERR_ALLOCE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Cannot allocate memory. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport11WR_ERR_ODBCE">
-<span id="_CPPv3N7wreport11WR_ERR_ODBCE"></span><span id="_CPPv2N7wreport11WR_ERR_ODBCE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a0ae14d1d7b632c46de9204c769767f16"></span><code class="descname">WR_ERR_ODBC</code> =  4<a class="headerlink" href="#_CPPv4N7wreport11WR_ERR_ODBCE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport11WR_ERR_ODBCE"></span><span id="_CPPv2N7wreport11WR_ERR_ODBCE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a0ae14d1d7b632c46de9204c769767f16"></span><code class="sig-name descname">WR_ERR_ODBC</code> = 4<a class="headerlink" href="#_CPPv4N7wreport11WR_ERR_ODBCE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>ODBC error. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport14WR_ERR_HANDLESE">
-<span id="_CPPv3N7wreport14WR_ERR_HANDLESE"></span><span id="_CPPv2N7wreport14WR_ERR_HANDLESE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a36a3ba2a55cf170203399f1367f70fc2"></span><code class="descname">WR_ERR_HANDLES</code> =  5<a class="headerlink" href="#_CPPv4N7wreport14WR_ERR_HANDLESE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport14WR_ERR_HANDLESE"></span><span id="_CPPv2N7wreport14WR_ERR_HANDLESE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a36a3ba2a55cf170203399f1367f70fc2"></span><code class="sig-name descname">WR_ERR_HANDLES</code> = 5<a class="headerlink" href="#_CPPv4N7wreport14WR_ERR_HANDLESE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Handle management error. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport14WR_ERR_TOOLONGE">
-<span id="_CPPv3N7wreport14WR_ERR_TOOLONGE"></span><span id="_CPPv2N7wreport14WR_ERR_TOOLONGE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a34d2c5838bf5cc4089bc57edb7f33fd5"></span><code class="descname">WR_ERR_TOOLONG</code> =  6<a class="headerlink" href="#_CPPv4N7wreport14WR_ERR_TOOLONGE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport14WR_ERR_TOOLONGE"></span><span id="_CPPv2N7wreport14WR_ERR_TOOLONGE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a34d2c5838bf5cc4089bc57edb7f33fd5"></span><code class="sig-name descname">WR_ERR_TOOLONG</code> = 6<a class="headerlink" href="#_CPPv4N7wreport14WR_ERR_TOOLONGE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Buffer is too short to fit data. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport13WR_ERR_SYSTEME">
-<span id="_CPPv3N7wreport13WR_ERR_SYSTEME"></span><span id="_CPPv2N7wreport13WR_ERR_SYSTEME"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a6b581dcc59ec719216de8af2db8e0026"></span><code class="descname">WR_ERR_SYSTEM</code> =  7<a class="headerlink" href="#_CPPv4N7wreport13WR_ERR_SYSTEME" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport13WR_ERR_SYSTEME"></span><span id="_CPPv2N7wreport13WR_ERR_SYSTEME"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a6b581dcc59ec719216de8af2db8e0026"></span><code class="sig-name descname">WR_ERR_SYSTEM</code> = 7<a class="headerlink" href="#_CPPv4N7wreport13WR_ERR_SYSTEME" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Error reported by the system. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport18WR_ERR_CONSISTENCYE">
-<span id="_CPPv3N7wreport18WR_ERR_CONSISTENCYE"></span><span id="_CPPv2N7wreport18WR_ERR_CONSISTENCYE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0aa863cb49bbf1440c3a9adf80e7c08090"></span><code class="descname">WR_ERR_CONSISTENCY</code> =  8<a class="headerlink" href="#_CPPv4N7wreport18WR_ERR_CONSISTENCYE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport18WR_ERR_CONSISTENCYE"></span><span id="_CPPv2N7wreport18WR_ERR_CONSISTENCYE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0aa863cb49bbf1440c3a9adf80e7c08090"></span><code class="sig-name descname">WR_ERR_CONSISTENCY</code> = 8<a class="headerlink" href="#_CPPv4N7wreport18WR_ERR_CONSISTENCYE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Consistency check failed. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport12WR_ERR_PARSEE">
-<span id="_CPPv3N7wreport12WR_ERR_PARSEE"></span><span id="_CPPv2N7wreport12WR_ERR_PARSEE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0aef1dd914e63a5891cd3a8be3fd016b7c"></span><code class="descname">WR_ERR_PARSE</code> =  9<a class="headerlink" href="#_CPPv4N7wreport12WR_ERR_PARSEE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12WR_ERR_PARSEE"></span><span id="_CPPv2N7wreport12WR_ERR_PARSEE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0aef1dd914e63a5891cd3a8be3fd016b7c"></span><code class="sig-name descname">WR_ERR_PARSE</code> = 9<a class="headerlink" href="#_CPPv4N7wreport12WR_ERR_PARSEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parse error. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport12WR_ERR_WRITEE">
-<span id="_CPPv3N7wreport12WR_ERR_WRITEE"></span><span id="_CPPv2N7wreport12WR_ERR_WRITEE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0ac82c817f3bf015a0d6ac79f6bd7a5d11"></span><code class="descname">WR_ERR_WRITE</code> = 10<a class="headerlink" href="#_CPPv4N7wreport12WR_ERR_WRITEE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12WR_ERR_WRITEE"></span><span id="_CPPv2N7wreport12WR_ERR_WRITEE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0ac82c817f3bf015a0d6ac79f6bd7a5d11"></span><code class="sig-name descname">WR_ERR_WRITE</code> = 10<a class="headerlink" href="#_CPPv4N7wreport12WR_ERR_WRITEE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Write error. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport12WR_ERR_REGEXE">
-<span id="_CPPv3N7wreport12WR_ERR_REGEXE"></span><span id="_CPPv2N7wreport12WR_ERR_REGEXE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a6eaca3632249d2d7fbb0aea16c2022ec"></span><code class="descname">WR_ERR_REGEX</code> = 11<a class="headerlink" href="#_CPPv4N7wreport12WR_ERR_REGEXE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12WR_ERR_REGEXE"></span><span id="_CPPv2N7wreport12WR_ERR_REGEXE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a6eaca3632249d2d7fbb0aea16c2022ec"></span><code class="sig-name descname">WR_ERR_REGEX</code> = 11<a class="headerlink" href="#_CPPv4N7wreport12WR_ERR_REGEXE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Regular expression error. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport20WR_ERR_UNIMPLEMENTEDE">
-<span id="_CPPv3N7wreport20WR_ERR_UNIMPLEMENTEDE"></span><span id="_CPPv2N7wreport20WR_ERR_UNIMPLEMENTEDE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a5344b3556ae925b61b065225491cdf5e"></span><code class="descname">WR_ERR_UNIMPLEMENTED</code> = 12<a class="headerlink" href="#_CPPv4N7wreport20WR_ERR_UNIMPLEMENTEDE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport20WR_ERR_UNIMPLEMENTEDE"></span><span id="_CPPv2N7wreport20WR_ERR_UNIMPLEMENTEDE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a5344b3556ae925b61b065225491cdf5e"></span><code class="sig-name descname">WR_ERR_UNIMPLEMENTED</code> = 12<a class="headerlink" href="#_CPPv4N7wreport20WR_ERR_UNIMPLEMENTEDE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Feature not implemented. </p>
 </dd></dl>
 
 <dl class="enumerator">
 <dt id="_CPPv4N7wreport13WR_ERR_DOMAINE">
-<span id="_CPPv3N7wreport13WR_ERR_DOMAINE"></span><span id="_CPPv2N7wreport13WR_ERR_DOMAINE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a819d979b34ed9137625a957200f1d2fc"></span><code class="descname">WR_ERR_DOMAIN</code> = 13<a class="headerlink" href="#_CPPv4N7wreport13WR_ERR_DOMAINE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport13WR_ERR_DOMAINE"></span><span id="_CPPv2N7wreport13WR_ERR_DOMAINE"></span><span class="target" id="namespacewreport_1a53c24a445a0ba1700685384ab3230af0a819d979b34ed9137625a957200f1d2fc"></span><code class="sig-name descname">WR_ERR_DOMAIN</code> = 13<a class="headerlink" href="#_CPPv4N7wreport13WR_ERR_DOMAINE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Value outside acceptable domain. </p>
 </dd></dl>
 
@@ -133,21 +134,21 @@
 <p>The exceptions are:</p>
 <dl class="class">
 <dt id="_CPPv4N7wreport5errorE">
-<span id="_CPPv3N7wreport5errorE"></span><span id="_CPPv2N7wreport5errorE"></span><span id="wreport::error"></span><span class="target" id="classwreport_1_1error"></span><em class="property">class </em><code class="descname">error</code> : <em class="property">public</em> std::exception<a class="headerlink" href="#_CPPv4N7wreport5errorE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport5errorE"></span><span id="_CPPv2N7wreport5errorE"></span><span id="wreport::error"></span><span class="target" id="classwreport_1_1error"></span><em class="property">class </em><code class="sig-name descname">error</code> : <em class="property">public</em> std::exception<a class="headerlink" href="#_CPPv4N7wreport5errorE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Base class for DB-All.e exceptions. </p>
 <p>Subclassed by wreport::errors::StringBase&lt; WR_ERR_CONSISTENCY &gt;, wreport::errors::StringBase&lt; WR_ERR_DOMAIN &gt;, wreport::errors::StringBase&lt; WR_ERR_HANDLES &gt;, wreport::errors::StringBase&lt; WR_ERR_NOTFOUND &gt;, wreport::errors::StringBase&lt; WR_ERR_PARSE &gt;, wreport::errors::StringBase&lt; WR_ERR_REGEX &gt;, wreport::errors::StringBase&lt; WR_ERR_SYSTEM &gt;, wreport::errors::StringBase&lt; WR_ERR_TOOLONG &gt;, wreport::errors::StringBase&lt; WR_ERR_TYPE &gt;, wreport::errors::StringBase&lt; WR_ERR_UNIMPLEMENTED &gt;, <a class="reference internal" href="#classwreport_1_1error__alloc"><span class="std std-ref">wreport::error_alloc</span></a>, wreport::errors::StringBase&lt; ERROR_CODE &gt;</p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv4NK7wreport5error4codeEv">
-<span id="_CPPv3NK7wreport5error4codeEv"></span><span id="_CPPv2NK7wreport5error4codeEv"></span><span id="wreport::error::codeC"></span><span class="target" id="classwreport_1_1error_1a921cac5395114280c5c6f112ff496150"></span><em class="property">virtual</em> <a class="reference internal" href="#_CPPv4N7wreport9ErrorCodeE" title="wreport::ErrorCode">ErrorCode</a> <code class="descname">code</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK7wreport5error4codeEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport5error4codeEv"></span><span id="_CPPv2NK7wreport5error4codeEv"></span><span id="wreport::error::codeC"></span><span class="target" id="classwreport_1_1error_1a921cac5395114280c5c6f112ff496150"></span><em class="property">virtual</em> <a class="reference internal" href="#_CPPv4N7wreport9ErrorCodeE" title="wreport::ErrorCode">ErrorCode</a> <code class="sig-name descname">code</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK7wreport5error4codeEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Exception-specific error code. </p>
 <p>This is useful to map C++ exceptions to C or Fortran error codes </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport5error4whatEv">
-<span id="_CPPv3NK7wreport5error4whatEv"></span><span id="_CPPv2NK7wreport5error4whatEv"></span><span id="wreport::error::whatC"></span><span class="target" id="classwreport_1_1error_1ad2f9daadace0da98fd26c33014a3fd5f"></span><em class="property">virtual</em> <em class="property">const</em> char *<code class="descname">what</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK7wreport5error4whatEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport5error4whatEv"></span><span id="_CPPv2NK7wreport5error4whatEv"></span><span id="wreport::error::whatC"></span><span class="target" id="classwreport_1_1error_1ad2f9daadace0da98fd26c33014a3fd5f"></span><em class="property">virtual</em> <em class="property">const</em> char *<code class="sig-name descname">what</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK7wreport5error4whatEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Error message. </p>
 </dd></dl>
 
@@ -156,7 +157,7 @@
 <p class="breathe-sectiondef-title rubric">Public Static Functions</p>
 <dl class="function">
 <dt id="_CPPv4N7wreport5error8strerrorE9ErrorCode">
-<span id="_CPPv3N7wreport5error8strerrorE9ErrorCode"></span><span id="_CPPv2N7wreport5error8strerrorE9ErrorCode"></span><span id="wreport::error::strerror__ErrorCode"></span><span class="target" id="classwreport_1_1error_1ae28f097e88cb6b9d406ddcd979ac56c1"></span><em class="property">static</em> <em class="property">const</em> char *<code class="descname">strerror</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N7wreport9ErrorCodeE" title="wreport::ErrorCode">ErrorCode</a> <em>code</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport5error8strerrorE9ErrorCode" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport5error8strerrorE9ErrorCode"></span><span id="_CPPv2N7wreport5error8strerrorE9ErrorCode"></span><span id="wreport::error::strerror__ErrorCode"></span><span class="target" id="classwreport_1_1error_1ae28f097e88cb6b9d406ddcd979ac56c1"></span><em class="property">static</em> <em class="property">const</em> char *<code class="sig-name descname">strerror</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N7wreport9ErrorCodeE" title="wreport::ErrorCode">ErrorCode</a> <em>code</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport5error8strerrorE9ErrorCode" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>String description for an error code. </p>
 </dd></dl>
 
@@ -165,68 +166,68 @@
 
 <dl class="class">
 <dt id="_CPPv4N7wreport11error_allocE">
-<span id="_CPPv3N7wreport11error_allocE"></span><span id="_CPPv2N7wreport11error_allocE"></span><span id="wreport::error_alloc"></span><span class="target" id="classwreport_1_1error__alloc"></span><em class="property">class </em><code class="descname">error_alloc</code> : <em class="property">public</em> wreport::<a class="reference internal" href="#_CPPv4N7wreport5errorE" title="wreport::error">error</a><a class="headerlink" href="#_CPPv4N7wreport11error_allocE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport11error_allocE"></span><span id="_CPPv2N7wreport11error_allocE"></span><span id="wreport::error_alloc"></span><span class="target" id="classwreport_1_1error__alloc"></span><em class="property">class </em><code class="sig-name descname">error_alloc</code> : <em class="property">public</em> wreport::<a class="reference internal" href="#_CPPv4N7wreport5errorE" title="wreport::error">error</a><a class="headerlink" href="#_CPPv4N7wreport11error_allocE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reports that memory allocation has failed. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport14error_notfoundE">
-<span id="_CPPv3N7wreport14error_notfoundE"></span><span id="_CPPv2N7wreport14error_notfoundE"></span><span id="wreport::error_notfound"></span><span class="target" id="classwreport_1_1error__notfound"></span><em class="property">class </em><code class="descname">error_notfound</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport15WR_ERR_NOTFOUNDE" title="wreport::WR_ERR_NOTFOUND">WR_ERR_NOTFOUND</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport14error_notfoundE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport14error_notfoundE"></span><span id="_CPPv2N7wreport14error_notfoundE"></span><span id="wreport::error_notfound"></span><span class="target" id="classwreport_1_1error__notfound"></span><em class="property">class </em><code class="sig-name descname">error_notfound</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport15WR_ERR_NOTFOUNDE" title="wreport::WR_ERR_NOTFOUND">WR_ERR_NOTFOUND</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport14error_notfoundE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reports that a search-like function could not find what was requested. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport10error_typeE">
-<span id="_CPPv3N7wreport10error_typeE"></span><span id="_CPPv2N7wreport10error_typeE"></span><span id="wreport::error_type"></span><span class="target" id="classwreport_1_1error__type"></span><em class="property">class </em><code class="descname">error_type</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport11WR_ERR_TYPEE" title="wreport::WR_ERR_TYPE">WR_ERR_TYPE</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport10error_typeE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport10error_typeE"></span><span id="_CPPv2N7wreport10error_typeE"></span><span id="wreport::error_type"></span><span class="target" id="classwreport_1_1error__type"></span><em class="property">class </em><code class="sig-name descname">error_type</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport11WR_ERR_TYPEE" title="wreport::WR_ERR_TYPE">WR_ERR_TYPE</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport10error_typeE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>For functions handling data with multiple types, reports a mismatch between the type requested and the type found. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport13error_handlesE">
-<span id="_CPPv3N7wreport13error_handlesE"></span><span id="_CPPv2N7wreport13error_handlesE"></span><span id="wreport::error_handles"></span><span class="target" id="classwreport_1_1error__handles"></span><em class="property">class </em><code class="descname">error_handles</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport14WR_ERR_HANDLESE" title="wreport::WR_ERR_HANDLES">WR_ERR_HANDLES</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport13error_handlesE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport13error_handlesE"></span><span id="_CPPv2N7wreport13error_handlesE"></span><span id="wreport::error_handles"></span><span class="target" id="classwreport_1_1error__handles"></span><em class="property">class </em><code class="sig-name descname">error_handles</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport14WR_ERR_HANDLESE" title="wreport::WR_ERR_HANDLES">WR_ERR_HANDLES</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport13error_handlesE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>For functions working with handles, reports a problem with handling handles, such as impossibility to allocate a new one, or an invalid handle being passed to the function. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport13error_toolongE">
-<span id="_CPPv3N7wreport13error_toolongE"></span><span id="_CPPv2N7wreport13error_toolongE"></span><span id="wreport::error_toolong"></span><span class="target" id="classwreport_1_1error__toolong"></span><em class="property">class </em><code class="descname">error_toolong</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport14WR_ERR_TOOLONGE" title="wreport::WR_ERR_TOOLONG">WR_ERR_TOOLONG</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport13error_toolongE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport13error_toolongE"></span><span id="_CPPv2N7wreport13error_toolongE"></span><span id="wreport::error_toolong"></span><span class="target" id="classwreport_1_1error__toolong"></span><em class="property">class </em><code class="sig-name descname">error_toolong</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport14WR_ERR_TOOLONGE" title="wreport::WR_ERR_TOOLONG">WR_ERR_TOOLONG</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport13error_toolongE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Report an error with a buffer being to short for the data it needs to fit. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport12error_systemE">
-<span id="_CPPv3N7wreport12error_systemE"></span><span id="_CPPv2N7wreport12error_systemE"></span><span id="wreport::error_system"></span><span class="target" id="classwreport_1_1error__system"></span><em class="property">class </em><code class="descname">error_system</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport13WR_ERR_SYSTEME" title="wreport::WR_ERR_SYSTEM">WR_ERR_SYSTEM</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport12error_systemE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12error_systemE"></span><span id="_CPPv2N7wreport12error_systemE"></span><span id="wreport::error_system"></span><span class="target" id="classwreport_1_1error__system"></span><em class="property">class </em><code class="sig-name descname">error_system</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport13WR_ERR_SYSTEME" title="wreport::WR_ERR_SYSTEM">WR_ERR_SYSTEM</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport12error_systemE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Report a system error message. </p>
 <p>The message description will be looked up using the current value of errno. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport17error_consistencyE">
-<span id="_CPPv3N7wreport17error_consistencyE"></span><span id="_CPPv2N7wreport17error_consistencyE"></span><span id="wreport::error_consistency"></span><span class="target" id="classwreport_1_1error__consistency"></span><em class="property">class </em><code class="descname">error_consistency</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport18WR_ERR_CONSISTENCYE" title="wreport::WR_ERR_CONSISTENCY">WR_ERR_CONSISTENCY</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport17error_consistencyE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport17error_consistencyE"></span><span id="_CPPv2N7wreport17error_consistencyE"></span><span id="wreport::error_consistency"></span><span class="target" id="classwreport_1_1error__consistency"></span><em class="property">class </em><code class="sig-name descname">error_consistency</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport18WR_ERR_CONSISTENCYE" title="wreport::WR_ERR_CONSISTENCY">WR_ERR_CONSISTENCY</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport17error_consistencyE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Report an error when a consistency check failed. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport11error_parseE">
-<span id="_CPPv3N7wreport11error_parseE"></span><span id="_CPPv2N7wreport11error_parseE"></span><span id="wreport::error_parse"></span><span class="target" id="classwreport_1_1error__parse"></span><em class="property">class </em><code class="descname">error_parse</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport12WR_ERR_PARSEE" title="wreport::WR_ERR_PARSE">WR_ERR_PARSE</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport11error_parseE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport11error_parseE"></span><span id="_CPPv2N7wreport11error_parseE"></span><span id="wreport::error_parse"></span><span class="target" id="classwreport_1_1error__parse"></span><em class="property">class </em><code class="sig-name descname">error_parse</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport12WR_ERR_PARSEE" title="wreport::WR_ERR_PARSE">WR_ERR_PARSE</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport11error_parseE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Report an error when parsing informations. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport12error_regexpE">
-<span id="_CPPv3N7wreport12error_regexpE"></span><span id="_CPPv2N7wreport12error_regexpE"></span><span id="wreport::error_regexp"></span><span class="target" id="classwreport_1_1error__regexp"></span><em class="property">class </em><code class="descname">error_regexp</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport12WR_ERR_REGEXE" title="wreport::WR_ERR_REGEX">WR_ERR_REGEX</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport12error_regexpE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12error_regexpE"></span><span id="_CPPv2N7wreport12error_regexpE"></span><span id="wreport::error_regexp"></span><span class="target" id="classwreport_1_1error__regexp"></span><em class="property">class </em><code class="sig-name descname">error_regexp</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport12WR_ERR_REGEXE" title="wreport::WR_ERR_REGEX">WR_ERR_REGEX</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport12error_regexpE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Report an error while handling regular expressions. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport19error_unimplementedE">
-<span id="_CPPv3N7wreport19error_unimplementedE"></span><span id="_CPPv2N7wreport19error_unimplementedE"></span><span id="wreport::error_unimplemented"></span><span class="target" id="classwreport_1_1error__unimplemented"></span><em class="property">class </em><code class="descname">error_unimplemented</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport20WR_ERR_UNIMPLEMENTEDE" title="wreport::WR_ERR_UNIMPLEMENTED">WR_ERR_UNIMPLEMENTED</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport19error_unimplementedE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport19error_unimplementedE"></span><span id="_CPPv2N7wreport19error_unimplementedE"></span><span id="wreport::error_unimplemented"></span><span class="target" id="classwreport_1_1error__unimplemented"></span><em class="property">class </em><code class="sig-name descname">error_unimplemented</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport20WR_ERR_UNIMPLEMENTEDE" title="wreport::WR_ERR_UNIMPLEMENTED">WR_ERR_UNIMPLEMENTED</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport19error_unimplementedE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reports that a feature is still not implemented. </p>
 </dd></dl>
 
 <dl class="class">
 <dt id="_CPPv4N7wreport12error_domainE">
-<span id="_CPPv3N7wreport12error_domainE"></span><span id="_CPPv2N7wreport12error_domainE"></span><span id="wreport::error_domain"></span><span class="target" id="classwreport_1_1error__domain"></span><em class="property">class </em><code class="descname">error_domain</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport13WR_ERR_DOMAINE" title="wreport::WR_ERR_DOMAIN">WR_ERR_DOMAIN</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport12error_domainE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12error_domainE"></span><span id="_CPPv2N7wreport12error_domainE"></span><span id="wreport::error_domain"></span><span class="target" id="classwreport_1_1error__domain"></span><em class="property">class </em><code class="sig-name descname">error_domain</code> : <em class="property">public</em> wreport::errors::StringBase&lt;<a class="reference internal" href="#_CPPv4N7wreport13WR_ERR_DOMAINE" title="wreport::WR_ERR_DOMAIN">WR_ERR_DOMAIN</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport12error_domainE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Report that a parameter is outside the acceptable domain. </p>
 </dd></dl>
 
@@ -235,6 +236,7 @@
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -273,17 +275,23 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -292,8 +300,8 @@
       &copy;2019, Enrico Zini.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/cpp/errors.rst.txt"

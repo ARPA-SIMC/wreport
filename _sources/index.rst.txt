@@ -14,7 +14,7 @@ Welcome to wreport's documentation!
    cpp/wreport
 
 
-The C++ API is documentation is also available as `doxgen documentation
+The C++ API documentation is also available as `doxgen documentation
 <doxygen/index.html>`_.
 
 

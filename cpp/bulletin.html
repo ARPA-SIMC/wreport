@@ -1,11 +1,9 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Bulletin &#8212; wreport 3.23 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -20,6 +18,7 @@
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
+  
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
@@ -28,6 +27,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="bulletin">
@@ -42,7 +43,7 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 <a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">wreport::BufrBulletin</span></code></a> and <a class="reference internal" href="#_CPPv4N7wreport12CrexBulletinE" title="wreport::CrexBulletin"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">wreport::CrexBulletin</span></code></a>.</p>
 <dl class="class">
 <dt id="_CPPv4N7wreport8BulletinE">
-<span id="_CPPv3N7wreport8BulletinE"></span><span id="_CPPv2N7wreport8BulletinE"></span><span id="wreport::Bulletin"></span><span class="target" id="classwreport_1_1Bulletin"></span><em class="property">class </em><code class="descname">Bulletin</code><a class="headerlink" href="#_CPPv4N7wreport8BulletinE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8BulletinE"></span><span id="_CPPv2N7wreport8BulletinE"></span><span id="wreport::Bulletin"></span><span class="target" id="classwreport_1_1Bulletin"></span><em class="property">class </em><code class="sig-name descname">Bulletin</code><a class="headerlink" href="#_CPPv4N7wreport8BulletinE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Storage for the decoded data of a BUFR or CREX message. </p>
 <p>A <a class="reference internal" href="#classwreport_1_1Bulletin"><span class="std std-ref">Bulletin</span></a> roughly reflects the structure of a BUFR or CREX message: it contains metadata, a sequence of <a class="reference internal" href="var.html#namespacewreport_1af9fa16e12fde1ccfb4ce11b3988f5b05"><span class="std std-ref">wreport::Varcode</span></a> with the contents of a Data Descriptor Section, and one or more <a class="reference internal" href="#classwreport_1_1Subset"><span class="std std-ref">wreport::Subset</span></a> with the decoded values.</p>
 <p>Subsets are essentially sequences of <a class="reference internal" href="var.html#classwreport_1_1Var"><span class="std std-ref">wreport::Var</span></a> objects, and therefore contain the values together with the full range of variable information, including type, measurement units and number of significant digits.</p>
@@ -52,25 +53,24 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv4N7wreport8Bulletin5clearEv">
-<span id="_CPPv3N7wreport8Bulletin5clearEv"></span><span id="_CPPv2N7wreport8Bulletin5clearEv"></span><span id="wreport::Bulletin::clear"></span><span class="target" id="classwreport_1_1Bulletin_1ab8d426c3862f0cbb32ef8d9d52ef3218"></span><em class="property">virtual</em> void <code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport8Bulletin5clearEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin5clearEv"></span><span id="_CPPv2N7wreport8Bulletin5clearEv"></span><span id="wreport::Bulletin::clear"></span><span class="target" id="classwreport_1_1Bulletin_1ab8d426c3862f0cbb32ef8d9d52ef3218"></span><em class="property">virtual</em> void <code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport8Bulletin5clearEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reset the bulletin. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport8Bulletin13encoding_nameEv">
-<span id="_CPPv3NK7wreport8Bulletin13encoding_nameEv"></span><span id="_CPPv2NK7wreport8Bulletin13encoding_nameEv"></span><span id="wreport::Bulletin::encoding_nameC"></span><span class="target" id="classwreport_1_1Bulletin_1a7aceb0bf38c379c634294376d027b84c"></span><em class="property">virtual</em> <em class="property">const</em> char *<code class="descname">encoding_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK7wreport8Bulletin13encoding_nameEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport8Bulletin13encoding_nameEv"></span><span id="_CPPv2NK7wreport8Bulletin13encoding_nameEv"></span><span id="wreport::Bulletin::encoding_nameC"></span><span class="target" id="classwreport_1_1Bulletin_1a7aceb0bf38c379c634294376d027b84c"></span><em class="property">virtual</em> <em class="property">const</em> char *<code class="sig-name descname">encoding_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK7wreport8Bulletin13encoding_nameEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Type of source/target encoding. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N7wreport8Bulletin13obtain_subsetEj">
-<span id="_CPPv3N7wreport8Bulletin13obtain_subsetEj"></span><span id="_CPPv2N7wreport8Bulletin13obtain_subsetEj"></span><span id="wreport::Bulletin::obtain_subset__unsigned"></span><span class="target" id="classwreport_1_1Bulletin_1a009e63957073c52f512233b5444a5566"></span><a class="reference internal" href="#_CPPv4N7wreport6SubsetE" title="wreport::Subset">Subset</a> &amp;<code class="descname">obtain_subset</code><span class="sig-paren">(</span>unsigned <em>subsection</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport8Bulletin13obtain_subsetEj" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin13obtain_subsetEj"></span><span id="_CPPv2N7wreport8Bulletin13obtain_subsetEj"></span><span id="wreport::Bulletin::obtain_subset__unsigned"></span><span class="target" id="classwreport_1_1Bulletin_1a009e63957073c52f512233b5444a5566"></span><a class="reference internal" href="#_CPPv4N7wreport6SubsetE" title="wreport::Subset">Subset</a> &amp;<code class="sig-name descname">obtain_subset</code><span class="sig-paren">(</span>unsigned <em>subsection</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport8Bulletin13obtain_subsetEj" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Get a <a class="reference internal" href="#classwreport_1_1Subset"><span class="std std-ref">Subset</span></a> from the message. </p>
 <p>The subset will be created if it does not exist, and it will be memory managed by the <a class="reference internal" href="#classwreport_1_1Bulletin"><span class="std std-ref">Bulletin</span></a>.</p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">subsection</span></code>: The subsection index (starting from 0) </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">subsection</span></code>: The subsection index (starting from 0) </p></li>
 </ul>
 </dd>
 </dl>
@@ -79,13 +79,12 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport8Bulletin6subsetEj">
-<span id="_CPPv3NK7wreport8Bulletin6subsetEj"></span><span id="_CPPv2NK7wreport8Bulletin6subsetEj"></span><span id="wreport::Bulletin::subset__unsignedC"></span><span class="target" id="classwreport_1_1Bulletin_1aa2816091d6095ae660e5cf88d05039d8"></span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport6SubsetE" title="wreport::Subset">Subset</a> &amp;<code class="descname">subset</code><span class="sig-paren">(</span>unsigned <em>subsection</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin6subsetEj" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport8Bulletin6subsetEj"></span><span id="_CPPv2NK7wreport8Bulletin6subsetEj"></span><span id="wreport::Bulletin::subset__unsignedC"></span><span class="target" id="classwreport_1_1Bulletin_1aa2816091d6095ae660e5cf88d05039d8"></span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport6SubsetE" title="wreport::Subset">Subset</a> &amp;<code class="sig-name descname">subset</code><span class="sig-paren">(</span>unsigned <em>subsection</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin6subsetEj" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Get a <a class="reference internal" href="#classwreport_1_1Subset"><span class="std std-ref">Subset</span></a> from the message. </p>
 <p>An exception will be thrown if the subset does not exist</p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">subsection</span></code>: The subsection index (starting from 0) </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">subsection</span></code>: The subsection index (starting from 0) </p></li>
 </ul>
 </dd>
 </dl>
@@ -94,43 +93,42 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport8Bulletin11load_tablesEv">
-<span id="_CPPv3N7wreport8Bulletin11load_tablesEv"></span><span id="_CPPv2N7wreport8Bulletin11load_tablesEv"></span><span id="wreport::Bulletin::load_tables"></span><span class="target" id="classwreport_1_1Bulletin_1a6906875cdaa9679cdfa5b5ab87adf5e8"></span><em class="property">virtual</em> void <code class="descname">load_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin11load_tablesEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin11load_tablesEv"></span><span id="_CPPv2N7wreport8Bulletin11load_tablesEv"></span><span id="wreport::Bulletin::load_tables"></span><span class="target" id="classwreport_1_1Bulletin_1a6906875cdaa9679cdfa5b5ab87adf5e8"></span><em class="property">virtual</em> void <code class="sig-name descname">load_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin11load_tablesEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Load a new set of tables to use for encoding this message. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport8Bulletin6encodeEv">
-<span id="_CPPv3NK7wreport8Bulletin6encodeEv"></span><span id="_CPPv2NK7wreport8Bulletin6encodeEv"></span><span id="wreport::Bulletin::encodeC"></span><span class="target" id="classwreport_1_1Bulletin_1abe5aaf2e4dc97ade3a874a7f50ccd0b5"></span><em class="property">virtual</em> std::string <code class="descname">encode</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK7wreport8Bulletin6encodeEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport8Bulletin6encodeEv"></span><span id="_CPPv2NK7wreport8Bulletin6encodeEv"></span><span id="wreport::Bulletin::encodeC"></span><span class="target" id="classwreport_1_1Bulletin_1abe5aaf2e4dc97ade3a874a7f50ccd0b5"></span><em class="property">virtual</em> std::string <code class="sig-name descname">encode</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK7wreport8Bulletin6encodeEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Encode the message. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport8Bulletin5printEP4FILE">
-<span id="_CPPv3NK7wreport8Bulletin5printEP4FILE"></span><span id="_CPPv2NK7wreport8Bulletin5printEP4FILE"></span><span id="wreport::Bulletin::print__FILEPC"></span><span class="target" id="classwreport_1_1Bulletin_1ac2e366d0aa9f8189090e62dc21ff1deb"></span>void <code class="descname">print</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin5printEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport8Bulletin5printEP4FILE"></span><span id="_CPPv2NK7wreport8Bulletin5printEP4FILE"></span><span id="wreport::Bulletin::print__FILEPC"></span><span class="target" id="classwreport_1_1Bulletin_1ac2e366d0aa9f8189090e62dc21ff1deb"></span>void <code class="sig-name descname">print</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin5printEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Dump the contents of this bulletin. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport8Bulletin16print_structuredEP4FILE">
-<span id="_CPPv3NK7wreport8Bulletin16print_structuredEP4FILE"></span><span id="_CPPv2NK7wreport8Bulletin16print_structuredEP4FILE"></span><span id="wreport::Bulletin::print_structured__FILEPC"></span><span class="target" id="classwreport_1_1Bulletin_1a81cbd73f34e8390b08c21ba8534734be"></span>void <code class="descname">print_structured</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin16print_structuredEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport8Bulletin16print_structuredEP4FILE"></span><span id="_CPPv2NK7wreport8Bulletin16print_structuredEP4FILE"></span><span id="wreport::Bulletin::print_structured__FILEPC"></span><span class="target" id="classwreport_1_1Bulletin_1a81cbd73f34e8390b08c21ba8534734be"></span>void <code class="sig-name descname">print_structured</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin16print_structuredEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Dump the contents of this bulletin, in a more structured way. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport8Bulletin13print_detailsEP4FILE">
-<span id="_CPPv3NK7wreport8Bulletin13print_detailsEP4FILE"></span><span id="_CPPv2NK7wreport8Bulletin13print_detailsEP4FILE"></span><span id="wreport::Bulletin::print_details__FILEPC"></span><span class="target" id="classwreport_1_1Bulletin_1a273ac3c19176136e1efa6a1f2927718a"></span><em class="property">virtual</em> void <code class="descname">print_details</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin13print_detailsEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport8Bulletin13print_detailsEP4FILE"></span><span id="_CPPv2NK7wreport8Bulletin13print_detailsEP4FILE"></span><span id="wreport::Bulletin::print_details__FILEPC"></span><span class="target" id="classwreport_1_1Bulletin_1a273ac3c19176136e1efa6a1f2927718a"></span><em class="property">virtual</em> void <code class="sig-name descname">print_details</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin13print_detailsEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Print format-specific details. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport8Bulletin14print_datadescEP4FILEj">
-<span id="_CPPv3NK7wreport8Bulletin14print_datadescEP4FILEj"></span><span id="_CPPv2NK7wreport8Bulletin14print_datadescEP4FILEj"></span><span id="wreport::Bulletin::print_datadesc__FILEP.unsignedC"></span><span class="target" id="classwreport_1_1Bulletin_1ac18ba16378a26b3ba8cae348e91391b4"></span>void <code class="descname">print_datadesc</code><span class="sig-paren">(</span>FILE *<em>out</em>, unsigned <em>indent</em> = 0<span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin14print_datadescEP4FILEj" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport8Bulletin14print_datadescEP4FILEj"></span><span id="_CPPv2NK7wreport8Bulletin14print_datadescEP4FILEj"></span><span id="wreport::Bulletin::print_datadesc__FILEP.unsignedC"></span><span class="target" id="classwreport_1_1Bulletin_1ac18ba16378a26b3ba8cae348e91391b4"></span>void <code class="sig-name descname">print_datadesc</code><span class="sig-paren">(</span>FILE *<em>out</em>, unsigned <em>indent</em> = 0<span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin14print_datadescEP4FILEj" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Pretty-print the data descriptor section. </p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">out</span></code>: Output stream to use </li>
-<li><code class="docutils literal notranslate"><span class="pre">indent</span></code>: Indent all output by this amount of spaces </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">out</span></code>: Output stream to use </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">indent</span></code>: Indent all output by this amount of spaces </p></li>
 </ul>
 </dd>
 </dl>
@@ -139,16 +137,15 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport8Bulletin4diffERK8Bulletin">
-<span id="_CPPv3NK7wreport8Bulletin4diffERK8Bulletin"></span><span id="_CPPv2NK7wreport8Bulletin4diffERK8Bulletin"></span><span id="wreport::Bulletin::diff__BulletinCRC"></span><span class="target" id="classwreport_1_1Bulletin_1ada3200a9b77e96b19a77f13b40216d0c"></span><em class="property">virtual</em> unsigned <code class="descname">diff</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a> &amp;<em>msg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin4diffERK8Bulletin" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport8Bulletin4diffERK8Bulletin"></span><span id="_CPPv2NK7wreport8Bulletin4diffERK8Bulletin"></span><span id="wreport::Bulletin::diff__BulletinCRC"></span><span class="target" id="classwreport_1_1Bulletin_1ada3200a9b77e96b19a77f13b40216d0c"></span><em class="property">virtual</em> unsigned <code class="sig-name descname">diff</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a> &amp;<em>msg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin4diffERK8Bulletin" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute the differences between two bulletins. </p>
-<p>Details of the differences found will be formatted using the notes system (<dl class="docutils">
-<dt><strong>See</strong></dt>
-<dd>notes.h).</dd>
-<dt><strong>Return</strong></dt>
-<dd>The number of differences found </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">msg</span></code>: The bulletin to compare with this one </li>
+<p>Details of the differences found will be formatted using the notes system (<dl class="simple">
+<dt><strong>See</strong></dt><dd><p>notes.h).</p>
+</dd>
+<dt><strong>Return</strong></dt><dd><p>The number of differences found </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">msg</span></code>: The bulletin to compare with this one </p></li>
 </ul>
 </dd>
 </dl>
@@ -157,7 +154,7 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport8Bulletin12diff_detailsERK8Bulletin">
-<span id="_CPPv3NK7wreport8Bulletin12diff_detailsERK8Bulletin"></span><span id="_CPPv2NK7wreport8Bulletin12diff_detailsERK8Bulletin"></span><span id="wreport::Bulletin::diff_details__BulletinCRC"></span><span class="target" id="classwreport_1_1Bulletin_1a3fdda4a763b26801f457d8c83eab7c24"></span><em class="property">virtual</em> unsigned <code class="descname">diff_details</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a> &amp;<em>msg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin12diff_detailsERK8Bulletin" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport8Bulletin12diff_detailsERK8Bulletin"></span><span id="_CPPv2NK7wreport8Bulletin12diff_detailsERK8Bulletin"></span><span id="wreport::Bulletin::diff_details__BulletinCRC"></span><span class="target" id="classwreport_1_1Bulletin_1a3fdda4a763b26801f457d8c83eab7c24"></span><em class="property">virtual</em> unsigned <code class="sig-name descname">diff_details</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a> &amp;<em>msg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport8Bulletin12diff_detailsERK8Bulletin" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Diff format-specific details. </p>
 </dd></dl>
 
@@ -166,7 +163,7 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 <p class="breathe-sectiondef-title rubric">Public Members</p>
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin5fnameE">
-<span id="_CPPv3N7wreport8Bulletin5fnameE"></span><span id="_CPPv2N7wreport8Bulletin5fnameE"></span><span id="wreport::Bulletin::fname__ss"></span><span class="target" id="classwreport_1_1Bulletin_1aa6e883c75c08e7d58c8ab9dbe62cbb53"></span>std::string <code class="descname">fname</code><a class="headerlink" href="#_CPPv4N7wreport8Bulletin5fnameE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin5fnameE"></span><span id="_CPPv2N7wreport8Bulletin5fnameE"></span><span id="wreport::Bulletin::fname__ss"></span><span class="target" id="classwreport_1_1Bulletin_1aa6e883c75c08e7d58c8ab9dbe62cbb53"></span>std::string <code class="sig-name descname">fname</code><a class="headerlink" href="#_CPPv4N7wreport8Bulletin5fnameE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Input file name (optional). </p>
 <p>If available, it will be used to generate better error messages.</p>
 <p>If not available, it is empty. </p>
@@ -174,7 +171,7 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin6offsetE">
-<span id="_CPPv3N7wreport8Bulletin6offsetE"></span><span id="_CPPv2N7wreport8Bulletin6offsetE"></span><span id="wreport::Bulletin::offset__off_t"></span><span class="target" id="classwreport_1_1Bulletin_1a9700a2d4f14e6741c4df9e8b07cd8ece"></span>off_t <code class="descname">offset</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin6offsetE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin6offsetE"></span><span id="_CPPv2N7wreport8Bulletin6offsetE"></span><span id="wreport::Bulletin::offset__off_t"></span><span class="target" id="classwreport_1_1Bulletin_1a9700a2d4f14e6741c4df9e8b07cd8ece"></span>off_t <code class="sig-name descname">offset</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin6offsetE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>File offset of the start of the message. </p>
 <p>If available, it will be used to generate better error messages.</p>
 <p>If not available, it is 0. </p>
@@ -182,100 +179,100 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin19master_table_numberE">
-<span id="_CPPv3N7wreport8Bulletin19master_table_numberE"></span><span id="_CPPv2N7wreport8Bulletin19master_table_numberE"></span><span id="wreport::Bulletin::master_table_number__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1aeb059dc009192742aec02aecea69f95b"></span>uint8_t <code class="descname">master_table_number</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin19master_table_numberE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin19master_table_numberE"></span><span id="_CPPv2N7wreport8Bulletin19master_table_numberE"></span><span id="wreport::Bulletin::master_table_number__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1aeb059dc009192742aec02aecea69f95b"></span>uint8_t <code class="sig-name descname">master_table_number</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin19master_table_numberE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>BUFR Master table number. </p>
 <p>A master table may be defined for a scientific discipline other than meteorology. The current list of master tables, along with their associated values in octet 4, is as follows:</p>
-<p>0: Meteorology maintained by the World Meteorological Organization (WMO)  10: Oceanography maintained by the Intergovernmental Oceanographic Commission (IOC) of UNESCO </p>
+<p>\l 0: Meteorology maintained by the World Meteorological Organization (WMO) \l 10: Oceanography maintained by the Intergovernmental Oceanographic Commission (IOC) of UNESCO </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin13data_categoryE">
-<span id="_CPPv3N7wreport8Bulletin13data_categoryE"></span><span id="_CPPv2N7wreport8Bulletin13data_categoryE"></span><span id="wreport::Bulletin::data_category__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1aedc3c14e9abb40a68adb1e93fbe031aa"></span>uint8_t <code class="descname">data_category</code> = 0xff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin13data_categoryE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin13data_categoryE"></span><span id="_CPPv2N7wreport8Bulletin13data_categoryE"></span><span id="wreport::Bulletin::data_category__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1aedc3c14e9abb40a68adb1e93fbe031aa"></span>uint8_t <code class="sig-name descname">data_category</code> = 0xff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin13data_categoryE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Data category (BUFR or CREX Table A) </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin16data_subcategoryE">
-<span id="_CPPv3N7wreport8Bulletin16data_subcategoryE"></span><span id="_CPPv2N7wreport8Bulletin16data_subcategoryE"></span><span id="wreport::Bulletin::data_subcategory__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1af4776f874ebe8134ed5da7cfe2600178"></span>uint8_t <code class="descname">data_subcategory</code> = 0xff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin16data_subcategoryE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin16data_subcategoryE"></span><span id="_CPPv2N7wreport8Bulletin16data_subcategoryE"></span><span id="wreport::Bulletin::data_subcategory__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1af4776f874ebe8134ed5da7cfe2600178"></span>uint8_t <code class="sig-name descname">data_subcategory</code> = 0xff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin16data_subcategoryE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>International data sub-category (see Common Code table C-13) </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin22data_subcategory_localE">
-<span id="_CPPv3N7wreport8Bulletin22data_subcategory_localE"></span><span id="_CPPv2N7wreport8Bulletin22data_subcategory_localE"></span><span id="wreport::Bulletin::data_subcategory_local__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1addabab143083865fc8067d087ce2af57"></span>uint8_t <code class="descname">data_subcategory_local</code> = 0xff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin22data_subcategory_localE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin22data_subcategory_localE"></span><span id="_CPPv2N7wreport8Bulletin22data_subcategory_localE"></span><span id="wreport::Bulletin::data_subcategory_local__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1addabab143083865fc8067d087ce2af57"></span>uint8_t <code class="sig-name descname">data_subcategory_local</code> = 0xff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin22data_subcategory_localE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Local data sub-category, defined locally by automatic data-processing (ADP) centres. </p>
 <p>Note: the local data sub-category is maintained for backwards compatibility with BUFR editions 0-3, since many ADP centres have made extensive use of such values in the past. The international data sub-category introduced with BUFR edition 4 is intended to provide a mechanism for better understanding of the overall nature and intent of messages exchanged between ADP centres. These two values (i.e. local sub-category and international sub-category) are intended to be supplementary to one another, so both may be used within a particular BUFR message. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin18originating_centreE">
-<span id="_CPPv3N7wreport8Bulletin18originating_centreE"></span><span id="_CPPv2N7wreport8Bulletin18originating_centreE"></span><span id="wreport::Bulletin::originating_centre__uint16_t"></span><span class="target" id="classwreport_1_1Bulletin_1a30ae878a79b6e8c1bc1c79cd97b377e5"></span>uint16_t <code class="descname">originating_centre</code> = 0xffff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin18originating_centreE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin18originating_centreE"></span><span id="_CPPv2N7wreport8Bulletin18originating_centreE"></span><span id="wreport::Bulletin::originating_centre__uint16_t"></span><span class="target" id="classwreport_1_1Bulletin_1a30ae878a79b6e8c1bc1c79cd97b377e5"></span>uint16_t <code class="sig-name descname">originating_centre</code> = 0xffff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin18originating_centreE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Identification of originating/generating centre (see Common Code table C-11) </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin21originating_subcentreE">
-<span id="_CPPv3N7wreport8Bulletin21originating_subcentreE"></span><span id="_CPPv2N7wreport8Bulletin21originating_subcentreE"></span><span id="wreport::Bulletin::originating_subcentre__uint16_t"></span><span class="target" id="classwreport_1_1Bulletin_1a6acb7b7628e62bffa539bb8c8ab053f9"></span>uint16_t <code class="descname">originating_subcentre</code> = 0xffff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin21originating_subcentreE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin21originating_subcentreE"></span><span id="_CPPv2N7wreport8Bulletin21originating_subcentreE"></span><span id="wreport::Bulletin::originating_subcentre__uint16_t"></span><span class="target" id="classwreport_1_1Bulletin_1a6acb7b7628e62bffa539bb8c8ab053f9"></span>uint16_t <code class="sig-name descname">originating_subcentre</code> = 0xffff<a class="headerlink" href="#_CPPv4N7wreport8Bulletin21originating_subcentreE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Identification of originating/generating sub-centre (allocated by originating/generating centre - see Common Code table C-12) </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin22update_sequence_numberE">
-<span id="_CPPv3N7wreport8Bulletin22update_sequence_numberE"></span><span id="_CPPv2N7wreport8Bulletin22update_sequence_numberE"></span><span id="wreport::Bulletin::update_sequence_number__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1a32164640b43a0db41f9d0a9084ed54c7"></span>uint8_t <code class="descname">update_sequence_number</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin22update_sequence_numberE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin22update_sequence_numberE"></span><span id="_CPPv2N7wreport8Bulletin22update_sequence_numberE"></span><span id="wreport::Bulletin::update_sequence_number__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1a32164640b43a0db41f9d0a9084ed54c7"></span>uint8_t <code class="sig-name descname">update_sequence_number</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin22update_sequence_numberE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Update sequence number (zero for original messages and for messages containing only delayed reports; incremented for the other updates) </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin8rep_yearE">
-<span id="_CPPv3N7wreport8Bulletin8rep_yearE"></span><span id="_CPPv2N7wreport8Bulletin8rep_yearE"></span><span id="wreport::Bulletin::rep_year__uint16_t"></span><span class="target" id="classwreport_1_1Bulletin_1a98eace9866991c4daf9ea063715a7ae3"></span>uint16_t <code class="descname">rep_year</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin8rep_yearE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin8rep_yearE"></span><span id="_CPPv2N7wreport8Bulletin8rep_yearE"></span><span id="wreport::Bulletin::rep_year__uint16_t"></span><span class="target" id="classwreport_1_1Bulletin_1a98eace9866991c4daf9ea063715a7ae3"></span>uint16_t <code class="sig-name descname">rep_year</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin8rep_yearE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reference year in bulletin header. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin9rep_monthE">
-<span id="_CPPv3N7wreport8Bulletin9rep_monthE"></span><span id="_CPPv2N7wreport8Bulletin9rep_monthE"></span><span id="wreport::Bulletin::rep_month__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1a7f1a24090194a5bf4bcbafe37e1fbdd9"></span>uint8_t <code class="descname">rep_month</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin9rep_monthE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin9rep_monthE"></span><span id="_CPPv2N7wreport8Bulletin9rep_monthE"></span><span id="wreport::Bulletin::rep_month__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1a7f1a24090194a5bf4bcbafe37e1fbdd9"></span>uint8_t <code class="sig-name descname">rep_month</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin9rep_monthE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reference month in bulletin header. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin7rep_dayE">
-<span id="_CPPv3N7wreport8Bulletin7rep_dayE"></span><span id="_CPPv2N7wreport8Bulletin7rep_dayE"></span><span id="wreport::Bulletin::rep_day__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1ad15e4cda9613818260abdd77512a4074"></span>uint8_t <code class="descname">rep_day</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin7rep_dayE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin7rep_dayE"></span><span id="_CPPv2N7wreport8Bulletin7rep_dayE"></span><span id="wreport::Bulletin::rep_day__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1ad15e4cda9613818260abdd77512a4074"></span>uint8_t <code class="sig-name descname">rep_day</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin7rep_dayE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reference day in bulletin header. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin8rep_hourE">
-<span id="_CPPv3N7wreport8Bulletin8rep_hourE"></span><span id="_CPPv2N7wreport8Bulletin8rep_hourE"></span><span id="wreport::Bulletin::rep_hour__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1a35f4ec158bbc962922e95d87bb71825f"></span>uint8_t <code class="descname">rep_hour</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin8rep_hourE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin8rep_hourE"></span><span id="_CPPv2N7wreport8Bulletin8rep_hourE"></span><span id="wreport::Bulletin::rep_hour__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1a35f4ec158bbc962922e95d87bb71825f"></span>uint8_t <code class="sig-name descname">rep_hour</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin8rep_hourE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reference hour in bulletin header. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin10rep_minuteE">
-<span id="_CPPv3N7wreport8Bulletin10rep_minuteE"></span><span id="_CPPv2N7wreport8Bulletin10rep_minuteE"></span><span id="wreport::Bulletin::rep_minute__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1a62a1e680fecf2a128495a8714c55cd52"></span>uint8_t <code class="descname">rep_minute</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin10rep_minuteE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin10rep_minuteE"></span><span id="_CPPv2N7wreport8Bulletin10rep_minuteE"></span><span id="wreport::Bulletin::rep_minute__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1a62a1e680fecf2a128495a8714c55cd52"></span>uint8_t <code class="sig-name descname">rep_minute</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin10rep_minuteE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reference minute in bulletin header. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin10rep_secondE">
-<span id="_CPPv3N7wreport8Bulletin10rep_secondE"></span><span id="_CPPv2N7wreport8Bulletin10rep_secondE"></span><span id="wreport::Bulletin::rep_second__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1aac0ea07057f13c87bfd09b36614b0690"></span>uint8_t <code class="descname">rep_second</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin10rep_secondE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin10rep_secondE"></span><span id="_CPPv2N7wreport8Bulletin10rep_secondE"></span><span id="wreport::Bulletin::rep_second__uint8_t"></span><span class="target" id="classwreport_1_1Bulletin_1aac0ea07057f13c87bfd09b36614b0690"></span>uint8_t <code class="sig-name descname">rep_second</code> = 0<a class="headerlink" href="#_CPPv4N7wreport8Bulletin10rep_secondE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reference second in bulletin header. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin6tablesE">
-<span id="_CPPv3N7wreport8Bulletin6tablesE"></span><span id="_CPPv2N7wreport8Bulletin6tablesE"></span><span id="wreport::Bulletin::tables__Tables"></span><span class="target" id="classwreport_1_1Bulletin_1a9f555079913237cd2c80a924a177db28"></span>Tables <code class="descname">tables</code><a class="headerlink" href="#_CPPv4N7wreport8Bulletin6tablesE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin6tablesE"></span><span id="_CPPv2N7wreport8Bulletin6tablesE"></span><span id="wreport::Bulletin::tables__Tables"></span><span class="target" id="classwreport_1_1Bulletin_1a9f555079913237cd2c80a924a177db28"></span>Tables <code class="sig-name descname">tables</code><a class="headerlink" href="#_CPPv4N7wreport8Bulletin6tablesE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Varcode and opcode tables used for encoding or decoding. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin8datadescE">
-<span id="_CPPv3N7wreport8Bulletin8datadescE"></span><span id="_CPPv2N7wreport8Bulletin8datadescE"></span><span id="wreport::Bulletin::datadesc__std::vector:Varcode:"></span><span class="target" id="classwreport_1_1Bulletin_1a91f2fe233798c17e2252fdc45c078f20"></span>std::vector&lt;<a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a>&gt; <code class="descname">datadesc</code><a class="headerlink" href="#_CPPv4N7wreport8Bulletin8datadescE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin8datadescE"></span><span id="_CPPv2N7wreport8Bulletin8datadescE"></span><span id="wreport::Bulletin::datadesc__std::vector:Varcode:"></span><span class="target" id="classwreport_1_1Bulletin_1a91f2fe233798c17e2252fdc45c078f20"></span>std::vector&lt;<a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a>&gt; <code class="sig-name descname">datadesc</code><a class="headerlink" href="#_CPPv4N7wreport8Bulletin8datadescE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parsed data descriptor section. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport8Bulletin7subsetsE">
-<span id="_CPPv3N7wreport8Bulletin7subsetsE"></span><span id="_CPPv2N7wreport8Bulletin7subsetsE"></span><span id="wreport::Bulletin::subsets__std::vector:Subset:"></span><span class="target" id="classwreport_1_1Bulletin_1a544f248fc72a7c75e48ed6835bb22e62"></span>std::vector&lt;<a class="reference internal" href="#_CPPv4N7wreport6SubsetE" title="wreport::Subset">Subset</a>&gt; <code class="descname">subsets</code><a class="headerlink" href="#_CPPv4N7wreport8Bulletin7subsetsE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport8Bulletin7subsetsE"></span><span id="_CPPv2N7wreport8Bulletin7subsetsE"></span><span id="wreport::Bulletin::subsets__std::vector:Subset:"></span><span class="target" id="classwreport_1_1Bulletin_1a544f248fc72a7c75e48ed6835bb22e62"></span>std::vector&lt;<a class="reference internal" href="#_CPPv4N7wreport6SubsetE" title="wreport::Subset">Subset</a>&gt; <code class="sig-name descname">subsets</code><a class="headerlink" href="#_CPPv4N7wreport8Bulletin7subsetsE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Decoded variables. </p>
 </dd></dl>
 
@@ -284,13 +281,13 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="class">
 <dt id="_CPPv4N7wreport16BufrCodecOptionsE">
-<span id="_CPPv3N7wreport16BufrCodecOptionsE"></span><span id="_CPPv2N7wreport16BufrCodecOptionsE"></span><span id="wreport::BufrCodecOptions"></span><span class="target" id="classwreport_1_1BufrCodecOptions"></span><em class="property">class </em><code class="descname">BufrCodecOptions</code><a class="headerlink" href="#_CPPv4N7wreport16BufrCodecOptionsE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport16BufrCodecOptionsE"></span><span id="_CPPv2N7wreport16BufrCodecOptionsE"></span><span id="wreport::BufrCodecOptions"></span><span class="target" id="classwreport_1_1BufrCodecOptions"></span><em class="property">class </em><code class="sig-name descname">BufrCodecOptions</code><a class="headerlink" href="#_CPPv4N7wreport16BufrCodecOptionsE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Options used to configure BUFR decoding. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Members</p>
 <dl class="member">
 <dt id="_CPPv4N7wreport16BufrCodecOptions23decode_adds_undef_attrsE">
-<span id="_CPPv3N7wreport16BufrCodecOptions23decode_adds_undef_attrsE"></span><span id="_CPPv2N7wreport16BufrCodecOptions23decode_adds_undef_attrsE"></span><span id="wreport::BufrCodecOptions::decode_adds_undef_attrs__b"></span><span class="target" id="classwreport_1_1BufrCodecOptions_1a8d51a346ae499c7ce5b1bcc92a91750a"></span>bool <code class="descname">decode_adds_undef_attrs</code> = false<a class="headerlink" href="#_CPPv4N7wreport16BufrCodecOptions23decode_adds_undef_attrsE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport16BufrCodecOptions23decode_adds_undef_attrsE"></span><span id="_CPPv2N7wreport16BufrCodecOptions23decode_adds_undef_attrsE"></span><span id="wreport::BufrCodecOptions::decode_adds_undef_attrs__b"></span><span class="target" id="classwreport_1_1BufrCodecOptions_1a8d51a346ae499c7ce5b1bcc92a91750a"></span>bool <code class="sig-name descname">decode_adds_undef_attrs</code> = false<a class="headerlink" href="#_CPPv4N7wreport16BufrCodecOptions23decode_adds_undef_attrsE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>By default (false) undefined attributes are not added to variables, and there is no difference between an undefined or a missing attribute. </p>
 <p>If this is set to true, undefined attributes are added to variables, so that it is possible to tell between a variable with no attributes and a variable for which the bulletin provides attributes but they have an missing value. </p>
 </dd></dl>
@@ -300,7 +297,7 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 <p class="breathe-sectiondef-title rubric">Public Static Functions</p>
 <dl class="function">
 <dt id="_CPPv4N7wreport16BufrCodecOptions6createEv">
-<span id="_CPPv3N7wreport16BufrCodecOptions6createEv"></span><span id="_CPPv2N7wreport16BufrCodecOptions6createEv"></span><span id="wreport::BufrCodecOptions::create"></span><span class="target" id="classwreport_1_1BufrCodecOptions_1a61ff555bec387381cdf39152b251f252"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport16BufrCodecOptionsE" title="wreport::BufrCodecOptions">BufrCodecOptions</a>&gt; <code class="descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport16BufrCodecOptions6createEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport16BufrCodecOptions6createEv"></span><span id="_CPPv2N7wreport16BufrCodecOptions6createEv"></span><span id="wreport::BufrCodecOptions::create"></span><span class="target" id="classwreport_1_1BufrCodecOptions_1a61ff555bec387381cdf39152b251f252"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport16BufrCodecOptionsE" title="wreport::BufrCodecOptions">BufrCodecOptions</a>&gt; <code class="sig-name descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport16BufrCodecOptions6createEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Create a <a class="reference internal" href="#classwreport_1_1BufrCodecOptions"><span class="std std-ref">BufrCodecOptions</span></a>. </p>
 <p>Options may be added at any time to future versions of the structure. To reduce the likelyhook of breaking ABI, construction on stack is discouraged in favour of an allocator function. </p>
 </dd></dl>
@@ -310,43 +307,43 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="class">
 <dt id="_CPPv4N7wreport12BufrBulletinE">
-<span id="_CPPv3N7wreport12BufrBulletinE"></span><span id="_CPPv2N7wreport12BufrBulletinE"></span><span id="wreport::BufrBulletin"></span><span class="target" id="classwreport_1_1BufrBulletin"></span><em class="property">class </em><code class="descname">BufrBulletin</code> : <em class="property">public</em> wreport::<a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletinE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletinE"></span><span id="_CPPv2N7wreport12BufrBulletinE"></span><span id="wreport::BufrBulletin"></span><span class="target" id="classwreport_1_1BufrBulletin"></span><em class="property">class </em><code class="sig-name descname">BufrBulletin</code> : <em class="property">public</em> wreport::<a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletinE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>BUFR bulletin implementation. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin5clearEv">
-<span id="_CPPv3N7wreport12BufrBulletin5clearEv"></span><span id="_CPPv2N7wreport12BufrBulletin5clearEv"></span><span id="wreport::BufrBulletin::clear"></span><span class="target" id="classwreport_1_1BufrBulletin_1a330f450bf914d983977c6b61f1dcbc17"></span>void <code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin5clearEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin5clearEv"></span><span id="_CPPv2N7wreport12BufrBulletin5clearEv"></span><span id="wreport::BufrBulletin::clear"></span><span class="target" id="classwreport_1_1BufrBulletin_1a330f450bf914d983977c6b61f1dcbc17"></span>void <code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin5clearEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reset the bulletin. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport12BufrBulletin13encoding_nameEv">
-<span id="_CPPv3NK7wreport12BufrBulletin13encoding_nameEv"></span><span id="_CPPv2NK7wreport12BufrBulletin13encoding_nameEv"></span><span id="wreport::BufrBulletin::encoding_nameC"></span><span class="target" id="classwreport_1_1BufrBulletin_1ae7c715b32c799af21f65f68fc4d964bc"></span><em class="property">const</em> char *<code class="descname">encoding_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12BufrBulletin13encoding_nameEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport12BufrBulletin13encoding_nameEv"></span><span id="_CPPv2NK7wreport12BufrBulletin13encoding_nameEv"></span><span id="wreport::BufrBulletin::encoding_nameC"></span><span class="target" id="classwreport_1_1BufrBulletin_1ae7c715b32c799af21f65f68fc4d964bc"></span><em class="property">const</em> char *<code class="sig-name descname">encoding_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12BufrBulletin13encoding_nameEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Type of source/target encoding. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin11load_tablesEv">
-<span id="_CPPv3N7wreport12BufrBulletin11load_tablesEv"></span><span id="_CPPv2N7wreport12BufrBulletin11load_tablesEv"></span><span id="wreport::BufrBulletin::load_tables"></span><span class="target" id="classwreport_1_1BufrBulletin_1a97172f200b08d75f66ceefba679bf348"></span>void <code class="descname">load_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin11load_tablesEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin11load_tablesEv"></span><span id="_CPPv2N7wreport12BufrBulletin11load_tablesEv"></span><span id="wreport::BufrBulletin::load_tables"></span><span class="target" id="classwreport_1_1BufrBulletin_1a97172f200b08d75f66ceefba679bf348"></span>void <code class="sig-name descname">load_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin11load_tablesEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Load a new set of tables to use for encoding this message. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport12BufrBulletin6encodeEv">
-<span id="_CPPv3NK7wreport12BufrBulletin6encodeEv"></span><span id="_CPPv2NK7wreport12BufrBulletin6encodeEv"></span><span id="wreport::BufrBulletin::encodeC"></span><span class="target" id="classwreport_1_1BufrBulletin_1a5391843534388ec20af5c41ab5e1b716"></span>std::string <code class="descname">encode</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12BufrBulletin6encodeEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport12BufrBulletin6encodeEv"></span><span id="_CPPv2NK7wreport12BufrBulletin6encodeEv"></span><span id="wreport::BufrBulletin::encodeC"></span><span class="target" id="classwreport_1_1BufrBulletin_1a5391843534388ec20af5c41ab5e1b716"></span>std::string <code class="sig-name descname">encode</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12BufrBulletin6encodeEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Encode the message. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport12BufrBulletin13print_detailsEP4FILE">
-<span id="_CPPv3NK7wreport12BufrBulletin13print_detailsEP4FILE"></span><span id="_CPPv2NK7wreport12BufrBulletin13print_detailsEP4FILE"></span><span id="wreport::BufrBulletin::print_details__FILEPC"></span><span class="target" id="classwreport_1_1BufrBulletin_1a77dbd46d32f9fa7bd2836b72f1720971"></span>void <code class="descname">print_details</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12BufrBulletin13print_detailsEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport12BufrBulletin13print_detailsEP4FILE"></span><span id="_CPPv2NK7wreport12BufrBulletin13print_detailsEP4FILE"></span><span id="wreport::BufrBulletin::print_details__FILEPC"></span><span class="target" id="classwreport_1_1BufrBulletin_1a77dbd46d32f9fa7bd2836b72f1720971"></span>void <code class="sig-name descname">print_details</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12BufrBulletin13print_detailsEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Print format-specific details. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport12BufrBulletin12diff_detailsERK8Bulletin">
-<span id="_CPPv3NK7wreport12BufrBulletin12diff_detailsERK8Bulletin"></span><span id="_CPPv2NK7wreport12BufrBulletin12diff_detailsERK8Bulletin"></span><span id="wreport::BufrBulletin::diff_details__BulletinCRC"></span><span class="target" id="classwreport_1_1BufrBulletin_1a1042ec88efc2bfca0f91093533fa286a"></span>unsigned <code class="descname">diff_details</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a> &amp;<em>msg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12BufrBulletin12diff_detailsERK8Bulletin" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport12BufrBulletin12diff_detailsERK8Bulletin"></span><span id="_CPPv2NK7wreport12BufrBulletin12diff_detailsERK8Bulletin"></span><span id="wreport::BufrBulletin::diff_details__BulletinCRC"></span><span class="target" id="classwreport_1_1BufrBulletin_1a1042ec88efc2bfca0f91093533fa286a"></span>unsigned <code class="sig-name descname">diff_details</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a> &amp;<em>msg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12BufrBulletin12diff_detailsERK8Bulletin" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Diff format-specific details. </p>
 </dd></dl>
 
@@ -355,40 +352,40 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 <p class="breathe-sectiondef-title rubric">Public Members</p>
 <dl class="member">
 <dt id="_CPPv4N7wreport12BufrBulletin14edition_numberE">
-<span id="_CPPv3N7wreport12BufrBulletin14edition_numberE"></span><span id="_CPPv2N7wreport12BufrBulletin14edition_numberE"></span><span id="wreport::BufrBulletin::edition_number__uint8_t"></span><span class="target" id="classwreport_1_1BufrBulletin_1ace17bd9826b746fab0f54772c4647408"></span>uint8_t <code class="descname">edition_number</code> = 4<a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin14edition_numberE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin14edition_numberE"></span><span id="_CPPv2N7wreport12BufrBulletin14edition_numberE"></span><span id="wreport::BufrBulletin::edition_number__uint8_t"></span><span class="target" id="classwreport_1_1BufrBulletin_1ace17bd9826b746fab0f54772c4647408"></span>uint8_t <code class="sig-name descname">edition_number</code> = 4<a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin14edition_numberE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>BUFR edition number. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport12BufrBulletin27master_table_version_numberE">
-<span id="_CPPv3N7wreport12BufrBulletin27master_table_version_numberE"></span><span id="_CPPv2N7wreport12BufrBulletin27master_table_version_numberE"></span><span id="wreport::BufrBulletin::master_table_version_number__uint8_t"></span><span class="target" id="classwreport_1_1BufrBulletin_1a101e404faac08f09f77abb92be08d3fa"></span>uint8_t <code class="descname">master_table_version_number</code> = 19<a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin27master_table_version_numberE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin27master_table_version_numberE"></span><span id="_CPPv2N7wreport12BufrBulletin27master_table_version_numberE"></span><span id="wreport::BufrBulletin::master_table_version_number__uint8_t"></span><span class="target" id="classwreport_1_1BufrBulletin_1a101e404faac08f09f77abb92be08d3fa"></span>uint8_t <code class="sig-name descname">master_table_version_number</code> = 19<a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin27master_table_version_numberE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Version number of BUFR master table used. </p>
 <p>See WMO Manual on Codes, Binary codes, FM94-XIV BUFR, Section 1 Identification section, note 5, or FB95-XIV CREX, Specification of sections, note 3, for a list. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport12BufrBulletin33master_table_version_number_localE">
-<span id="_CPPv3N7wreport12BufrBulletin33master_table_version_number_localE"></span><span id="_CPPv2N7wreport12BufrBulletin33master_table_version_number_localE"></span><span id="wreport::BufrBulletin::master_table_version_number_local__uint8_t"></span><span class="target" id="classwreport_1_1BufrBulletin_1a1f54708eb63824ffaade47796825f11c"></span>uint8_t <code class="descname">master_table_version_number_local</code> = 0<a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin33master_table_version_number_localE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin33master_table_version_number_localE"></span><span id="_CPPv2N7wreport12BufrBulletin33master_table_version_number_localE"></span><span id="wreport::BufrBulletin::master_table_version_number_local__uint8_t"></span><span class="target" id="classwreport_1_1BufrBulletin_1a1f54708eb63824ffaade47796825f11c"></span>uint8_t <code class="sig-name descname">master_table_version_number_local</code> = 0<a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin33master_table_version_number_localE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Version number of local table used to augment the master table. </p>
 <p>Local tables shall define those parts of the master table which are reserved for local use, thus version numbers of local tables may be changed at will by the originating centre. If no local table is used, the version number of the local table shall be encoded as 0. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport12BufrBulletin11compressionE">
-<span id="_CPPv3N7wreport12BufrBulletin11compressionE"></span><span id="_CPPv2N7wreport12BufrBulletin11compressionE"></span><span id="wreport::BufrBulletin::compression__b"></span><span class="target" id="classwreport_1_1BufrBulletin_1a505ca54b6fae2ade5c6116d7dd249d06"></span>bool <code class="descname">compression</code><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin11compressionE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin11compressionE"></span><span id="_CPPv2N7wreport12BufrBulletin11compressionE"></span><span id="wreport::BufrBulletin::compression__b"></span><span class="target" id="classwreport_1_1BufrBulletin_1a505ca54b6fae2ade5c6116d7dd249d06"></span>bool <code class="sig-name descname">compression</code><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin11compressionE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Whether the message is compressed. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport12BufrBulletin16optional_sectionE">
-<span id="_CPPv3N7wreport12BufrBulletin16optional_sectionE"></span><span id="_CPPv2N7wreport12BufrBulletin16optional_sectionE"></span><span id="wreport::BufrBulletin::optional_section__ss"></span><span class="target" id="classwreport_1_1BufrBulletin_1a5b1555d150e6c8251681598cff780b6c"></span>std::string <code class="descname">optional_section</code><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin16optional_sectionE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin16optional_sectionE"></span><span id="_CPPv2N7wreport12BufrBulletin16optional_sectionE"></span><span id="wreport::BufrBulletin::optional_section__ss"></span><span class="target" id="classwreport_1_1BufrBulletin_1a5b1555d150e6c8251681598cff780b6c"></span>std::string <code class="sig-name descname">optional_section</code><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin16optional_sectionE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Raw optional section of the message. </p>
 <p>It is empty if the message does not contain an optional section. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport12BufrBulletin11section_endE">
-<span id="_CPPv3N7wreport12BufrBulletin11section_endE"></span><span id="_CPPv2N7wreport12BufrBulletin11section_endE"></span><span id="wreport::BufrBulletin::section_end__unsignedA"></span><span class="target" id="classwreport_1_1BufrBulletin_1a314e181170f5050887c24ae41b5a67b4"></span>unsigned <code class="descname">section_end</code>[6] = { 0, 0, 0, 0, 0, 0 }<a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin11section_endE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin11section_endE"></span><span id="_CPPv2N7wreport12BufrBulletin11section_endE"></span><span id="wreport::BufrBulletin::section_end__unsignedA"></span><span class="target" id="classwreport_1_1BufrBulletin_1a314e181170f5050887c24ae41b5a67b4"></span>unsigned <code class="sig-name descname">section_end</code>[6] = {0, , , , , }<a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin11section_endE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Offsets of the end of BUFR sections. </p>
 <p>This is only filled in during decoding. </p>
 </dd></dl>
@@ -398,21 +395,19 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 <p class="breathe-sectiondef-title rubric">Public Static Functions</p>
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin4readEP4FILERNSt6stringEPKcP5off_t">
-<span id="_CPPv3N7wreport12BufrBulletin4readEP4FILERNSt6stringEPKcP5off_t"></span><span id="_CPPv2N7wreport12BufrBulletin4readEP4FILERNSt6stringEPKcP5off_t"></span><span id="wreport::BufrBulletin::read__FILEP.ssR.cCP.off_tP"></span><span class="target" id="classwreport_1_1BufrBulletin_1a25cad04956c36ed98ae0958643b81049"></span><em class="property">static</em> bool <code class="descname">read</code><span class="sig-paren">(</span>FILE *<em>in</em>, std::string &amp;<em>buf</em>, <em class="property">const</em> char *<em>fname</em> = 0, off_t *<em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin4readEP4FILERNSt6stringEPKcP5off_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin4readEP4FILERNSt6stringEPKcP5off_t"></span><span id="_CPPv2N7wreport12BufrBulletin4readEP4FILERNSt6stringEPKcP5off_t"></span><span id="wreport::BufrBulletin::read__FILEP.ssR.cCP.off_tP"></span><span class="target" id="classwreport_1_1BufrBulletin_1a25cad04956c36ed98ae0958643b81049"></span><em class="property">static</em> bool <code class="sig-name descname">read</code><span class="sig-paren">(</span>FILE *<em>in</em>, std::string &amp;<em>buf</em>, <em class="property">const</em> char *<em>fname</em> = 0, off_t *<em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin4readEP4FILERNSt6stringEPKcP5off_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Read an encoded BUFR message from a stream. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>true if a message was found, false on EOF </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">in</span></code>: The stream to read from </li>
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer where the data will be written </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: File name to use in error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>true if a message was found, false on EOF </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">in</span></code>: The stream to read from </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer where the data will be written </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: File name to use in error messages </p></li>
 </ul>
 </dd>
-<dt><strong>Return Value</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset in the file of the beginning of the BUFR data </li>
+<dt><strong>Return Value</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset in the file of the beginning of the BUFR data </p></li>
 </ul>
 </dd>
 </dl>
@@ -421,14 +416,13 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin5writeERKNSt6stringEP4FILEPKc">
-<span id="_CPPv3N7wreport12BufrBulletin5writeERKNSt6stringEP4FILEPKc"></span><span id="_CPPv2N7wreport12BufrBulletin5writeERKNSt6stringEP4FILEPKc"></span><span id="wreport::BufrBulletin::write__ssCR.FILEP.cCP"></span><span class="target" id="classwreport_1_1BufrBulletin_1a048f8585485c1c67e3d66ef95656540d"></span><em class="property">static</em> void <code class="descname">write</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>buf</em>, FILE *<em>out</em>, <em class="property">const</em> char *<em>fname</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin5writeERKNSt6stringEP4FILEPKc" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin5writeERKNSt6stringEP4FILEPKc"></span><span id="_CPPv2N7wreport12BufrBulletin5writeERKNSt6stringEP4FILEPKc"></span><span id="wreport::BufrBulletin::write__ssCR.FILEP.cCP"></span><span class="target" id="classwreport_1_1BufrBulletin_1a048f8585485c1c67e3d66ef95656540d"></span><em class="property">static</em> void <code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>buf</em>, FILE *<em>out</em>, <em class="property">const</em> char *<em>fname</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin5writeERKNSt6stringEP4FILEPKc" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Write an encoded BUFR message to a stream. </p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer with the data to write </li>
-<li><code class="docutils literal notranslate"><span class="pre">out</span></code>: The stream to write to </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: File name to use in error messages </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer with the data to write </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">out</span></code>: The stream to write to </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: File name to use in error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -437,22 +431,21 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin6createEv">
-<span id="_CPPv3N7wreport12BufrBulletin6createEv"></span><span id="_CPPv2N7wreport12BufrBulletin6createEv"></span><span id="wreport::BufrBulletin::create"></span><span class="target" id="classwreport_1_1BufrBulletin_1aa00e0fbd5c9cdb0ee85e6171fb4a0b26"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin6createEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin6createEv"></span><span id="_CPPv2N7wreport12BufrBulletin6createEv"></span><span id="wreport::BufrBulletin::create"></span><span class="target" id="classwreport_1_1BufrBulletin_1aa00e0fbd5c9cdb0ee85e6171fb4a0b26"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="sig-name descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin6createEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>To prevent breaking ABI if new members are added to bulletins, direct construction is discouraged in favour of an allocator function. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin13decode_headerERKNSt6stringEPKc6size_t">
-<span id="_CPPv3N7wreport12BufrBulletin13decode_headerERKNSt6stringEPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin13decode_headerERKNSt6stringEPKc6size_t"></span><span id="wreport::BufrBulletin::decode_header__ssCR.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1abb0fe9d4dc8d0d5d5ac5103a4005dec9"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="descname">decode_header</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin13decode_headerERKNSt6stringEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin13decode_headerERKNSt6stringEPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin13decode_headerERKNSt6stringEPKc6size_t"></span><span id="wreport::BufrBulletin::decode_header__ssCR.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1abb0fe9d4dc8d0d5d5ac5103a4005dec9"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="sig-name descname">decode_header</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin13decode_headerERKNSt6stringEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parse only the header of an encoded BUFR message. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>The new bulletin with the decoded message </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </li>
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>The new bulletin with the decoded message </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -461,17 +454,16 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin13decode_headerERKNSt6stringERK16BufrCodecOptionsPKc6size_t">
-<span id="_CPPv3N7wreport12BufrBulletin13decode_headerERKNSt6stringERK16BufrCodecOptionsPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin13decode_headerERKNSt6stringERK16BufrCodecOptionsPKc6size_t"></span><span id="wreport::BufrBulletin::decode_header__ssCR.BufrCodecOptionsCR.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1a9defa7f37db281f1d25be7614d2b68cb"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="descname">decode_header</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport16BufrCodecOptionsE" title="wreport::BufrCodecOptions">BufrCodecOptions</a> &amp;<em>opts</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin13decode_headerERKNSt6stringERK16BufrCodecOptionsPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin13decode_headerERKNSt6stringERK16BufrCodecOptionsPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin13decode_headerERKNSt6stringERK16BufrCodecOptionsPKc6size_t"></span><span id="wreport::BufrBulletin::decode_header__ssCR.BufrCodecOptionsCR.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1a9defa7f37db281f1d25be7614d2b68cb"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="sig-name descname">decode_header</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport16BufrCodecOptionsE" title="wreport::BufrCodecOptions">BufrCodecOptions</a> &amp;<em>opts</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin13decode_headerERKNSt6stringERK16BufrCodecOptionsPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parse only the header of an encoded BUFR message. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>The new bulletin with the decoded message </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </li>
-<li><code class="docutils literal notranslate"><span class="pre">opts</span></code>: Options used to customise encoding or decoding. </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </li>
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>The new bulletin with the decoded message </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">opts</span></code>: Options used to customise encoding or decoding. </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -480,16 +472,15 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin6decodeERKNSt6stringEPKc6size_t">
-<span id="_CPPv3N7wreport12BufrBulletin6decodeERKNSt6stringEPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin6decodeERKNSt6stringEPKc6size_t"></span><span id="wreport::BufrBulletin::decode__ssCR.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1a71be7dd90dda7932f4d2e521b48ea998"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="descname">decode</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin6decodeERKNSt6stringEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin6decodeERKNSt6stringEPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin6decodeERKNSt6stringEPKc6size_t"></span><span id="wreport::BufrBulletin::decode__ssCR.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1a71be7dd90dda7932f4d2e521b48ea998"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="sig-name descname">decode</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin6decodeERKNSt6stringEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parse an encoded BUFR message. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>The new bulletin with the decoded message </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </li>
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>The new bulletin with the decoded message </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -498,17 +489,16 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t">
-<span id="_CPPv3N7wreport12BufrBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t"></span><span id="wreport::BufrBulletin::decode_verbose__ssCR.FILEP.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1a22dba6aa25bafa1e912b5577e6a1331e"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="descname">decode_verbose</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, FILE *<em>out</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t"></span><span id="wreport::BufrBulletin::decode_verbose__ssCR.FILEP.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1a22dba6aa25bafa1e912b5577e6a1331e"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="sig-name descname">decode_verbose</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, FILE *<em>out</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parse an encoded BUFR message, printing decoding information. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>The new bulletin with the decoded message </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </li>
-<li><code class="docutils literal notranslate"><span class="pre">out</span></code>: Where the decoder information should be printed </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </li>
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>The new bulletin with the decoded message </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">out</span></code>: Where the decoder information should be printed </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -517,17 +507,16 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12BufrBulletin6decodeERKNSt6stringERK16BufrCodecOptionsPKc6size_t">
-<span id="_CPPv3N7wreport12BufrBulletin6decodeERKNSt6stringERK16BufrCodecOptionsPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin6decodeERKNSt6stringERK16BufrCodecOptionsPKc6size_t"></span><span id="wreport::BufrBulletin::decode__ssCR.BufrCodecOptionsCR.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1aac100a416ab689c62cec559dc0376b78"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="descname">decode</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport16BufrCodecOptionsE" title="wreport::BufrCodecOptions">BufrCodecOptions</a> &amp;<em>opts</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin6decodeERKNSt6stringERK16BufrCodecOptionsPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12BufrBulletin6decodeERKNSt6stringERK16BufrCodecOptionsPKc6size_t"></span><span id="_CPPv2N7wreport12BufrBulletin6decodeERKNSt6stringERK16BufrCodecOptionsPKc6size_t"></span><span id="wreport::BufrBulletin::decode__ssCR.BufrCodecOptionsCR.cCP.s"></span><span class="target" id="classwreport_1_1BufrBulletin_1aac100a416ab689c62cec559dc0376b78"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12BufrBulletinE" title="wreport::BufrBulletin">BufrBulletin</a>&gt; <code class="sig-name descname">decode</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport16BufrCodecOptionsE" title="wreport::BufrCodecOptions">BufrCodecOptions</a> &amp;<em>opts</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12BufrBulletin6decodeERKNSt6stringERK16BufrCodecOptionsPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parse an encoded BUFR message. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>The new bulletin with the decoded message </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </li>
-<li><code class="docutils literal notranslate"><span class="pre">opts</span></code>: Options used to customise encoding or decoding. </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </li>
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>The new bulletin with the decoded message </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">opts</span></code>: Options used to customise encoding or decoding. </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -539,43 +528,43 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="class">
 <dt id="_CPPv4N7wreport12CrexBulletinE">
-<span id="_CPPv3N7wreport12CrexBulletinE"></span><span id="_CPPv2N7wreport12CrexBulletinE"></span><span id="wreport::CrexBulletin"></span><span class="target" id="classwreport_1_1CrexBulletin"></span><em class="property">class </em><code class="descname">CrexBulletin</code> : <em class="property">public</em> wreport::<a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletinE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletinE"></span><span id="_CPPv2N7wreport12CrexBulletinE"></span><span id="wreport::CrexBulletin"></span><span class="target" id="classwreport_1_1CrexBulletin"></span><em class="property">class </em><code class="sig-name descname">CrexBulletin</code> : <em class="property">public</em> wreport::<a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletinE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>CREX bulletin implementation. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv4N7wreport12CrexBulletin5clearEv">
-<span id="_CPPv3N7wreport12CrexBulletin5clearEv"></span><span id="_CPPv2N7wreport12CrexBulletin5clearEv"></span><span id="wreport::CrexBulletin::clear"></span><span class="target" id="classwreport_1_1CrexBulletin_1aa2735dde36a641965bae5bb97d1fc5fa"></span>void <code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin5clearEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin5clearEv"></span><span id="_CPPv2N7wreport12CrexBulletin5clearEv"></span><span id="wreport::CrexBulletin::clear"></span><span class="target" id="classwreport_1_1CrexBulletin_1aa2735dde36a641965bae5bb97d1fc5fa"></span>void <code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin5clearEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Reset the bulletin. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport12CrexBulletin13encoding_nameEv">
-<span id="_CPPv3NK7wreport12CrexBulletin13encoding_nameEv"></span><span id="_CPPv2NK7wreport12CrexBulletin13encoding_nameEv"></span><span id="wreport::CrexBulletin::encoding_nameC"></span><span class="target" id="classwreport_1_1CrexBulletin_1a4d82b4d09e8ddc510052ac4c945212bb"></span><em class="property">const</em> char *<code class="descname">encoding_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12CrexBulletin13encoding_nameEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport12CrexBulletin13encoding_nameEv"></span><span id="_CPPv2NK7wreport12CrexBulletin13encoding_nameEv"></span><span id="wreport::CrexBulletin::encoding_nameC"></span><span class="target" id="classwreport_1_1CrexBulletin_1a4d82b4d09e8ddc510052ac4c945212bb"></span><em class="property">const</em> char *<code class="sig-name descname">encoding_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12CrexBulletin13encoding_nameEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Type of source/target encoding. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12CrexBulletin11load_tablesEv">
-<span id="_CPPv3N7wreport12CrexBulletin11load_tablesEv"></span><span id="_CPPv2N7wreport12CrexBulletin11load_tablesEv"></span><span id="wreport::CrexBulletin::load_tables"></span><span class="target" id="classwreport_1_1CrexBulletin_1a407f3875c6d5c10dd12f0fc32688d375"></span>void <code class="descname">load_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin11load_tablesEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin11load_tablesEv"></span><span id="_CPPv2N7wreport12CrexBulletin11load_tablesEv"></span><span id="wreport::CrexBulletin::load_tables"></span><span class="target" id="classwreport_1_1CrexBulletin_1a407f3875c6d5c10dd12f0fc32688d375"></span>void <code class="sig-name descname">load_tables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin11load_tablesEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Load a new set of tables to use for encoding this message. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport12CrexBulletin6encodeEv">
-<span id="_CPPv3NK7wreport12CrexBulletin6encodeEv"></span><span id="_CPPv2NK7wreport12CrexBulletin6encodeEv"></span><span id="wreport::CrexBulletin::encodeC"></span><span class="target" id="classwreport_1_1CrexBulletin_1a20617a1e5b1683abb39683bb8abd42ae"></span>std::string <code class="descname">encode</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12CrexBulletin6encodeEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport12CrexBulletin6encodeEv"></span><span id="_CPPv2NK7wreport12CrexBulletin6encodeEv"></span><span id="wreport::CrexBulletin::encodeC"></span><span class="target" id="classwreport_1_1CrexBulletin_1a20617a1e5b1683abb39683bb8abd42ae"></span>std::string <code class="sig-name descname">encode</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12CrexBulletin6encodeEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Encode the message. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport12CrexBulletin13print_detailsEP4FILE">
-<span id="_CPPv3NK7wreport12CrexBulletin13print_detailsEP4FILE"></span><span id="_CPPv2NK7wreport12CrexBulletin13print_detailsEP4FILE"></span><span id="wreport::CrexBulletin::print_details__FILEPC"></span><span class="target" id="classwreport_1_1CrexBulletin_1a12bc6b2c2c8e802040dfd0672a120fb9"></span>void <code class="descname">print_details</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12CrexBulletin13print_detailsEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport12CrexBulletin13print_detailsEP4FILE"></span><span id="_CPPv2NK7wreport12CrexBulletin13print_detailsEP4FILE"></span><span id="wreport::CrexBulletin::print_details__FILEPC"></span><span class="target" id="classwreport_1_1CrexBulletin_1a12bc6b2c2c8e802040dfd0672a120fb9"></span>void <code class="sig-name descname">print_details</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12CrexBulletin13print_detailsEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Print format-specific details. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport12CrexBulletin12diff_detailsERK8Bulletin">
-<span id="_CPPv3NK7wreport12CrexBulletin12diff_detailsERK8Bulletin"></span><span id="_CPPv2NK7wreport12CrexBulletin12diff_detailsERK8Bulletin"></span><span id="wreport::CrexBulletin::diff_details__BulletinCRC"></span><span class="target" id="classwreport_1_1CrexBulletin_1a4264fd3f3fca43eb47013483cd6b85a3"></span>unsigned <code class="descname">diff_details</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a> &amp;<em>msg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12CrexBulletin12diff_detailsERK8Bulletin" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport12CrexBulletin12diff_detailsERK8Bulletin"></span><span id="_CPPv2NK7wreport12CrexBulletin12diff_detailsERK8Bulletin"></span><span id="wreport::CrexBulletin::diff_details__BulletinCRC"></span><span class="target" id="classwreport_1_1CrexBulletin_1a4264fd3f3fca43eb47013483cd6b85a3"></span>unsigned <code class="sig-name descname">diff_details</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport8BulletinE" title="wreport::Bulletin">Bulletin</a> &amp;<em>msg</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport12CrexBulletin12diff_detailsERK8Bulletin" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Diff format-specific details. </p>
 </dd></dl>
 
@@ -584,20 +573,20 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 <p class="breathe-sectiondef-title rubric">Public Members</p>
 <dl class="member">
 <dt id="_CPPv4N7wreport12CrexBulletin14edition_numberE">
-<span id="_CPPv3N7wreport12CrexBulletin14edition_numberE"></span><span id="_CPPv2N7wreport12CrexBulletin14edition_numberE"></span><span id="wreport::CrexBulletin::edition_number__uint8_t"></span><span class="target" id="classwreport_1_1CrexBulletin_1ab7a206051753cac15efef582cff91b84"></span>uint8_t <code class="descname">edition_number</code> = 2<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin14edition_numberE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin14edition_numberE"></span><span id="_CPPv2N7wreport12CrexBulletin14edition_numberE"></span><span id="wreport::CrexBulletin::edition_number__uint8_t"></span><span class="target" id="classwreport_1_1CrexBulletin_1ab7a206051753cac15efef582cff91b84"></span>uint8_t <code class="sig-name descname">edition_number</code> = 2<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin14edition_numberE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>CREX Edition number. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport12CrexBulletin27master_table_version_numberE">
-<span id="_CPPv3N7wreport12CrexBulletin27master_table_version_numberE"></span><span id="_CPPv2N7wreport12CrexBulletin27master_table_version_numberE"></span><span id="wreport::CrexBulletin::master_table_version_number__uint8_t"></span><span class="target" id="classwreport_1_1CrexBulletin_1a7e9861d24a874e79987bc274e2311f50"></span>uint8_t <code class="descname">master_table_version_number</code> = 19<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin27master_table_version_numberE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin27master_table_version_numberE"></span><span id="_CPPv2N7wreport12CrexBulletin27master_table_version_numberE"></span><span id="wreport::CrexBulletin::master_table_version_number__uint8_t"></span><span class="target" id="classwreport_1_1CrexBulletin_1a7e9861d24a874e79987bc274e2311f50"></span>uint8_t <code class="sig-name descname">master_table_version_number</code> = 19<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin27master_table_version_numberE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>CREX master table version number. </p>
 <p>See WMO Manual on Codes, FB95-XIV CREX, Specification of sections, note 3, for a list. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport12CrexBulletin32master_table_version_number_bufrE">
-<span id="_CPPv3N7wreport12CrexBulletin32master_table_version_number_bufrE"></span><span id="_CPPv2N7wreport12CrexBulletin32master_table_version_number_bufrE"></span><span id="wreport::CrexBulletin::master_table_version_number_bufr__uint8_t"></span><span class="target" id="classwreport_1_1CrexBulletin_1a58d3f3a9cf1c740592e5bd70a61ccd4a"></span>uint8_t <code class="descname">master_table_version_number_bufr</code> = 19<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin32master_table_version_number_bufrE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin32master_table_version_number_bufrE"></span><span id="_CPPv2N7wreport12CrexBulletin32master_table_version_number_bufrE"></span><span id="wreport::CrexBulletin::master_table_version_number_bufr__uint8_t"></span><span class="target" id="classwreport_1_1CrexBulletin_1a58d3f3a9cf1c740592e5bd70a61ccd4a"></span>uint8_t <code class="sig-name descname">master_table_version_number_bufr</code> = 19<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin32master_table_version_number_bufrE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>BUFR master table version number. </p>
 <p>See WMO Manual on Codes, Binary codes, FM94-XIV BUFR, Section 1 Identification section, note 5, for a list.</p>
 <p>FIXME: I could not find any reference to why CREX edition 2 has a separate field for BUFR master table version number but not for BUFR master table version, or why it needs to reference BUFR master tables at all. </p>
@@ -605,14 +594,14 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="member">
 <dt id="_CPPv4N7wreport12CrexBulletin33master_table_version_number_localE">
-<span id="_CPPv3N7wreport12CrexBulletin33master_table_version_number_localE"></span><span id="_CPPv2N7wreport12CrexBulletin33master_table_version_number_localE"></span><span id="wreport::CrexBulletin::master_table_version_number_local__uint8_t"></span><span class="target" id="classwreport_1_1CrexBulletin_1a86bb7dc456e7052fa885d347ab03a98f"></span>uint8_t <code class="descname">master_table_version_number_local</code> = 0<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin33master_table_version_number_localE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin33master_table_version_number_localE"></span><span id="_CPPv2N7wreport12CrexBulletin33master_table_version_number_localE"></span><span id="wreport::CrexBulletin::master_table_version_number_local__uint8_t"></span><span class="target" id="classwreport_1_1CrexBulletin_1a86bb7dc456e7052fa885d347ab03a98f"></span>uint8_t <code class="sig-name descname">master_table_version_number_local</code> = 0<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin33master_table_version_number_localE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Version number of local table used to augment the master table. </p>
 <p>Local tables shall define those parts of the master table which are reserved for local use, thus version numbers of local tables may be changed at will by the originating centre. If no local table is used, the version number of the local table shall be encoded as 0. </p>
 </dd></dl>
 
 <dl class="member">
 <dt id="_CPPv4N7wreport12CrexBulletin15has_check_digitE">
-<span id="_CPPv3N7wreport12CrexBulletin15has_check_digitE"></span><span id="_CPPv2N7wreport12CrexBulletin15has_check_digitE"></span><span id="wreport::CrexBulletin::has_check_digit__b"></span><span class="target" id="classwreport_1_1CrexBulletin_1a678b87a8a327c91a9c906dd28fc546ca"></span>bool <code class="descname">has_check_digit</code> = false<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin15has_check_digitE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin15has_check_digitE"></span><span id="_CPPv2N7wreport12CrexBulletin15has_check_digitE"></span><span id="wreport::CrexBulletin::has_check_digit__b"></span><span class="target" id="classwreport_1_1CrexBulletin_1a678b87a8a327c91a9c906dd28fc546ca"></span>bool <code class="sig-name descname">has_check_digit</code> = false<a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin15has_check_digitE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>True if the CREX message uses the check digit feature. </p>
 </dd></dl>
 
@@ -621,21 +610,19 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 <p class="breathe-sectiondef-title rubric">Public Static Functions</p>
 <dl class="function">
 <dt id="_CPPv4N7wreport12CrexBulletin4readEP4FILERNSt6stringEPKcP5off_t">
-<span id="_CPPv3N7wreport12CrexBulletin4readEP4FILERNSt6stringEPKcP5off_t"></span><span id="_CPPv2N7wreport12CrexBulletin4readEP4FILERNSt6stringEPKcP5off_t"></span><span id="wreport::CrexBulletin::read__FILEP.ssR.cCP.off_tP"></span><span class="target" id="classwreport_1_1CrexBulletin_1a2961fd300e3a89589864e84c5f2b5b92"></span><em class="property">static</em> bool <code class="descname">read</code><span class="sig-paren">(</span>FILE *<em>in</em>, std::string &amp;<em>buf</em>, <em class="property">const</em> char *<em>fname</em> = 0, off_t *<em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin4readEP4FILERNSt6stringEPKcP5off_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin4readEP4FILERNSt6stringEPKcP5off_t"></span><span id="_CPPv2N7wreport12CrexBulletin4readEP4FILERNSt6stringEPKcP5off_t"></span><span id="wreport::CrexBulletin::read__FILEP.ssR.cCP.off_tP"></span><span class="target" id="classwreport_1_1CrexBulletin_1a2961fd300e3a89589864e84c5f2b5b92"></span><em class="property">static</em> bool <code class="sig-name descname">read</code><span class="sig-paren">(</span>FILE *<em>in</em>, std::string &amp;<em>buf</em>, <em class="property">const</em> char *<em>fname</em> = 0, off_t *<em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin4readEP4FILERNSt6stringEPKcP5off_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Read an encoded BUFR message from a stream. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>true if a message was found, false on EOF </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">in</span></code>: The stream to read from </li>
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer where the data will be written </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: File name to use in error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>true if a message was found, false on EOF </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">in</span></code>: The stream to read from </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer where the data will be written </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: File name to use in error messages </p></li>
 </ul>
 </dd>
-<dt><strong>Return Value</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset in the file of the beginning of the BUFR data </li>
+<dt><strong>Return Value</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset in the file of the beginning of the BUFR data </p></li>
 </ul>
 </dd>
 </dl>
@@ -644,14 +631,13 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12CrexBulletin5writeERKNSt6stringEP4FILEPKc">
-<span id="_CPPv3N7wreport12CrexBulletin5writeERKNSt6stringEP4FILEPKc"></span><span id="_CPPv2N7wreport12CrexBulletin5writeERKNSt6stringEP4FILEPKc"></span><span id="wreport::CrexBulletin::write__ssCR.FILEP.cCP"></span><span class="target" id="classwreport_1_1CrexBulletin_1a12286bf1596d33388b04b87b930ca022"></span><em class="property">static</em> void <code class="descname">write</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>buf</em>, FILE *<em>out</em>, <em class="property">const</em> char *<em>fname</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin5writeERKNSt6stringEP4FILEPKc" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin5writeERKNSt6stringEP4FILEPKc"></span><span id="_CPPv2N7wreport12CrexBulletin5writeERKNSt6stringEP4FILEPKc"></span><span id="wreport::CrexBulletin::write__ssCR.FILEP.cCP"></span><span class="target" id="classwreport_1_1CrexBulletin_1a12286bf1596d33388b04b87b930ca022"></span><em class="property">static</em> void <code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>buf</em>, FILE *<em>out</em>, <em class="property">const</em> char *<em>fname</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin5writeERKNSt6stringEP4FILEPKc" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Write an encoded BUFR message to a stream. </p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer with the data to write </li>
-<li><code class="docutils literal notranslate"><span class="pre">out</span></code>: The stream to write to </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: File name to use in error messages </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer with the data to write </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">out</span></code>: The stream to write to </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: File name to use in error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -660,22 +646,21 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12CrexBulletin6createEv">
-<span id="_CPPv3N7wreport12CrexBulletin6createEv"></span><span id="_CPPv2N7wreport12CrexBulletin6createEv"></span><span id="wreport::CrexBulletin::create"></span><span class="target" id="classwreport_1_1CrexBulletin_1a7aac002f41f977a8b6a3763c0c1d59c1"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12CrexBulletinE" title="wreport::CrexBulletin">CrexBulletin</a>&gt; <code class="descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin6createEv" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin6createEv"></span><span id="_CPPv2N7wreport12CrexBulletin6createEv"></span><span id="wreport::CrexBulletin::create"></span><span class="target" id="classwreport_1_1CrexBulletin_1a7aac002f41f977a8b6a3763c0c1d59c1"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12CrexBulletinE" title="wreport::CrexBulletin">CrexBulletin</a>&gt; <code class="sig-name descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin6createEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>To prevent breaking ABI if new members are added to bulletins, direct construction is discouraged in favour of an allocator function. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12CrexBulletin13decode_headerERKNSt6stringEPKc6size_t">
-<span id="_CPPv3N7wreport12CrexBulletin13decode_headerERKNSt6stringEPKc6size_t"></span><span id="_CPPv2N7wreport12CrexBulletin13decode_headerERKNSt6stringEPKc6size_t"></span><span id="wreport::CrexBulletin::decode_header__ssCR.cCP.s"></span><span class="target" id="classwreport_1_1CrexBulletin_1a147318576ee832dee4b40c6397124e17"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12CrexBulletinE" title="wreport::CrexBulletin">CrexBulletin</a>&gt; <code class="descname">decode_header</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin13decode_headerERKNSt6stringEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin13decode_headerERKNSt6stringEPKc6size_t"></span><span id="_CPPv2N7wreport12CrexBulletin13decode_headerERKNSt6stringEPKc6size_t"></span><span id="wreport::CrexBulletin::decode_header__ssCR.cCP.s"></span><span class="target" id="classwreport_1_1CrexBulletin_1a147318576ee832dee4b40c6397124e17"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12CrexBulletinE" title="wreport::CrexBulletin">CrexBulletin</a>&gt; <code class="sig-name descname">decode_header</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin13decode_headerERKNSt6stringEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parse only the header of an encoded BUFR message. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>The new bulletin with the decoded message </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </li>
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>The new bulletin with the decoded message </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -684,16 +669,15 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12CrexBulletin6decodeERKNSt6stringEPKc6size_t">
-<span id="_CPPv3N7wreport12CrexBulletin6decodeERKNSt6stringEPKc6size_t"></span><span id="_CPPv2N7wreport12CrexBulletin6decodeERKNSt6stringEPKc6size_t"></span><span id="wreport::CrexBulletin::decode__ssCR.cCP.s"></span><span class="target" id="classwreport_1_1CrexBulletin_1a0927e133204f06637511d82587257502"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12CrexBulletinE" title="wreport::CrexBulletin">CrexBulletin</a>&gt; <code class="descname">decode</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin6decodeERKNSt6stringEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin6decodeERKNSt6stringEPKc6size_t"></span><span id="_CPPv2N7wreport12CrexBulletin6decodeERKNSt6stringEPKc6size_t"></span><span id="wreport::CrexBulletin::decode__ssCR.cCP.s"></span><span class="target" id="classwreport_1_1CrexBulletin_1a0927e133204f06637511d82587257502"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12CrexBulletinE" title="wreport::CrexBulletin">CrexBulletin</a>&gt; <code class="sig-name descname">decode</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin6decodeERKNSt6stringEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parse an encoded BUFR message. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>The new bulletin with the decoded message </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </li>
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>The new bulletin with the decoded message </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -702,17 +686,16 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport12CrexBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t">
-<span id="_CPPv3N7wreport12CrexBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t"></span><span id="_CPPv2N7wreport12CrexBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t"></span><span id="wreport::CrexBulletin::decode_verbose__ssCR.FILEP.cCP.s"></span><span class="target" id="classwreport_1_1CrexBulletin_1a07667c7c859d6dd271afaf8271afc6d8"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12CrexBulletinE" title="wreport::CrexBulletin">CrexBulletin</a>&gt; <code class="descname">decode_verbose</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, FILE *<em>out</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport12CrexBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t"></span><span id="_CPPv2N7wreport12CrexBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t"></span><span id="wreport::CrexBulletin::decode_verbose__ssCR.FILEP.cCP.s"></span><span class="target" id="classwreport_1_1CrexBulletin_1a07667c7c859d6dd271afaf8271afc6d8"></span><em class="property">static</em> std::unique_ptr&lt;<a class="reference internal" href="#_CPPv4N7wreport12CrexBulletinE" title="wreport::CrexBulletin">CrexBulletin</a>&gt; <code class="sig-name descname">decode_verbose</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>raw</em>, FILE *<em>out</em>, <em class="property">const</em> char *<em>fname</em> = &quot;(memory)&quot;, size_t <em>offset</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport12CrexBulletin14decode_verboseERKNSt6stringEP4FILEPKc6size_t" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Parse an encoded BUFR message, printing decoding information. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>The new bulletin with the decoded message </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </li>
-<li><code class="docutils literal notranslate"><span class="pre">out</span></code>: Where the decoder information should be printed </li>
-<li><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </li>
-<li><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>The new bulletin with the decoded message </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">buf</span></code>: The buffer to decode </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">out</span></code>: Where the decoder information should be printed </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fname</span></code>: The file name to use for error messages </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">offset</span></code>: The offset inside the file of the start of the bulletin, used for error messages </p></li>
 </ul>
 </dd>
 </dl>
@@ -724,18 +707,17 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="class">
 <dt id="_CPPv4N7wreport6SubsetE">
-<span id="_CPPv3N7wreport6SubsetE"></span><span id="_CPPv2N7wreport6SubsetE"></span><span id="wreport::Subset"></span><span class="target" id="classwreport_1_1Subset"></span><em class="property">class </em><code class="descname">Subset</code> : <em class="property">public</em> std::vector&lt;<a class="reference internal" href="var.html#_CPPv4N7wreport3VarE" title="wreport::Var">Var</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport6SubsetE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6SubsetE"></span><span id="_CPPv2N7wreport6SubsetE"></span><span id="wreport::Subset"></span><span class="target" id="classwreport_1_1Subset"></span><em class="property">class </em><code class="sig-name descname">Subset</code> : <em class="property">public</em> std::vector&lt;<a class="reference internal" href="var.html#_CPPv4N7wreport3VarE" title="wreport::Var">Var</a>&gt;<a class="headerlink" href="#_CPPv4N7wreport6SubsetE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Represent a BUFR/CREX data subset as a list of decoded variables. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Public Functions</p>
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset6SubsetERK6Tables">
-<span id="_CPPv3N7wreport6Subset6SubsetERK6Tables"></span><span id="_CPPv2N7wreport6Subset6SubsetERK6Tables"></span><span id="wreport::Subset::Subset__TablesCR"></span><span class="target" id="classwreport_1_1Subset_1a2658111575ab80ee421070356062d053"></span><code class="descname">Subset</code><span class="sig-paren">(</span><em class="property">const</em> Tables &amp;<em>tables</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset6SubsetERK6Tables" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset6SubsetERK6Tables"></span><span id="_CPPv2N7wreport6Subset6SubsetERK6Tables"></span><span id="wreport::Subset::Subset__TablesCR"></span><span class="target" id="classwreport_1_1Subset_1a2658111575ab80ee421070356062d053"></span><code class="sig-name descname">Subset</code><span class="sig-paren">(</span><em class="property">const</em> Tables &amp;<em>tables</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset6SubsetERK6Tables" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Create a new BUFR/CREX subset. </p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">btable</span></code>: Reference to the B table to use to create variables. </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">btable</span></code>: Reference to the B table to use to create variables. </p></li>
 </ul>
 </dd>
 </dl>
@@ -744,25 +726,24 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset14store_variableERK3Var">
-<span id="_CPPv3N7wreport6Subset14store_variableERK3Var"></span><span id="_CPPv2N7wreport6Subset14store_variableERK3Var"></span><span id="wreport::Subset::store_variable__VarCR"></span><span class="target" id="classwreport_1_1Subset_1aebd576e2489d83665cd3038aa830b2d4"></span>void <code class="descname">store_variable</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="var.html#_CPPv4N7wreport3VarE" title="wreport::Var">Var</a> &amp;<em>var</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset14store_variableERK3Var" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset14store_variableERK3Var"></span><span id="_CPPv2N7wreport6Subset14store_variableERK3Var"></span><span id="wreport::Subset::store_variable__VarCR"></span><span class="target" id="classwreport_1_1Subset_1aebd576e2489d83665cd3038aa830b2d4"></span>void <code class="sig-name descname">store_variable</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="var.html#_CPPv4N7wreport3VarE" title="wreport::Var">Var</a> &amp;<em>var</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset14store_variableERK3Var" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Store a decoded variable in the message, to be encoded later. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset14store_variableERR3Var">
-<span id="_CPPv3N7wreport6Subset14store_variableERR3Var"></span><span id="_CPPv2N7wreport6Subset14store_variableERR3Var"></span><span id="wreport::Subset::store_variable__VarRR"></span><span class="target" id="classwreport_1_1Subset_1a46b123901da9f1e66d8466330124919b"></span>void <code class="descname">store_variable</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport3VarE" title="wreport::Var">Var</a> &amp;&amp;<em>var</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset14store_variableERR3Var" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset14store_variableERR3Var"></span><span id="_CPPv2N7wreport6Subset14store_variableERR3Var"></span><span id="wreport::Subset::store_variable__VarRR"></span><span class="target" id="classwreport_1_1Subset_1a46b123901da9f1e66d8466330124919b"></span>void <code class="sig-name descname">store_variable</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport3VarE" title="wreport::Var">Var</a> &amp;&amp;<em>var</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset14store_variableERR3Var" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Store a decoded variable in the message, to be encoded later. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset14store_variableE7VarcodeRK3Var">
-<span id="_CPPv3N7wreport6Subset14store_variableE7VarcodeRK3Var"></span><span id="_CPPv2N7wreport6Subset14store_variableE7VarcodeRK3Var"></span><span id="wreport::Subset::store_variable__Varcode.VarCR"></span><span class="target" id="classwreport_1_1Subset_1aac4411e9daa79962979a3940ae4166ec"></span>void <code class="descname">store_variable</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em>, <em class="property">const</em> <a class="reference internal" href="var.html#_CPPv4N7wreport3VarE" title="wreport::Var">Var</a> &amp;<em>var</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset14store_variableE7VarcodeRK3Var" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset14store_variableE7VarcodeRK3Var"></span><span id="_CPPv2N7wreport6Subset14store_variableE7VarcodeRK3Var"></span><span id="wreport::Subset::store_variable__Varcode.VarCR"></span><span class="target" id="classwreport_1_1Subset_1aac4411e9daa79962979a3940ae4166ec"></span>void <code class="sig-name descname">store_variable</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em>, <em class="property">const</em> <a class="reference internal" href="var.html#_CPPv4N7wreport3VarE" title="wreport::Var">Var</a> &amp;<em>var</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset14store_variableE7VarcodeRK3Var" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Store a new variable in the message, copying it from an already existing variable. </p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">code</span></code>: The Varcode of the variable to add. See varinfo.h </li>
-<li><code class="docutils literal notranslate"><span class="pre">var</span></code>: The variable holding the value for the variable to add. </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">code</span></code>: The Varcode of the variable to add. See varinfo.h </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">var</span></code>: The variable holding the value for the variable to add. </p></li>
 </ul>
 </dd>
 </dl>
@@ -771,13 +752,12 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset16store_variable_iE7Varcodei">
-<span id="_CPPv3N7wreport6Subset16store_variable_iE7Varcodei"></span><span id="_CPPv2N7wreport6Subset16store_variable_iE7Varcodei"></span><span id="wreport::Subset::store_variable_i__Varcode.i"></span><span class="target" id="classwreport_1_1Subset_1a9868c88beb17548d861a20d0174f10eb"></span>void <code class="descname">store_variable_i</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em>, int <em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset16store_variable_iE7Varcodei" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset16store_variable_iE7Varcodei"></span><span id="_CPPv2N7wreport6Subset16store_variable_iE7Varcodei"></span><span id="wreport::Subset::store_variable_i__Varcode.i"></span><span class="target" id="classwreport_1_1Subset_1a9868c88beb17548d861a20d0174f10eb"></span>void <code class="sig-name descname">store_variable_i</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em>, int <em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset16store_variable_iE7Varcodei" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Store a new variable in the message, providing its value as an int. </p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">code</span></code>: The Varcode of the variable to add. See vartable.h </li>
-<li><code class="docutils literal notranslate"><span class="pre">val</span></code>: The value for the variable </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">code</span></code>: The Varcode of the variable to add. See vartable.h </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">val</span></code>: The value for the variable </p></li>
 </ul>
 </dd>
 </dl>
@@ -786,13 +766,12 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset16store_variable_dE7Varcoded">
-<span id="_CPPv3N7wreport6Subset16store_variable_dE7Varcoded"></span><span id="_CPPv2N7wreport6Subset16store_variable_dE7Varcoded"></span><span id="wreport::Subset::store_variable_d__Varcode.double"></span><span class="target" id="classwreport_1_1Subset_1acde3469c9e09902de6968f2b2a92e481"></span>void <code class="descname">store_variable_d</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em>, double <em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset16store_variable_dE7Varcoded" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset16store_variable_dE7Varcoded"></span><span id="_CPPv2N7wreport6Subset16store_variable_dE7Varcoded"></span><span id="wreport::Subset::store_variable_d__Varcode.double"></span><span class="target" id="classwreport_1_1Subset_1acde3469c9e09902de6968f2b2a92e481"></span>void <code class="sig-name descname">store_variable_d</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em>, double <em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset16store_variable_dE7Varcoded" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Store a new variable in the message, providing its value as a double. </p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">code</span></code>: The Varcode of the variable to add. See vartable.h </li>
-<li><code class="docutils literal notranslate"><span class="pre">val</span></code>: The value for the variable </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">code</span></code>: The Varcode of the variable to add. See vartable.h </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">val</span></code>: The value for the variable </p></li>
 </ul>
 </dd>
 </dl>
@@ -801,13 +780,12 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset16store_variable_cE7VarcodePKc">
-<span id="_CPPv3N7wreport6Subset16store_variable_cE7VarcodePKc"></span><span id="_CPPv2N7wreport6Subset16store_variable_cE7VarcodePKc"></span><span id="wreport::Subset::store_variable_c__Varcode.cCP"></span><span class="target" id="classwreport_1_1Subset_1a5d4521c621fea25eae2f4c1e409749fb"></span>void <code class="descname">store_variable_c</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em>, <em class="property">const</em> char *<em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset16store_variable_cE7VarcodePKc" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset16store_variable_cE7VarcodePKc"></span><span id="_CPPv2N7wreport6Subset16store_variable_cE7VarcodePKc"></span><span id="wreport::Subset::store_variable_c__Varcode.cCP"></span><span class="target" id="classwreport_1_1Subset_1a5d4521c621fea25eae2f4c1e409749fb"></span>void <code class="sig-name descname">store_variable_c</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em>, <em class="property">const</em> char *<em>val</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset16store_variable_cE7VarcodePKc" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Store a new variable in the message, providing its value as a string. </p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">code</span></code>: The Varcode of the variable to add. See vartable.h </li>
-<li><code class="docutils literal notranslate"><span class="pre">val</span></code>: The value for the variable </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">code</span></code>: The Varcode of the variable to add. See vartable.h </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">val</span></code>: The value for the variable </p></li>
 </ul>
 </dd>
 </dl>
@@ -816,28 +794,27 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset20store_variable_undefE7Varcode">
-<span id="_CPPv3N7wreport6Subset20store_variable_undefE7Varcode"></span><span id="_CPPv2N7wreport6Subset20store_variable_undefE7Varcode"></span><span id="wreport::Subset::store_variable_undef__Varcode"></span><span class="target" id="classwreport_1_1Subset_1ab384ba951c40faaed5f0763f50c6d886"></span>void <code class="descname">store_variable_undef</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset20store_variable_undefE7Varcode" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset20store_variable_undefE7Varcode"></span><span id="_CPPv2N7wreport6Subset20store_variable_undefE7Varcode"></span><span id="wreport::Subset::store_variable_undef__Varcode"></span><span class="target" id="classwreport_1_1Subset_1ab384ba951c40faaed5f0763f50c6d886"></span>void <code class="sig-name descname">store_variable_undef</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>code</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset20store_variable_undefE7Varcode" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Store a new, undefined variable in the message. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset20store_variable_undefE7Varinfo">
-<span id="_CPPv3N7wreport6Subset20store_variable_undefE7Varinfo"></span><span id="_CPPv2N7wreport6Subset20store_variable_undefE7Varinfo"></span><span id="wreport::Subset::store_variable_undef__Varinfo"></span><span class="target" id="classwreport_1_1Subset_1aafbf37dc235a84b049aaaa2e7a31dbda"></span>void <code class="descname">store_variable_undef</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarinfoE" title="wreport::Varinfo">Varinfo</a> <em>info</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset20store_variable_undefE7Varinfo" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset20store_variable_undefE7Varinfo"></span><span id="_CPPv2N7wreport6Subset20store_variable_undefE7Varinfo"></span><span id="wreport::Subset::store_variable_undef__Varinfo"></span><span class="target" id="classwreport_1_1Subset_1aafbf37dc235a84b049aaaa2e7a31dbda"></span>void <code class="sig-name descname">store_variable_undef</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarinfoE" title="wreport::Varinfo">Varinfo</a> <em>info</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset20store_variable_undefE7Varinfo" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Store a new, undefined variable in the message. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset10append_dpbE7Varcodej7Varcode">
-<span id="_CPPv3N7wreport6Subset10append_dpbE7Varcodej7Varcode"></span><span id="_CPPv2N7wreport6Subset10append_dpbE7Varcodej7Varcode"></span><span id="wreport::Subset::append_dpb__Varcode.unsigned.Varcode"></span><span class="target" id="classwreport_1_1Subset_1a22a0ab0a14d77065a93390b66e799724"></span>int <code class="descname">append_dpb</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>ccode</em>, unsigned <em>size</em>, <a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>attr</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset10append_dpbE7Varcodej7Varcode" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset10append_dpbE7Varcodej7Varcode"></span><span id="_CPPv2N7wreport6Subset10append_dpbE7Varcodej7Varcode"></span><span id="wreport::Subset::append_dpb__Varcode.unsigned.Varcode"></span><span class="target" id="classwreport_1_1Subset_1a22a0ab0a14d77065a93390b66e799724"></span>int <code class="sig-name descname">append_dpb</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>ccode</em>, unsigned <em>size</em>, <a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>attr</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset10append_dpbE7Varcodej7Varcode" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute and append a data present bitmap. </p>
-<p><dl class="docutils">
-<dt><strong>Return</strong></dt>
-<dd>The number of attributes that will be encoded (for which the dpb has ‘+’) </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">ccode</span></code>: The C code that uses this bitmap </li>
-<li><code class="docutils literal notranslate"><span class="pre">size</span></code>: The size of the bitmap </li>
-<li><code class="docutils literal notranslate"><span class="pre">attr</span></code>: The code of the attribute that the bitmap will represent. See vartable.h </li>
+<p><dl class="simple">
+<dt><strong>Return</strong></dt><dd><p>The number of attributes that will be encoded (for which the dpb has ‘+’) </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ccode</span></code>: The C code that uses this bitmap </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">size</span></code>: The size of the bitmap </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">attr</span></code>: The code of the attribute that the bitmap will represent. See vartable.h </p></li>
 </ul>
 </dd>
 </dl>
@@ -846,13 +823,12 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4N7wreport6Subset16append_fixed_dpbE7Varcodei">
-<span id="_CPPv3N7wreport6Subset16append_fixed_dpbE7Varcodei"></span><span id="_CPPv2N7wreport6Subset16append_fixed_dpbE7Varcodei"></span><span id="wreport::Subset::append_fixed_dpb__Varcode.i"></span><span class="target" id="classwreport_1_1Subset_1a5529623ba96fca32fb8b7690b975885e"></span>void <code class="descname">append_fixed_dpb</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>ccode</em>, int <em>size</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset16append_fixed_dpbE7Varcodei" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset16append_fixed_dpbE7Varcodei"></span><span id="_CPPv2N7wreport6Subset16append_fixed_dpbE7Varcodei"></span><span id="wreport::Subset::append_fixed_dpb__Varcode.i"></span><span class="target" id="classwreport_1_1Subset_1a5529623ba96fca32fb8b7690b975885e"></span>void <code class="sig-name descname">append_fixed_dpb</code><span class="sig-paren">(</span><a class="reference internal" href="var.html#_CPPv4N7wreport7VarcodeE" title="wreport::Varcode">Varcode</a> <em>ccode</em>, int <em>size</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N7wreport6Subset16append_fixed_dpbE7Varcodei" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Append a fixed-size data present bitmap with all zeros. </p>
-<p><dl class="docutils">
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">ccode</span></code>: The C code that uses this bitmap </li>
-<li><code class="docutils literal notranslate"><span class="pre">size</span></code>: The size of the bitmap </li>
+<p><dl class="simple">
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ccode</span></code>: The C code that uses this bitmap </p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">size</span></code>: The size of the bitmap </p></li>
 </ul>
 </dd>
 </dl>
@@ -861,22 +837,21 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport6Subset5printEP4FILE">
-<span id="_CPPv3NK7wreport6Subset5printEP4FILE"></span><span id="_CPPv2NK7wreport6Subset5printEP4FILE"></span><span id="wreport::Subset::print__FILEPC"></span><span class="target" id="classwreport_1_1Subset_1a168c8e703c06561d6985d53ff59df378"></span>void <code class="descname">print</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport6Subset5printEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport6Subset5printEP4FILE"></span><span id="_CPPv2NK7wreport6Subset5printEP4FILE"></span><span id="wreport::Subset::print__FILEPC"></span><span class="target" id="classwreport_1_1Subset_1a168c8e703c06561d6985d53ff59df378"></span>void <code class="sig-name descname">print</code><span class="sig-paren">(</span>FILE *<em>out</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport6Subset5printEP4FILE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Dump the contents of this subset. </p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_CPPv4NK7wreport6Subset4diffERK6Subset">
-<span id="_CPPv3NK7wreport6Subset4diffERK6Subset"></span><span id="_CPPv2NK7wreport6Subset4diffERK6Subset"></span><span id="wreport::Subset::diff__SubsetCRC"></span><span class="target" id="classwreport_1_1Subset_1a16f766c4324dfb862213fd11aaf60943"></span>unsigned <code class="descname">diff</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport6SubsetE" title="wreport::Subset">Subset</a> &amp;<em>s2</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport6Subset4diffERK6Subset" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3NK7wreport6Subset4diffERK6Subset"></span><span id="_CPPv2NK7wreport6Subset4diffERK6Subset"></span><span id="wreport::Subset::diff__SubsetCRC"></span><span class="target" id="classwreport_1_1Subset_1a16f766c4324dfb862213fd11aaf60943"></span>unsigned <code class="sig-name descname">diff</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv4N7wreport6SubsetE" title="wreport::Subset">Subset</a> &amp;<em>s2</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK7wreport6Subset4diffERK6Subset" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Compute the differences between two wreport subsets. </p>
-<p>Details of the differences found will be formatted using the notes system (<dl class="docutils">
-<dt><strong>See</strong></dt>
-<dd>notes.h).</dd>
-<dt><strong>Return</strong></dt>
-<dd>The number of differences found </dd>
-<dt><strong>Parameters</strong></dt>
-<dd><ul class="breatheparameterlist first last simple">
-<li><code class="docutils literal notranslate"><span class="pre">s2</span></code>: The subset to compare with this one </li>
+<p>Details of the differences found will be formatted using the notes system (<dl class="simple">
+<dt><strong>See</strong></dt><dd><p>notes.h).</p>
+</dd>
+<dt><strong>Return</strong></dt><dd><p>The number of differences found </p>
+</dd>
+<dt><strong>Parameters</strong></dt><dd><ul class="breatheparameterlist simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">s2</span></code>: The subset to compare with this one </p></li>
 </ul>
 </dd>
 </dl>
@@ -888,7 +863,7 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 <p class="breathe-sectiondef-title rubric">Public Members</p>
 <dl class="member">
 <dt id="_CPPv4N7wreport6Subset6tablesE">
-<span id="_CPPv3N7wreport6Subset6tablesE"></span><span id="_CPPv2N7wreport6Subset6tablesE"></span><span id="wreport::Subset::tables__TablesCP"></span><span class="target" id="classwreport_1_1Subset_1a2ca5c0b2ffadaec4804b2ab6e14c66e5"></span><em class="property">const</em> Tables *<code class="descname">tables</code><a class="headerlink" href="#_CPPv4N7wreport6Subset6tablesE" title="Permalink to this definition">¶</a><br /></dt>
+<span id="_CPPv3N7wreport6Subset6tablesE"></span><span id="_CPPv2N7wreport6Subset6tablesE"></span><span id="wreport::Subset::tables__TablesCP"></span><span class="target" id="classwreport_1_1Subset_1a2ca5c0b2ffadaec4804b2ab6e14c66e5"></span><em class="property">const</em> Tables *<code class="sig-name descname">tables</code><a class="headerlink" href="#_CPPv4N7wreport6Subset6tablesE" title="Permalink to this definition">¶</a><br /></dt>
 <dd><p>Tables used for creating variables in this subset. </p>
 </dd></dl>
 
@@ -899,6 +874,7 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -936,17 +912,23 @@ functions in the format-specific subclasses of <a class="reference internal" hre
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
         </div>
       </div>
       <div class="clearer"></div>
@@ -955,8 +937,8 @@ functions in the format-specific subclasses of <a class="reference internal" hre
       &copy;2019, Enrico Zini.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.4</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.8</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.2.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
       <a href="../_sources/cpp/bulletin.rst.txt"
