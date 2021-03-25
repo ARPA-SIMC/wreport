@@ -542,6 +542,15 @@ add_method("issue17", []() {
     wassert_false(var.isset());
 });
 
+add_method("issue42", []() {
+    const Vartable* table = Vartable::get_bufr("B0000000000000031000");
+    Varinfo info = table->query(WR_VAR(0, 13, 11));
+    Var var(info, 0);
+    wassert(actual(var.enqd()) == 0);
+    var.seti(-1);
+    wassert(actual(var.enqd()) == -0.1);
+});
+
 }
 
 }
