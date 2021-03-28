@@ -14,6 +14,7 @@ env:
 - DOCKER_IMAGE=fedora:31
 - DOCKER_IMAGE=fedora:32
 - DOCKER_IMAGE=fedora:33
+- DOCKER_IMAGE=fedora:34
 - DOCKER_IMAGE=fedora:rawhide
 language: generic
 matrix:
