@@ -3,7 +3,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.29
+Version: 3.30
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -184,6 +184,10 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Sun Mar 28 2021 Daniele Branchini <dbranchini@arpae.it> - 3.30-1
+- Fixed dtable parser (#43)
+- Improved documentation (#42)
+
 * Mon Jan 25 2021 Daniele Branchini <dbranchini@arpae.it> - 3.29-1
 - Implemented `var_hook_domain_errors` option, required by dballe:#241
 

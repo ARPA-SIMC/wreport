@@ -1,3 +1,8 @@
+# New in version 3.30
+
+* Fixed dtable parser (#43)
+* Improved documentation (#42)
+
 # New in version 3.29
 
 * Implemented `var_hook_domain_errors` option, required by dballe:#241
