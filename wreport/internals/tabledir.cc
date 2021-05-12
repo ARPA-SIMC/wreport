@@ -409,15 +409,15 @@ void Tabledirs::add_default_directories()
 void Tabledirs::add_directory(const std::string& dir)
 {
     // Strip trailing /
-    string clean_dir(dir);
-    while (!clean_dir.empty() && clean_dir[clean_dir.size() - 1] == '/')
-        clean_dir.resize(clean_dir.size() - 1);
+    std::string clean_dir(dir);
+    while (!clean_dir.empty() && clean_dir.back() == '/')
+        clean_dir.pop_back();
     if (clean_dir.empty())
         clean_dir = "/";
 
     // Do not add a duplicate directory
-    for (vector<string>::const_iterator i = dirs.begin(); i != dirs.end(); ++i)
-        if (*i == clean_dir)
+    for (const auto& i: dirs)
+        if (i == clean_dir)
             return;
     dirs.push_back(clean_dir);
 
