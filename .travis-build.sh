@@ -43,8 +43,6 @@ then
     cp fedora/SPECS/wreport.spec ~/rpmbuild/SPECS/wreport.spec
     git archive --prefix=$pkgname/ --format=tar HEAD | gzip -c > ~/rpmbuild/SOURCES/$pkgname.tar.gz
     rpmbuild -ba ~/rpmbuild/SPECS/wreport.spec
-    find ~/rpmbuild/{RPMS,SRPMS}/ -name "${pkgname}*rpm" -exec cp -v {} . \;
-    # TODO upload ${pkgname}*.rpm to github release on deploy stage
 else
     autoreconf -ifv
     ./configure

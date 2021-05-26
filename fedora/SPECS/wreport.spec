@@ -1,5 +1,6 @@
 %global releaseno 1
-# Note: define srcarchivename in Travis build only.
+
+# Note: define srcarchivename in CI build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
