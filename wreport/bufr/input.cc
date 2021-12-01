@@ -2,8 +2,11 @@
 #include "trace.h"
 #include "wreport/bulletin/associated_fields.h"
 #include <cstdarg>
+#include <algorithm>
+#include <regex.h>
 
 namespace {
+
 const char* bufr_sec_names[] = {
     "Indicator section",
     "Identification section",
@@ -18,10 +21,12 @@ static inline uint32_t all_ones(int bitlen)
 {
     return ((1 << (bitlen - 1))-1) | (1 << (bitlen - 1));
 }
+
 }
 
 namespace wreport {
 namespace bufr {
+
 
 Input::Input(const std::string& in)
 {
@@ -64,29 +69,95 @@ void Input::scan_other_sections(bool has_optional)
     s4_cursor = sec[4] + 4;
 }
 
-void Input::debug_dump_next_bits(const char* desc, int count) const
+void Input::debug_dump_next_bits(const char* desc, unsigned count, const std::vector<unsigned>& groups) const
 {
+    static const char* cols[] = { "\033[33m", "\033[37m" };
+    unsigned cols_pos = 0;
+    unsigned cols_size = 2;
     fputs(desc, stderr);
     size_t cursor = s4_cursor;
     int pbyte = this->pbyte;
     int pbyte_len = this->pbyte_len;
-    int i;
+    std::vector<unsigned> markers = groups;
+    for (unsigned i = 1; i < markers.size(); ++i)
+        markers[i] += markers[i - 1];
 
-    for (i = 0; i < count; ++i) 
+    if (!markers.empty())
+    {
+        fputs(cols[cols_pos], stderr);
+        cols_pos = (cols_pos + 1) % cols_size;
+    }
+
+    for (unsigned i = 0; i < count; ++i)
     {
         if (cursor == data_len)
             break;
-        if (pbyte_len == 0) 
+        if (!markers.empty() && markers[0] == i)
+        {
+            while (!markers.empty() && markers[0] == i)
+                markers.erase(markers.begin());
+            if (markers.empty())
+                fputs("\033[39m\033[49m", stderr);
+            else
+            {
+                fputs(cols[cols_pos], stderr);
+                cols_pos = (cols_pos + 1) % cols_size;
+            }
+        }
+        if (pbyte_len == 0)
         {
             pbyte_len = 8;
             pbyte = data[cursor++];
-            putc(' ', stderr);
+            // putc(' ', stderr);
         }
         putc((pbyte & 0x80) ? '1' : '0', stderr);
         pbyte <<= 1;
         --pbyte_len;
     }
     putc('\n', stderr);
+}
+
+void Input::debug_find_sequence(const char* pattern) const
+{
+    // Build a regexp with the pattern
+    regex_t compiled;
+    if (int code = regcomp(&compiled, pattern, REG_EXTENDED))
+    {
+        size_t size = regerror(code, &compiled, nullptr, 0);
+        char* buf = new char[size];
+        regerror(code, &compiled, buf, size);
+        std::string msg(buf);
+        delete[] buf;
+        throw std::runtime_error(msg);
+    }
+
+    // Build a string with '0' and '1' for all remaining bits in the input
+    std::string haystack;
+    size_t cursor = s4_cursor;
+    int pbyte = this->pbyte;
+    int pbyte_len = this->pbyte_len;
+    while (true)
+    {
+        if (cursor == data_len)
+            break;
+        if (pbyte_len == 0)
+        {
+            pbyte_len = 8;
+            pbyte = data[cursor++];
+        }
+        haystack += (pbyte & 0x80) ? '1' : '0';
+        pbyte <<= 1;
+        --pbyte_len;
+    }
+
+    // Match the pattern
+    regmatch_t matches[2];
+    if (regexec(&compiled, haystack.c_str(), 2, matches, 0) != REG_NOMATCH)
+    {
+        fprintf(stderr, "'%s' found at position +%u\n", pattern, (unsigned)matches[0].rm_so);
+    } else {
+        fprintf(stderr, "'%s' not found\n", pattern);
+    }
 }
 
 void Input::parse_error(const char* fmt, ...) const
@@ -332,7 +403,7 @@ void Input::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits
     }
 }
 
-void Input::decode_compressed_number(Varinfo info, const bulletin::AssociatedField& associated_field, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
+void Input::decode_compressed_number_af(Varinfo info, const bulletin::AssociatedField& associated_field, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
 {
     Var var(info);
 

@@ -632,7 +632,7 @@ void Printer::b_variable(Varcode code)
 
 void Printer::c_modifier(Varcode code, Opcodes& next)
 {
-    print_lead(code);
+    print_lead(code); putc(' ', out);
     Interpreter::print_c_modifier(out, code, next);
     Interpreter::c_modifier(code, next);
 }
@@ -674,6 +674,13 @@ void Printer::define_variable_with_associated_field(Varinfo info)
 
 void Printer::define_bitmap(unsigned bitmap_size)
 {
+}
+
+unsigned Printer::define_associated_field_significance(Varinfo info)
+{
+    print_lead(info->code);
+    fprintf(out, " %s[%s]\n", info->desc, info->unit);
+    return 63;
 }
 
 unsigned Printer::define_bitmap_delayed_replication_factor(Varinfo info)

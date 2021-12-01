@@ -191,7 +191,13 @@ public:
     }
 
     /// Dump to stderr 'count' bits of 'buf', starting at the 'ofs-th' bit
-    void debug_dump_next_bits(const char* desc, int count) const;
+    void debug_dump_next_bits(const char* desc, unsigned count, const std::vector<unsigned>& groups={}) const;
+
+    /**
+     * Match the given pattern as regexp on the still unread input bitstream,
+     * with bits converted to a string of '0' and '1'
+     */
+    void debug_find_sequence(const char* pattern) const;
 
     /// Throw an error_parse at the current decoding location
     void parse_error(const char* fmt, ...) const WREPORT_THROWF_ATTRS(2, 3);
@@ -272,6 +278,9 @@ public:
      */
     void decode_number(Var& dest);
 
+    /**
+     * Decode the base value for a variable in a compressed BUFR
+     */
     bool decode_compressed_base(Varinfo info, uint32_t& base, uint32_t& diffbits);
 
     /**
@@ -288,7 +297,7 @@ public:
      * Decode a number as described by \a info from a compressed bufr with
      * \a subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_compressed_number(Varinfo info, const bulletin::AssociatedField& afield, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
+    void decode_compressed_number_af(Varinfo info, const bulletin::AssociatedField& afield, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
 
     /**
      * Decode a number as described by dest.info(), and set it as value for \a

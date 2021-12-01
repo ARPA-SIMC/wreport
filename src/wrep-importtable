@@ -262,11 +262,15 @@ def main():
     parser = argparse.ArgumentParser(
             description="builds ECMWF-style BUFR/CREX table files from zipped WMO XML table information."
                         " Files are written in the current directory."
-                        " New files can be found at http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/LatestVERSION.html"
+                        " New files can be found at "
+                        " https://community.wmo.int/activity-areas/wis/latest-version"
+                        # " http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/LatestVERSION.html"
             )
     parser.add_argument("--verbose", "-v", action="store_true", help="verbose output")
     parser.add_argument("--debug", action="store_true", help="debug output")
-    parser.add_argument("zipfile", action="store", help="zip file to open")
+    parser.add_argument("--zipfile", action="store", help="zip file to open")
+    parser.add_argument("--btable", action="store", help="xml file to open for B table")
+    parser.add_argument("--dtable", action="store", help="xml file to open for D table")
     args = parser.parse_args()
 
     log_format = "%(asctime)-15s %(levelname)s %(message)s"
@@ -278,12 +282,21 @@ def main():
     logging.basicConfig(level=level, stream=sys.stderr, format=log_format)
 
     tables = Tables()
-    infd = open(args.zipfile, "rb")
-    try:
-        tables.read_zip(infd)
-    finally:
-        infd.close()
-    tables.write_files()
+    if args.zipfile:
+        infd = open(args.zipfile, "rb")
+        try:
+            tables.read_zip(infd)
+        finally:
+            infd.close()
+        tables.write_files()
+    elif args.btable:
+        with open(args.btable, "rt") as fd:
+            table = TableB(255, 255, 255, text=fd.read())
+            table.write_files()
+    elif args.dtable:
+        with open(args.dtable, "rt") as fd:
+            table = TableDBUFR(255, 255, 255, text=fd.read())
+            table.write_files()
 
     log.info("Done. You can copy the table files to the table directory (see wrep --info for its location).")
 
