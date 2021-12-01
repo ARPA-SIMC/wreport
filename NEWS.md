@@ -1,3 +1,7 @@
+# New in version 3.31 (unreleased)
+
+* Fixed decoding of associated fields in compressed messages (#47)
+
 # New in version 3.30
 
 * Fixed dtable parser (#43)
