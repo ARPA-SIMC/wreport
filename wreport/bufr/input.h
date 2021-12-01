@@ -190,6 +190,26 @@ public:
         return result;
     }
 
+    /**
+     * Skip the next n bits
+     */
+    void skip_bits(unsigned n)
+    {
+        if (s4_cursor == data_len)
+            parse_error("end of buffer while looking for %d bits of bit-packed data", n);
+
+        for (unsigned i = 0; i < n; i++)
+        {
+            if (pbyte_len == 0)
+            {
+                pbyte_len = 8;
+                pbyte = data[s4_cursor++];
+            }
+            pbyte <<= 1;
+            pbyte_len--;
+        }
+    }
+
     /// Dump to stderr 'count' bits of 'buf', starting at the 'ofs-th' bit
     void debug_dump_next_bits(const char* desc, unsigned count, const std::vector<unsigned>& groups={}) const;
 

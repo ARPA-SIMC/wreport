@@ -375,6 +375,9 @@ bool Input::decode_compressed_base(Varinfo info, uint32_t& base, uint32_t& diffb
     if (missing && diffbits != 0)
         error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
 
+    TRACE("Input:decode_compressed_base:decoded base %u diffbits %u (%smissing) for %01d%02d%03d %s\n",
+            (unsigned)base, (unsigned)diffbits, missing ? "" : "not ", WR_VAR_FXY(info->code), info->unit);
+
     return missing;
 }
 
@@ -395,7 +398,7 @@ void Input::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits
         // Compute the value for this subset
         uint32_t newval = base + diff;
         double dval = info->decode_binary(newval);
-        TRACE("Input:decode_number:decoded diffbits %u %u+%u=%u->%f %01d%02d%03d %s\n",
+        TRACE("Input:decode_compressed_number:decoded diffbits %u %u+%u=%u->%f %01d%02d%03d %s\n",
                 diffbits, base, diff, newval, dval, WR_VAR_FXY(info->code), info->unit);
 
         /* Create the new Var */
