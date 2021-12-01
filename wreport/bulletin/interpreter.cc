@@ -678,6 +678,8 @@ void Printer::define_bitmap(unsigned bitmap_size)
 
 unsigned Printer::define_associated_field_significance(Varinfo info)
 {
+    print_lead(info->code);
+    fprintf(out, " %s[%s]\n", info->desc, info->unit);
     return 63;
 }
 
