@@ -4,6 +4,7 @@
 #include <cstdarg>
 
 namespace {
+
 const char* bufr_sec_names[] = {
     "Indicator section",
     "Identification section",
@@ -332,7 +333,7 @@ void Input::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits
     }
 }
 
-void Input::decode_compressed_number(Varinfo info, const bulletin::AssociatedField& associated_field, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
+void Input::decode_compressed_number_af(Varinfo info, const bulletin::AssociatedField& associated_field, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
 {
     Var var(info);
 

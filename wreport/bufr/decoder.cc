@@ -511,7 +511,7 @@ void CompressedDecoderTarget::decode_and_add_b_value_with_associated_field(Varin
             throw error_unimplemented("decode_b_binary TODO");
         case Vartype::Integer:
         case Vartype::Decimal:
-            in.decode_compressed_number(info, field, subset_count, [&](unsigned subset_no, Var&& var) {
+            in.decode_compressed_number_af(info, field, subset_count, [&](unsigned subset_no, Var&& var) {
                 dest.add_var(subset_no, std::move(var));
             });
             break;

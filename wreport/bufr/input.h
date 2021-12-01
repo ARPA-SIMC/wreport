@@ -272,6 +272,9 @@ public:
      */
     void decode_number(Var& dest);
 
+    /**
+     * Decode the base value for a variable in a compressed BUFR
+     */
     bool decode_compressed_base(Varinfo info, uint32_t& base, uint32_t& diffbits);
 
     /**
@@ -288,7 +291,7 @@ public:
      * Decode a number as described by \a info from a compressed bufr with
      * \a subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_compressed_number(Varinfo info, const bulletin::AssociatedField& afield, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
+    void decode_compressed_number_af(Varinfo info, const bulletin::AssociatedField& afield, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
 
     /**
      * Decode a number as described by dest.info(), and set it as value for \a
