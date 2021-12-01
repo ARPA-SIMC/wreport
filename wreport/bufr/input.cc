@@ -375,6 +375,9 @@ bool Input::decode_compressed_base(Varinfo info, uint32_t& base, uint32_t& diffb
     if (missing && diffbits != 0)
         error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
 
+    TRACE("Input:decode_compressed_base:decoded base %u diffbits %u (%smissing) for %01d%02d%03d %s\n",
+            (unsigned)base, (unsigned)diffbits, missing ? "" : "not ", WR_VAR_FXY(info->code), info->unit);
+
     return missing;
 }
 
@@ -395,7 +398,7 @@ void Input::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits
         // Compute the value for this subset
         uint32_t newval = base + diff;
         double dval = info->decode_binary(newval);
-        TRACE("Input:decode_number:decoded diffbits %u %u+%u=%u->%f %01d%02d%03d %s\n",
+        TRACE("Input:decode_compressed_number:decoded diffbits %u %u+%u=%u->%f %01d%02d%03d %s\n",
                 diffbits, base, diff, newval, dval, WR_VAR_FXY(info->code), info->unit);
 
         /* Create the new Var */
@@ -405,9 +408,7 @@ void Input::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits
 
 void Input::decode_compressed_number_af(Varinfo info, const bulletin::AssociatedField& associated_field, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
 {
-    Var var(info);
-
-    // debug_dump_next_bits("DECODE NUMBER: ", 30);
+    // debug_dump_next_bits("Input:decode_compressed_base:", 500, {associated_field.bit_count, 6, info->bit_len, 6});
 
     /* I could not find any specification describing the behaviour of associated fields in compressed BUFRs.
      *
@@ -429,37 +430,27 @@ void Input::decode_compressed_number_af(Varinfo info, const bulletin::Associated
     /// Number of bits used to encode the associated field differences
     uint32_t af_diffbits = get_bits(6);
 
-    // Data field base value
-    uint32_t base = get_bits(info->bit_len);
-
-    //TRACE("datasec:decode_b_num:reading %s (%s), size %d, scale %d, starting point %d\n", info->desc, info->bufr_unit, info->bit_len, info->scale, base);
-
-    /* Check if there are bits which are not 1 (that is, if the value is present) */
-    bool missing = (base == all_ones(info->bit_len));
-
-    /*bufr_decoder_debug(decoder, "  %s: %d%s\n", info.desc, base, info.type);*/
-    //TRACE("datasec:decode_b_num:len %d base %d info-len %d info-desc %s\n", info->bit_len, base, info->bit_len, info->desc);
-
-    /* Store the variable that we found */
-
-    /* If compression is in use, then we just decoded the base value.  Now
-     * we need to decode all the offsets */
-
-    /* Decode the number of bits (encoded in 6 bits) that these difference
-     * values occupy */
-    uint32_t diffbits = get_bits(6);
-    if (missing && diffbits != 0)
-        error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
-
-    //TRACE("Compressed number, base value %d diff bits %d\n", base, diffbits);
-
-    for (unsigned i = 0; i < subsets; ++i)
+    if (af_base == all_ones(associated_field.bit_count))
     {
-        uint32_t af_value = af_base + get_bits(af_diffbits);
-        decode_compressed_number(var, base, diffbits);
-        std::unique_ptr<Var> af(associated_field.make_attribute(af_value));
-        if (af.get()) var.seta(std::move(af));
-        dest(i, std::move(var));
+        // Associated field is missing
+        decode_compressed_number(info, subsets, dest);
+    } else {
+        Var var(info);
+
+        std::vector<std::unique_ptr<Var>> associated_fields(subsets);
+        for (unsigned i = 0; i < subsets; ++i)
+        {
+            uint32_t diff = get_bits(af_diffbits);
+            uint32_t value = af_base + diff;
+            TRACE("Input:decode_compressed_base:decoded af %ubits %u+%u=%u\n", af_diffbits, af_base, diff, value);
+            associated_fields[i] = associated_field.make_attribute(value);
+        }
+
+        decode_compressed_number(info, subsets, [&](unsigned subset, Var&& var) {
+            if (associated_fields[subset].get())
+                var.seta(std::move(associated_fields[subset]));
+            dest(subset, std::move(var));
+        });
     }
 }
 
