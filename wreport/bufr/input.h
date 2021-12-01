@@ -191,7 +191,13 @@ public:
     }
 
     /// Dump to stderr 'count' bits of 'buf', starting at the 'ofs-th' bit
-    void debug_dump_next_bits(const char* desc, int count) const;
+    void debug_dump_next_bits(const char* desc, unsigned count, const std::vector<unsigned>& groups={}) const;
+
+    /**
+     * Match the given pattern as regexp on the still unread input bitstream,
+     * with bits converted to a string of '0' and '1'
+     */
+    void debug_find_sequence(const char* pattern) const;
 
     /// Throw an error_parse at the current decoding location
     void parse_error(const char* fmt, ...) const WREPORT_THROWF_ATTRS(2, 3);
