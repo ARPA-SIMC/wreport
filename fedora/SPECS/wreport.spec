@@ -4,7 +4,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.30
+Version: 3.31
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -185,6 +185,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Thu Dec  2 2021 Daniele Branchini <dbranchini@arpae.it> - 3.31-1
+- Fixed decoding of associated fields in compressed messages (#47)
+
 * Sun Mar 28 2021 Daniele Branchini <dbranchini@arpae.it> - 3.30-1
 - Fixed dtable parser (#43)
 - Improved documentation (#42)

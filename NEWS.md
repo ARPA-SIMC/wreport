@@ -1,4 +1,4 @@
-# New in version 3.31 (unreleased)
+# New in version 3.31
 
 * Fixed decoding of associated fields in compressed messages (#47)
 
