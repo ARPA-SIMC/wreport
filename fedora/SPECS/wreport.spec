@@ -1,4 +1,4 @@
-%global releaseno 1
+%global releaseno 2
 
 # Note: define srcarchivename in CI build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
@@ -23,7 +23,7 @@ BuildRequires: libtool
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
-%if ! 0%{?rhel}
+%if 0%{?rhel} == 7
 BuildRequires: %{python3_vers}-sphinx
 BuildRequires: %{python3_vers}-breathe
 %endif
@@ -169,7 +169,7 @@ make install DESTDIR="%{buildroot}"
 
 %files -n lib%{name}-doc
 %defattr(-,root,root,-)
-%if ! 0%{?rhel}
+%if 0%{?rhel} == 7
 %doc %{_docdir}/%{name}/libwreport.doxytags
 %doc %{_docdir}/%{name}/html/*
 %doc %{_docdir}/%{name}/examples/*
@@ -185,6 +185,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Thu Dec 16 2021 Daniele Branchini <dbranchini@arpae.it> - 3.31-2
+- Enabled python binding doc for CentOS8 (#31)
+
 * Thu Dec  2 2021 Daniele Branchini <dbranchini@arpae.it> - 3.31-1
 - Fixed decoding of associated fields in compressed messages (#47)
 
