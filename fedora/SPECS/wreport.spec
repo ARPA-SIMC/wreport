@@ -23,7 +23,8 @@ BuildRequires: libtool
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
-%if 0%{?rhel} == 7
+%if ! 0%{?rhel} == 7
+# see https://github.com/ARPA-SIMC/wreport/issues/31
 BuildRequires: %{python3_vers}-sphinx
 BuildRequires: %{python3_vers}-breathe
 %endif
@@ -169,7 +170,8 @@ make install DESTDIR="%{buildroot}"
 
 %files -n lib%{name}-doc
 %defattr(-,root,root,-)
-%if 0%{?rhel} == 7
+%if ! 0%{?rhel} == 7
+# see https://github.com/ARPA-SIMC/wreport/issues/31
 %doc %{_docdir}/%{name}/libwreport.doxytags
 %doc %{_docdir}/%{name}/html/*
 %doc %{_docdir}/%{name}/examples/*
