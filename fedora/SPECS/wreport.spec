@@ -1,4 +1,4 @@
-%global releaseno 2
+%global releaseno 3
 
 # Note: define srcarchivename in CI build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
@@ -23,7 +23,7 @@ BuildRequires: libtool
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
-%if ! 0%{?rhel} == 7
+%if 0%{?rhel} != 7
 # see https://github.com/ARPA-SIMC/wreport/issues/31
 BuildRequires: %{python3_vers}-sphinx
 BuildRequires: %{python3_vers}-breathe
@@ -170,7 +170,7 @@ make install DESTDIR="%{buildroot}"
 
 %files -n lib%{name}-doc
 %defattr(-,root,root,-)
-%if ! 0%{?rhel} == 7
+%if 0%{?rhel} != 7
 # see https://github.com/ARPA-SIMC/wreport/issues/31
 %doc %{_docdir}/%{name}/libwreport.doxytags
 %doc %{_docdir}/%{name}/html/*
@@ -187,7 +187,7 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
-* Thu Dec 16 2021 Daniele Branchini <dbranchini@arpae.it> - 3.31-2
+* Thu Dec 16 2021 Daniele Branchini <dbranchini@arpae.it> - 3.31-3
 - Enabled python binding doc for CentOS8 (#31)
 
 * Thu Dec  2 2021 Daniele Branchini <dbranchini@arpae.it> - 3.31-1
