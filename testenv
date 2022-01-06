@@ -8,6 +8,7 @@ CMD=$(readlink -f "$1")
 
 export WREPORT_TABLES=$TOP_SRCDIR/tables
 export WREPORT_TESTDATA=$TOP_SRCDIR/testdata
+export PYTHONDEVMODE=1
 
 TESTDIR="`mktemp -d`"
 cd "$TESTDIR"
