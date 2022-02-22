@@ -1,10 +1,10 @@
-%global releaseno 3
+%global releaseno 1
 
 # Note: define srcarchivename in CI build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.31
+Version: 3.32
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -187,6 +187,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Wed Feb 23 2022 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.32-1
+- Conversion V <-> mV and NTU <-> LM
+
 * Thu Dec 16 2021 Daniele Branchini <dbranchini@arpae.it> - 3.31-3
 - Enabled python binding doc for CentOS8 (#31)
 
