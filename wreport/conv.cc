@@ -142,6 +142,8 @@ struct ConvertRepository
         add_linear("M",           "hm", 0.01, 0);
         add_linear("mm",          "M", 0.001, 0);
         add_linear("M",           "mm", 1000, 0);
+        add_linear("mV",          "V", 0.001, 0);
+        add_linear("V",           "mV", 1000, 0);
         add_linear("1/8",         "%", 12.5, 0);
         add_linear("%",           "1/8", 0.08, 0);
         add_linear("mm/10",       "KG/M**2", 0.1, 0);
