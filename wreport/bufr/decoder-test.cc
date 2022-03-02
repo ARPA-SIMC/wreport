@@ -885,6 +885,20 @@ declare_test("bufr/mode-s.bufr", [](const BufrBulletin& msg) {
     }
 });
 
+declare_test("bufr/MODE_12.bufr", [](const BufrBulletin& msg) {
+    wassert(actual((int)msg.edition_number) == 4);
+    wassert(actual(msg.rep_year) == 2021);
+    wassert(actual((unsigned)msg.data_subcategory_local) == 147u);
+    wassert(actual(msg.subsets.size()) == 100u);
+
+    {
+        const Subset& s = msg.subset(0);
+        wassert(actual(s.size()) == 44u);
+        wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 8));
+        wassert(actual(s[0].enqs()) == "M5a694e");
+    }
+});
+
 }
 
 #if 0
