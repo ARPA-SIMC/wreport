@@ -397,12 +397,17 @@ void Input::decode_compressed_number(Var& dest, uint32_t base, unsigned diffbits
     } else {
         // Compute the value for this subset
         uint32_t newval = base + diff;
-        double dval = info->decode_binary(newval);
-        TRACE("Input:decode_compressed_number:decoded diffbits %u %u+%u=%u->%f %01d%02d%03d %s\n",
-                diffbits, base, diff, newval, dval, WR_VAR_FXY(info->code), info->unit);
+        if (newval == all_ones(info->bit_len))
+            dest.unset();
+        else
+        {
+            double dval = info->decode_binary(newval);
+            TRACE("Input:decode_compressed_number:decoded diffbits %u %u+%u=%u->%f %01d%02d%03d %s\n",
+                    diffbits, base, diff, newval, dval, WR_VAR_FXY(info->code), info->unit);
 
-        /* Create the new Var */
-        dest.setd(dval);
+            /* Create the new Var */
+            dest.setd(dval);
+        }
     }
 }
 
