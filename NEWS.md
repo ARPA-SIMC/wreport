@@ -1,3 +1,7 @@
+# New in version NEXT
+
+* Fixed decoding of missing values in compressed MODES messages (#48)
+
 # New in version 3.31
 
 * Fixed decoding of associated fields in compressed messages (#47)
