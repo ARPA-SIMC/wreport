@@ -24,8 +24,3 @@ class Varinfo(unittest.TestCase):
         info = table["B01001"]
         self.assertTrue(str(info).startswith("B01001"))
         self.assertTrue(repr(info).startswith("Varinfo('B01001"))
-
-
-if __name__ == "__main__":
-    from testlib import main
-    main("varinfo")

@@ -71,8 +71,3 @@ class Vartable(unittest.TestCase):
 #        self.assertGreater(count, 100)
 #        self.assertEqual(count, len(table))
 #        self.assertIsNotNone(selected)
-
-
-if __name__ == "__main__":
-    from testlib import main
-    main("vartable")

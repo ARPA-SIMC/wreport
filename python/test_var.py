@@ -110,8 +110,3 @@ class Var(unittest.TestCase):
         var.unseta("B33007")
         self.assertIsNone(var.enqa("B33007"))
         self.assertEqual(var.get_attrs(), [])
-
-
-if __name__ == "__main__":
-    from testlib import main
-    main("var")

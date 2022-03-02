@@ -175,6 +175,6 @@ test_wreport = executable('test-wreport', test_wreport_sources,
                 lua_dep,
         ])
 
-testenv = find_program('../testenv')
+runtest = find_program('../runtest')
 
-test('wreport', testenv, args: [test_wreport])
+test('wreport', runtest, args: [test_wreport])

@@ -28,11 +28,11 @@ python_tests = [
     'test-wreport.py',
 ]
 
-testenv = find_program('../testenv')
+runtest = find_program('../runtest')
 
-foreach t: python_tests
-    test(t, testenv, args: [files(t)], env: [
-        'PYTHON=' + python3_path,
-        'PYTHONPATH=' + meson.current_build_dir(),
-    ])
-endforeach
+test('python', runtest, args: ['PYTHON'],
+     env: [
+         'PYTHON=' + python3_path,
+         'PYTHONPATH=' + meson.current_source_dir() + ':' + meson.current_build_dir(),
+     ],
+)

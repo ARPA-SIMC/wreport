@@ -3,7 +3,7 @@
 set -ue
 
 make -C wreport benchmark
-./testenv wreport/benchmark
+./runtest wreport/benchmark
 
 ##!/usr/bin/env python3
 #

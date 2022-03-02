@@ -107,7 +107,7 @@ EXTRA_DIST = internals/compat.h main.dox style.dox features.dox examples.dox ver
 #
 
 check_PROGRAMS = test-wreport
-TESTS_ENVIRONMENT = $(top_srcdir)/testenv
+TESTS_ENVIRONMENT = $(top_srcdir)/runtest
 #TESTS = $(check_PROGRAMS)
 
 check-local:

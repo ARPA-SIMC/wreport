@@ -1,0 +1,87 @@
+#!/bin/sh -e
+
+TOP_SRCDIR=$(readlink -f $(dirname $0))
+PYTHON=${PYTHON:-$(which python3)}
+
+if [ "$1" = "PYTHON" ]
+then
+    CMD="$PYTHON -m unittest discover --verbose -s ${TOP_SRCDIR}/python"
+    DEBUG_CMD="$CMD"
+else
+    CMD=$(readlink -f "$1")
+    DEBUG_CMD="$CMD"
+fi
+
+## Run under eatmydata if available
+
+libeatmydata="/usr/lib/x86_64-linux-gnu/libeatmydata.so"
+if [ -e $libeatmydata ]
+then
+    if [ -n "$LD_PRELOAD" ]; then
+        export LD_PRELOAD="$libeatmydata $LD_PRELOAD"
+    else
+        export LD_PRELOAD="$libeatmydata"
+    fi
+fi
+
+
+## Set up the test environment
+
+export WREPORT_TABLES=$TOP_SRCDIR/tables
+export WREPORT_TESTDATA=$TOP_SRCDIR/testdata
+# See https://docs.python.org/3/library/devmode.html
+export PYTHONDEVMODE=1
+
+ORIGDIR=`pwd`
+TESTDIR="`mktemp -d`"
+
+echo "Moving to test directory $TESTDIR"
+cd "$TESTDIR"
+
+## Clean up the test environment at exit unless asked otherwise
+cleanup() {
+    if [ ! -z "$PAUSE" ]
+    then
+        echo "Post-test inspection requested."
+        echo "Exit this shell to cleanup the test environment."
+        bash
+    fi
+
+    test -z "$PRESERVE" && rm -rf "$TESTDIR"
+}
+trap cleanup EXIT
+
+## Run the tests
+
+#id=`date +%y%m%d%H%M%S`
+#$DEBUGGER $BIN $ARGS 2>&1 | tee `pwd`/testrun-$id
+#echo Output saved in `pwd`/testrun-$id
+
+# Try to debug the libtool executable, if present
+if [ ! -z "$DEBUGGER" ]
+then
+    if [ "$DEBUGGER" = "valgrind" ]
+    then
+        # See https://stackoverflow.com/questions/20112989/how-to-use-valgrind-with-python
+        export PYTHONMALLOC=malloc
+    fi
+
+    echo "Running $DEBUGGER $DEBUG_CMD $ARGS"
+    RES=0
+    if ! libtool --mode=execute $DEBUGGER $DEBUG_CMD $ARGS
+    then
+        RES=$?
+        echo "Failed with result $RES"
+    fi
+else
+    echo "Running $CMD $ARGS"
+    if $CMD $ARGS
+    then
+        RES=0
+    else
+        RES=$?
+        echo "Failed with result $RES"
+    fi
+fi
+
+exit $RES

@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-TESTS_ENVIRONMENT = $(top_srcdir)/testenv
+TESTS_ENVIRONMENT = $(top_srcdir)/runtest
 
 #export PYTHONPATH=.
 
@@ -42,11 +42,9 @@ clean-local:
 	rm -f *.pyc wreport/*.pyc _wreport.so
 	rm -rf __pycache__ wreport/__pycache__
 
-EXTRA_DIST += testlib.py $(python_tests)
+EXTRA_DIST += $(python_tests)
 
 AM_CPPFLAGS = -I/usr/include/python$(PYTHON_VERSION) -I$(top_srcdir)
 
 check-local: _wreport.so
-	for test in $(python_tests); do \
-		PYTHON="$(PYTHON)" $(TESTS_ENVIRONMENT) $$test ; \
-	done
+	PYTHON="$(PYTHON)" $(TESTS_ENVIRONMENT) PYTHON
