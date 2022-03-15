@@ -1,6 +1,10 @@
-# New in version NEXT
+# New in version 3.33
 
 * Fixed decoding of missing values in compressed MODES messages (#48)
+
+# New in version 3.33
+
+* Conversion V <-> mV and NTU <-> LM
 
 # New in version 3.31
 

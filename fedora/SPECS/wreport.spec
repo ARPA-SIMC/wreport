@@ -4,7 +4,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.32
+Version: 3.33
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -187,6 +187,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Tue Mar 15 2022 Daniele Branchini <dbranchini@arpae.it> - 3.33-1
+- Fixed decoding of missing values in compressed MODES messages (#48)
+
 * Wed Feb 23 2022 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.32-1
 - Conversion V <-> mV and NTU <-> LM
 
