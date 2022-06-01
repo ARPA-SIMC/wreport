@@ -1,6 +1,6 @@
 # New in version UNRELEASED
 
-* Fixed build on Fedora 36
+* Fixed build on Fedora 36 (#49)
 
 # New in version 3.33
 
