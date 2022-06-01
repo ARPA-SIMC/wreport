@@ -11,11 +11,6 @@ using namespace std;
 
 namespace {
 
-ostream& operator<<(ostream& out, Vartype t)
-{
-    return out << vartype_format(t);
-}
-
 string testdata_pathname(const std::string& basename)
 {
     const char* dir = getenv("WREPORT_TESTDATA");

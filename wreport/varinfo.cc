@@ -4,6 +4,7 @@
 #include <cmath>
 #include <climits>
 #include <cctype>
+#include <iostream>
 #include "config.h"
 
 using namespace std;
@@ -29,6 +30,11 @@ Vartype vartype_parse(const char* s)
     if (strcmp(s, "integer") == 0) return Vartype::Integer;
     if (strcmp(s, "binary") == 0) return Vartype::Binary;
     error_consistency::throwf("cannot parse Vartype '%s'", s);
+}
+
+std::ostream& operator<<(std::ostream& out, const Vartype& t)
+{
+    return out << vartype_format(t);
 }
 
 static int intexp10(unsigned x)

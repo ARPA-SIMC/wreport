@@ -8,11 +8,6 @@ using namespace std;
 
 namespace {
 
-ostream& operator<<(ostream& out, Vartype t)
-{
-    return out << vartype_format(t);
-}
-
 class Tests : public TestCase
 {
     using TestCase::TestCase;

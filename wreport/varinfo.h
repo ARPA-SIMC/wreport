@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <iosfwd>
 #include <wreport/fwd.h>
 
 namespace wreport {
@@ -127,6 +128,7 @@ const char* vartype_format(Vartype type);
 /// Return a Vartype from its string description
 Vartype vartype_parse(const char* s);
 
+std::ostream& operator<<(std::ostream& out, const Vartype& t);
 
 /**
  * Information about a variable.
