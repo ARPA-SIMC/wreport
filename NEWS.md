@@ -1,3 +1,7 @@
+# New in version UNRELEASED
+
+* Fixed build on Fedora 36
+
 # New in version 3.33
 
 * Fixed decoding of missing values in compressed MODES messages (#48)
