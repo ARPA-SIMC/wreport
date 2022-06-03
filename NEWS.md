@@ -1,4 +1,4 @@
-# New in version UNRELEASED
+# New in version 3.34
 
 * Fixed build on Fedora 36 (#49)
 

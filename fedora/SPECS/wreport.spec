@@ -4,7 +4,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.33
+Version: 3.34
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -187,6 +187,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Fri Jun  3 2022 Daniele Branchini <dbranchini@arpae.it> - 3.34-1
+- Fixed build on Fedora 36 (#49)
+
 * Tue Mar 15 2022 Daniele Branchini <dbranchini@arpae.it> - 3.33-1
 - Fixed decoding of missing values in compressed MODES messages (#48)
 
