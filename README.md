@@ -1,6 +1,7 @@
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/centos7.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/centos8.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora34.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora36.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/)
 
 # WREPORT
