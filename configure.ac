@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(wreport, [3.33], [enrico@enricozini.org])
+AC_INIT(wreport, [3.34], [enrico@enricozini.org])
 # There seem to be no simple way to remove this redundancy in autotools.
 # Remember to edit both AC_INIT and here when changing version number
 VERSION_MAJOR=3

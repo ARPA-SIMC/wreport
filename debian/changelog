@@ -1,8 +1,27 @@
-wreport (3.23-3) UNRELEASED; urgency=medium
+wreport (3.34-1) unstable; urgency=medium
 
   * Removed broken debian/watch
+  * Versioned dependency on debhelper
+  * Removed unneeded --parallel argument to dh in debian/rules
+  * Add use of ${sphinxdoc:Depends} in libwreport-doc
+  * New upstream version. Closes: #1013069
+     - Fixed decoding of missing values in compressed MODES messages (#48)
+     - Conversion V <-> mV and NTU <-> LM
+     - Fixed decoding of associated fields in compressed messages (#47)
+     - Fixed dtable parser (#43)
+     - Improved documentation (#42)
+     - Implemented `var_hook_domain_errors` option, required by dballe:#241
+     - Implemented `var_clamp_domain_errors` option, required by dballe:#241
+     - Support Lua 5.4
+     - Decode compressed string with non-empty reference values (#38)
+     - Updated wobble and wobblepy
+     - Always include wreport/version.h so that code that needs it can be compatibile with old versions
+     - Added NEWS.md (#34)
+     - Updated lookup/guessing of reference year century on BUFR ed.3 (#36)
+     - Fix bug with C table modifier 207YYY (#37)
+     - Improved documentation
 
- -- Enrico Zini <enrico@debian.org>  Sun, 01 Sep 2019 14:53:47 +0200
+ -- Enrico Zini <enrico@debian.org>  Mon, 08 Aug 2022 19:27:20 +0200
 
 wreport (3.23-2) unstable; urgency=medium
 
