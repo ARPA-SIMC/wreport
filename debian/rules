@@ -4,7 +4,7 @@ VERSION=$(shell debian/vercheck)
 RELEASE_PACKAGE=wreport
 
 %:
-	dh $@ --with python3,sphinxdoc --without autoreconf -Smeson --parallel
+	dh $@ --with python3,sphinxdoc --without autoreconf -Smeson
 
 override_dh_fixperms:
 	dh_fixperms

@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Enrico Zini <enrico@debian.org>
 Build-Depends:
-  debhelper (>= 10), dh-buildinfo, dh-python,
+  debhelper (>= 12), dh-buildinfo, dh-python,
   pkg-config, meson,
   doxygen, python3-sphinx, python3-breathe,
   liblua5.1-0-dev,
@@ -38,7 +38,7 @@ Description: library for working with weather reports
 Package: libwreport-doc
 Section: doc
 Architecture: all
-Depends: ${misc:Depends}
+Depends: ${misc:Depends}, ${sphinxdoc:Depends}
 Description: documentation for libwreport
  libwreport is a C++ library to read and write weather reports in BUFR and CREX
  formats.

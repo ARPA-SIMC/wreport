@@ -1,6 +1,9 @@
 wreport (3.34-1) unstable; urgency=medium
 
   * Removed broken debian/watch
+  * Versioned dependency on debhelper
+  * Removed unneeded --parallel argument to dh in debian/rules
+  * Add use of ${sphinxdoc:Depends} in libwreport-doc
   * New upstream version. Closes: #1013069
      - Fixed decoding of missing values in compressed MODES messages (#48)
      - Conversion V <-> mV and NTU <-> LM
