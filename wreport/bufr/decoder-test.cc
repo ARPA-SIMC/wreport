@@ -906,6 +906,27 @@ declare_test("bufr/MODE_12.bufr", [](const BufrBulletin& msg) {
     }
 });
 
+declare_test("bufr/qinfo_overflow.bufr", [](const BufrBulletin& msg) {
+    wassert(actual((int)msg.edition_number) == 4);
+    wassert(actual(msg.rep_year) == 2022);
+    wassert(actual((unsigned)msg.data_subcategory_local) == 147u);
+    wassert(actual(msg.subsets.size()) == 14u);
+
+    {
+        const Subset& s = msg.subset(0);
+        wassert(actual(s.size()) == 44u);
+        wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 8));
+        wassert(actual(s[0].enqs()) == "M5f1866");
+    }
+
+    {
+        const Subset& s = msg.subset(2);
+        wassert(actual(s.size()) == 44u);
+        wassert(actual_varcode(s[17].code()) == WR_VAR(0, 8, 9));
+        wassert(actual(s[17]).isunset());
+    }
+});
+
 }
 
 #if 0
