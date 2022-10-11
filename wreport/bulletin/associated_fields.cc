@@ -8,6 +8,12 @@ using namespace std;
 namespace wreport {
 namespace bulletin {
 
+// Return a value with bitlen bits set to 1
+static inline uint32_t all_ones(int bitlen)
+{
+    return ((1 << (bitlen - 1))-1) | (1 << (bitlen - 1));
+}
+
 AssociatedField::AssociatedField(const Vartable& btable)
     : btable(btable), skip_missing(true), bit_count(0), significance(63)
 {
@@ -16,14 +22,21 @@ AssociatedField::~AssociatedField() {}
 
 std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
 {
+    bool missing = value == all_ones(bit_count);
     switch (significance)
     {
         case 1:
             // Add attribute B33002=value
-            return unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 2)), (int)value));
+            if (missing)
+                return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 2))));
+            else
+                return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 2)), (int)value));
         case 2:
             // Add attribute B33003=value
-            return unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 3)), (int)value));
+            if (missing)
+                return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 3))));
+            else
+                return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 3)), (int)value));
         case 3:
         case 4:
         case 5:
@@ -33,33 +46,36 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
             return unique_ptr<Var>();
         case 6:
             // Add attribute B33050=value
-            if (!skip_missing || value != 15)
+            if (missing)
             {
-                unique_ptr<Var> res(new Var(btable.query(WR_VAR(0, 33, 50))));
-                if (value != 15)
-                   res->seti(value);
-                return res;
+                if (skip_missing)
+                    return std::unique_ptr<Var>();
+                else
+                    return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 50))));
             } else
-                return unique_ptr<Var>();
+                return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 50)), (int)value));
         case 7:
             // Add attribute B33040=value
-            return unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 40)), (int)value));
+            if (missing)
+                return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 40))));
+            else
+                return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 40)), (int)value));
         case 8:
             // Add attribute B33002=value
-            if (!skip_missing || value != 3)
+            if (missing)
             {
-                unique_ptr<Var> res(new Var(btable.query(WR_VAR(0, 33, 2))));
-                if (value != 3)
-                   res->seti(value);
-                return res;
+                if (skip_missing)
+                    return unique_ptr<Var>();
+                else
+                    return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 2))));
             } else
-                return unique_ptr<Var>();
+                return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 2)), (int)value));
         case 21:
             // Add attribute B33041=value
-            if (!skip_missing || value != 1)
-                return unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 41)), 0));
+            if (!skip_missing || !missing)
+                return std::unique_ptr<Var>(new Var(btable.query(WR_VAR(0, 33, 41)), 0));
             else
-                return unique_ptr<Var>();
+                return std::unique_ptr<Var>();
         case 63:
             /*
              * Ignore quality information if B31021 is missing.
@@ -75,7 +91,7 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
              *   associated field bits by the "cancel" operator: 2
              *   04 000.
              */
-            return unique_ptr<Var>();
+            return std::unique_ptr<Var>();
         default:
             if (significance >= 9 and significance <= 20)
                 // Reserved: ignored
@@ -86,7 +102,7 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
                         significance);
             else
                 error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
-            return unique_ptr<Var>();
+            return std::unique_ptr<Var>();
     }
 }
 

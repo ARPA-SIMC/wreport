@@ -907,23 +907,23 @@ declare_test("bufr/MODE_12.bufr", [](const BufrBulletin& msg) {
 });
 
 declare_test("bufr/qinfo_overflow.bufr", [](const BufrBulletin& msg) {
-    wassert(actual((int)msg.edition_number) == 4);
+    wassert(actual((int)msg.edition_number) == 3);
     wassert(actual(msg.rep_year) == 2022);
-    wassert(actual((unsigned)msg.data_subcategory_local) == 147u);
-    wassert(actual(msg.subsets.size()) == 14u);
+    wassert(actual((unsigned)msg.data_subcategory_local) == 146u);
+    wassert(actual(msg.subsets.size()) == 1u);
 
     {
         const Subset& s = msg.subset(0);
-        wassert(actual(s.size()) == 44u);
+        wassert(actual(s.size()) == 73u);
         wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 8));
-        wassert(actual(s[0].enqs()) == "M5f1866");
-    }
+        wassert(actual(s[0].enqs()) == "AU0330");
 
-    {
-        const Subset& s = msg.subset(2);
-        wassert(actual(s.size()) == 44u);
-        wassert(actual_varcode(s[17].code()) == WR_VAR(0, 8, 9));
-        wassert(actual(s[17]).isunset());
+        wassert(actual_varcode(s[63].code()) == WR_VAR(0, 31, 21));
+        wassert(actual(s[63].enqi()) == 8);
+
+        wassert(actual_varcode(s[64].code()) == WR_VAR(0, 11, 76));
+        wassert_false(s[64].isset());
+        wassert_false(s[64].next_attr());
     }
 });
 
