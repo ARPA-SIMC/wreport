@@ -4,7 +4,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.34
+Version: 3.35
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -167,6 +167,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Tue Oct 18 2022 Daniele Branchini <dbranchini@arpae.it> - 3.35-1
+- Fixed a corner case in decoding of associated fields (#52)
+
 * Fri Jun  3 2022 Daniele Branchini <dbranchini@arpae.it> - 3.34-1
 - Fixed build on Fedora 36 (#49)
 
