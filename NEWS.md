@@ -1,4 +1,4 @@
-# New in version UNRELEASED
+# New in version 3.35
 
 * Fixed a corner case in decoding of associated fields (#52)
 
