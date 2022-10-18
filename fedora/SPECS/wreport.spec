@@ -105,40 +105,20 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 
  This is the Python library
 
-
 %prep
 %setup -q -n %{srcarchivename}
-
-rm -rf %{py3dir}
-cp -a . %{py3dir}
 
 %build
 
 autoreconf -ifv
-
-%configure --disable-static
-make
-
-pushd %{py3dir}
-autoreconf -ifv
 %configure PYTHON=%{__python3} --disable-static
 make
-popd
 
 %check
 make check
-pushd %{py3dir}
-make check
-popd
-
 
 %install
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
-
-pushd %{py3dir}
-make install DESTDIR="%{buildroot}"
-popd
-
 make install DESTDIR="%{buildroot}"
 
 %clean
