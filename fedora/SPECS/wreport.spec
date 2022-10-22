@@ -4,7 +4,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.34
+Version: 3.35
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -105,40 +105,20 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 
  This is the Python library
 
-
 %prep
 %setup -q -n %{srcarchivename}
-
-rm -rf %{py3dir}
-cp -a . %{py3dir}
 
 %build
 
 autoreconf -ifv
-
-%configure --disable-static
-make
-
-pushd %{py3dir}
-autoreconf -ifv
 %configure PYTHON=%{__python3} --disable-static
 make
-popd
 
 %check
 make check
-pushd %{py3dir}
-make check
-popd
-
 
 %install
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
-
-pushd %{py3dir}
-make install DESTDIR="%{buildroot}"
-popd
-
 make install DESTDIR="%{buildroot}"
 
 %clean
@@ -187,6 +167,9 @@ make install DESTDIR="%{buildroot}"
 
 
 %changelog
+* Tue Oct 18 2022 Daniele Branchini <dbranchini@arpae.it> - 3.35-1
+- Fixed a corner case in decoding of associated fields (#52)
+
 * Fri Jun  3 2022 Daniele Branchini <dbranchini@arpae.it> - 3.34-1
 - Fixed build on Fedora 36 (#49)
 

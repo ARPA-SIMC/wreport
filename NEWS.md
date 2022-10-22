@@ -1,3 +1,7 @@
+# New in version 3.35
+
+* Fixed a corner case in decoding of associated fields (#52)
+
 # New in version 3.34
 
 * Fixed build on Fedora 36 (#49)

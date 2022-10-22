@@ -246,6 +246,7 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
 
                 // Get the value for B31021, defaulting to 63 if missing
                 associated_field.significance = define_associated_field_significance(info);
+                TRACE("Associated field of %u bits with significance %u\n", associated_field.bit_count, associated_field.significance);
             }
             associated_field.bit_count = nbits;
             break;
