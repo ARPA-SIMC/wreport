@@ -6,6 +6,7 @@ wreport (3.35-2) unstable; urgency=medium
   * Stop using dh-buildinfo
   * Updated Standards-Version, no changes required
   * Added Vcs-Browser
+  * Mark the two test executable as debian/not-installed for now
 
  -- Enrico Zini <enrico@debian.org>  Sat, 19 Nov 2022 13:29:35 +0100
 
