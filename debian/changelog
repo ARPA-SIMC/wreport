@@ -1,3 +1,14 @@
+wreport (3.35-2) unstable; urgency=medium
+
+  * Build-Depend on python3-dev instead of python3-all-dev (Closes: #1024302)
+  * Depend on dh-sequence-sphinxdoc, simplifying debian/rules and B-D list
+  * Depend on debhelper-compat, removed debian/compat
+  * Stop using dh-buildinfo
+  * Updated Standards-Version, no changes required
+  * Added Vcs-Browser
+
+ -- Enrico Zini <enrico@debian.org>  Sat, 19 Nov 2022 13:29:35 +0100
+
 wreport (3.35-1) unstable; urgency=medium
 
   * Fixed a corner case in decoding of associated fields (#52)
