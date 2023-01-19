@@ -19,7 +19,7 @@ BuildRequires: python3-rpm-macros >= 3-23
 %endif
 
 BuildRequires: doxygen
-BuildRequires: libtool
+BuildRequires: meson
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
@@ -109,17 +109,14 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %setup -q -n %{srcarchivename}
 
 %build
-
-autoreconf -ifv
-%configure PYTHON=%{__python3} --disable-static
-make
+%meson
+%meson_build
 
 %check
-make check
+%meson_test
 
 %install
-[ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
-make install DESTDIR="%{buildroot}"
+%meson_install
 
 %clean
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
