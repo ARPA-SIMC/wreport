@@ -150,9 +150,11 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %if 0%{?rhel} != 7
 # see https://github.com/ARPA-SIMC/wreport/issues/31
 %doc %{_docdir}/%{name}/libwreport.doxytags
+%exclude %{_docdir}/%{name}/html/.doctrees/*
 %doc %{_docdir}/%{name}/html/*
 %doc %{_docdir}/%{name}/examples/*
 %exclude %{_docdir}/%{name}/xml/*
+%exclude %{_docdir}/%{name}/html/.buildinfo
 %endif
 
 %files -n %{python3_vers}-%{name}3
