@@ -161,6 +161,7 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %defattr(-,root,root,-)
 %dir %{python3_sitearch}
 %{python3_sitearch}/wreport/*
+%{python3_sitearch}/_wreport*.so
 
 
 
