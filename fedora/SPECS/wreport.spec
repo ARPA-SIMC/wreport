@@ -1,4 +1,4 @@
-%global releaseno 1
+%global releaseno 2
 
 # Note: define srcarchivename in CI build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
@@ -164,6 +164,9 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %{python3_sitearch}/_wreport*.so
 
 %changelog
+* Wed May 17 2023 Daniele Branchini <dbranchini@arpae.it> - 3.35-2
+- Include cstdint in wreport/utils/string.cc (#55)
+
 * Tue Oct 18 2022 Daniele Branchini <dbranchini@arpae.it> - 3.35-1
 - Fixed a corner case in decoding of associated fields (#52)
 
