@@ -1,10 +1,10 @@
-%global releaseno 2
+%global releaseno 1
 
 # Note: define srcarchivename in CI build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.35
+Version: 3.36
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -164,6 +164,10 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %{python3_sitearch}/_wreport*.so
 
 %changelog
+* Thu May 25 2023 Emanuele Di Giacomo <edigiacomo@arpe.it> - 3.36-1
+- Include cstdint in wreport/utils/string.cc (#55)
+- Updated wobble
+
 * Wed May 17 2023 Daniele Branchini <dbranchini@arpae.it> - 3.35-2
 - Include cstdint in wreport/utils/string.cc (#55)
 
