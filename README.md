@@ -1,6 +1,8 @@
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/centos7.png)](https://simc.arpae.it/moncic-ci/wreport/)
-[![Build Status](https://simc.arpae.it/moncic-ci/wreport/centos8.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky8.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky9.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora36.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora38.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/)
 
 # WREPORT
@@ -39,7 +41,7 @@ https://packages.debian.org/testing/libwreport3
 Using docker images with wreport preinstalled is also possible:
 
 ```
-docker run -it arpaesimc/fedora:31 /bin/bash
+docker run -it arpaesimc/fedora:36 /bin/bash
 docker run -it arpaesimc/centos:8 /bin/bash
 ```
 
