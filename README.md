@@ -45,26 +45,28 @@ docker run -it arpaesimc/fedora:36 /bin/bash
 docker run -it arpaesimc/centos:8 /bin/bash
 ```
 
-If you want to build and install wreport yourself, you'll need to install the
-automake/autoconf/libtool packages then you can proceed as in most other Unix 
-software:
+If you want to build and install wreport yourself, you'll need to install
+[Meson](https://mesonbuild.com/) and run the following commands:
 
 ```
-autoreconf -if 
-./configure
-make
-make install
+meson setup builddir && cd builddir
+meson compile
+meson test
+meson install
 ```
 
-if you're familiar with .rpm and .deb packaging you'll find the packaging 
-files in the `debian` and `fedora` directories
+For more details about Meson see the official documentation https://mesonbuild.com/.
+
+If you want to build the package yourself:
+- rpm: the packaging files are in `fedora` directory of the `master` branch.
+- deb: the packaging files are in the debian branches (e.g. `debian/sid`, `ubuntu/jammy`, etc.)
 
 ### AFL instrumentation
 
 To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
 
-    CXX=/usr/bin/afl-g++ ./configure --disable-shared
-    make AFL_HARDEN=1
+    CXX=/usr/bin/afl-g++ meson --default-library=static builddir && cd builddir
+    AFL_HARDEN=1 meson compile
     afl-cmin  -i testdata/bufr/ -o afl-bufr -- src/afl-test @@
     afl-fuzz -t 100 -i afl-bufr -o afl-bufr-out src/afl-test @@
 
