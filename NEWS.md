@@ -1,3 +1,7 @@
+# New in version 3.36
+
+* Include cstdint in wreport/utils/string.cc (#55)
+
 # New in version 3.35
 
 * Fixed a corner case in decoding of associated fields (#52)
