@@ -4,7 +4,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.35
+Version: 3.36
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -19,7 +19,7 @@ BuildRequires: python3-rpm-macros >= 3-23
 %endif
 
 BuildRequires: doxygen
-BuildRequires: libtool
+BuildRequires: meson
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: %{python3_vers}-devel
@@ -109,17 +109,14 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %setup -q -n %{srcarchivename}
 
 %build
-
-autoreconf -ifv
-%configure PYTHON=%{__python3} --disable-static
-make
+%meson
+%meson_build
 
 %check
-make check
+%meson_test
 
 %install
-[ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
-make install DESTDIR="%{buildroot}"
+%meson_install
 
 %clean
 [ "%{buildroot}" != / ] && rm -rf "%{buildroot}"
@@ -140,8 +137,8 @@ make install DESTDIR="%{buildroot}"
 
 %files -n lib%{name}-devel
 %defattr(-,root,root,-)
-%exclude %{_libdir}/libwreport.la
 %{_libdir}/pkgconfig/libwreport.pc
+%exclude %{_libdir}/libwreport.a
 %{_libdir}/libwreport.so
 
 %dir %{_includedir}/%{name}
@@ -153,20 +150,27 @@ make install DESTDIR="%{buildroot}"
 %if 0%{?rhel} != 7
 # see https://github.com/ARPA-SIMC/wreport/issues/31
 %doc %{_docdir}/%{name}/libwreport.doxytags
+%exclude %{_docdir}/%{name}/html/.doctrees/*
 %doc %{_docdir}/%{name}/html/*
 %doc %{_docdir}/%{name}/examples/*
+%exclude %{_docdir}/%{name}/xml/*
+%exclude %{_docdir}/%{name}/html/.buildinfo
 %endif
 
 %files -n %{python3_vers}-%{name}3
 %defattr(-,root,root,-)
-%dir %{python3_sitelib}/wreport
-%{python3_sitelib}/wreport/*
-%dir %{python3_sitearch}
-%exclude %{python3_sitearch}/*.la
-%{python3_sitearch}/*.so*
-
+%dir %{python3_sitearch}/wreport/
+%{python3_sitearch}/wreport/*
+%{python3_sitearch}/_wreport*.so
 
 %changelog
+* Thu May 25 2023 Emanuele Di Giacomo <edigiacomo@arpe.it> - 3.36-1
+- Include cstdint in wreport/utils/string.cc (#55)
+- Updated wobble
+
+* Wed May 17 2023 Daniele Branchini <dbranchini@arpae.it> - 3.35-2
+- Include cstdint in wreport/utils/string.cc (#55)
+
 * Tue Oct 18 2022 Daniele Branchini <dbranchini@arpae.it> - 3.35-1
 - Fixed a corner case in decoding of associated fields (#52)
 
