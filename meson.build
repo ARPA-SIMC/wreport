@@ -1,4 +1,4 @@
-project('wreport', 'cpp', version: '3.36', license : 'GPL-2.0-or-later', default_options: ['warning_level=3', 'cpp_std=c++11'])
+project('wreport', 'cpp', version: '3.37', license : 'GPL-2.0-or-later', default_options: ['warning_level=3', 'cpp_std=c++11'])
 
 add_global_arguments('-Wextra', '-Wno-unused-parameter', language : 'cpp')
 

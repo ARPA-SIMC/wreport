@@ -1,3 +1,7 @@
+# New in version 3.37
+
+* Reinclude table v. 33 which was excluded with meson
+
 # New in version 3.36
 
 * Include cstdint in wreport/utils/string.cc (#55)
