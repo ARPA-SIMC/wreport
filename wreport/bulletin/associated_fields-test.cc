@@ -13,7 +13,7 @@ class Tests : public TestCase
 
     void register_tests() override
     {
-        add_method("empty", []() {
+        add_method("empty", []() noexcept {
         });
     }
 } test("bulletin_associated_fields");

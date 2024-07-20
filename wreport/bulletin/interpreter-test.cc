@@ -41,6 +41,16 @@ struct VisitCounter : public bulletin::Interpreter
     }
 };
 
+std::filesystem::path from_env(const char* varname, const char* deflt = nullptr)
+{
+    if (const char* val = getenv(varname))
+        return std::filesystem::path(val);
+    else if (deflt)
+        return deflt;
+    else
+        return std::filesystem::current_path();
+}
+
 class Tests : public TestCase
 {
     using TestCase::TestCase;
@@ -49,11 +59,10 @@ class Tests : public TestCase
     {
         add_method("visitor", []() {
             // Test visitor
-            const char* testdatadir = getenv("WREPORT_TABLES");
-            if (!testdatadir) testdatadir = TABLE_DIR;
+            auto testdatadir = from_env("WREPORT_TABLES", TABLE_DIR);
             Tables tables;
-            tables.btable = Vartable::load_bufr(str::joinpath(testdatadir, "B0000000000000014000.txt"));
-            tables.dtable = DTable::load_bufr(str::joinpath(testdatadir, "D0000000000000014000.txt"));
+            tables.btable = Vartable::load_bufr(testdatadir / "B0000000000000014000.txt");
+            tables.dtable = DTable::load_bufr(testdatadir / "D0000000000000014000.txt");
             Opcodes ops = tables.dtable->query(WR_VAR(3, 0, 10));
             wassert(actual(ops.size()) == 4u);
 

@@ -2,6 +2,7 @@
 #define WREPORT_TABLEDIR_H
 
 #include <wreport/tableinfo.h>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -15,11 +16,11 @@ struct Index;
 struct Table
 {
     std::string btable_id;
-    std::string btable_pathname;
+    std::filesystem::path btable_pathname;
     std::string dtable_id;
-    std::string dtable_pathname;
+    std::filesystem::path dtable_pathname;
 
-    Table(const std::string& dirname, const std::string& filename);
+    Table(const std::filesystem::path& dirname, const std::string& filename);
     virtual ~Table() {}
 
     virtual void print_id(FILE* out) const;

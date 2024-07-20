@@ -26,6 +26,7 @@
 #include <wreport/bulletin.h>
 #include <wreport/tests.h>
 #include <wreport/notes.h>
+#include <filesystem>
 #include <string>
 #include <vector>
 #include <memory>
@@ -38,21 +39,21 @@ struct Var;
 namespace tests {
 
 /// Return the pathname of a test file
-std::string datafile(const std::string& fname);
+std::filesystem::path datafile(const std::filesystem::path& fname);
 
 /**
  * Read the entire contents of a test file into a string
  *
  * The file name will be resolved through datafile
  */
-std::string slurpfile(const std::string& name);
+std::string slurpfile(const std::filesystem::path& name);
 
 /**
  * Get a list of all test files for the given encoding
  */
-std::vector<std::string> all_test_files(const std::string& encoding);
+std::vector<std::filesystem::path> all_test_files(const std::string& encoding);
 
-void track_bulletin(Bulletin& b, const char* tag, const char* fname);
+void track_bulletin(Bulletin& b, const char* tag, const std::filesystem::path& fname);
 
 template<typename BULLETIN>
 std::unique_ptr<BULLETIN> decode_checked(const std::string& buf, const char* name)
@@ -75,12 +76,12 @@ std::unique_ptr<BULLETIN> decode_checked(const std::string& buf, const char* nam
 {
     try {
         return BULLETIN::decode_verbose(buf, verbose, name);
-    } catch (wreport::error_parse& e) {
+    } catch (wreport::error_parse& e1) {
         try {
             auto h = BULLETIN::decode_header(buf, name);
             h->print_structured(stderr);
-        } catch (wreport::error& e) {
-            std::cerr << "Dump interrupted: " << e.what();
+        } catch (wreport::error& e2) {
+            std::cerr << "Dump interrupted: " << e2.what();
         }
         throw;
     }
@@ -89,10 +90,10 @@ std::unique_ptr<BULLETIN> decode_checked(const std::string& buf, const char* nam
 template<typename BULLETIN>
 struct TestCodec
 {
-    std::string fname;
-    std::function<void(const BULLETIN&)> check_contents = [](const BULLETIN&) {};
+    std::filesystem::path fname;
+    std::function<void(const BULLETIN&)> check_contents = [](const BULLETIN&) noexcept {};
 
-    TestCodec(const std::string& fname) : fname(fname) {}
+    explicit TestCodec(const std::filesystem::path& fname) : fname(fname) {}
     virtual ~TestCodec() {}
 
     void run();
@@ -108,7 +109,7 @@ void assert_var_value_not_equal(const Var& actual, Val expected);
 
 struct ActualVar : public Actual<Var>
 {
-    ActualVar(const Var& actual) : Actual<Var>(actual) {}
+    explicit ActualVar(const Var& actual) : Actual<Var>(actual) {}
 
     void operator==(const Var& expected) const { assert_var_equal(_actual, expected); }
     void operator!=(const Var& expected) const { assert_var_not_equal(_actual, expected); }

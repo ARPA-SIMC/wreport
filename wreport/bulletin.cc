@@ -80,15 +80,15 @@ Subset& Bulletin::obtain_subset(unsigned subsection)
 
 const Subset& Bulletin::subset(unsigned subsection) const
 {
-	if (subsection >= subsets.size())
-		error_notfound::throwf("Requested subset %u but there are only %zd available",
-				subsection, subsets.size());
-	return subsets[subsection];
+    if (subsection >= subsets.size())
+        error_notfound::throwf("Requested subset %u but there are only %zu available",
+                subsection, subsets.size());
+    return subsets[subsection];
 }
 
 void Bulletin::print(FILE* out) const
 {
-    fprintf(out, "%s %hhu:%hhu:%hhu %hu:%hu %04hu-%02hu-%02hu %02hu:%02hu:%02hu %hhu %zd subsets\n",
+    fprintf(out, "%s %hhu:%hhu:%hhu %hu:%hu %04hu-%02hu-%02hu %02hu:%02hu:%02hu %hhu %zu subsets\n",
         encoding_name(),
         data_category, data_subcategory, data_subcategory_local,
         originating_centre, originating_subcentre,
@@ -96,8 +96,8 @@ void Bulletin::print(FILE* out) const
         update_sequence_number,
         subsets.size());
     fprintf(out, " Tables: %s %s\n",
-        tables.btable ? tables.btable->pathname().c_str() : "(not loaded)",
-        tables.dtable ? tables.dtable->pathname().c_str() : "(not loaded)");
+        tables.btable ? tables.btable->path().c_str() : "(not loaded)",
+        tables.dtable ? tables.dtable->path().c_str() : "(not loaded)");
     fprintf(out, " Data descriptors:\n");
     for (vector<Varcode>::const_iterator i = datadesc.begin(); i != datadesc.end(); ++i)
         fprintf(out, "  %d%02d%03d\n", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
@@ -108,7 +108,7 @@ void Bulletin::print(FILE* out) const
         const Subset& s = subset(i);
         for (unsigned j = 0; j < s.size(); ++j)
         {
-            fprintf(out, "  [%d][%d] ", i, j);
+            fprintf(out, "  [%u][%u] ", i, j);
             s[j].print(out);
         }
     }
@@ -116,7 +116,7 @@ void Bulletin::print(FILE* out) const
 
 void Bulletin::print_structured(FILE* out) const
 {
-    fprintf(out, "%s %hhu:%hhu:%hhu %hu:%hu %04hu-%02hu-%02hu %02hu:%02hu:%02hu %hhu %zd subsets\n",
+    fprintf(out, "%s %hhu:%hhu:%hhu %hu:%hu %04hu-%02hu-%02hu %02hu:%02hu:%02hu %hhu %zu subsets\n",
         encoding_name(),
         data_category, data_subcategory, data_subcategory_local,
         originating_centre, originating_subcentre,
@@ -124,8 +124,8 @@ void Bulletin::print_structured(FILE* out) const
         update_sequence_number,
         subsets.size());
     fprintf(out, " Tables: %s %s\n",
-            tables.btable ? tables.btable->pathname().c_str() : "(not loaded)",
-            tables.dtable ? tables.dtable->pathname().c_str() : "(not loaded)");
+            tables.btable ? tables.btable->path().c_str() : "(not loaded)",
+            tables.dtable ? tables.dtable->path().c_str() : "(not loaded)");
     fprintf(out, " Data descriptors:\n");
     for (vector<Varcode>::const_iterator i = datadesc.begin(); i != datadesc.end(); ++i)
         fprintf(out, "  %d%02d%03d\n", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
@@ -241,36 +241,36 @@ unsigned Bulletin::diff(const Bulletin& msg) const
     if (tables.btable == NULL && msg.tables.btable != NULL)
     {
         notes::logf("First message did not load B btables, second message has %s\n",
-                msg.tables.btable->pathname().c_str());
+                msg.tables.btable->path().c_str());
         ++diffs;
     } else if (tables.btable != NULL && msg.tables.btable == NULL) {
         notes::logf("Second message did not load B btables, first message has %s\n",
-                tables.btable->pathname().c_str());
+                tables.btable->path().c_str());
         ++diffs;
-    } else if (tables.btable != NULL && msg.tables.btable != NULL && tables.btable->pathname() != msg.tables.btable->pathname()) {
+    } else if (tables.btable != NULL && msg.tables.btable != NULL && tables.btable->path() != msg.tables.btable->path()) {
         notes::logf("B tables differ (first has %s, second has %s)\n",
-                tables.btable->pathname().c_str(), msg.tables.btable->pathname().c_str());
+                tables.btable->path().c_str(), msg.tables.btable->path().c_str());
         ++diffs;
     }
 
     if (tables.dtable == NULL && msg.tables.dtable != NULL)
     {
         notes::logf("First message did not load B dtable, second message has %s\n",
-                msg.tables.dtable->pathname().c_str());
+                msg.tables.dtable->path().c_str());
         ++diffs;
     } else if (tables.dtable != NULL && msg.tables.dtable == NULL) {
         notes::logf("Second message did not load B dtable, first message has %s\n",
-                tables.dtable->pathname().c_str());
+                tables.dtable->path().c_str());
         ++diffs;
-    } else if (tables.dtable != NULL && msg.tables.dtable != NULL && tables.dtable->pathname() != msg.tables.dtable->pathname()) {
+    } else if (tables.dtable != NULL && msg.tables.dtable != NULL && tables.dtable->path() != msg.tables.dtable->path()) {
         notes::logf("D tables differ (first has %s, second has %s)\n",
-                tables.dtable->pathname().c_str(), msg.tables.dtable->pathname().c_str());
+                tables.dtable->path().c_str(), msg.tables.dtable->path().c_str());
         ++diffs;
     }
 
     if (datadesc.size() != msg.datadesc.size())
     {
-        notes::logf("Data descriptor sections differ (first has %zd elements, second has %zd)\n",
+        notes::logf("Data descriptor sections differ (first has %zu elements, second has %zu)\n",
                 datadesc.size(), msg.datadesc.size());
         ++diffs;
     } else {
@@ -286,7 +286,7 @@ unsigned Bulletin::diff(const Bulletin& msg) const
 
     if (subsets.size() != msg.subsets.size())
     {
-        notes::logf("Number of subsets differ (first is %zd, second is %zd)\n",
+        notes::logf("Number of subsets differ (first is %zu, second is %zu)\n",
                 subsets.size(), msg.subsets.size());
         ++diffs;
     } else
@@ -400,7 +400,7 @@ std::unique_ptr<BufrBulletin> BufrBulletin::decode_verbose(const std::string& bu
 
 void BufrBulletin::print_details(FILE* out) const
 {
-    fprintf(out, " BUFR details: ed%hhu t%hhu:%hhu:%hhu %c osl%zd\n",
+    fprintf(out, " BUFR details: ed%hhu t%hhu:%hhu:%hhu %c osl%zu\n",
             edition_number,
             master_table_number, master_table_version_number, master_table_version_number_local,
             compression ? 'c' : '-', optional_section.size());
@@ -442,7 +442,7 @@ unsigned BufrBulletin::diff_details(const Bulletin& bulletin) const
     */
     if (optional_section.size() != msg.optional_section.size())
     {
-        notes::logf("BUFR optional section lenght (first is %zd, second is %zd)\n",
+        notes::logf("BUFR optional section lenght (first is %zu, second is %zu)\n",
                 optional_section.size(), msg.optional_section.size());
         ++diffs;
     }
@@ -469,7 +469,7 @@ bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname, off_t* of
 
     // Read the remaining 4 bytes of section 0
     buf.resize(8);
-    if (fread((char*)buf.data() + 4, 4, 1, fd) != 1)
+    if (fread(buf.data() + 4, 4, 1, fd) != 1)
     {
         if (fname)
             error_system::throwf("cannot read BUFR section 0 from %s", fname);
@@ -478,7 +478,7 @@ bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname, off_t* of
     }
 
     // Read the message length
-    int bufrlen = ntohl(*(uint32_t*)(buf.data()+4)) >> 8;
+    int bufrlen = ntohl(*reinterpret_cast<uint32_t*>(buf.data()+4)) >> 8;
     if (bufrlen < 12)
     {
         if (fname)
@@ -491,7 +491,7 @@ bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname, off_t* of
     buf.resize(bufrlen);
 
     // Read the rest of the BUFR message
-    if (fread((char*)buf.data() + 8, bufrlen - 8, 1, fd) != 1)
+    if (fread(buf.data() + 8, bufrlen - 8, 1, fd) != 1)
     {
         if (ferror(fd))
         {
@@ -515,9 +515,9 @@ void BufrBulletin::write(const std::string& buf, FILE* out, const char* fname)
     if (fwrite(buf.data(), buf.size(), 1, out) != 1)
     {
         if (fname)
-            error_system::throwf("%s: cannot write %zd bytes", fname, buf.size());
+            error_system::throwf("%s: cannot write %zu bytes", fname, buf.size());
         else
-            error_system::throwf("cannot write %zd bytes", buf.size());
+            error_system::throwf("cannot write %zu bytes", buf.size());
     }
 }
 
@@ -623,28 +623,28 @@ bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname, off_t* of
     if (offset) *offset = ftello(fd) - 6;
 
     // Read until "\+\+(\r|\n)+7777"
-	{
-		const char* target = "++\r\n7777";
-		static const int target_size = 8;
-		int got = 0;
-		int c;
+    {
+        const char* target = "++\r\n7777";
+        static const int target_size = 8;
+        int got = 0;
+        int c;
 
-		errno = 0;
-		while (got < 8 && (c = getc(fd)) != EOF)
-		{
-			if (target[got] == '\r' && (c == '\n' || c == '\r'))
-				got++;
-			else if (target[got] == '\n' && (c == '\n' || c == '\r'))
-				;
-			else if (target[got] == '\n' && c == '7')
-				got += 2;
-			else if (c == target[got])
-				got++;
-			else
-				got = 0;
+        errno = 0;
+        while (got < 8 && (c = getc(fd)) != EOF)
+        {
+            if (target[got] == '\r' && (c == '\n' || c == '\r'))
+                got++;
+            else if (target[got] == '\n' && (c == '\n' || c == '\r'))
+                ;
+            else if (target[got] == '\n' && c == '7')
+                got += 2;
+            else if (c == target[got])
+                got++;
+            else
+                got = 0;
 
-			buf += (char)c;
-		}
+            buf += (char)c;
+        }
         if (ferror(fd))
         {
             if (fname)
@@ -653,16 +653,16 @@ bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname, off_t* of
                 throw error_system("cannot find end of CREX data");
         }
 
-		if (got != target_size)
-		{
-			if (fname)
-				throw error_parse(fname, ftell(fd), "CREX message is incomplete");
-			else
-				throw error_parse("(unknown)", ftell(fd), "CREX message is incomplete");
-		}
-	}
+        if (got != target_size)
+        {
+            if (fname)
+                throw error_parse(fname, static_cast<int>(ftell(fd)), "CREX message is incomplete");
+            else
+                throw error_parse("(unknown)", static_cast<int>(ftell(fd)), "CREX message is incomplete");
+        }
+    }
 
-	return true;
+    return true;
 }
 
 void CrexBulletin::write(const std::string& buf, FILE* out, const char* fname)
@@ -670,9 +670,9 @@ void CrexBulletin::write(const std::string& buf, FILE* out, const char* fname)
     if (fwrite(buf.data(), buf.size(), 1, out) != 1)
     {
         if (fname)
-            error_system::throwf("%s: cannot write %zd bytes", fname, buf.size());
+            error_system::throwf("%s: cannot write %zu bytes", fname, buf.size());
         else
-            error_system::throwf("cannot write %zd bytes", buf.size());
+            error_system::throwf("cannot write %zu bytes", buf.size());
     }
     if (fputs("\r\r\n", out) == EOF)
     {

@@ -13,7 +13,7 @@ namespace notes {
 // streambuf that discards all data
 struct null_streambuf : public std::streambuf
 {
-    int overflow(int c) { return c; }
+    int overflow(int c) override { return c; }
 };
 
 thread_local ostream* target = 0;
@@ -63,6 +63,7 @@ void logf(const char* fmt, ...)
         (*target) << c;
         free(c);
     }
+    va_end(ap);
 }
 
 }

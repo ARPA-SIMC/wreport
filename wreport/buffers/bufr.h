@@ -43,10 +43,16 @@ struct BufrOutput
      * Append a string \a len bits long to the output buffer as it is,
      * ignoring partially encoded bits
      */
-    void raw_append(const char* str, int len)
+    void raw_append(const char* str, size_t len)
     {
         out.append(str, len);
     }
+
+    [[deprecated("Use the version with size_t len")]] void raw_append(const char* str, int len)
+    {
+        out.append(str, len);
+    }
+
 
     /// Append a 16 bits integer
     void append_short(unsigned short val)

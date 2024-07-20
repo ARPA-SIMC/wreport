@@ -12,61 +12,45 @@ using namespace std;
 namespace wreport {
 namespace tests {
 
-std::string datafile(const std::string& fname)
+std::filesystem::path datafile(const std::filesystem::path& fname)
 {
     const char* testdatadirenv = getenv("WREPORT_TESTDATA");
-    std::string testdatadir = testdatadirenv ? testdatadirenv : ".";
-    return str::joinpath(testdatadir, fname);
+    std::filesystem::path testdatadir(testdatadirenv ? testdatadirenv : ".");
+    return testdatadir / fname;
 }
 
-std::string slurpfile(const std::string& name)
+std::string slurpfile(const std::filesystem::path& name)
 {
-	string fname = datafile(name);
-	string res;
-
-	FILE* fd = fopen(fname.c_str(), "rb");
-	if (fd == NULL)
-		error_system::throwf("opening %s", fname.c_str());
-		
-	/* Read the entire file contents */
-	while (!feof(fd))
-	{
-		char c;
-		if (fread(&c, 1, 1, fd) == 1)
-			res += c;
-	}
-
-	fclose(fd);
-
-	return res;
+    return sys::read_file(datafile(name));
 }
 
-std::vector<std::string> all_test_files(const std::string& encoding)
+std::vector<std::filesystem::path> all_test_files(const std::string& encoding)
 {
     const char* testdatadirenv = getenv("WREPORT_TESTDATA");
-    std::string testdatadir = testdatadirenv ? testdatadirenv : ".";
-    testdatadir = str::joinpath(testdatadir, encoding);
+    std::filesystem::path testdatadir(testdatadirenv ? testdatadirenv : ".");
+    testdatadir /= encoding;
 
-    vector<string> res;
+    std::vector<std::filesystem::path> res;
+    std::filesystem::path relroot(encoding);
     sys::Path dir(testdatadir);
     for (const auto& i: dir)
         if (str::endswith(i.d_name, "." + encoding))
-            res.push_back(str::joinpath(encoding, i.d_name));
+            res.push_back(relroot / i.d_name);
     return res;
 }
 
-void track_bulletin(Bulletin& b, const char* tag, const char* fname)
+void track_bulletin(Bulletin& b, const char* tag, const std::filesystem::path& fname)
 {
-    string dumpfname = "/tmp/bulletin-" + str::basename(fname) + "-" + tag;
+    std::filesystem::path dumpfname = "/tmp/bulletin-"s + fname.filename().native() + "-" + tag;
     FILE* out = fopen(dumpfname.c_str(), "wt");
-    fprintf(out, "Contents of %s %s:\n", fname, tag);
+    fprintf(out, "Contents of %s %s:\n", fname.c_str(), tag);
     b.print(out);
-    fprintf(out, "\nData descriptor section of %s %s:\n", fname, tag);
+    fprintf(out, "\nData descriptor section of %s %s:\n", fname.c_str(), tag);
     b.print_datadesc(out);
-    fprintf(out, "\nStructure of %s %s:\n", fname, tag);
+    fprintf(out, "\nStructure of %s %s:\n", fname.c_str(), tag);
     b.print_structured(out);
     fclose(out);
-    fprintf(stderr, "%s %s dumped as %s\n", fname, tag, dumpfname.c_str());
+    fprintf(stderr, "%s %s dumped as %s\n", fname.c_str(), tag, dumpfname.c_str());
 }
 
 namespace {

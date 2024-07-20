@@ -813,6 +813,8 @@ public:
     TempBuffer& operator=(const TempBuffer&) = delete;
     TempBuffer& operator=(TempBuffer&&) = delete;
 
+    T* data() { return buffer; }
+    const T* data() const { return buffer; }
     operator T*() { return buffer; }
     operator const T*() const { return buffer; }
 };

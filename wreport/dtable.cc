@@ -41,7 +41,7 @@ struct fd_closer
 
 struct DTableBase : public DTable
 {
-    std::string m_pathname;
+    std::filesystem::path m_pathname;
 
     /**
      * One single table with the concatenation of all the expansion
@@ -63,7 +63,7 @@ struct DTableBase : public DTable
 
         Varcode dcode = 0; // D code of the last code block
         unsigned begin = 0; // Begin of the last code block
-        int nentries_check = 0; // Length of sequence advertised at the beginning of the code block
+        unsigned nentries_check = 0; // Length of sequence advertised at the beginning of the code block
 
         char line[200];
         int line_no = 0;
@@ -76,18 +76,18 @@ struct DTableBase : public DTable
             // Start of a new D entry
             if (line[1] == 'D' || line[1] == '3')
             {
-                int last_count = varcodes.size() - begin;
+                unsigned last_count = static_cast<unsigned>(varcodes.size()) - begin;
                 if (last_count != nentries_check)
-                    error_parse::throwf(pathname.c_str(), line_no, "advertised number of expansion items (%d) does not match the number of items found (%d)", nentries_check, last_count);
+                    error_parse::throwf(pathname.c_str(), line_no, "advertised number of expansion items (%u) does not match the number of items found (%u)", nentries_check, last_count);
 
                 char* next = nullptr;
-                nentries_check = strtol(line + 7, &next, 10);
+                nentries_check = static_cast<unsigned>(strtoul(line + 7, &next, 10));
                 if (nentries_check < 1)
                     throw error_parse(pathname.c_str(), line_no, "less than one entry advertised in the expansion");
 
                 if (!varcodes.empty())
-                    entries.push_back(Entry(dcode, begin, varcodes.size()));
-                begin = varcodes.size();
+                    entries.push_back(Entry(dcode, begin, static_cast<unsigned>(varcodes.size())));
+                begin = static_cast<unsigned>(varcodes.size());
                 dcode = varcode_parse(line + 1);
 
                 while (*next && isspace(*next))
@@ -98,14 +98,13 @@ struct DTableBase : public DTable
             }
             else if (strncmp(line, "           ", 11) == 0)
             {
-                int last_count;
                 // Check that there has been at least one entry filed before
                 if (varcodes.empty())
                     throw error_parse(pathname.c_str(), line_no, "expansion line found before the first entry");
                 // Check that we are not appending too many entries
-                last_count = varcodes.size() - begin;
+                unsigned last_count = static_cast<unsigned>(varcodes.size()) - begin;
                 if (last_count == nentries_check)
-                    error_parse::throwf(pathname.c_str(), line_no, "too many entries found (expected %d)", nentries_check);
+                    error_parse::throwf(pathname.c_str(), line_no, "too many entries found (expected %u)", nentries_check);
 
                 // Finally append the code
                 varcodes.push_back(varcode_parse(line + 11));
@@ -118,12 +117,12 @@ struct DTableBase : public DTable
         if (varcodes.empty())
             throw error_parse(pathname.c_str(), line_no, "no entries found in the file");
         else
-            entries.push_back(Entry(dcode, begin, varcodes.size()));
+            entries.push_back(Entry(dcode, begin, static_cast<unsigned>(varcodes.size())));
 
         // Check that the last entry is complete
-        int last_count = varcodes.size() - begin;
+        unsigned last_count = static_cast<unsigned>(varcodes.size()) - begin;
         if (last_count != nentries_check)
-            error_parse::throwf(pathname.c_str(), line_no, "advertised number of expansion items (%d) does not match the number of items found (%d)", nentries_check, last_count);
+            error_parse::throwf(pathname.c_str(), line_no, "advertised number of expansion items (%u) does not match the number of items found (%u)", nentries_check, last_count);
     }
 
     ~DTableBase()
@@ -132,12 +131,14 @@ struct DTableBase : public DTable
 
     std::string pathname() const override { return m_pathname; }
 
+    std::filesystem::path path() const override { return m_pathname; }
+
     Opcodes query(Varcode var) const override
     {
         int begin, end;
 
         // Binary search the entry
-        begin = -1, end = entries.size();
+        begin = -1, end = static_cast<int>(entries.size());
         while (end - begin > 1)
         {
             int cur = (end + begin) / 2;

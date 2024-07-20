@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <cmath>
 
-#if USE_OWN_VASPRINTF
+#ifdef USE_OWN_VASPRINTF
 static int vasprintf (char **result, const char *format, va_list args)
 {
   const char *p = format;

@@ -2,6 +2,7 @@
 #define WREPORT_VARTABLE_H
 
 #include <wreport/varinfo.h>
+#include <filesystem>
 #include <string>
 #include <functional>
 #include <wreport/fwd.h>
@@ -32,7 +33,7 @@ public:
     virtual ~Vartable();
 
     /// Return the pathname of the file from which this table has been loaded
-    virtual std::string pathname() const = 0;
+    [[deprecated("Use path instead")]] virtual std::string pathname() const = 0;
 
     /**
      * Query the Vartable. Throws an exception if not found.
@@ -80,7 +81,9 @@ public:
      * Once loaded, the table will be cached in memory for reuse, and
      * further calls to load_bufr() will return the cached version.
      */
-    static const Vartable* load_bufr(const std::string& pathname);
+    [[deprecated("Use load_bufr(filesystem::path& instead")]] static const Vartable* load_bufr(const std::string& pathname);
+    static const Vartable* load_bufr(const std::filesystem::path& pathname);
+    static const Vartable* load_bufr(const char* pathname);
 
     /**
      * Return a CREX vartable, by file name.
@@ -88,7 +91,9 @@ public:
      * Once loaded, the table will be cached in memory for reuse, and
      * further calls to load_crex() will return the cached version.
      */
-    static const Vartable* load_crex(const std::string& pathname);
+    [[deprecated("Use load_crex(filesystem::path& instead")]] static const Vartable* load_crex(const std::string& pathname);
+    static const Vartable* load_crex(const std::filesystem::path& pathname);
+    static const Vartable* load_crex(const char* pathname);
 
     /// Find a BUFR table
     static const Vartable* get_bufr(const BufrTableID& id);
@@ -101,6 +106,9 @@ public:
 
     /// Find a CREX table, by file name (without extension)
     static const Vartable* get_crex(const std::string& basename);
+
+    /// Return the pathname of the file from which this table has been loaded
+    virtual std::filesystem::path path() const = 0;
 };
 
 }

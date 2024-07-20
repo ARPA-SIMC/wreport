@@ -20,7 +20,7 @@ class Tests : public TestCase
             test.check_contents = check_contents;
             wassert(test.run());
         });
-    };
+    }
 
     void declare_test_decode_fail(std::string fname, std::string errmsg)
     {
@@ -405,7 +405,7 @@ declare_test("bufr/obs3-56.2.bufr", [](const BufrBulletin& msg) {
     wassert(actual(msg.subset(34).size()) == 225u);
 });
 
-declare_test("bufr/crex-has-few-digits.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/crex-has-few-digits.bufr", [](const BufrBulletin& msg) noexcept {
     /*
      * In this case, the ECMWF table has 12 bits for BUFR in Kelvin (up to 409.6)
      * but 3 digits for CREX in Celsius (up to 99.0).  This means that BUFR can
@@ -414,7 +414,7 @@ declare_test("bufr/crex-has-few-digits.bufr", [](const BufrBulletin& msg) {
      */
 });
 
-declare_test("bufr/test-buoy1.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/test-buoy1.bufr", [](const BufrBulletin& msg) noexcept {
     // Buoy who could not look up a D table
 });
 
@@ -541,7 +541,7 @@ declare_test("bufr/ed4-empty.bufr", [](const BufrBulletin& msg) {
     wassert(actual(msg.subset(6).size()) == 120u);
 });
 
-declare_test("bufr/C05060.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/C05060.bufr", [](const BufrBulletin& msg) noexcept {
     // GTS temp message
 });
 
@@ -553,7 +553,7 @@ declare_test("bufr/tempforecast.bufr", [](const BufrBulletin& msg) {
 });
 #endif
 
-declare_test("bufr/C23000.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/C23000.bufr", [](const BufrBulletin& msg) noexcept {
     // C23000 modifier
 });
 
@@ -581,30 +581,30 @@ declare_test("bufr/segfault1.bufr", [](const BufrBulletin& msg) {
     wassert(actual(s[1].enqa(WR_VAR(0, 33, 7))->enqi()) == 70);
 });
 
-declare_test("bufr/C08022.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/C08022.bufr", [](const BufrBulletin& msg) noexcept {
     // C08xxx modifier
 });
 
-declare_test("bufr/C23000-1.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/C23000-1.bufr", [](const BufrBulletin& msg) noexcept {
     // C23xxx modifier on a message that gave problems in some machine
 });
 
-declare_test("bufr/C08032-toolong.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/C08032-toolong.bufr", [](const BufrBulletin& msg) noexcept {
 });
 
-declare_test("bufr/synop-longname.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/synop-longname.bufr", [](const BufrBulletin& msg) noexcept {
     // Synop with a very long station name
 });
 
-declare_test("bufr/C04004.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/C04004.bufr", [](const BufrBulletin& msg) noexcept {
     // C04yyy modifier, B32021=6
 });
 
-declare_test("bufr/C04-B31021-1.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/C04-B31021-1.bufr", [](const BufrBulletin& msg) noexcept {
     // C04yyy modifier, B32021=1
 });
 
-declare_test("bufr/C06006.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/C06006.bufr", [](const BufrBulletin& msg) noexcept {
     // C06006 modifier
 });
 
@@ -638,32 +638,32 @@ declare_test("bufr/ascat1.bufr", [](const BufrBulletin& msg) {
     wassert(actual(s[0].enq<int>()) == 254);
 });
 
-declare_test("bufr/unparsable1.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/unparsable1.bufr", [](const BufrBulletin& msg) noexcept {
 });
 
-declare_test("bufr/C04type21.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/C04type21.bufr", [](const BufrBulletin& msg) noexcept {
 });
 
-declare_test("bufr/noassoc.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/noassoc.bufr", [](const BufrBulletin& msg) noexcept {
     // Buffer with a seemingly missing associated field significance
 });
 
-declare_test("bufr/atms1.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/atms1.bufr", [](const BufrBulletin& msg) noexcept {
     // ATMS data (http://npp.gsfc.nasa.gov/atms.html)
 });
 
-declare_test("bufr/atms2.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/atms2.bufr", [](const BufrBulletin& msg) noexcept {
     // ATMS data (http://npp.gsfc.nasa.gov/atms.html)
 });
 
-declare_test("bufr/table17.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/table17.bufr", [](const BufrBulletin& msg) noexcept {
     // BUFR data using table 17
 });
 
-declare_test("bufr/A_ISMN02LFPW080000RRA_C_RJTD_20140808000319_100.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/A_ISMN02LFPW080000RRA_C_RJTD_20140808000319_100.bufr", [](const BufrBulletin& msg) noexcept {
 });
 
-declare_test("bufr/bitmap-B33035.bufr", [](const BufrBulletin& msg) {
+declare_test("bufr/bitmap-B33035.bufr", [](const BufrBulletin& msg) noexcept {
 });
 
 declare_test("bufr/gts-buoy1.bufr", [](const BufrBulletin& msg) {

@@ -16,17 +16,6 @@
 #include <climits>
 #include "config.h"
 
-
-// #define TRACE_LOADER
-
-#ifdef TRACE_LOADER
-#define TRACE(...) fprintf(stderr, __VA_ARGS__)
-#define IFTRACE if (1)
-#else
-#define TRACE(...) do { } while (0)
-#define IFTRACE if (0)
-#endif
-
 using namespace std;
 
 namespace wreport {
@@ -82,7 +71,7 @@ unsigned digits_per_bits(unsigned bit_count)
 struct fd_closer
 {
     FILE* fd;
-    fd_closer(FILE* fd) : fd(fd) {}
+    explicit fd_closer(FILE* fd) : fd(fd) {}
     ~fd_closer() { fclose(fd); }
 };
 
@@ -147,7 +136,7 @@ struct VartableEntry
                 varinfo.len = varinfo.bit_len / 8;
                 break;
             case Vartype::Binary:
-                varinfo.len = ceil(varinfo.bit_len / 8);
+                varinfo.len = static_cast<unsigned>(ceil(varinfo.bit_len / 8));
                 break;
         }
 
@@ -196,7 +185,7 @@ struct VartableEntry
 struct VartableBase : public Vartable
 {
     /// Pathname to the file from which this vartable has been loaded
-    std::string m_pathname;
+    std::filesystem::path m_pathname;
 
     /**
      * Entries in this Vartable.
@@ -212,7 +201,7 @@ struct VartableBase : public Vartable
     std::vector<VartableEntry> entries;
 
 
-    VartableBase(const std::string& pathname)
+    explicit VartableBase(const std::filesystem::path& pathname)
         : m_pathname(pathname)
     {
     }
@@ -222,7 +211,12 @@ struct VartableBase : public Vartable
         return m_pathname;
     }
 
-    _Varinfo* obtain(const std::string& pathname, unsigned line_no, Varcode code)
+    std::filesystem::path path() const override
+    {
+        return m_pathname;
+    }
+
+    _Varinfo* obtain(unsigned line_no, Varcode code)
     {
         // Ensure that we are creating an ordered table
         if (!entries.empty() && entries.back().varinfo.code >= code)
@@ -240,7 +234,7 @@ struct VartableBase : public Vartable
         int begin, end;
 
         // Binary search
-        begin = -1, end = entries.size();
+        begin = -1, end = static_cast<int>(entries.size());
         while (end - begin > 1)
         {
             int cur = (end + begin) / 2;
@@ -332,7 +326,7 @@ static void normalise_unit(char* unit)
 struct BufrVartable : public VartableBase
 {
     /// Create and load a BUFR B table
-    BufrVartable(const std::string& pathname) : VartableBase(pathname)
+    explicit BufrVartable(const std::filesystem::path& pathname) : VartableBase(pathname)
     {
         FILE* in = fopen(pathname.c_str(), "rt");
         if (!in) error_system::throwf("cannot open BUFR table file %s", pathname.c_str());
@@ -351,7 +345,7 @@ struct BufrVartable : public VartableBase
             /* FMT='(1x,A,1x,A64,47x,A24,I3,8x,I3)' */
 
             // Append a new entry;
-            _Varinfo* entry = obtain(pathname, line_no, WR_STRING_TO_VAR(line + 2));
+            _Varinfo* entry = obtain(line_no, WR_STRING_TO_VAR(line + 2));
 
             // Read the description
             memcpy(entry->desc, line+8, 64);
@@ -366,9 +360,9 @@ struct BufrVartable : public VartableBase
                 entry->unit[i] = 0;
             normalise_unit(entry->unit);
 
-            entry->scale = getnumber(line+98);
-            entry->bit_ref = getnumber(line+102);
-            entry->bit_len = getnumber(line+115);
+            entry->scale = static_cast<int>(getnumber(line+98));
+            entry->bit_ref = static_cast<int>(getnumber(line+102));
+            entry->bit_len = static_cast<unsigned>(getnumber(line+115));
 
             // Set the is_string flag based on the unit
             if (strcmp(entry->unit, "CCITTIA5") == 0)
@@ -388,7 +382,7 @@ struct BufrVartable : public VartableBase
                 if (entry->bit_len == 1)
                     entry->len = 1;
                 else
-                    entry->len = ceil(entry->bit_len * log10(2.0));
+                    entry->len = static_cast<unsigned>(ceil(entry->bit_len * log10(2.0)));
             }
 
             // Postprocess the data, filling in minval and maxval
@@ -405,7 +399,7 @@ struct BufrVartable : public VartableBase
 struct CrexVartable : public VartableBase
 {
     /// Create and load a CREX B table
-    CrexVartable(const std::string& pathname) : VartableBase(pathname)
+    explicit CrexVartable(const std::filesystem::path& pathname) : VartableBase(pathname)
     {
         FILE* in = fopen(pathname.c_str(), "rt");
         if (!in) error_system::throwf("cannot open CREX table file %s", pathname.c_str());
@@ -432,7 +426,7 @@ struct CrexVartable : public VartableBase
             /* FMT='(1x,A,1x,A64,47x,A24,I3,8x,I3)' */
 
             // Append a new entry;
-            _Varinfo* entry = obtain(pathname, line_no, code);
+            _Varinfo* entry = obtain(line_no, code);
 
             // Read the description
             memcpy(entry->desc, line+8, 64);
@@ -447,8 +441,8 @@ struct CrexVartable : public VartableBase
                 entry->unit[i] = 0;
             normalise_unit(entry->unit);
 
-            entry->scale = getnumber(line+143);
-            entry->len = getnumber(line+149);
+            entry->scale = static_cast<int>(getnumber(line+143));
+            entry->len = static_cast<unsigned>(getnumber(line+149));
 
             // Ignore the BUFR part: since it can have a different measurement
             // unit, we cannot really use that information. It will just mean
@@ -478,7 +472,17 @@ struct CrexVartable : public VartableBase
 }
 
 
+const Vartable* Vartable::load_bufr(const char* pathname)
+{
+    return load_bufr(std::filesystem::path(pathname));
+}
+
 const Vartable* Vartable::load_bufr(const std::string& pathname)
+{
+    return load_bufr(std::filesystem::path(pathname));
+}
+
+const Vartable* Vartable::load_bufr(const std::filesystem::path& pathname)
 {
     static std::map<string, BufrVartable*>* tables = 0;
     if (!tables) tables = new std::map<string, BufrVartable*>;
@@ -492,7 +496,17 @@ const Vartable* Vartable::load_bufr(const std::string& pathname)
     return (*tables)[pathname] = new BufrVartable(pathname);
 }
 
+const Vartable* Vartable::load_crex(const char* pathname)
+{
+    return load_crex(std::filesystem::path(pathname));
+}
+
 const Vartable* Vartable::load_crex(const std::string& pathname)
+{
+    return load_crex(std::filesystem::path(pathname));
+}
+
+const Vartable* Vartable::load_crex(const std::filesystem::path& pathname)
 {
     static std::map<string, CrexVartable*>* tables = 0;
     if (!tables) tables = new std::map<string, CrexVartable*>;

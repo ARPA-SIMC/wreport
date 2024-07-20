@@ -2,6 +2,7 @@
 #include "tables.h"
 #include "vartable.h"
 #include "notes.h"
+#include "utils/sys.h"
 #include <cstring>
 #include "config.h"
 
@@ -70,7 +71,7 @@ void Subset::store_variable_undef(Varinfo info)
     push_back(Var(info));
 }
 
-void Subset::append_c_with_dpb(Varcode ccode, int count, const char* bitmap)
+void Subset::append_c_with_dpb(Varcode ccode, int, const char* bitmap)
 {
     Varinfo info = tables->get_bitmap(ccode, bitmap);
 
@@ -83,9 +84,9 @@ void Subset::append_c_with_dpb(Varcode ccode, int count, const char* bitmap)
 
 int Subset::append_dpb(Varcode ccode, unsigned size, Varcode attr)
 {
-	char bitmap[size + 1];
-	size_t src, dst;
-	size_t count = 0;
+    sys::TempBuffer bitmap(size + 1);
+    size_t src, dst;
+    size_t count = 0;
 
     // Scan first 'size' variables checking for the presence of 'attr'
     for (src = 0, dst = 0; src < this->size() && dst < size; ++dst, ++src)
@@ -113,44 +114,44 @@ int Subset::append_dpb(Varcode ccode, unsigned size, Varcode attr)
 
 void Subset::append_fixed_dpb(Varcode ccode, int size)
 {
-	char bitmap[size + 1];
+    sys::TempBuffer bitmap(size + 1);
 
-	memset(bitmap, '+', size);
-	bitmap[size] = 0;
+    memset(bitmap, '+', size);
+    bitmap[size] = 0;
 
-	append_c_with_dpb(ccode, size, bitmap);
+    append_c_with_dpb(ccode, size, bitmap);
 }
 
 void Subset::print(FILE* out) const
 {
-	for (unsigned i = 0; i < size(); ++i)
-	{
-		fprintf(out, "%d ", i);
-		(*this)[i].print(out);
-	}
+    for (unsigned i = 0; i < size(); ++i)
+    {
+        fprintf(out, "%u ", i);
+        (*this)[i].print(out);
+    }
 }
 
 unsigned Subset::diff(const Subset& s2) const
 {
     // Compare btables
-    if (tables->btable->pathname() != s2.tables->btable->pathname())
+    if (tables->btable->path() != s2.tables->btable->path())
     {
         notes::logf("B tables differ (first is %s, second is %s)\n",
-                tables->btable->pathname().c_str(), s2.tables->btable->pathname().c_str());
+                tables->btable->path().c_str(), s2.tables->btable->path().c_str());
         return 1;
     }
 
     // Compare vars
     if (size() != s2.size())
     {
-        notes::logf("Number of variables differ (first is %zd, second is %zd)\n",
+        notes::logf("Number of variables differ (first is %zu, second is %zu)\n",
                 size(), s2.size());
         return 1;
     }
     for (size_t i = 0; i < size(); ++i)
     {
-        unsigned diff = (*this)[i].diff(s2[i]);
-        if (diff > 0) return diff;
+        unsigned diff_ = (*this)[i].diff(s2[i]);
+        if (diff_ > 0) return diff_;
     }
     return 0;
 }

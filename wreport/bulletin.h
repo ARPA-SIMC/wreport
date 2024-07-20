@@ -270,7 +270,7 @@ public:
 
     virtual ~BufrBulletin();
 
-    void clear();
+    void clear() override;
     const char* encoding_name() const throw () override { return "BUFR"; }
     void load_tables() override;
     std::string encode() const override;
@@ -434,7 +434,7 @@ public:
     bool has_check_digit = false;
 
 
-    void clear();
+    void clear() override;
     const char* encoding_name() const throw () override { return "CREX"; }
     void load_tables() override;
     std::string encode() const override;

@@ -11,18 +11,22 @@ using namespace std;
 
 namespace {
 
-string testdata_pathname(const std::string& basename)
+std::filesystem::path from_env(const char* varname)
 {
-    const char* dir = getenv("WREPORT_TESTDATA");
-    if (!dir) dir = ".";
-    return str::joinpath(dir, basename);
+    if (const char* val = getenv(varname))
+        return std::filesystem::path(val);
+    else
+        return std::filesystem::current_path();
 }
 
-string table_pathname(const std::string& basename)
+std::filesystem::path testdata_pathname(const std::string& basename)
 {
-    const char* dir = getenv("WREPORT_TABLES");
-    if (!dir) dir = TABLE_DIR;
-    return str::joinpath(dir, basename);
+    return from_env("WREPORT_TESTDATA") / basename;
+}
+
+std::filesystem::path table_pathname(const std::string& basename)
+{
+    return from_env("WREPORT_TABLES") / basename;
 }
 
 class Tests : public TestCase
