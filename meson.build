@@ -1,4 +1,5 @@
-project('wreport', 'cpp', version: '3.37', license : 'GPL-2.0-or-later', default_options: ['warning_level=everything', 'cpp_std=c++17'])
+project('wreport', 'cpp', version: '3.37', license : 'GPL-2.0-or-later', default_options: ['warning_level=3', 'cpp_std=c++17'])
+# TODO: use warning_level=everything in newer meson
 
 cpp = meson.get_compiler('cpp')
 
