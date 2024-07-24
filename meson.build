@@ -59,6 +59,12 @@ if compiler.has_function('getopt_long')
     conf_data.set('HAS_GETOPT_LONG', true)
 endif
 
+# std::filesystem library needs to be explicitly linked with g++ < 9.0
+if cpp.find_library('stdc++fs').found()
+  # without this, std::filesystem is not present for some compilers
+  add_project_link_arguments(['-lstdc++fs'], language : 'cpp')
+endif
+
 # Generate config.h
 configure_file(output: 'config.h', configuration: conf_data)
 
