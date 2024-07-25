@@ -1,3 +1,9 @@
+# New in version UNRELEASED
+
+* Updated code to use C++17 features
+* Building against wreport requires C++17 from now on
+* API and ABI are kept consistent, except for `wreport/utils/tests.h`
+
 # New in version 3.37
 
 * Reinclude table v. 33 which was excluded with meson
