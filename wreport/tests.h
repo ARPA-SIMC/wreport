@@ -42,6 +42,16 @@ namespace tests {
 std::filesystem::path datafile(const std::filesystem::path& fname);
 
 /**
+ * Return a path from an envirnment variable.
+ *
+ * Returns deflt if the variable is not defined.
+ *
+ * Returns the current path the variable is not defined and if deflt is
+ * nullptr.
+ */
+std::filesystem::path path_from_env(const char* varname, const char* deflt = nullptr);
+
+/**
  * Read the entire contents of a test file into a string
  *
  * The file name will be resolved through datafile

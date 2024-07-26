@@ -11,22 +11,14 @@ using namespace std;
 
 namespace {
 
-std::filesystem::path from_env(const char* varname)
-{
-    if (const char* val = getenv(varname))
-        return std::filesystem::path(val);
-    else
-        return std::filesystem::current_path();
-}
-
 std::filesystem::path testdata_pathname(const std::string& basename)
 {
-    return from_env("WREPORT_TESTDATA") / basename;
+    return path_from_env("WREPORT_TESTDATA") / basename;
 }
 
 std::filesystem::path table_pathname(const std::string& basename)
 {
-    return from_env("WREPORT_TABLES") / basename;
+    return path_from_env("WREPORT_TABLES") / basename;
 }
 
 class Tests : public TestCase

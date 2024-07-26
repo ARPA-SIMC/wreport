@@ -19,6 +19,16 @@ std::filesystem::path datafile(const std::filesystem::path& fname)
     return testdatadir / fname;
 }
 
+std::filesystem::path path_from_env(const char* varname, const char* deflt)
+{
+    if (const char* val = getenv(varname))
+        return std::filesystem::path(val);
+    else if (deflt)
+        return deflt;
+    else
+        return std::filesystem::current_path();
+}
+
 std::string slurpfile(const std::filesystem::path& name)
 {
     return sys::read_file(datafile(name));

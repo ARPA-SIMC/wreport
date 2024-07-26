@@ -16,20 +16,12 @@ class Tests : public TestCase
     void register_tests() override;
 } test("dtable");
 
-static std::filesystem::path from_env(const char* varname)
-{
-    if (const char* val = getenv(varname))
-        return std::filesystem::path(val);
-    else
-        return std::filesystem::current_path();
-}
-
 void Tests::register_tests()
 {
 
 add_method("query", []() {
     // Test basic queries
-    std::filesystem::path testdatadir = from_env("WREPORT_TESTDATA");
+    std::filesystem::path testdatadir = path_from_env("WREPORT_TESTDATA");
     const DTable* table = DTable::load_crex(testdatadir / "test-crex-d-table.txt");
 
     /* Try querying a nonexisting item */
@@ -87,7 +79,7 @@ add_method("query", []() {
 });
 
 add_method("bufr4", []() {
-    auto testdatadir = from_env("WREPORT_TABLES");
+    auto testdatadir = path_from_env("WREPORT_TABLES");
     const DTable* table = DTable::load_crex(testdatadir / "D0000000000098013102.txt");
 
     /* Try querying a nonexisting item */
@@ -135,7 +127,7 @@ add_method("bufr4", []() {
 
 add_method("long_sequence", []() {
     // Test basic queries
-    auto testdatadir = from_env("WREPORT_TABLES");
+    auto testdatadir = path_from_env("WREPORT_TABLES");
     const DTable* table = DTable::load_bufr(testdatadir / "D0000000000000031000.txt");
 
     Opcodes chain = table->query(WR_VAR(3, 10, 77));
