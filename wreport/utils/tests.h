@@ -320,7 +320,11 @@ struct Actual
 {
     A _actual;
     Actual(const A& actual) : _actual(actual) {}
-    ~Actual() {}
+    Actual(const Actual&) = default;
+    Actual(Actual&&) = default;
+    ~Actual() = default;
+    Actual& operator=(const Actual&) = delete;
+    Actual& operator=(Actual&&) = delete;
 
     void istrue() const { assert_true(_actual); }
     void isfalse() const { assert_false(_actual); }

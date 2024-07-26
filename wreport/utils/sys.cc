@@ -34,6 +34,15 @@ inline const char* to_cstring(const char* s)
 namespace wreport {
 namespace sys {
 
+std::filesystem::path with_suffix(const std::filesystem::path& path, const std::string& suffix)
+{
+    if (not path.has_filename())
+        throw std::invalid_argument("cannot append a suffix to path "s + path.native() + " that does not have a filename");
+    auto res(path);
+    res += suffix;
+    return res;
+}
+
 std::unique_ptr<struct stat> stat(const char* pathname)
 {
     std::unique_ptr<struct stat> res(new struct stat);
@@ -1066,6 +1075,11 @@ void write_file(const std::filesystem::path& file, const std::string& data, mode
 }
 
 void write_file(const std::string& file, const void* data, size_t size, mode_t mode)
+{
+    write_file(std::filesystem::path(file), data, size, mode);
+}
+
+void write_file(const char* file, const void* data, size_t size, mode_t mode)
 {
     write_file(std::filesystem::path(file), data, size, mode);
 }

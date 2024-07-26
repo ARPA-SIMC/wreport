@@ -24,6 +24,15 @@ namespace wreport {
 namespace sys {
 
 /**
+ * Return the path with suffix appended to its filename.
+ *
+ * path needs to have a filename, otherwise the function will throw
+ * std::invalid_argument
+ */
+std::filesystem::path with_suffix(const std::filesystem::path& path, const std::string& suffix);
+
+
+/**
  * stat() the given file and return the struct stat with the results.
  * If the file does not exist, return NULL.
  * Raises exceptions in case of errors.
@@ -630,6 +639,7 @@ void write_file(const char* file, const std::string& data, mode_t mode=0777);
  */
 void write_file(const std::filesystem::path& file, const void* data, size_t size, mode_t mode=0777);
 [[deprecated("Use write_file(const std::filesystem::path&, …)")]] void write_file(const std::string& file, const void* data, size_t size, mode_t mode=0777);
+void write_file(const char* file, const void* data, size_t size, mode_t mode=0777);
 
 /**
  * Write \a data to \a file, replacing existing contents if it already exists.
@@ -670,9 +680,9 @@ void mkFilePath(const std::string& file);
  *
  * @return true if the file was deleted, false if it did not exist
  */
-[[deprecated("use sys::filesystem::remove")]] bool unlink_ifexists(const char* file);
-[[deprecated("use sys::filesystem::remove")]] bool unlink_ifexists(const std::string& file);
-[[deprecated("use sys::filesystem::remove")]] bool unlink_ifexists(const std::filesystem::path& file);
+[[deprecated("use std::filesystem::remove")]] bool unlink_ifexists(const char* file);
+[[deprecated("use std::filesystem::remove")]] bool unlink_ifexists(const std::string& file);
+[[deprecated("use std::filesystem::remove")]] bool unlink_ifexists(const std::filesystem::path& file);
 
 /**
  * Move \a src to \a dst, without raising exception if \a src does not exist
