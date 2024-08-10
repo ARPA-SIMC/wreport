@@ -7,6 +7,7 @@
 #include "bulletin/dds-printer.h"
 #include "notes.h"
 #include <netinet/in.h>
+#include <cstring>
 #include "config.h"
 
 using namespace std;
@@ -478,7 +479,9 @@ bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname, off_t* of
     }
 
     // Read the message length
-    int bufrlen = ntohl(*reinterpret_cast<uint32_t*>(buf.data()+4)) >> 8;
+    uint32_t hl_length;
+    memcpy(&hl_length, buf.data()+4, sizeof(uint32_t));
+    int bufrlen = ntohl(hl_length) >> 8;
     if (bufrlen < 12)
     {
         if (fname)
