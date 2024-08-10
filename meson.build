@@ -4,8 +4,28 @@ project('wreport', 'cpp', version: '3.37', license : 'GPL-2.0-or-later', default
 cpp = meson.get_compiler('cpp')
 
 warning_control = [
+  # Turn some warning classes to errors
+  '-Werror=format',
+  '-Werror=suggest-override',
+  '-Werror=deprecated-copy-dtor',
+  '-Werror=missing-declarations',
+  '-Werror=overloaded-virtual',
+  '-Werror=cast-qual',
+  '-Werror=duplicated-branches',
+  '-Werror=logical-op',
+  '-Werror=catch-value',
+  '-Werror=conditionally-supported',
+  '-Werror=noexcept',
+  '-Werror=c++23-extensions',
+  '-Werror=dangling-else',
+  '-Werror=suggest-attribute=format',
+  '-Werror=deprecated-declarations',
+  # '-Werror=cast-align',
+
   '-Wno-padded',
   '-Wno-abi-tag',
+  '-Wno-unused-macros',
+  '-Wno-sign-promo',
   '-Wswitch',
   '-Wno-switch-enum',
   '-Wno-effc++',

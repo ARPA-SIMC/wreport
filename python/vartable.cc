@@ -29,7 +29,7 @@ struct pathname : public Getter<pathname, wrpy_Vartable>
     static PyObject* get(Impl* self, void* closure)
     {
         try {
-            return to_python(self->table->pathname().c_str());
+            return to_python(self->table->path());
         } WREPORT_CATCH_RETURN_PYO;
     }
 };
@@ -239,13 +239,13 @@ A Vartable is instantiated by one of the :meth:`get_bufr`, :meth:`get_crex`,
     static PyObject* _str(Impl* self)
     {
         try {
-            return to_python(self->table->pathname());
+            return to_python(self->table->path().native());
         } WREPORT_CATCH_RETURN_PYO;
     }
 
     static PyObject* _repr(Impl* self)
     {
-        return PyUnicode_FromFormat("Vartable('%s')", self->table->pathname().c_str());
+        return PyUnicode_FromFormat("Vartable('%s')", self->table->path().c_str());
     }
 
     static int _init(Impl* self, PyObject* args, PyObject* kw)
@@ -256,7 +256,7 @@ A Vartable is instantiated by one of the :meth:`get_bufr`, :meth:`get_crex`,
         return -1;
     }
 
-    static int sq_length(Impl* self)
+    static long int sq_length(Impl* self)
     {
         // TODO return self->table->size();
         return 0;
@@ -275,7 +275,7 @@ A Vartable is instantiated by one of the :meth:`get_bufr`, :meth:`get_crex`,
         } WREPORT_CATCH_RETURN_INT
     }
 
-    static int mp_length(Impl* self)
+    static long int mp_length(Impl* self)
     {
         // TODO return self->table->size();
         return 0;
