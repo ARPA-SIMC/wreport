@@ -1,4 +1,4 @@
-# New in version UNRELEASED
+# New in version 3.38
 
 * Updated code to use C++17 features
 * Building against wreport requires C++17 from now on
