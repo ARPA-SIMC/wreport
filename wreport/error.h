@@ -67,7 +67,7 @@ public:
     virtual ErrorCode code() const noexcept = 0;
 
     /// Error message
-    virtual const char* what() const noexcept = 0;
+    const char* what() const noexcept override = 0;
 
     /// String description for an error code
     static const char* strerror(ErrorCode code);

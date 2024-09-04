@@ -74,7 +74,7 @@ void Benchmark::print_timings()
 {
     for (auto& t: tasks)
     {
-        fprintf(stdout, "%s.%s: %d runs, user: %.2fs (%.1f%%), sys: %.2fs (%.1f%%), total: %.2fs (%.1f%%)\n",
+        fprintf(stdout, "%s.%s: %u runs, user: %.2fs (%.1f%%), sys: %.2fs (%.1f%%), total: %.2fs (%.1f%%)\n",
                 name.c_str(),
                 t->name.c_str(),
                 t->run_count,

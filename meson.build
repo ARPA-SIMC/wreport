@@ -1,6 +1,57 @@
-project('wreport', 'cpp', version: '3.36', license : 'GPL-2.0-or-later', default_options: ['warning_level=3', 'cpp_std=c++11'])
+project('wreport', 'cpp', version: '3.38', license : 'GPL-2.0-or-later', default_options: ['warning_level=3', 'cpp_std=c++17'])
+# TODO: use warning_level=everything in newer meson
 
-add_global_arguments('-Wextra', '-Wno-unused-parameter', language : 'cpp')
+cpp = meson.get_compiler('cpp')
+
+warning_control = [
+  # Turn some warning classes to errors
+  '-Werror=format',
+  '-Werror=suggest-override',
+  '-Werror=deprecated-copy-dtor',
+  '-Werror=missing-declarations',
+  '-Werror=overloaded-virtual',
+  '-Werror=cast-qual',
+  '-Werror=duplicated-branches',
+  '-Werror=logical-op',
+  '-Werror=catch-value',
+  '-Werror=conditionally-supported',
+  '-Werror=noexcept',
+  '-Werror=c++23-extensions',
+  '-Werror=dangling-else',
+  '-Werror=suggest-attribute=format',
+  '-Werror=deprecated-declarations',
+  # '-Werror=cast-align',
+
+  '-Wno-padded',
+  '-Wno-abi-tag',
+  '-Wno-unused-macros',
+  '-Wno-sign-promo',
+  '-Wswitch',
+  '-Wno-switch-enum',
+  '-Wno-effc++',
+
+  # TODO: remove the following ones over time
+  '-Wno-shadow',
+  '-Wno-zero-as-null-pointer-constant',
+  '-Wno-mismatched-tags',
+  '-Wno-unused-const-variable',
+  '-Wno-redundant-tags',
+  '-Wno-useless-cast',
+  '-Wno-switch-default',
+  '-Wno-old-style-cast',
+  '-Wno-unused-parameter',
+
+  # These ones can be activated from time to time
+  '-Wno-float-equal',
+  '-Wno-suggest-attribute=noreturn',
+  '-Wno-format-truncation',
+  '-Wno-arith-conversion',
+  '-Wno-conversion',
+]
+
+add_project_arguments(
+  cpp.get_supported_arguments(warning_control),
+  language : 'cpp')
 
 version_array = meson.project_version().split('.')
 libwreport_so_version = '3.1.0'
@@ -26,6 +77,12 @@ conf_data.set('HAVE_LUA', lua_dep.found())
 compiler = meson.get_compiler('cpp')
 if compiler.has_function('getopt_long')
     conf_data.set('HAS_GETOPT_LONG', true)
+endif
+
+# std::filesystem library needs to be explicitly linked with g++ < 9.0
+if cpp.find_library('stdc++fs').found()
+  # without this, std::filesystem is not present for some compilers
+  add_project_link_arguments(['-lstdc++fs'], language : 'cpp')
 endif
 
 # Generate config.h

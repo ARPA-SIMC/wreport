@@ -65,9 +65,9 @@ size_t uint32_to_str(uint32_t value, unsigned value_digits, char *dst)
     }
     // Handle last 1-2 digits
     if (value < 10) {
-        dst[next] = '0' + uint32_t(value);
+        dst[next] = static_cast<char>('0' + value);
     } else {
-        auto i = uint32_t(value) * 2;
+        auto i = value * 2;
         dst[next] = digits[i + 1];
         dst[next - 1] = digits[i];
     }
@@ -329,7 +329,7 @@ static inline void int32_to_str(int32_t val, char* buf, unsigned size)
 
     unsigned digits = count_digits(dec);
     if (digits > size)
-        error_consistency::throwf("Value %u does not fit in %d digits", (unsigned)dec, size);
+        error_consistency::throwf("Value %u does not fit in %u digits", (unsigned)dec, size);
     uint32_to_str(dec, digits, dest);
     dest[digits] = 0;
 }
@@ -343,7 +343,7 @@ static inline std::string int32_to_stdstr(int32_t val)
         dec = -val;
         unsigned digits = count_digits(dec);
         res.resize(digits + 1);
-        char* dest = (char*)res.data();
+        char* dest = res.data();
         dest[0] = '-';
         uint32_to_str(dec, digits, dest + 1);
     } else {
@@ -351,8 +351,7 @@ static inline std::string int32_to_stdstr(int32_t val)
 
         unsigned digits = count_digits(dec);
         res.resize(digits);
-        char* dest = (char*)res.data();
-        uint32_to_str(dec, digits, dest);
+        uint32_to_str(dec, digits, res.data());
     }
     return res;
 }
@@ -477,7 +476,7 @@ void Var::assign_d_checked(double val)
     m_isset = true;
 }
 
-void Var::assign_b_checked(uint8_t* val, unsigned size)
+void Var::assign_b_checked(const uint8_t* val, unsigned size)
 {
     allocate();
     if (size < m_info->len)
@@ -489,7 +488,7 @@ void Var::assign_b_checked(uint8_t* val, unsigned size)
     } else {
         memcpy(m_value.c, val, m_info->len);
         if (m_info->bit_len % 8)
-            m_value.c[m_info->len - 1] &= (1 << (m_info->bit_len % 8)) - 1;
+            m_value.c[m_info->len - 1] &= static_cast<unsigned char>((1 << (m_info->bit_len % 8)) - 1);
     }
     m_isset = true;
 }
@@ -535,7 +534,7 @@ void Var::setd(double val)
         case Vartype::Binary:
             error_type::throwf("seti: %01d%02d%03d (%s) is an opaque binary",
                     WR_VAR_FXY(m_info->code), m_info->desc);
-        case Vartype::Integer: assign_i_checked(lround(val)); break;
+        case Vartype::Integer: assign_i_checked(static_cast<int>(lround(val))); break;
         case Vartype::Decimal: assign_d_checked(val); break;
     }
 }
@@ -545,7 +544,7 @@ void Var::setc(const char* val)
     switch (m_info->type)
     {
         case Vartype::String: assign_c_checked(val, m_info->len); break;
-        case Vartype::Binary: assign_b_checked((uint8_t*)val, m_info->len); break;
+        case Vartype::Binary: assign_b_checked((const uint8_t*)val, m_info->len); break;
         case Vartype::Decimal:
         case Vartype::Integer:
             if (!isnumber(val))
@@ -568,8 +567,8 @@ void Var::setc_truncate(const char* val)
         case Vartype::Decimal:
             error_type::throwf("setc_truncate: %01d%02d%03d (%s) is a decimal",
                     WR_VAR_FXY(m_info->code), m_info->desc);
-        case Vartype::String: assign_c_checked(val, strlen(val)); break;
-        case Vartype::Binary: assign_b_checked((uint8_t*)val, m_info->len); break;
+        case Vartype::String: assign_c_checked(val, static_cast<unsigned int>(strlen(val))); break;
+        case Vartype::Binary: assign_b_checked(reinterpret_cast<const uint8_t*>(val), m_info->len); break;
     }
 }
 
@@ -577,8 +576,8 @@ void Var::sets(const std::string& val)
 {
     switch (m_info->type)
     {
-        case Vartype::String: assign_c_checked(val.c_str(), val.size()); break;
-        case Vartype::Binary: assign_b_checked((uint8_t*)val.c_str(), val.size()); break;
+        case Vartype::String: assign_c_checked(val.c_str(), static_cast<unsigned>(val.size())); break;
+        case Vartype::Binary: assign_b_checked(reinterpret_cast<const uint8_t*>(val.c_str()), static_cast<unsigned>(val.size())); break;
         case Vartype::Integer:
         case Vartype::Decimal:
             if (!isnumber(val.c_str()))
@@ -699,7 +698,7 @@ void Var::setval(const Var& src)
     switch (m_info->type)
     {
         case Vartype::String: assign_c_checked(src.enqc(), m_info->len); break;
-        case Vartype::Binary: assign_b_checked((uint8_t*)src.enqc(), m_info->len); break;
+        case Vartype::Binary: assign_b_checked(reinterpret_cast<const uint8_t*>(src.enqc()), m_info->len); break;
         case Vartype::Integer:
         case Vartype::Decimal:
             /// Convert and set the new value

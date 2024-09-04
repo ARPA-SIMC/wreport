@@ -24,7 +24,7 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
 {
     /* Read crex section 0 (Indicator section) */
     in.check_available_data(6, "initial header of CREX message");
-    if (strncmp((const char*)in.cur, "CREX++", 6) != 0)
+    if (strncmp(in.cur, "CREX++", 6) != 0)
         in.parse_error("data does not start with CREX header (\"%.6s\" was read instead)", in.cur);
 
     in.skip_data_and_spaces(6);
@@ -57,23 +57,23 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
         char atable[20];
         in.read_word(atable, 20);
         TRACE("ATABLE \"%s\"\n", atable);
-        int val = strtol(atable+1, 0, 10);
+        unsigned val = static_cast<unsigned>(strtoul(atable+1, 0, 10));
         switch (strlen(atable)-1)
         {
             case 3:
-                out.data_category = val;
+                out.data_category = static_cast<uint8_t>(val);
                 out.data_subcategory = 0xff;
                 out.data_subcategory_local = 0;
                 TRACE(" -> category %d\n", strtol(atable, 0, 10));
                 break;
             case 6:
-                out.data_category = val / 1000;
-                out.data_subcategory = val % 1000;
+                out.data_category = static_cast<uint8_t>(val / 1000);
+                out.data_subcategory = static_cast<uint8_t>(val % 1000);
                 out.data_subcategory_local = 0xff;
                 TRACE(" -> category %d, subcategory %d\n", val / 1000, val % 1000);
                 break;
             default:
-                error_consistency::throwf("Cannot parse an A table indicator %zd digits long", strlen(atable));
+                error_consistency::throwf("Cannot parse an A table indicator %zu digits long", strlen(atable));
         }
     }
 
@@ -146,11 +146,10 @@ struct CrexParser : public bulletin::Interpreter
         {
             if (info->type == Vartype::String)
             {
-                const int len = d_end - d_start;
-                string buf(d_start, len);
+                std::string buf(d_start, d_end - d_start);
                 var.setc(buf.c_str());
             } else {
-                int val = strtol((const char*)d_start, 0, 10);
+                int val = static_cast<int>(strtol(d_start, 0, 10));
                 var.seti(val);
                 res = val;
             }

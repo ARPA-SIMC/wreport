@@ -81,10 +81,10 @@ struct BulletinHeadHandler : public RawHandler
     virtual ~BulletinHeadHandler() {}
 
     /// Decode and handle the decoded bulletin
-    virtual void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset);
+    void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset) override;
 
     /// Decode and handle the decoded bulletin
-    virtual void handle_raw_crex(const std::string& raw_data, const char* fname, long offset);
+    void handle_raw_crex(const std::string& raw_data, const char* fname, long offset) override;
 
     virtual void handle(wreport::Bulletin&) = 0;
 };
@@ -95,10 +95,10 @@ struct BulletinFullHandler : public RawHandler
     virtual ~BulletinFullHandler() {}
 
     /// Decode and handle the decoded bulletin
-    virtual void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset);
+    void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset) override;
 
     /// Decode and handle the decoded bulletin
-    virtual void handle_raw_crex(const std::string& raw_data, const char* fname, long offset);
+    void handle_raw_crex(const std::string& raw_data, const char* fname, long offset) override;
 
     virtual void handle(wreport::Bulletin&) = 0;
 };

@@ -32,7 +32,7 @@ bool BufrTableID::is_acceptable_replacement(const BufrTableID& id) const
     return true;
 }
 
-bool BufrTableID::is_acceptable_replacement(const CrexTableID& id) const
+bool BufrTableID::is_acceptable_replacement(const CrexTableID&) const
 {
     return false;
 }
@@ -212,12 +212,12 @@ int BufrTableID::closest_match(const BufrTableID& first, const BufrTableID& seco
     return 0;
 }
 
-int BufrTableID::closest_match(const CrexTableID& first, const CrexTableID& second) const
+int BufrTableID::closest_match(const CrexTableID&, const CrexTableID&) const
 {
     return 0;
 }
 
-int BufrTableID::closest_match(const BufrTableID& first, const CrexTableID& second) const
+int BufrTableID::closest_match(const BufrTableID&, const CrexTableID&) const
 {
     return -1;
 }

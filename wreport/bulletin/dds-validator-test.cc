@@ -18,13 +18,13 @@ void validate(Bulletin& b)
             bulletin::DDSValidator validator(b, i);
             validator.run();
         }
-    } catch (std::exception& e) {
+    } catch (std::exception& e1) {
         try {
             b.print_structured(stderr);
-        } catch (std::exception& e) {
-            cerr << "dump interrupted: " << e.what() << endl;
+        } catch (std::exception& e2) {
+            cerr << "dump interrupted: " << e2.what() << endl;
         }
-        throw TestFailed(e.what());
+        throw TestFailed(e1.what());
     }
 }
 
@@ -49,7 +49,7 @@ class Tests : public TestCase
             blacklist.insert("bufr/short2.bufr");
             blacklist.insert("bufr/short3.bufr");
 
-            std::vector<std::string> files = tests::all_test_files("bufr");
+            auto files = tests::all_test_files("bufr");
             for (const auto& i: files)
             {
                 if (str::startswith(i, "bufr/afl-")) continue;
@@ -72,21 +72,20 @@ class Tests : public TestCase
             std::set<std::string> blacklist;
             blacklist.insert("crex/test-temp0.crex");
 
-            std::vector<std::string> files = tests::all_test_files("crex");
-            for (std::vector<std::string>::const_iterator i = files.begin();
-                    i != files.end(); ++i)
+            auto files = tests::all_test_files("crex");
+            for (const auto& i: files)
             {
                 WREPORT_TEST_INFO(test_info);
-                if (blacklist.find(*i) != blacklist.end()) continue;
+                if (blacklist.find(i) != blacklist.end()) continue;
 
                 // Read the whole contents of the test file
-                std::string raw1 = tests::slurpfile(*i);
+                std::string raw1 = tests::slurpfile(i);
 
                 // Decode the original contents
-                unique_ptr<CrexBulletin> msg1 = wcallchecked(CrexBulletin::decode(raw1, i->c_str()));
+                unique_ptr<CrexBulletin> msg1 = wcallchecked(CrexBulletin::decode(raw1, i.c_str()));
 
                 // Validate them
-                test_info() << *i;
+                test_info() << i;
                 wassert(validate(*msg1));
             }
         });

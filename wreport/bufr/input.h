@@ -95,7 +95,7 @@ public:
      * @param in
      *   String with the data to read
      */
-    Input(const std::string& in);
+    explicit Input(const std::string& in);
 
     /**
      * Scan the message filling in the sec[] array of start offsets of sections
@@ -123,7 +123,7 @@ public:
     unsigned offset() const { return s4_cursor; }
 
     /// Return the number of bits left in the message to be decoded
-    unsigned bits_left() const { return (data_len - s4_cursor) * 8 + pbyte_len; }
+    unsigned bits_left() const { return static_cast<unsigned>((data_len - s4_cursor) * 8 + pbyte_len); }
 
     /// Read a byte value at offset \a pos
     inline unsigned read_byte(unsigned pos) const
@@ -167,7 +167,7 @@ public:
         uint32_t result = 0;
 
         if (s4_cursor == data_len)
-            parse_error("end of buffer while looking for %d bits of bit-packed data", n);
+            parse_error("end of buffer while looking for %u bits of bit-packed data", n);
 
         // TODO: review and benchmark and possibly simplify
         // (a possible alternative approach is to keep a current bitmask that
@@ -196,7 +196,7 @@ public:
     void skip_bits(unsigned n)
     {
         if (s4_cursor == data_len)
-            parse_error("end of buffer while looking for %d bits of bit-packed data", n);
+            parse_error("end of buffer while looking for %u bits of bit-packed data", n);
 
         for (unsigned i = 0; i < n; i++)
         {

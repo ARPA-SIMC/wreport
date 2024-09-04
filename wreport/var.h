@@ -58,7 +58,8 @@ protected:
     void move_value(Var& var);
     void assign_i_checked(int32_t val);
     void assign_d_checked(double val);
-    void assign_b_checked(uint8_t* val, unsigned size);
+    void assign_b_checked(const uint8_t* val, unsigned size);
+    [[deprecated("Use the version with const uint8_t*")]] void assign_b_checked(uint8_t* val, unsigned size);
     void assign_c_checked(const char* val, unsigned size);
 
 public:
@@ -411,7 +412,7 @@ public:
 };
 
 template<> inline int Var::enq() const { return enqi(); }
-template<> inline float Var::enq() const { return (float)enqd(); }
+template<> inline float Var::enq() const { return static_cast<float>(enqd()); }
 template<> inline double Var::enq() const { return enqd(); }
 template<> inline const char* Var::enq() const { return enqc(); }
 template<> inline std::string Var::enq() const { return enqs(); }

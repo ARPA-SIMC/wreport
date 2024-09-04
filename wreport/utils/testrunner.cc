@@ -72,12 +72,12 @@ static const char* mark_success = "✔";
 static const char* mark_fail = "✘";
 
 
-SimpleTestController::SimpleTestController(wreport::term::Terminal& output)
-    : output(output)
+SimpleTestController::SimpleTestController(wreport::term::Terminal& output_)
+    : output(output_)
 {
 }
 
-bool SimpleTestController::test_case_begin(const TestCase& test_case, const TestCaseResult& test_case_result)
+bool SimpleTestController::test_case_begin(const TestCase& test_case, const TestCaseResult&)
 {
     // Skip test case if all its methods should not run
     bool should_run = false;
@@ -90,12 +90,10 @@ bool SimpleTestController::test_case_begin(const TestCase& test_case, const Test
     return true;
 }
 
-void SimpleTestController::test_case_end(const TestCase& test_case, const TestCaseResult& test_case_result)
+void SimpleTestController::test_case_end(const TestCase&, const TestCaseResult& test_case_result)
 {
     if (test_case_result.skipped)
         ;
-    else if (test_case_result.is_success())
-        fprintf(output, "\n");
     else
         fprintf(output, "\n");
     fflush(output);
@@ -107,7 +105,7 @@ bool SimpleTestController::test_method_begin(const TestMethod& test_method, cons
     return test_method_should_run(name);
 }
 
-void SimpleTestController::test_method_end(const TestMethod& test_method, const TestMethodResult& test_method_result)
+void SimpleTestController::test_method_end(const TestMethod&, const TestMethodResult& test_method_result)
 {
     if (test_method_result.skipped)
         putc('s', output);
@@ -126,8 +124,8 @@ void SimpleTestController::test_method_end(const TestMethod& test_method, const 
  * VerboseTestController
  */
 
-VerboseTestController::VerboseTestController(wreport::term::Terminal& output)
-    : output(output) {}
+VerboseTestController::VerboseTestController(wreport::term::Terminal& output_)
+    : output(output_) {}
 
 static void format_elapsed(char* buf, size_t size, unsigned long long elapsed_ns)
 {
@@ -138,10 +136,10 @@ static void format_elapsed(char* buf, size_t size, unsigned long long elapsed_ns
     else if (elapsed_ns < 1000000000)
         snprintf(buf, size, "%llums", elapsed_ns / 1000000);
     else
-        snprintf(buf, size, "%.2fs", (double)(elapsed_ns / 1000000) / 1000.0);
+        snprintf(buf, size, "%.2fs", static_cast<double>(elapsed_ns) / 1'000'000'000.0);
 }
 
-bool VerboseTestController::test_case_begin(const TestCase& test_case, const TestCaseResult& test_case_result)
+bool VerboseTestController::test_case_begin(const TestCase& test_case, const TestCaseResult&)
 {
     // Skip test case if all its methods should not run
     bool should_run = false;
@@ -206,7 +204,7 @@ void VerboseTestController::test_method_end(const TestMethod& test_method, const
 
 TestRegistry& TestRegistry::get()
 {
-    static TestRegistry* instance = 0;
+    static TestRegistry* instance = nullptr;
     if (!instance)
         instance = new TestRegistry();
     return *instance;
@@ -248,8 +246,8 @@ struct Title
     std::string title;
     bool printed = false;
 
-    Title(wreport::term::Terminal& output, const std::string& title)
-        : output(output), title(output.color_fg(term::Terminal::bright, title))
+    Title(wreport::term::Terminal& output_, const std::string& title_)
+        : output(output_), title(output.color_fg(term::Terminal::bright, title_))
     {
     }
 
@@ -277,8 +275,8 @@ struct Title
  * TestResultStats
  */
 
-TestResultStats::TestResultStats(const std::vector<TestCaseResult>& results)
-    : results(results)
+TestResultStats::TestResultStats(const std::vector<TestCaseResult>& results_)
+    : results(results_)
 {
     for (const auto& tc_res: results)
     {
@@ -371,16 +369,16 @@ void TestResultStats::print_stats(wreport::term::Terminal& out)
             sorted.emplace_back(make_pair(i.second, i.first));
         std::sort(sorted.begin(), sorted.end());
         for (const auto& i: sorted)
-            fprintf(out, "  %2dx %s\n", i.first, i.second.c_str());
+            fprintf(out, "  %2ux %s\n", i.first, i.second.c_str());
         if (skipped_no_reason)
-            fprintf(out, "  %2dx (no reason given)\n", skipped_no_reason);
+            fprintf(out, "  %2ux (no reason given)\n", skipped_no_reason);
     }
 
     if (!slow_test_cases.empty())
     {
         title.maybe_print_or_separator();
         std::sort(slow_test_cases.begin(), slow_test_cases.end(), [](const TestCaseResult* a, const TestCaseResult* b) { return b->elapsed_ns() < a->elapsed_ns(); });
-        size_t count = min((size_t)10, slow_test_cases.size());
+        size_t count = min(static_cast<size_t>(10), slow_test_cases.size());
         fprintf(out, "%zu slowest test cases:\n\n", count);
         for (size_t i = 0; i < count; ++i)
         {
@@ -394,7 +392,7 @@ void TestResultStats::print_stats(wreport::term::Terminal& out)
     {
         title.maybe_print_or_separator();
         std::sort(slow_test_methods.begin(), slow_test_methods.end(), [](const TestMethodResult* a, const TestMethodResult* b) { return b->elapsed_ns < a->elapsed_ns; });
-        size_t count = min((size_t)10, slow_test_methods.size());
+        size_t count = min(static_cast<size_t>(10), slow_test_methods.size());
         fprintf(out, "%zu slowest test methods:\n\n", count);
         for (size_t i = 0; i < count; ++i)
         {

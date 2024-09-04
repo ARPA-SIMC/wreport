@@ -56,6 +56,8 @@ static PyModuleDef wreport_module = {
 
 };
 
+PyMODINIT_FUNC PyInit__wreport(void);
+
 PyMODINIT_FUNC PyInit__wreport(void)
 {
     static wrpy_c_api c_api;

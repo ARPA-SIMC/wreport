@@ -158,7 +158,7 @@ struct Encoder
      * We have to memorise offsets rather than pointers, because e->out->buf
      * can get reallocated during the encoding
      */
-    unsigned sec[6] = { 0, 0, 0, 0, 0, 0 };
+    size_t sec[6] = { 0, 0, 0, 0, 0, 0 };
 
     Encoder(const BufrBulletin& in, buffers::BufrOutput& out)
         : in(in), out(out)
@@ -168,10 +168,10 @@ struct Encoder
     void encode_sec0()
     {
         // Encode bufr section 0 (Indicator section)
-        out.raw_append("BUFR\0\0\0", 7);
+        out.raw_append("BUFR\0\0\0", static_cast<size_t>(7));
         out.append_byte(in.edition_number);
 
-        TRACE("sec0 ends at %zd\n", out.out.size());
+        TRACE("sec0 ends at %zu\n", out.out.size());
     }
     void encode_sec1ed3();
     void encode_sec1ed4();
@@ -183,9 +183,9 @@ struct Encoder
         sec[5] = out.out.size();
 
         // Encode section 5 (End section)
-        out.raw_append("7777", 4);
+        out.raw_append("7777", static_cast<size_t>(4));
 
-        TRACE("sec5 ends at %zd\n", out.out.size());
+        TRACE("sec5 ends at %zu\n", out.out.size());
     }
 };
 
@@ -199,9 +199,9 @@ void Encoder::encode_sec1ed3()
     // Master table number
     out.append_byte(in.master_table_number);
     // Originating/generating sub-centre (defined by Originating/generating centre)
-    out.append_byte(in.originating_subcentre);
+    out.append_byte(static_cast<uint8_t>(in.originating_subcentre));
     // Originating/generating centre (Common Code tableC-1)
-    out.append_byte(in.originating_centre);
+    out.append_byte(static_cast<uint8_t>(in.originating_centre));
     // Update sequence number (zero for original BUFR messages; incremented for updates)
     out.append_byte(in.update_sequence_number);
     // Bit 1: 0 No optional section, 1 Optional section included
@@ -218,7 +218,7 @@ void Encoder::encode_sec1ed3()
     out.append_byte(in.master_table_version_number_local);
 
     // Year of century
-    out.append_byte(in.rep_year == 2000 ? 100 : (in.rep_year % 100));
+    out.append_byte(static_cast<uint8_t>(in.rep_year == 2000 ? 100 : (in.rep_year % 100)));
     // Month
     out.append_byte(in.rep_month);
     // Day
@@ -228,9 +228,9 @@ void Encoder::encode_sec1ed3()
     // Minute
     out.append_byte(in.rep_minute);
     // Century
-    out.append_byte(in.rep_year / 100);
+    out.append_byte(static_cast<uint8_t>(in.rep_year / 100));
 
-    TRACE("sec1 ends at %zd\n", out.out.size());
+    TRACE("sec1 ends at %zu\n", out.out.size());
 }
 
 void Encoder::encode_sec1ed4()
@@ -276,7 +276,7 @@ void Encoder::encode_sec1ed4()
     // Second
     out.append_byte(in.rep_second);
 
-    TRACE("sec1 ends at %zd\n", out.out.size());
+    TRACE("sec1 ends at %zu\n", out.out.size());
 }
 
 void Encoder::encode_sec2()
@@ -290,9 +290,9 @@ void Encoder::encode_sec2()
 
         // Length of section
         if (pad)
-            out.add_bits(4 + in.optional_section.size() + 1, 24);
+            out.add_bits(static_cast<uint32_t>(4 + in.optional_section.size() + 1), 24);
         else
-            out.add_bits(4 + in.optional_section.size(), 24);
+            out.add_bits(static_cast<uint32_t>(4 + in.optional_section.size()), 24);
 
         // Set to 0 (reserved)
         out.append_byte(0);
@@ -304,7 +304,7 @@ void Encoder::encode_sec2()
         if (pad) out.append_byte(0);
     }
 
-    TRACE("sec2 ends at %zd\n", out.out.size());
+    TRACE("sec2 ends at %zu\n", out.out.size());
 }
 
 void Encoder::encode_sec3()
@@ -312,18 +312,18 @@ void Encoder::encode_sec3()
     // Encode BUFR section 3 (Data description section)
     sec[3] = out.out.size();
 
-	if (in.subsets.empty())
-		throw error_consistency("message to encode has no data subsets");
+    if (in.subsets.empty())
+        throw error_consistency("message to encode has no data subsets");
 
-	if (in.datadesc.empty())
-		throw error_consistency("message to encode has no data descriptors");
+    if (in.datadesc.empty())
+        throw error_consistency("message to encode has no data descriptors");
 
     // Length of section
-    out.add_bits(8 + 2*in.datadesc.size(), 24);
+    out.add_bits(8 + 2 * static_cast<uint32_t>(in.datadesc.size()), 24);
     // Set to 0 (reserved)
     out.append_byte(0);
     // Number of data subsets
-    out.append_short(in.subsets.size());
+    out.append_short(static_cast<unsigned short>(in.subsets.size()));
     // Bit 0 = observed data; bit 1 = use compression
     out.append_byte(128);
 
@@ -334,7 +334,7 @@ void Encoder::encode_sec3()
     // One padding byte to make the section even
     out.append_byte(0);
 
-    TRACE("sec3 ends at %zd\n", out.out.size());
+    TRACE("sec3 ends at %zu\n", out.out.size());
 }
 
 void Encoder::encode_sec4()
@@ -362,13 +362,13 @@ void Encoder::encode_sec4()
 
     // Write the length of the section in its header
     {
-        uint32_t val = htonl(out.out.size() - sec[4]);
-        memcpy((char*)out.out.data() + sec[4], ((char*)&val) + 1, 3);
+        uint32_t val = htonl(static_cast<uint32_t>(out.out.size() - sec[4]));
+        memcpy(out.out.data() + sec[4], ((char*)&val) + 1, 3);
 
-        TRACE("sec4 size %zd\n", out.out.size() - sec[4]);
+        TRACE("sec4 size %zu\n", out.out.size() - sec[4]);
     }
 
-    TRACE("sec4 ends at %zd\n", out.out.size());
+    TRACE("sec4 ends at %zu\n", out.out.size());
 }
 
 }
@@ -399,9 +399,9 @@ string BufrBulletin::encode() const
 
     // Write the length of the BUFR message in its header
     {
-        uint32_t val = htonl(out.out.size());
-        memcpy((char*)out.out.data() + 4, ((char*)&val) + 1, 3);
-        TRACE("msg size %zd\n", out.out.size());
+        uint32_t val = htonl(static_cast<uint32_t>(out.out.size()));
+        memcpy(out.out.data() + 4, ((char*)&val) + 1, 3);
+        TRACE("msg size %zu\n", out.out.size());
     }
 
 #if 0

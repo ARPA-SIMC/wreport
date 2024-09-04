@@ -16,7 +16,7 @@ using namespace std;
 namespace wreport {
 namespace tabledir {
 
-Table::Table(const std::string& dirname, const std::string& filename)
+Table::Table(const std::filesystem::path& dirname, const std::string& filename)
 {
     // Build IDs to look up pre-built tables
     size_t extpos = filename.rfind('.');
@@ -30,8 +30,8 @@ Table::Table(const std::string& dirname, const std::string& filename)
     }
     dtable_id[0] = 'D';
 
-    btable_pathname = dirname + "/" + filename;
-    dtable_pathname = dirname + "/D" + filename.substr(1);
+    btable_pathname = dirname / filename;
+    dtable_pathname = dirname / ("D"s + filename.substr(1));
 }
 
 void Table::print_id(FILE* out) const
@@ -65,7 +65,7 @@ Dir::~Dir()
 // Reread the directory contents if it has changed
 void Dir::refresh()
 {
-    if (!sys::exists(pathname))
+    if (!std::filesystem::exists(pathname))
         return;
 
     sys::Path dir(pathname);
@@ -74,7 +74,7 @@ void Dir::refresh()
     if (mtime >= st.st_mtime)
         return;
 
-    for (auto& e: dir)
+    for (const auto& e: dir)
     {
         size_t name_len = strlen(e.d_name);
 
@@ -151,7 +151,7 @@ struct Query
         // Ignore other kinds of tables
     }
 
-    void search(Dir& dir)
+    void search(const Dir& dir)
     {
         for (const auto& t : dir.tables)
             consider_table(t);
@@ -216,7 +216,7 @@ struct BufrQuery : public Query
 {
     BufrTableID id;
 
-    BufrQuery(const BufrTableID& id) : id(id) {}
+    explicit BufrQuery(const BufrTableID& id) : id(id) {}
 
     bool is_acceptable(const BufrTableID& id) const override
     {
@@ -234,12 +234,12 @@ struct BufrQuery : public Query
         return cmp <= 0 ? &first : &second;
     }
 
-    CrexTable* choose_best(CrexTable& first, CrexTable& second) const override
+    CrexTable* choose_best(CrexTable&, CrexTable&) const override
     {
         return nullptr;
     }
 
-    Table* choose_best(BufrTable& first, CrexTable& second) const override
+    Table* choose_best(BufrTable& first, CrexTable&) const override
     {
         return &first;
     }
@@ -250,7 +250,7 @@ struct CrexQuery : public Query
 {
     CrexTableID id;
 
-    CrexQuery(const CrexTableID& id) : id(id) {}
+    explicit CrexQuery(const CrexTableID& id) : id(id) {}
 
     bool is_acceptable(const BufrTableID& id) const override
     {
@@ -292,7 +292,7 @@ struct Index
     map<BufrTableID, const Table*> bufr_cache;
     map<CrexTableID, const Table*> crex_cache;
 
-    Index(const vector<string>& dirs)
+    explicit Index(const vector<string>& dirs)
     {
         // Index the directories
         for (vector<string>::const_iterator i = dirs.begin(); i != dirs.end(); ++i)
@@ -367,7 +367,7 @@ struct Index
 
     const tabledir::Table* find(const std::string& basename)
     {
-        for (auto& d: dirs)
+        for (const auto& d: dirs)
             for (auto& t: d.tables)
                 if (t->btable_id == basename)
                     return t;

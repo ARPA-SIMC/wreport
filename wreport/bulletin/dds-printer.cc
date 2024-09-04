@@ -60,7 +60,7 @@ void DDSPrinter::encode_associated_field(const Var& var)
     if (att)
         att->print(out);
     else
-        fprintf(out, "associated field with significance %d is not present", associated_field.significance);
+        fprintf(out, "associated field with significance %u is not present", associated_field.significance);
 }
 
 void DDSPrinter::encode_var(Varinfo info, const Var& var)
