@@ -171,7 +171,7 @@ void Decoder::decode_header()
     in.check_available_section_data(3, 7, descriptor_count * 2, "data descriptor list");
     for (unsigned i = 0; i < descriptor_count; i++)
         out.datadesc.push_back((Varcode)in.read_number(3, 7 + i * 2, 2));
-    TRACE("     s3length %d subsets %zd observed %d compression %d byte7 %x\n",
+    TRACE("     s3length %d subsets %zu observed %d compression %d byte7 %x\n",
             in.sec[4] - in.sec[3], expected_subsets, (in.read_byte(3, 6) & 0x80) ? 1 : 0,
             out.compression, in.read_byte(3, 6));
     /*
@@ -226,7 +226,7 @@ void Decoder::decode_data()
     IFTRACE {
         if (in.bits_left() > 32)
         {
-            fprintf(stderr, "The data section of %s:%zd still contains %d unparsed bits\n",
+            fprintf(stderr, "The data section of %s:%zu still contains %u unparsed bits\n",
                     in.fname, in.start_offset, in.bits_left() - 32);
             /*
                err = dba_error_parse(msg->file->name, POS + vec->cursor,
@@ -248,7 +248,7 @@ void Decoder::decode_data()
     out.section_end[5] = out.section_end[4] + 4;
 
     //if (subsets_no != out.subsets.size())
-    //    parse_error(sec5, "header advertised %u subsets but only %zd found", subsets_no, out.subsets.size());
+    //    parse_error(sec5, "header advertised %u subsets but only %zu found", subsets_no, out.subsets.size());
 }
 
 
@@ -641,12 +641,12 @@ VerboseDataSectionDecoder::VerboseDataSectionDecoder(Bulletin& bulletin, Decoder
 void VerboseDataSectionDecoder::print_lead(Varcode code)
 {
     fprintf(out, "%*s%d%02d%03d ",
-            indent, "", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+            static_cast<int>(indent), "", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
 void VerboseDataSectionDecoder::print_lead_continued()
 {
-    fprintf(out, "%*s       ", indent, "");
+    fprintf(out, "%*s       ", static_cast<int>(indent), "");
 }
 
 void VerboseDataSectionDecoder::b_variable(Varcode code)
@@ -659,7 +659,7 @@ void VerboseDataSectionDecoder::b_variable(Varcode code)
             Varinfo info = tables.btable->query(code);
             fprintf(out, "%s[%s]", info->desc, info->unit);
         } else
-            fprintf(out, "(missing in B table %s)", tables.btable->pathname().c_str());
+            fprintf(out, "(missing in B table %s)", tables.btable->path().c_str());
     }
     putc('\n', out);
     DataSectionDecoder::b_variable(code);
@@ -718,7 +718,7 @@ unsigned VerboseDataSectionDecoder::define_bitmap_delayed_replication_factor(Var
 void VerboseDataSectionDecoder::define_c03_refval_override(Varcode code)
 {
     DataSectionDecoder::define_c03_refval_override(code);
-    fprintf(out, "C03 reference value override for %d%02d%03d: %d\n", WR_VAR_FXY(code), c03_refval_overrides[code]);
+    fprintf(out, "C03 reference value override for %d%02d%03d: %u\n", WR_VAR_FXY(code), c03_refval_overrides[code]);
 }
 
 void VerboseDataSectionDecoder::define_bitmap(unsigned bitmap_size)

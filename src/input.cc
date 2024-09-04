@@ -24,6 +24,8 @@
 
 using namespace wreport;
 
+namespace {
+
 // Read all BUFR messages from a file
 void read_bufr_raw(const Options& opts, const char* fname, RawHandler& handler)
 {
@@ -98,4 +100,6 @@ void read_crex_raw(const Options& opts, const char* fname, RawHandler& handler)
         fclose(in);
         throw;
     }
+}
+
 }

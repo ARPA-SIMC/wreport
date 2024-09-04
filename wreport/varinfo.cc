@@ -19,8 +19,8 @@ const char* vartype_format(Vartype type)
         case Vartype::String: return "string";
         case Vartype::Integer: return "integer";
         case Vartype::Decimal: return "decimal";
+        default: return "unknown";
     }
-    return "unknown";
 }
 
 Vartype vartype_parse(const char* s)
@@ -63,7 +63,7 @@ Varcode varcode_parse(const char* entry)
     if (!entry[0])
         throw error_consistency("cannot parse a Varcode out of an empty string");
 
-    Varcode res = 0;
+    Varcode res;
     switch (entry[0])
     {
         case 'B':
@@ -78,6 +78,8 @@ Varcode varcode_parse(const char* entry)
         case 'D':
         case '3':
             res = 3 << 14; break;
+        default:
+            res = 0; break;
     }
 
     // Ensure that B is followed by 5 integers
@@ -158,7 +160,7 @@ void _Varinfo::set_binary(Varcode code, const char* desc, unsigned bit_len)
     strncpy(this->desc, desc, 63); this->desc[63] = 0;
     strncpy(this->unit, "UNKNOWN", 24);
     this->scale = 0;
-    this->len = ceil(bit_len / 8.0);
+    this->len = static_cast<unsigned>(ceil(bit_len / 8.0));
     this->bit_ref = 0;
     this->bit_len = bit_len;
     this->type = Vartype::Binary;
@@ -186,11 +188,11 @@ void _Varinfo::compute_range()
 
                 // We subtract 2 because 10^len-1 is the
                 // CREX missing value
-                imin =  -(intexp10(len) - 1.0);
-                imax = (intexp10(len) - 2.0);
+                imin =  static_cast<int>(-(intexp10(len) - 1.0));
+                imax = static_cast<int>((intexp10(len) - 2.0));
             } else {
                 int bit_min = bit_ref;
-                int bit_max = exp2(bit_len) + bit_ref;
+                int bit_max = (1 << bit_len) + bit_ref;
                 // We subtract 2 because 2^bit_len-1 is the
                 // BUFR missing value.
                 // We cannot subtract 2 from the delayed replication
@@ -202,8 +204,8 @@ void _Varinfo::compute_range()
                     bit_max -= 2;
                 // We subtract 2 because 10^len-1 is the
                 // CREX missing value
-                int dec_min = -(intexp10(len) - 1.0);
-                int dec_max = (intexp10(len) - 2.0);
+                int dec_min = static_cast<int>(-(intexp10(len) - 1.0));
+                int dec_max = static_cast<int>((intexp10(len) - 2.0));
 
                 imin = max(bit_min, dec_min);
                 imax = min(bit_max, dec_max);
@@ -288,7 +290,7 @@ unsigned _Varinfo::encode_binary(double fval) const
     else
         res = rint(fval - bit_ref);
     if (res < 0)
-        error_consistency::throwf("Cannot encode %01d%02d%03d %f to %d bits using scale %d and ref %d: encoding gives negative value %f",
+        error_consistency::throwf("Cannot encode %01d%02d%03d %f to %u bits using scale %d and ref %d: encoding gives negative value %f",
                 WR_VAR_FXY(code), fval, bit_len, scale, bit_ref, res);
     return (unsigned)res;
 }

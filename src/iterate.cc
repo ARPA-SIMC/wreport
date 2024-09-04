@@ -19,6 +19,8 @@
  * Author: Enrico Zini <enrico@enricozini.com>
  */
 
+namespace {
+
 struct PrintVars : public BulletinFullHandler
 {
     FILE* out;
@@ -40,7 +42,7 @@ struct PrintVars : public BulletinFullHandler
     {
         for (size_t sset = 0; sset < b.subsets.size(); ++sset)
         {
-            fprintf(out, "%s:%zd:", b.fname.c_str(), sset + 1);
+            fprintf(out, "%s:%zu:", b.fname.c_str(), sset + 1);
             for (size_t i = 0; i < codes.size(); ++i)
             {
                 const Var* var = find_varcode(b.subsets[sset], codes[i]);
@@ -54,3 +56,5 @@ struct PrintVars : public BulletinFullHandler
         }
     }
 };
+
+}

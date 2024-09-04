@@ -107,7 +107,7 @@ Varinfo Interpreter::get_varinfo(Varcode code)
     int bit_ref = peek->bit_ref;
     if (c_scale_ref_width_increase)
     {
-        static int pow10[10] = {
+        static const int pow10[10] = {
             1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000
         };
         TRACE("get_varinfo:applying %d increase of scale, ref, width\n", c_scale_ref_width_increase);
@@ -233,12 +233,12 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
             if (nbits && associated_field.bit_count)
                 throw error_unimplemented("nested C04 modifiers are not yet implemented");
             if (nbits > 32)
-                error_unimplemented::throwf("C04 modifier wants %d bits but only at most 32 are supported", nbits);
+                error_unimplemented::throwf("C04 modifier wants %u bits but only at most 32 are supported", nbits);
             if (nbits)
             {
                 Varcode sig_code = next.pop_left();
                 if (sig_code != WR_VAR(0, 31, 21))
-                    error_consistency::throwf("C04%03i modifier is followed by data descriptor %01d%02d%03d instead of B31021",
+                    error_consistency::throwf("C04%03u modifier is followed by data descriptor %01d%02d%03d instead of B31021",
                             nbits, WR_VAR_FXY(sig_code));
 
                 // Get encoding informations for this associated_field_significance
@@ -613,7 +613,7 @@ Printer::Printer(const Tables& tables, const Opcodes& opcodes)
 void Printer::print_lead(Varcode code)
 {
     fprintf(out, "%*s%d%02d%03d",
-            indent, "", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+            static_cast<int>(indent), "", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
 }
 
 void Printer::b_variable(Varcode code)
@@ -626,7 +626,7 @@ void Printer::b_variable(Varcode code)
             Varinfo info = tables.btable->query(code);
             fprintf(out, " %s[%s]", info->desc, info->unit);
         } else
-            fprintf(out, " (missing in B table %s)", tables.btable->pathname().c_str());
+            fprintf(out, " (missing in B table %s)", tables.btable->path().c_str());
     }
     putc('\n', out);
 }

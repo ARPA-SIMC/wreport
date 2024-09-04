@@ -3,6 +3,7 @@
 #include <cstdarg>
 #include "config.h"
 
+/*
 // #define TRACE_INTERPRETER
 
 #ifdef TRACE_INTERPRETER
@@ -12,6 +13,7 @@
 #define TRACE(...) do { } while (0)
 #define IFTRACE if (0)
 #endif
+*/
 
 
 using namespace std;
@@ -47,7 +49,7 @@ void CrexInput::parse_error(const char* fmt, ...) const
         message = nullptr;
     va_end(ap);
 
-    if (asprintf(&context, "%s:%zd+%d: %s", fname, offset, (int)(cur - data), message ? message : fmt) == -1)
+    if (asprintf(&context, "%s:%zu+%d: %s", fname, offset, (int)(cur - data), message ? message : fmt) == -1)
         context = nullptr;
 
     string msg(context ? context : fmt);

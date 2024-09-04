@@ -4,7 +4,7 @@
 #include <memory>
 
 namespace wreport {
-struct Var;
+class Var;
 struct Vartable;
 
 namespace bulletin {

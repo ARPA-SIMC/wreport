@@ -41,7 +41,7 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
         case 4:
         case 5:
             // Reserved: ignored
-            notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+            notes::logf("Ignoring B31021=%u, which is documented as 'reserved'\n",
                     significance);
             return unique_ptr<Var>();
         case 6:
@@ -95,13 +95,13 @@ std::unique_ptr<Var> AssociatedField::make_attribute(unsigned value) const
         default:
             if (significance >= 9 and significance <= 20)
                 // Reserved: ignored
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                notes::logf("Ignoring B31021=%u, which is documented as 'reserved'\n",
                     significance);
             else if (significance >= 22 and significance <= 62)
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+                notes::logf("Ignoring B31021=%u, which is documented as 'reserved for local use'\n",
                         significance);
             else
-                error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
+                error_unimplemented::throwf("C04 modifiers with B31021=%u are not supported", significance);
             return std::unique_ptr<Var>();
     }
 }
@@ -125,7 +125,7 @@ const Var* AssociatedField::get_attribute(const Var& var) const
         case 4:
         case 5:
             // Reserved: ignored
-            notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+            notes::logf("Ignoring B31021=%u, which is documented as 'reserved'\n",
                     significance);
             break;
         case 6: return var.enqa(WR_VAR(0, 33, 50)); break;
@@ -150,13 +150,13 @@ const Var* AssociatedField::get_attribute(const Var& var) const
         default:
             if (significance >= 9 and significance <= 20)
                 // Reserved: ignored
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved'\n",
+                notes::logf("Ignoring B31021=%u, which is documented as 'reserved'\n",
                     significance);
             else if (significance >= 22 and significance <= 62)
-                notes::logf("Ignoring B31021=%d, which is documented as 'reserved for local use'\n",
+                notes::logf("Ignoring B31021=%u, which is documented as 'reserved for local use'\n",
                         significance);
             else
-                error_unimplemented::throwf("C04 modifiers with B31021=%d are not supported", significance);
+                error_unimplemented::throwf("C04 modifiers with B31021=%u are not supported", significance);
             break;
     }
     return 0;

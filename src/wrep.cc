@@ -22,6 +22,8 @@ using namespace std;
 #include "iterate.cc"
 #include "unparsable.cc"
 
+namespace {
+
 void do_usage(FILE* out)
 {
     fputs("Usage: wrep [options] file1 [file2 [file3 ..]]\n", out);
@@ -52,6 +54,8 @@ void do_help(FILE* out)
         "NOTE: long options are not supported on this system\n"
 #endif
     , out);
+}
+
 }
 
 int main(int argc, char* argv[])

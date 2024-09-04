@@ -206,7 +206,7 @@ class Tests : public TestCase
             };
             test.run("crex/test-temp0.crex");
         });
-    };
+    }
 } test("crex_decoder");
 
 }

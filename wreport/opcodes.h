@@ -41,11 +41,11 @@ struct Opcodes
             return begin[i];
     }
 
-	/// Number of items in this opcode list
-	unsigned size() const { return end - begin; }
+    /// Number of items in this opcode list
+    unsigned size() const { return static_cast<unsigned>(end - begin); }
 
-	/// True if there are no opcodes
-	bool empty() const { return begin == end; }
+    /// True if there are no opcodes
+    bool empty() const { return begin == end; }
 
     /**
      * Return the first element and advance begin to the next one.

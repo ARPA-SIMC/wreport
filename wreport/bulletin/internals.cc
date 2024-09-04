@@ -7,6 +7,7 @@
 
 // #define TRACE_INTERPRETER
 
+/*
 #ifdef TRACE_INTERPRETER
 #define TRACE(...) fprintf(stderr, __VA_ARGS__)
 #define IFTRACE if (1)
@@ -14,6 +15,7 @@
 #define TRACE(...) do { } while (0)
 #define IFTRACE if (0)
 #endif
+*/
 
 using namespace std;
 

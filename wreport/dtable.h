@@ -2,6 +2,7 @@
 #define WREPORT_DTABLE_H
 
 #include <wreport/opcodes.h>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,7 @@ public:
     virtual ~DTable();
 
     /// Return the pathname of the file from which this table has been loaded
-    virtual std::string pathname() const = 0;
+    [[deprecated("Use path() instead")]] virtual std::string pathname() const = 0;
 
     /**
      * Query the DTable
@@ -28,6 +29,9 @@ public:
      *   (must be deallocated by the caller using bufrex_opcode_delete)
      */
     virtual Opcodes query(Varcode var) const = 0;
+
+    /// Return the pathname of the file from which this table has been loaded
+    virtual std::filesystem::path path() const = 0;
 
     /**
      * Return a BUFR D table, by file name.

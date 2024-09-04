@@ -134,7 +134,7 @@ class Tests : public TestCase
             }
         });
 
-        add_method("regexp", []() {
+        add_method("regexp", []() noexcept {
             // TODO: setup a test case involving a regexp
         });
 

@@ -9,9 +9,9 @@
 #include <cmath>
 
 namespace wreport {
-struct Var;
-struct Subset;
-struct Bulletin;
+class Var;
+class Subset;
+class Bulletin;
 
 namespace bulletin {
 

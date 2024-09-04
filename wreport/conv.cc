@@ -38,7 +38,7 @@ struct ConvertFunction : public Convert
 {
     std::function<double(double)> conv;
 
-    ConvertFunction(std::function<double(double)> conv) : conv(conv) {}
+    explicit ConvertFunction(std::function<double(double)> conv) : conv(conv) {}
 
     double convert(double val) const override { return conv(val); }
 };
@@ -232,7 +232,7 @@ struct ConvertRepository
         int begin, end;
 
         // Binary search
-        begin = -1, end = repo.size();
+        begin = -1, end = static_cast<int>(repo.size());
         while (end - begin > 1)
         {
             int cur = (end + begin) / 2;
@@ -461,7 +461,7 @@ double convert_icao_to_press(double from)
 		return P11 * exp(-ZC * (from - 11000));
 }
 
-double convert_press_to_icao(double from)
+double convert_press_to_icao(double)
 {
 	throw error_unimplemented("converting pressure to ICAO height is not implemented");
 }

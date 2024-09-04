@@ -64,7 +64,7 @@ std::string varcode_format(Varcode code);
 /**
  * Create a WMO variable code from its F, X and Y components.
  */
-#define WR_VAR(f, x, y) ((wreport::Varcode)( ((unsigned)(f)<<14) | ((unsigned)(x)<<8) | (unsigned)(y) ))
+#define WR_VAR(f, x, y) (static_cast<wreport::Varcode>( (static_cast<unsigned>(f)<<14) | (static_cast<unsigned>(x)<<8) | static_cast<unsigned>(y) ))
 
 /**
  * Convert a XXYYY string to a WMO variable code.
@@ -72,10 +72,10 @@ std::string varcode_format(Varcode code);
  * This is useful only in rare cases, such as when parsing tables; use
  * descriptor_code() to parse proper entry names such as "B01003" or "D21301".
  */
-#define WR_STRING_TO_VAR(str) ((wreport::Varcode)( \
-		(( ((str)[0] - '0')*10 + ((str)[1] - '0') ) << 8) | \
-		( ((str)[2] - '0')*100 + ((str)[3] - '0')*10 + ((str)[4] - '0') ) \
-))
+#define WR_STRING_TO_VAR(str) static_cast<wreport::Varcode>( \
+        (( ((str)[0] - '0')*10 + ((str)[1] - '0') ) << 8) | \
+        ( ((str)[2] - '0')*100 + ((str)[3] - '0')*10 + ((str)[4] - '0') ) \
+)
 
 /// Get the F part of a WMO variable code.
 #define WR_VAR_F(code) (((code) >> 14) & 0x3)

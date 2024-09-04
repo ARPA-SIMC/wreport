@@ -1,6 +1,7 @@
 #include "input.h"
 #include "trace.h"
 #include "wreport/bulletin/associated_fields.h"
+#include "utils/sys.h"
 #include <cstdarg>
 #include <algorithm>
 #include <regex.h>
@@ -28,7 +29,7 @@ namespace wreport {
 namespace bufr {
 
 
-Input::Input(const std::string& in)
+Input::Input(const std::string& in): sec()
 {
     data = (const unsigned char*)in.data();
     data_len = in.size();
@@ -39,13 +40,13 @@ Input::Input(const std::string& in)
 void Input::scan_section_length(unsigned sec_no)
 {
     if (sec[sec_no] + 3 > data_len)
-        parse_error(sec[sec_no], "section %d (%s) is too short to hold the section size indicator",
+        parse_error(sec[sec_no], "section %u (%s) is too short to hold the section size indicator",
                 sec_no, bufr_sec_names[sec_no]);
 
     sec[sec_no + 1] = sec[sec_no] + read_number(sec_no, 0, 3);
 
     if (sec[sec_no + 1] > data_len)
-        parse_error(sec[sec_no], "section %d (%s) claims to end past the end of the BUFR message",
+        parse_error(sec[sec_no], "section %u (%s) claims to end past the end of the BUFR message",
                 sec_no, bufr_sec_names[sec_no]);
 }
 
@@ -171,7 +172,7 @@ void Input::parse_error(const char* fmt, ...) const
         message = nullptr;
     va_end(ap);
 
-    if (asprintf(&context, "%s:%zd+%u: %s", fname, start_offset, s4_cursor, message ? message : fmt) == -1)
+    if (asprintf(&context, "%s:%zu+%u: %s", fname, start_offset, s4_cursor, message ? message : fmt) == -1)
         context = nullptr;
     free(message);
 
@@ -192,7 +193,7 @@ void Input::parse_error(unsigned pos, const char* fmt, ...) const
         message = nullptr;
     va_end(ap);
 
-    if (asprintf(&context, "%s:%zd+%u: %s", fname, start_offset, pos, message ? message : fmt) == -1)
+    if (asprintf(&context, "%s:%zu+%u: %s", fname, start_offset, pos, message ? message : fmt) == -1)
         context = nullptr;
     free(message);
 
@@ -212,7 +213,7 @@ void Input::parse_error(unsigned section, unsigned pos, const char* fmt, ...) co
         message = nullptr;
     va_end(ap);
 
-    if (asprintf(&context, "%s:%zd+%u: %s (%db inside section %s)",
+    if (asprintf(&context, "%s:%zu+%u: %s (%ub inside section %s)",
             fname, start_offset, sec[section] + pos, message ? message : fmt,
             pos, bufr_sec_names[section]) == -1)
         context = nullptr;
@@ -281,7 +282,7 @@ void Input::decode_string(Var& dest)
 {
     Varinfo info = dest.info();
 
-    char str[info->bit_len / 8 + 2];
+    sys::TempBuffer str(info->bit_len / 8 + 2);
     size_t len;
     bool missing = !decode_string(info->bit_len, str, len);
 
@@ -295,7 +296,7 @@ void Input::decode_binary(Var& dest)
 {
     Varinfo info = dest.info();
 
-    unsigned char buf[info->bit_len / 8 + 1];
+    sys::TempBuffer<unsigned char> buf(info->bit_len / 8 + 1);
     size_t len = 0;
     unsigned toread = info->bit_len;
     bool missing = true;
@@ -314,7 +315,7 @@ void Input::decode_binary(Var& dest)
     /* Store the variable that we found */
     // Set the variable value
     if (!missing)
-        dest.setc((char*)buf);
+        dest.setc((char*)(buf.data()));
 }
 
 void Input::decode_number(Var& dest)
@@ -373,7 +374,7 @@ bool Input::decode_compressed_base(Varinfo info, uint32_t& base, uint32_t& diffb
     // values occupy
     diffbits = get_bits(6);
     if (missing && diffbits != 0)
-        error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %d like in this case) when the base value is missing", diffbits);
+        error_consistency::throwf("When decoding compressed BUFR data, the difference bit length must be 0 (and not %u like in this case) when the base value is missing", diffbits);
 
     TRACE("Input:decode_compressed_base:decoded base %u diffbits %u (%smissing) for %01d%02d%03d %s\n",
             (unsigned)base, (unsigned)diffbits, missing ? "" : "not ", WR_VAR_FXY(info->code), info->unit);
@@ -459,7 +460,7 @@ void Input::decode_compressed_number_af(Varinfo info, const bulletin::Associated
     }
 }
 
-void Input::decode_compressed_semantic_number(Var& dest, unsigned subsets)
+void Input::decode_compressed_semantic_number(Var& dest, unsigned)
 {
     Varinfo info = dest.info();
 
@@ -498,7 +499,7 @@ void Input::decode_compressed_semantic_number(Var& dest, unsigned subsets)
 
 void Input::decode_string(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest)
 {
-    char str[info->bit_len / 8 + 2];
+    sys::TempBuffer str(info->bit_len / 8 + 2);
     size_t len;
     bool missing = !decode_string(info->bit_len, str, len);
 
@@ -521,7 +522,7 @@ void Input::decode_string(Varinfo info, unsigned subsets, std::function<void(uns
          * difference characters is the same length as
          * the reference string */
         if (diffbits * 8 > info->bit_len)
-            error_unimplemented::throwf("compressed strings with %d bits have %d bit deltas (deltas should not be longer than field)", info->bit_len, diffbits);
+            error_unimplemented::throwf("compressed strings with %u bits have %u bit deltas (deltas should not be longer than field)", info->bit_len, diffbits);
 
         for (unsigned i = 0; i < subsets; ++i)
         {
@@ -554,7 +555,7 @@ void Input::decode_string(Var& dest, unsigned subsets)
 {
     Varinfo info = dest.info();
 
-    char str[info->bit_len / 8 + 2];
+    sys::TempBuffer str(info->bit_len / 8 + 2);
     size_t len;
     bool missing = !decode_string(info->bit_len, str, len);
 
@@ -578,7 +579,7 @@ void Input::decode_string(Var& dest, unsigned subsets)
          * difference characters is the same length as
          * the reference string */
         if (diffbits * 8 > info->bit_len)
-            error_unimplemented::throwf("compressed strings with %d bits have %d bit deltas (deltas should not be longer than field)", info->bit_len, diffbits);
+            error_unimplemented::throwf("compressed strings with %u bits have %u bit deltas (deltas should not be longer than field)", info->bit_len, diffbits);
 
         // Set the variable value
         if (decode_string(diffbits * 8, str, len))
@@ -655,7 +656,7 @@ void Input::decode_compressed_number(Varinfo info, unsigned subsets, std::functi
 void Input::decode_string(Varinfo info, unsigned subsets, DispatchToSubsets& dest)
 {
     // Decode the base value
-    char str[info->bit_len / 8 + 2];
+    sys::TempBuffer str(info->bit_len / 8 + 2);
     size_t len;
     bool missing = !decode_string(info->bit_len, str, len);
 
@@ -674,7 +675,7 @@ void Input::decode_string(Varinfo info, unsigned subsets, DispatchToSubsets& des
          * difference characters is the same length as
          * the reference string */
         if (diffbits * 8 > info->bit_len)
-            error_unimplemented::throwf("compressed strings with %d bits have %d bit deltas (deltas should not be longer than field)",
+            error_unimplemented::throwf("compressed strings with %u bits have %u bit deltas (deltas should not be longer than field)",
                     info->bit_len, diffbits * 8);
 
         for (unsigned i = 0; i < subsets; ++i)

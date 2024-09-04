@@ -12,7 +12,7 @@ bool memfind(const std::string& rmsg, const char* str, size_t len)
     for (size_t i = 0; true; ++i)
     {
         if (i + len >= rmsg.size()) return false;
-        if (memcmp((const char*)rmsg.data() + i, str, len) == 0)
+        if (memcmp(rmsg.data() + i, str, len) == 0)
             return true;
     }
 }
