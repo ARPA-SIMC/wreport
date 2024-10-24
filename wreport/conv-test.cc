@@ -47,6 +47,9 @@ class Tests : public TestCase
 
             wassert(actual(convert_units("ppt", "PART PER THOUSAND", 1)) == 1);
             wassert(actual(convert_units("PART PER THOUSAND", "ppt", 1)) == 1);
+
+            wassert(actual(convert_units("M/S", "km/h", 1)) == 3.6);
+            wassert(actual(convert_units("M/S", "km/h", 3.6)) == 1);
         });
         add_method("vss", []() {
             // Vertical sounding significance conversion functions
