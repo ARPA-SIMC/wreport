@@ -130,6 +130,8 @@ struct ConvertRepository
         add_linear("M/S",         "m/s/10", 10, 0);
         add_linear("nodi",        "M/S", 0.51444, 0);
         add_linear("M/S",         "nodi", 1.94384, 0);
+        add_linear("M/S",         "km/h", 3.6, 0);
+        add_linear("km/h",        "M/S", 0.277777, 0),
         add_linear("PA",          "mBar", 0.01, 0);
         add_linear("mBar",        "PA", 100, 0);
         add_linear("PA",          "hPa", 0.01, 0);
