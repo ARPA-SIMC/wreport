@@ -12,6 +12,25 @@ wreport (3.36-1) unstable; urgency=medium
 
  -- Emanuele Di Giacomo <edigiacomo@arpae.it>  Wed, 30 May 2023 13:26:00 +0200
 
+wreport (3.36-1) unstable; urgency=medium
+
+  * New upstream version (Closes: #1037898)
+  * Use `DEB_PYTHON_INSTALL_LAYOUT = deb` to build with meson
+
+ -- Enrico Zini <enrico@debian.org>  Thu, 27 Jul 2023 15:46:12 +0200
+
+wreport (3.35-2) unstable; urgency=medium
+
+  * Build-Depend on python3-dev instead of python3-all-dev (Closes: #1024302)
+  * Depend on dh-sequence-sphinxdoc, simplifying debian/rules and B-D list
+  * Depend on debhelper-compat, removed debian/compat
+  * Stop using dh-buildinfo
+  * Updated Standards-Version, no changes required
+  * Added Vcs-Browser
+  * Mark the two test executable as debian/not-installed for now
+
+ -- Enrico Zini <enrico@debian.org>  Sat, 19 Nov 2022 13:29:35 +0100
+
 wreport (3.35-1) unstable; urgency=medium
 
   * Fixed a corner case in decoding of associated fields (#52)
