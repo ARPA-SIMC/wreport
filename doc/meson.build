@@ -16,7 +16,7 @@ sphinx_doc_sources = [
 # Generate doxygen configuration
 libwreport_dox = configure_file(output: 'libwreport.dox', input: 'libwreport.dox.in', configuration: {
     'VERSION': meson.project_version(),
-    'top_srcdir': meson.source_root(),
+    'top_srcdir': meson.project_source_root(),
     'builddir': meson.current_build_dir(),
     'DOXYGEN_OUTPUT_DIR': meson.current_build_dir(),
 })
@@ -29,13 +29,13 @@ libwreport_dox = configure_file(output: 'libwreport.dox', input: 'libwreport.dox
 # in a custom target.
 
 build_docs = configure_file(output: 'build-docs', input: 'build-docs.in', configuration: {
-    'doxygen': doxygen.path(),
-    'sphinx_build': sphinx.path(),
+    'doxygen': doxygen.full_path(),
+    'sphinx_build': sphinx.full_path(),
     'doc_src': meson.current_source_dir(),
     'doc_build': meson.current_build_dir(),
-    'top_builddir': meson.build_root(),
-    'pythonpath_src': meson.source_root() / 'python',
-    'pythonpath_build': meson.build_root() / 'python',
+    'top_builddir': meson.project_build_root(),
+    'pythonpath_src': meson.project_source_root() / 'python',
+    'pythonpath_build': meson.project_build_root() / 'python',
 })
 
 built_docs = custom_target('built_docs',
