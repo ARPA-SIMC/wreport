@@ -130,3 +130,9 @@ pkg.generate(libwreport,
     filebase: 'libwreport',
     requires: [lua_dep],
 )
+#
+# Generate the builddir's version of run-local
+run_local_cfg = configure_file(output: 'run-local', input: 'run-local.in', configuration: {
+    'top_srcdir': meson.project_source_root(),
+    'top_builddir': meson.project_build_root(),
+})
