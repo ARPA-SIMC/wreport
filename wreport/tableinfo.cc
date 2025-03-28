@@ -1,5 +1,6 @@
 #include "tableinfo.h"
 #include "error.h"
+#include <iostream>
 
 // Uncomment to trace approximate table matching
 // #define TRACE_MATCH
@@ -7,6 +8,15 @@
 using namespace std;
 
 namespace wreport {
+
+std::ostream& operator<<(std::ostream& out, const BufrTableID& id)
+{
+    return out << "BUFR:oc=" << id.originating_centre
+        << ":sc=" << id.originating_subcentre
+        << ":mt=" << id.master_table_number
+        << ":mtv=" << id.master_table_version_number
+        << ":mtl=" << id.master_table_version_number_local;
+}
 
 bool BufrTableID::operator<(const BufrTableID& o) const
 {
@@ -21,6 +31,15 @@ bool BufrTableID::operator<(const BufrTableID& o) const
     if (master_table_version_number_local < o.master_table_version_number_local) return true;
     if (master_table_version_number_local > o.master_table_version_number_local) return false;
     return false;
+}
+
+bool BufrTableID::operator==(const BufrTableID& o) const
+{
+    return originating_centre == o.originating_centre
+        and originating_subcentre == o.originating_subcentre
+        and master_table_number == o.master_table_number
+        and master_table_version_number == o.master_table_version_number
+        and master_table_version_number_local == o.master_table_version_number_local;
 }
 
 bool BufrTableID::is_acceptable_replacement(const BufrTableID& id) const
@@ -232,6 +251,17 @@ void BufrTableID::print(FILE* out) const
 }
 
 
+std::ostream& operator<<(std::ostream& out, const CrexTableID& id)
+{
+    return out << "CREX::ed=" << id.edition_number
+        << ":oc=" << id.originating_centre
+        << ":sc=" << id.originating_subcentre
+        << ":mt=" << id.master_table_number
+        << ":mtv=" << id.master_table_version_number
+        << ":mtl=" << id.master_table_version_number_local
+        << ":mtb=" << id.master_table_version_number_bufr;
+}
+
 bool CrexTableID::operator<(const CrexTableID& o) const
 {
     if (edition_number < o.edition_number) return true;
@@ -249,6 +279,17 @@ bool CrexTableID::operator<(const CrexTableID& o) const
     if (master_table_version_number_bufr < o.master_table_version_number_bufr) return true;
     if (master_table_version_number_bufr > o.master_table_version_number_bufr) return false;
     return false;
+}
+
+bool CrexTableID::operator==(const CrexTableID& o) const
+{
+    return edition_number == o.edition_number
+        and originating_centre == o.originating_centre
+        and originating_subcentre == o.originating_subcentre
+        and master_table_number == o.master_table_number
+        and master_table_version_number == o.master_table_version_number
+        and master_table_version_number_local == o.master_table_version_number_local
+        and master_table_version_number_bufr == o.master_table_version_number_bufr;
 }
 
 bool CrexTableID::is_acceptable_replacement(const BufrTableID& id) const

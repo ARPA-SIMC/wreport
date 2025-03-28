@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <iosfwd>
 #include <wreport/fwd.h>
 
 namespace wreport {
@@ -27,6 +28,7 @@ public:
           master_table_number(master_table_number), master_table_version_number(master_table_version_number), master_table_version_number_local(master_table_version_number_local) {}
 
     bool operator<(const BufrTableID& o) const;
+    bool operator==(const BufrTableID& o) const;
 
     bool is_acceptable_replacement(const BufrTableID& id) const;
     bool is_acceptable_replacement(const CrexTableID& id) const;
@@ -36,6 +38,9 @@ public:
 
     void print(FILE* out) const;
 };
+
+std::ostream& operator<<(std::ostream& out, const BufrTableID& id);
+
 
 /**
  * Identifying information for one distinct instance of CREX tables.
@@ -68,6 +73,7 @@ public:
           master_table_version_number_local(master_table_version_number_local) {}
 
     bool operator<(const CrexTableID& o) const;
+    bool operator==(const CrexTableID& o) const;
 
     bool is_acceptable_replacement(const BufrTableID& id) const;
     bool is_acceptable_replacement(const CrexTableID& id) const;
@@ -77,6 +83,8 @@ public:
 
     void print(FILE* out) const;
 };
+
+std::ostream& operator<<(std::ostream& out, const CrexTableID& id);
 
 }
 #endif
