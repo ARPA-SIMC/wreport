@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <utime.h>
 #include <algorithm>
+#include <csignal>
 
 using namespace std::literals;
 
@@ -1202,6 +1203,18 @@ void touch(const std::filesystem::path& pathname, time_t ts)
         throw std::system_error(errno, std::system_category(), "cannot set mtime/atime of "s + pathname.native());
 }
 
+bool touch_ifexists(const std::filesystem::path& pathname, time_t ts)
+{
+    utimbuf t = { ts, ts };
+    if (::utime(pathname.c_str(), &t) != 0)
+    {
+        if (errno != ENOENT)
+            throw std::system_error(errno, std::system_category(), "cannot set mtime/atime of "s + pathname.native());
+        return false;
+    }
+    return true;
+}
+
 bool mkdir_ifmissing(const std::filesystem::path& path)
 {
     return std::filesystem::create_directory(path);
@@ -1351,6 +1364,12 @@ void OverrideRlimit::set(rlim_t rlim)
     rlimit newval(orig);
     newval.rlim_cur = rlim;
     setrlimit(resource, newval);
+}
+
+
+void breakpoint()
+{
+    raise(SIGTRAP);
 }
 
 }

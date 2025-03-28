@@ -3,7 +3,7 @@
  * @brief Utility functions for the unit tests
  *
  * Copyright (C) 2006--2007  Peter Rockai (mornfall) <me@mornfall.net>
- * Copyright (C) 2003--2017  Enrico Zini <enrico@debian.org>
+ * Copyright (C) 2003--2025  Enrico Zini <enrico@debian.org>
  */
 
 #include "tests.h"
@@ -543,21 +543,21 @@ void ActualPath::contents_match(const std::initializer_list<std::string>& lines_
 
 void ActualDouble::almost_equal(double expected, unsigned places) const
 {
-    double epsilon = exp10(-static_cast<int>(places + 1));
+    double epsilon = 4.9*exp10(-static_cast<int>(places+1));
     if (fabs(_actual - expected) < epsilon)
         return;
     std::stringstream ss;
-    ss << std::setprecision(places) << fixed << _actual << " is different than the expected " << expected;
+    ss << std::setprecision(places + 1) << fixed << _actual << " is different than the expected " << expected;
     throw TestFailed(ss.str());
 }
 
 void ActualDouble::not_almost_equal(double expected, unsigned places) const
 {
-    double epsilon = exp10(-static_cast<int>(places + 1));
+    double epsilon = 4.9*exp10(-static_cast<int>(places+1));
     if (fabs(_actual - expected) > epsilon)
         return;
     std::stringstream ss;
-    ss << std::setprecision(places) << fixed << _actual << " is the same as the expected " << expected;
+    ss << std::setprecision(places + 1) << fixed << _actual << " is the same as the expected " << expected;
     throw TestFailed(ss.str());
 }
 
