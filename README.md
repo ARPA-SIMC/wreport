@@ -65,9 +65,12 @@ If you want to build the package yourself:
 
 These environment variables can be used to control wreport's behaviour at runtime:
 
-* `WREPORT_TABLES`: Table directory to search before the builtin one
+* `WREPORT_TABLES`: Table directory to search before the builtin one.
 * `WREPORT_EXTRA_TABLES`: Extra table directory to search before
-  `WREPORT_TABLES` or the builtin one
+  `WREPORT_TABLES` or the builtin one.
+* `WREPORT_MASTER_TABLE_VERSION`: force the use of this master table instead of
+  the version configured in BUFR/CREX messages. It accepts positive integers,
+  and the value `newest` requesting the newest available table.
 
 
 ## AFL instrumentation

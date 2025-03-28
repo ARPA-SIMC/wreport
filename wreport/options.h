@@ -65,6 +65,40 @@ struct DomainErrorHook
  */
 extern thread_local DomainErrorHook* var_hook_domain_errors;
 
+
+class MasterTableVersionOverride
+{
+    int value;
+
+public:
+    /// No override
+    static const int NONE = 0;
+    /// Use the latest available master table number
+    static const int NEWEST = -1;
+
+    /// Initialize from environment
+    MasterTableVersionOverride();
+
+    /// Initialize from a value
+    // cppcheck-suppress noExplicitConstructor; This is intending to pose as an integer value
+    MasterTableVersionOverride(int value);
+
+    ~MasterTableVersionOverride() = default;
+    MasterTableVersionOverride(const MasterTableVersionOverride&) = default;
+    MasterTableVersionOverride(MasterTableVersionOverride&&) = default;
+    MasterTableVersionOverride& operator=(const MasterTableVersionOverride&) = default;
+    MasterTableVersionOverride& operator=(MasterTableVersionOverride&&) = default;
+
+    /// Access the variable as an integer
+    operator int() const { return value; }
+};
+
+/**
+ * If set, ignore the master table number in BUFR and CREX messages and use the
+ * one from this variable.
+ */
+extern thread_local MasterTableVersionOverride var_master_table_version_override;
+
 /**
  * Temporarily override a variable while this object is in scope.
  *
