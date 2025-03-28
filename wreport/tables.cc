@@ -15,9 +15,9 @@ Tables::Tables()
 
 Tables::Tables(Tables&& o)
     : btable(o.btable), dtable(o.dtable),
-      bitmap_table(move(o.bitmap_table)),
-      chardata_table(move(o.chardata_table)),
-      unknown_table(move(o.unknown_table))
+      bitmap_table(std::move(o.bitmap_table)),
+      chardata_table(std::move(o.chardata_table)),
+      unknown_table(std::move(o.unknown_table))
 {
 }
 
@@ -30,9 +30,9 @@ Tables& Tables::operator=(Tables&& o)
     if (this == &o) return *this;
     btable = o.btable;
     dtable = o.dtable;
-    bitmap_table = move(o.bitmap_table);
-    chardata_table = move(o.chardata_table);
-    unknown_table = move(o.unknown_table);
+    bitmap_table = std::move(o.bitmap_table);
+    chardata_table = std::move(o.chardata_table);
+    unknown_table = std::move(o.unknown_table);
     return *this;
 }
 

@@ -251,7 +251,7 @@ public:
     uint8_t master_table_version_number_local = 0;
 
     /// Whether the message is compressed
-    bool compression;
+    bool compression = false;
 
     /**
      * Raw optional section of the message.
@@ -268,7 +268,7 @@ public:
     unsigned section_end[6] = { 0, 0, 0, 0, 0, 0 };
 
 
-    virtual ~BufrBulletin();
+    virtual ~BufrBulletin() override;
 
     void clear() override;
     const char* encoding_name() const throw () override { return "BUFR"; }

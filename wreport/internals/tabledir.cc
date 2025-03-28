@@ -288,9 +288,9 @@ struct CrexQuery : public Query
 
 struct Index
 {
-    vector<Dir> dirs;
-    map<BufrTableID, const Table*> bufr_cache;
-    map<CrexTableID, const Table*> crex_cache;
+    std::vector<Dir> dirs;
+    std::map<BufrTableID, const Table*> bufr_cache;
+    std::map<CrexTableID, const Table*> crex_cache;
 
     explicit Index(const vector<string>& dirs)
     {
