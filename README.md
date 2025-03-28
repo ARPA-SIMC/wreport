@@ -60,7 +60,17 @@ If you want to build the package yourself:
 - rpm: the packaging files are in `fedora` directory of the `master` branch.
 - deb: the packaging files are in the debian branches (e.g. `debian/sid`, `ubuntu/jammy`, etc.)
 
-### AFL instrumentation
+## Environment variables
+
+
+These environment variables can be used to control wreport's behaviour at runtime:
+
+* `WREPORT_TABLES`: Table directory to search before the builtin one
+* `WREPORT_EXTRA_TABLES`: Extra table directory to search before
+  `WREPORT_TABLES` or the builtin one
+
+
+## AFL instrumentation
 
 To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
 
