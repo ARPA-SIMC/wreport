@@ -1,3 +1,9 @@
+# New in version UNRELEASED
+
+* Allow to override master table version numbers via the
+  `WREPORT_MASTER_TABLE_VERSION` environment variable (see
+  [README.md](README.md) for details) (#58)
+
 # New in version 3.38
 
 * Updated code to use C++17 features
