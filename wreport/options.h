@@ -2,6 +2,7 @@
 #define WREPORT_OPTIONS_H
 
 #include <cstdint>
+#include <wreport/fwd.h>
 
 /** @file
  *
@@ -24,8 +25,6 @@
 #define WREPORT_OPTIONS_HAS_VAR_HOOK_DOMAIN_ERRORS
 
 namespace wreport {
-class Var;
-
 namespace options {
 
 /**

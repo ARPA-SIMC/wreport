@@ -1,4 +1,5 @@
 #include "wreport/tests.h"
+#include "wreport/options.h"
 #include <functional>
 
 using namespace wreport;
@@ -51,11 +52,54 @@ add_method("bufr/corrupted.bufr", []() {
     std::string raw1 = tests::slurpfile("bufr/corrupted.bufr");
 
     // Decode the original contents
+    bool failed = true;
     try {
         BufrBulletin::decode(raw1, "bufr/corrupted.bufr");
+        failed = false;
     } catch (std::exception& e) {
         wassert(actual(e.what()).contains("Only BUFR edition 2, 3, and 4 are supported (this message is edition 47)"));
     }
+    wassert(actual(failed).istrue());
+});
+
+add_method("bufr/issue58.bufr", []() {
+    // BUFR that declares a smaller master table version number than the one it
+    // uses
+
+    // Read the whole contents of the test file
+    std::string raw = tests::slurpfile("bufr/issue58.bufr");
+
+    wassert(actual((int)options::var_master_table_version_override) == options::MasterTableVersionOverride::NONE);
+
+    // Decode the original contents
+    bool failed = true;
+    try {
+        auto b = BufrBulletin::decode(raw, "bufr/issue58.bufr");
+        failed = false;
+    } catch (std::exception& e) {
+        wassert(actual(e.what()).contains("variable 001110 not found in table"));
+    }
+    wassert(actual(failed).istrue());
+
+    // Override the table
+    options::LocalOverride lo(options::var_master_table_version_override, 15);
+    auto msg = BufrBulletin::decode(raw, "bufr/issue58.bufr");
+    wassert(actual(msg->edition_number) == 3);
+    wassert(actual(msg->rep_year) == 2024);
+    wassert(actual((int)msg->data_category) == 4);
+    wassert(actual(msg->data_subcategory) == 255);
+    wassert(actual((int)msg->data_subcategory_local) == 142);
+    wassert(actual(msg->subsets.size()) == 1u);
+
+    const Subset& s = msg->subset(0);
+    wassert(actual(s.size()) == 19u);
+
+    wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 6));
+    wassert(actual(s[0].enqs()) == "BAW293");
+    wassert(actual_varcode(s[11].code()) == WR_VAR(0, 12, 1));
+    wassert(actual(s[11].enqd()) == 227.2);
+    wassert(actual_varcode(s[18].code()) == WR_VAR(0, 1, 110));
+    wassert(actual(s[18].enqs()) == "GXLEK");
 });
 
 declare_test("bufr/bufr1", [](const BufrBulletin& msg) {
