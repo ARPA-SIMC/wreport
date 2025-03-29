@@ -14,6 +14,8 @@ namespace wreport {
 class BufrTableID
 {
 public:
+    static const uint8_t MASTER_TABLE_VERSION_NUMBER_NEWEST = 0xff;
+
     uint16_t originating_centre = 0xffff;
     uint16_t originating_subcentre = 0xffff;
     uint8_t master_table_number = 0xff;
@@ -52,6 +54,8 @@ std::ostream& operator<<(std::ostream& out, const BufrTableID& id);
 class CrexTableID
 {
 public:
+    static const uint8_t MASTER_TABLE_VERSION_NUMBER_NEWEST = 0xff;
+
     uint8_t edition_number = 0xff;
     uint16_t originating_centre = 0xffff;
     uint16_t originating_subcentre = 0xffff;

@@ -64,19 +64,25 @@ add_method("override_crex_with_value", [] {
     wassert_true(ct != 0);
     wassert(actual((int)ct->id.master_table_version_number) == 1);
 });
-add_method("override_with_newest", [] {
+add_method("override_bufr_with_newest", [] {
     auto& td = tabledir::Tabledirs::get();
     options::LocalOverride o(options::var_master_table_version_override, options::MasterTableVersionOverride::NEWEST);
 
     const tabledir::Table* t = td.find_bufr(BufrTableID(0, 0, 0, 0, 0));
     wassert_true(t != 0);
     const tabledir::BufrTable* bt = dynamic_cast<const tabledir::BufrTable*>(t);
+    wassert_true(bt != 0);
     wassert(actual((int)bt->id.master_table_version_number) == 33);
+});
+add_method("override_crex_with_newest", [] {
+    auto& td = tabledir::Tabledirs::get();
+    options::LocalOverride o(options::var_master_table_version_override, options::MasterTableVersionOverride::NEWEST);
 
-    t = td.find_crex(CrexTableID(1, 0, 0, 0, 0, 0, 0));
+    const tabledir::Table* t = td.find_crex(CrexTableID(1, 0, 0, 0, 0, 0, 0));
     wassert_true(t != 0);
-    const tabledir::CrexTable* ct = dynamic_cast<const tabledir::CrexTable*>(t);
-    wassert(actual((int)ct->id.master_table_version_number) == 33);
+    const tabledir::BufrTable* bt = dynamic_cast<const tabledir::BufrTable*>(t);
+    wassert_true(bt != 0);
+    wassert(actual((int)bt->id.master_table_version_number) == 33);
 });
 add_method("tabledir_bufr_wmo", []() {
     auto& td = tabledir::Tabledirs::get();

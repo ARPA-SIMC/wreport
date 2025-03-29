@@ -9,6 +9,8 @@ using namespace std;
 
 namespace wreport {
 
+const uint8_t BufrTableID::MASTER_TABLE_VERSION_NUMBER_NEWEST;
+
 std::ostream& operator<<(std::ostream& out, const BufrTableID& id)
 {
     return out << "BUFR:oc=" << id.originating_centre
@@ -44,11 +46,17 @@ bool BufrTableID::operator==(const BufrTableID& o) const
 
 bool BufrTableID::is_acceptable_replacement(const BufrTableID& id) const
 {
+    // Master table number must be the same
     if (id.master_table_number != master_table_number)
         return false;
-    if (id.master_table_version_number < master_table_version_number)
-        return false;
-    return true;
+
+    if (master_table_version_number == MASTER_TABLE_VERSION_NUMBER_NEWEST)
+        // If NEWEST is required, any version number is acceptable and it's up
+        // to the caller to pick the highest
+        return true;
+    else
+        // Edition must be greater or equal to what we want
+        return id.master_table_version_number >= master_table_version_number;
 }
 
 bool BufrTableID::is_acceptable_replacement(const CrexTableID&) const
@@ -96,41 +104,78 @@ struct Compare
 
     bool compare_mtv()
     {
-        // We only get acceptable candidates, so we have a guarantee that both mt
-        // version numbers are higher than what we want, and we can just pick the
-        // closest (lowest)
-        if (first.master_table_version_number < second.master_table_version_number)
-            decide_first("closer to the master_table we want");
-        else if (second.master_table_version_number < first.master_table_version_number)
-            decide_second("closer to the master_table we want");
+        // We only get acceptable candidates here, so we can build on the
+        // invariants set by Base::is_acceptable_replacement
+
+        if (base.master_table_version_number == Base::MASTER_TABLE_VERSION_NUMBER_NEWEST)
+        {
+            // The newest is requested, so we get to see all candidate version
+            // numbers, and pick the highest
+            if (first.master_table_version_number < second.master_table_version_number)
+                decide_second("highest master table version number");
+            else if (second.master_table_version_number < first.master_table_version_number)
+                decide_first("highest master table version number");
+        } else {
+            // We have a guarantee that both mt version numbers are higher than
+            // what we want, and we can just pick the closest (lowest)
+            if (first.master_table_version_number < second.master_table_version_number)
+                decide_first("closer to the master_table we want");
+            else if (second.master_table_version_number < first.master_table_version_number)
+                decide_second("closer to the master_table we want");
+        }
+
         // mt version numbers are the same
         return false;
     }
 
     bool compare_mtv_bufr()
     {
-        // We only get acceptable candidates, so we have a guarantee that both BUFR
-        // mt version numbers are higher than what we want, and we can just pick
-        // the closest (lowest)
-        if (first.master_table_version_number_bufr < second.master_table_version_number_bufr)
-            decide_first("closer to the bufr master_table we want");
-        else if (second.master_table_version_number_bufr < first.master_table_version_number_bufr)
-            decide_second("closer to the bufr master_table we want");
+        // We only get acceptable candidates here, so we can build on the
+        // invariants set by Base::is_acceptable_replacement
+
+        if (base.master_table_version_number == Base::MASTER_TABLE_VERSION_NUMBER_NEWEST)
+        {
+            // The newest is requested, so we get to see all candidate version
+            // numbers, and pick the highest
+            if (first.master_table_version_number_bufr < second.master_table_version_number_bufr)
+                decide_second("highest bufr master_table");
+            else if (second.master_table_version_number_bufr < first.master_table_version_number_bufr)
+                decide_first("highest bufr master_table");
+        } else {
+            // We have a guarantee that both BUFR mt version numbers are higher
+            // than what we want, and we can just pick the closest (lowest)
+            if (first.master_table_version_number_bufr < second.master_table_version_number_bufr)
+                decide_first("closer to the bufr master_table we want");
+            else if (second.master_table_version_number_bufr < first.master_table_version_number_bufr)
+                decide_second("closer to the bufr master_table we want");
+        }
+
         // bufr mt version numbers are the same
         return false;
     }
 
     bool compare_mtv_bufrcrex()
     {
-        // Both are acceptable candidates, pick the best one
+        // We only get acceptable candidates here, so we can build on the
+        // invariants set by Base::is_acceptable_replacement
 
-        // We only get acceptable candidates, so we have a guarantee that both mt
-        // version numbers are higher than what we want, and we can just pick the
-        // closest (lowest)
-        if (first.master_table_version_number < second.master_table_version_number_bufr)
-            decide_first("orig bufr master table is closer to the master table we want");
-        else if (second.master_table_version_number_bufr < first.master_table_version_number)
-            decide_second("crex bufr master table is closer to the master_table we want");
+        if (base.master_table_version_number == Base::MASTER_TABLE_VERSION_NUMBER_NEWEST)
+        {
+            // The newest is requested, so we get to see all candidate version
+            // numbers, and pick the highest
+            if (first.master_table_version_number < second.master_table_version_number_bufr)
+                decide_second("crex bufr master table is highest");
+            else if (second.master_table_version_number_bufr < first.master_table_version_number)
+                decide_first("orig bufr master table is highest");
+        } else {
+            // We have a guarantee that both mt version numbers are higher than
+            // what we want, and we can just pick the closest (lowest)
+            if (first.master_table_version_number < second.master_table_version_number_bufr)
+                decide_first("orig bufr master table is closer to the master table we want");
+            else if (second.master_table_version_number_bufr < first.master_table_version_number)
+                decide_second("crex bufr master table is closer to the master_table we want");
+        }
+
         // mt version numbers are the same
         return false;
     }
@@ -250,6 +295,12 @@ void BufrTableID::print(FILE* out) const
         master_table_version_number_local);
 }
 
+/*
+ * CrexTableID
+ */
+
+
+const uint8_t CrexTableID::MASTER_TABLE_VERSION_NUMBER_NEWEST;
 
 std::ostream& operator<<(std::ostream& out, const CrexTableID& id)
 {
@@ -298,11 +349,13 @@ bool CrexTableID::is_acceptable_replacement(const BufrTableID& id) const
     if (id.master_table_number != master_table_number)
         return false;
 
-    // Edition must be greater or equal to what we want
-    if (id.master_table_version_number < master_table_version_number_bufr)
-        return false;
-
-    return true;
+    if (master_table_version_number == MASTER_TABLE_VERSION_NUMBER_NEWEST)
+        // If NEWEST is required, any version number is acceptable and it's up
+        // to the caller to pick the highest
+        return true;
+    else
+        // Edition must be greater or equal to what we want
+        return id.master_table_version_number >= master_table_version_number_bufr;
 }
 
 bool CrexTableID::is_acceptable_replacement(const CrexTableID& id) const

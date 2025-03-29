@@ -437,8 +437,10 @@ const tabledir::Table* Tabledirs::find_bufr(const BufrTableID& id)
     if (options::var_master_table_version_override == options::MasterTableVersionOverride::NONE)
         return index->find_bufr(id);
     BufrTableID overridden(id);
-    // TODO: handle "newest"
-    overridden.master_table_version_number = options::var_master_table_version_override;
+    if (options::var_master_table_version_override == options::MasterTableVersionOverride::NEWEST)
+        overridden.master_table_version_number = BufrTableID::MASTER_TABLE_VERSION_NUMBER_NEWEST;
+    else
+        overridden.master_table_version_number = options::var_master_table_version_override;
     return index->find_bufr(overridden);
 }
 
@@ -447,8 +449,10 @@ const tabledir::Table* Tabledirs::find_crex(const CrexTableID& id)
     if (options::var_master_table_version_override == options::MasterTableVersionOverride::NONE)
         return index->find_crex(id);
     CrexTableID overridden(id);
-    // TODO: handle "newest"
-    overridden.master_table_version_number = options::var_master_table_version_override;
+    if (options::var_master_table_version_override == options::MasterTableVersionOverride::NEWEST)
+        overridden.master_table_version_number = CrexTableID::MASTER_TABLE_VERSION_NUMBER_NEWEST;
+    else
+        overridden.master_table_version_number = options::var_master_table_version_override;
     return index->find_crex(overridden);
 }
 
