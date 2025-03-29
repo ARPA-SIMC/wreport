@@ -21,6 +21,7 @@
 #ifndef WREPORT_TESTS_UTILS
 #define WREPORT_TESTS_UTILS
 
+#include <wreport/fwd.h>
 #include <wreport/utils/tests.h>
 #include <wreport/varinfo.h>
 #include <wreport/bulletin.h>
@@ -34,8 +35,6 @@
 #include <cstdlib>
 
 namespace wreport {
-struct Var;
-
 namespace tests {
 
 /// Return the pathname of a test file

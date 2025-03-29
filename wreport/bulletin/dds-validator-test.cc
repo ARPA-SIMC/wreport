@@ -48,6 +48,7 @@ class Tests : public TestCase
             blacklist.insert("bufr/short1.bufr");
             blacklist.insert("bufr/short2.bufr");
             blacklist.insert("bufr/short3.bufr");
+            blacklist.insert("bufr/issue58.bufr");
 
             auto files = tests::all_test_files("bufr");
             for (const auto& i: files)

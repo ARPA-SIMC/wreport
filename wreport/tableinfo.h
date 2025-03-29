@@ -14,6 +14,8 @@ namespace wreport {
 class BufrTableID
 {
 public:
+    static const uint8_t MASTER_TABLE_VERSION_NUMBER_NEWEST = 0xff;
+
     uint16_t originating_centre = 0xffff;
     uint16_t originating_subcentre = 0xffff;
     uint8_t master_table_number = 0xff;
@@ -26,6 +28,10 @@ public:
             uint8_t master_table_number, uint8_t master_table_version_number, uint8_t master_table_version_number_local)
         : originating_centre(originating_centre), originating_subcentre(originating_subcentre),
           master_table_number(master_table_number), master_table_version_number(master_table_version_number), master_table_version_number_local(master_table_version_number_local) {}
+    BufrTableID(const BufrTableID&) = default;
+    BufrTableID(BufrTableID&&) = default;
+    BufrTableID& operator=(const BufrTableID&) = default;
+    BufrTableID& operator=(BufrTableID&&) = default;
 
     bool operator<(const BufrTableID& o) const;
     bool operator==(const BufrTableID& o) const;
@@ -48,6 +54,8 @@ std::ostream& operator<<(std::ostream& out, const BufrTableID& id);
 class CrexTableID
 {
 public:
+    static const uint8_t MASTER_TABLE_VERSION_NUMBER_NEWEST = 0xff;
+
     uint8_t edition_number = 0xff;
     uint16_t originating_centre = 0xffff;
     uint16_t originating_subcentre = 0xffff;
@@ -71,6 +79,10 @@ public:
           master_table_version_number(master_table_version_number),
           master_table_version_number_bufr(master_table_version_number_bufr),
           master_table_version_number_local(master_table_version_number_local) {}
+    CrexTableID(const CrexTableID&) = default;
+    CrexTableID(CrexTableID&&) = default;
+    CrexTableID& operator=(const CrexTableID&) = default;
+    CrexTableID& operator=(CrexTableID&&) = default;
 
     bool operator<(const CrexTableID& o) const;
     bool operator==(const CrexTableID& o) const;
