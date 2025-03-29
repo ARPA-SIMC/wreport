@@ -13,9 +13,9 @@ std::ostream& operator<<(std::ostream& out, const BufrTableID& id)
 {
     return out << "BUFR:oc=" << id.originating_centre
         << ":sc=" << id.originating_subcentre
-        << ":mt=" << id.master_table_number
-        << ":mtv=" << id.master_table_version_number
-        << ":mtl=" << id.master_table_version_number_local;
+        << ":mt=" << (int)id.master_table_number
+        << ":mtv=" << (int)id.master_table_version_number
+        << ":mtl=" << (int)id.master_table_version_number_local;
 }
 
 bool BufrTableID::operator<(const BufrTableID& o) const
@@ -253,13 +253,13 @@ void BufrTableID::print(FILE* out) const
 
 std::ostream& operator<<(std::ostream& out, const CrexTableID& id)
 {
-    return out << "CREX::ed=" << id.edition_number
+    return out << "CREX::ed=" << (int)id.edition_number
         << ":oc=" << id.originating_centre
         << ":sc=" << id.originating_subcentre
-        << ":mt=" << id.master_table_number
-        << ":mtv=" << id.master_table_version_number
-        << ":mtl=" << id.master_table_version_number_local
-        << ":mtb=" << id.master_table_version_number_bufr;
+        << ":mt=" << (int)id.master_table_number
+        << ":mtv=" << (int)id.master_table_version_number
+        << ":mtl=" << (int)id.master_table_version_number_local
+        << ":mtb=" << (int)id.master_table_version_number_bufr;
 }
 
 bool CrexTableID::operator<(const CrexTableID& o) const

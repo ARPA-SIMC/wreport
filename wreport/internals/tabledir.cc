@@ -3,6 +3,7 @@
 #include "wreport/vartable.h"
 #include "wreport/dtable.h"
 #include "wreport/notes.h"
+#include "wreport/options.h"
 #include "wreport/utils/sys.h"
 #include "config.h"
 #include <map>
@@ -157,7 +158,7 @@ struct Query
             consider_table(t);
     }
 
-    void explain_search(Dir& dir, FILE* out)
+    void explain_search(const Dir& dir, FILE* out)
     {
         for (const auto& t : dir.tables)
         {
@@ -295,8 +296,8 @@ struct Index
     explicit Index(const vector<string>& dirs)
     {
         // Index the directories
-        for (vector<string>::const_iterator i = dirs.begin(); i != dirs.end(); ++i)
-            this->dirs.push_back(Dir(*i));
+        for (const auto& d: dirs)
+            this->dirs.push_back(Dir(d));
     }
 
     const tabledir::Table* find_bufr(const BufrTableID& id)
@@ -308,8 +309,8 @@ struct Index
 
         // If it is the first time this combination is requested, look for the best match
         BufrQuery query(id);
-        for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
-            query.search(*d);
+        for (const auto& d: dirs)
+            query.search(d);
 
         if (auto result = query.result())
         {
@@ -327,8 +328,8 @@ struct Index
     {
         // If it is the first time this combination is requested, look for the best match
         BufrQuery query(id);
-        for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
-            query.explain_search(*d, out);
+        for (const auto& d: dirs)
+            query.explain_search(d, out);
         query.explain_result(out);
     }
 
@@ -341,8 +342,8 @@ struct Index
 
         // If it is the first time this combination is requested, look for the best match
         CrexQuery query(id);
-        for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
-            query.search(*d);
+        for (const auto& d: dirs)
+            query.search(d);
 
         if (auto result = query.result())
         {
@@ -360,8 +361,8 @@ struct Index
     {
         // If it is the first time this combination is requested, look for the best match
         CrexQuery query(id);
-        for (vector<Dir>::iterator d = dirs.begin(); d != dirs.end(); ++d)
-            query.explain_search(*d, out);
+        for (const auto& d: dirs)
+            query.explain_search(d, out);
         query.explain_result(out);
     }
 
@@ -376,8 +377,8 @@ struct Index
 
     void print(FILE* out) const
     {
-        for (auto& d: dirs)
-            for (auto& t: d.tables)
+        for (const auto& d: dirs)
+            for (const auto& t: d.tables)
             {
                 fprintf(out, "%s/%s:", d.pathname.c_str(), t->btable_id.c_str());
                 t->print_id(out);
@@ -386,6 +387,10 @@ struct Index
     }
 };
 
+
+/*
+ * Tabledirs
+ */
 
 Tabledirs::Tabledirs()
     : index(0)
@@ -416,8 +421,8 @@ void Tabledirs::add_directory(const std::string& dir)
         clean_dir = "/";
 
     // Do not add a duplicate directory
-    for (const auto& i: dirs)
-        if (i == clean_dir)
+    for (const auto& d: dirs)
+        if (d == clean_dir)
             return;
     dirs.push_back(clean_dir);
 
@@ -429,13 +434,22 @@ void Tabledirs::add_directory(const std::string& dir)
 const tabledir::Table* Tabledirs::find_bufr(const BufrTableID& id)
 {
     if (!index) index = new tabledir::Index(dirs);
-    return index->find_bufr(id);
+    if (options::var_master_table_version_override == options::MasterTableVersionOverride::NONE)
+        return index->find_bufr(id);
+    BufrTableID overridden(id);
+    // TODO: handle "newest"
+    overridden.master_table_version_number = options::var_master_table_version_override;
+    return index->find_bufr(overridden);
 }
 
 const tabledir::Table* Tabledirs::find_crex(const CrexTableID& id)
 {
-    if (!index) index = new tabledir::Index(dirs);
-    return index->find_crex(id);
+    if (options::var_master_table_version_override == options::MasterTableVersionOverride::NONE)
+        return index->find_crex(id);
+    CrexTableID overridden(id);
+    // TODO: handle "newest"
+    overridden.master_table_version_number = options::var_master_table_version_override;
+    return index->find_crex(overridden);
 }
 
 const tabledir::Table* Tabledirs::find(const std::string& basename)

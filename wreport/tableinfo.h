@@ -26,6 +26,10 @@ public:
             uint8_t master_table_number, uint8_t master_table_version_number, uint8_t master_table_version_number_local)
         : originating_centre(originating_centre), originating_subcentre(originating_subcentre),
           master_table_number(master_table_number), master_table_version_number(master_table_version_number), master_table_version_number_local(master_table_version_number_local) {}
+    BufrTableID(const BufrTableID&) = default;
+    BufrTableID(BufrTableID&&) = default;
+    BufrTableID& operator=(const BufrTableID&) = default;
+    BufrTableID& operator=(BufrTableID&&) = default;
 
     bool operator<(const BufrTableID& o) const;
     bool operator==(const BufrTableID& o) const;
@@ -71,6 +75,10 @@ public:
           master_table_version_number(master_table_version_number),
           master_table_version_number_bufr(master_table_version_number_bufr),
           master_table_version_number_local(master_table_version_number_local) {}
+    CrexTableID(const CrexTableID&) = default;
+    CrexTableID(CrexTableID&&) = default;
+    CrexTableID& operator=(const CrexTableID&) = default;
+    CrexTableID& operator=(CrexTableID&&) = default;
 
     bool operator<(const CrexTableID& o) const;
     bool operator==(const CrexTableID& o) const;
