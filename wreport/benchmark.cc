@@ -32,10 +32,7 @@ void Task::collect(std::function<void()> f)
     stime += tms_end.tms_stime - tms_start.tms_stime;
 }
 
-void Registry::add(Benchmark* b)
-{
-    benchmarks.push_back(b);
-}
+void Registry::add(Benchmark* b) { benchmarks.push_back(b); }
 
 Registry& Registry::get()
 {
@@ -72,35 +69,36 @@ void Benchmark::run(Progress& progress)
 
 void Benchmark::print_timings()
 {
-    for (auto& t: tasks)
+    for (auto& t : tasks)
     {
-        fprintf(stdout, "%s.%s: %u runs, user: %.2fs (%.1f%%), sys: %.2fs (%.1f%%), total: %.2fs (%.1f%%)\n",
-                name.c_str(),
-                t->name.c_str(),
-                t->run_count,
-                t->utime / ticks_per_sec,
-                t->utime * 100.0 / task_main.utime,
-                t->stime / ticks_per_sec,
-                t->stime * 100.0 / task_main.stime,
+        fprintf(stdout,
+                "%s.%s: %u runs, user: %.2fs (%.1f%%), sys: %.2fs (%.1f%%), "
+                "total: %.2fs (%.1f%%)\n",
+                name.c_str(), t->name.c_str(), t->run_count,
+                t->utime / ticks_per_sec, t->utime * 100.0 / task_main.utime,
+                t->stime / ticks_per_sec, t->stime * 100.0 / task_main.stime,
                 (t->utime + t->stime) / ticks_per_sec,
-                (t->utime + t->stime) * 100.0 / (task_main.utime + task_main.stime));
+                (t->utime + t->stime) * 100.0 /
+                    (task_main.utime + task_main.stime));
     }
 }
 
-BasicProgress::BasicProgress(FILE* out, FILE* err)
-    : out(out), err(err) {}
+BasicProgress::BasicProgress(FILE* out, FILE* err) : out(out), err(err) {}
 
 void BasicProgress::start_benchmark(const Benchmark& b)
 {
     fprintf(out, "%s: starting... ", b.name.c_str());
     fflush(out);
 }
-void BasicProgress::start_iteration(const Benchmark& b, unsigned cur, unsigned total)
+void BasicProgress::start_iteration(const Benchmark& b, unsigned cur,
+                                    unsigned total)
 {
-    fprintf(out, "\r%s: iteration %u/%u...    ", b.name.c_str(), cur + 1, total);
+    fprintf(out, "\r%s: iteration %u/%u...    ", b.name.c_str(), cur + 1,
+            total);
     fflush(out);
 }
-void BasicProgress::end_iteration(const Benchmark& b, unsigned cur, unsigned total)
+void BasicProgress::end_iteration(const Benchmark& b, unsigned cur,
+                                  unsigned total)
 {
     fprintf(out, "\r%s: iteration %u/%u done.", b.name.c_str(), cur + 1, total);
     fflush(out);
@@ -120,11 +118,14 @@ void Registry::basic_run(int argc, const char* argv[])
     BasicProgress progress;
 
     // Run all benchmarks
-    for (auto& b: get().benchmarks)
+    for (auto& b : get().benchmarks)
     {
-        try {
+        try
+        {
             b->run(progress);
-        } catch (std::exception& e) {
+        }
+        catch (std::exception& e)
+        {
             progress.test_failed(*b, e);
             continue;
         }
@@ -143,5 +144,5 @@ void Runner::dump_csv(std::ostream& out)
 }
 #endif
 
-}
-}
+} // namespace benchmark
+} // namespace wreport

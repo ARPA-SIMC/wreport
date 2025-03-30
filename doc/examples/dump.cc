@@ -20,10 +20,10 @@
  */
 
 // Messages are read in a Bulletin class
-#include <wreport/bulletin.h>
-#include <string>
 #include <cstdio>
+#include <string>
 #include <strings.h>
+#include <wreport/bulletin.h>
 
 using namespace std;
 
@@ -38,35 +38,37 @@ enum Encoding { BUFR, CREX };
  * We use a single template for both bulletin types, as they have exactly the
  * same API.
  */
-template<typename TYPE>
-void dump(FILE* in, const char* fname)
+template <typename TYPE> void dump(FILE* in, const char* fname)
 {
-	try {
-		// Each bulletin type has a read function that reads the next
-		// message from any input stream into a string buffer
-		string buf;
-		while (TYPE::read(in, buf, fname))
-		{
-			// Decode the raw data creating a new bulletin
-			unique_ptr<TYPE> bulletin = TYPE::decode(buf);
-			// Dump it all to stdout
-			bulletin->print(stdout);
-		}
-	} catch (std::exception& e) {
-		// Errors are reported through exceptions. All exceptions used
-		// by wreport are descendents of std::exception
-		fprintf(stderr, "Error reading %s: %s\n", fname, e.what());
-	}
+    try
+    {
+        // Each bulletin type has a read function that reads the next
+        // message from any input stream into a string buffer
+        string buf;
+        while (TYPE::read(in, buf, fname))
+        {
+            // Decode the raw data creating a new bulletin
+            unique_ptr<TYPE> bulletin = TYPE::decode(buf);
+            // Dump it all to stdout
+            bulletin->print(stdout);
+        }
+    }
+    catch (std::exception& e)
+    {
+        // Errors are reported through exceptions. All exceptions used
+        // by wreport are descendents of std::exception
+        fprintf(stderr, "Error reading %s: %s\n", fname, e.what());
+    }
 }
 
 /// Select the right bulletin type according to the requested format
 void dump(Encoding type, FILE* in, const char* fname)
 {
-	switch (type)
-	{
-		case BUFR: dump<wreport::BufrBulletin>(in, fname); break;
-		case CREX: dump<wreport::CrexBulletin>(in, fname); break;
-	}
+    switch (type)
+    {
+        case BUFR: dump<wreport::BufrBulletin>(in, fname); break;
+        case CREX: dump<wreport::CrexBulletin>(in, fname); break;
+    }
 }
 
 const char* argv0 = "dump";
@@ -74,52 +76,54 @@ const char* argv0 = "dump";
 /// Print program usage
 void usage()
 {
-	fprintf(stderr, "Usage: %s {BUFR|CREX} [file1 [file2...]]\n", argv0);
-	fprintf(stderr, "Dumps bufr or crex file contents to standard output\n");
+    fprintf(stderr, "Usage: %s {BUFR|CREX} [file1 [file2...]]\n", argv0);
+    fprintf(stderr, "Dumps bufr or crex file contents to standard output\n");
 }
 
 int main(int argc, const char* argv[])
 {
-	argv0 = argv[0];
+    argv0 = argv[0];
 
-	if (argc == 1)
-	{
-		usage();
-		return 1;
-	}
+    if (argc == 1)
+    {
+        usage();
+        return 1;
+    }
 
-	// Detect what encoding type is requested
-	Encoding type;
-	if (strcasecmp(argv[1], "BUFR") == 0)
-		type = BUFR;
-	else if (strcasecmp(argv[1], "CREX") == 0)
-		type = CREX;
-	else
-	{
-		usage();
-		return 1;
-	}
+    // Detect what encoding type is requested
+    Encoding type;
+    if (strcasecmp(argv[1], "BUFR") == 0)
+        type = BUFR;
+    else if (strcasecmp(argv[1], "CREX") == 0)
+        type = CREX;
+    else
+    {
+        usage();
+        return 1;
+    }
 
-	if (argc == 2)
-	{
-		// Dump stdin if no input file was given
-		printf("Dumping standard input...\n");
-		dump(type, stdin, "standard input");
-	} else {
-		// Else dump all input files
-		for (int i = 2; i < argc; ++i)
-		{
-			printf("Dumping file %s...\n", argv[i]);
-			FILE* in = fopen(argv[i], "rb");
-			if (in == NULL) 
-			{
-				perror("cannot open file");
-				continue;
-			}
-			dump(type, in, argv[i]);
-			fclose(in);
-		}
-	}
+    if (argc == 2)
+    {
+        // Dump stdin if no input file was given
+        printf("Dumping standard input...\n");
+        dump(type, stdin, "standard input");
+    }
+    else
+    {
+        // Else dump all input files
+        for (int i = 2; i < argc; ++i)
+        {
+            printf("Dumping file %s...\n", argv[i]);
+            FILE* in = fopen(argv[i], "rb");
+            if (in == NULL)
+            {
+                perror("cannot open file");
+                continue;
+            }
+            dump(type, in, argv[i]);
+            fclose(in);
+        }
+    }
 
-	return 0;
+    return 0;
 }

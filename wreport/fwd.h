@@ -1,8 +1,8 @@
 #ifndef WREPORT_FWD_H
 #define WREPORT_FWD_H
 
-#include <wreport/version.h>
 #include <cstdint>
+#include <wreport/version.h>
 
 namespace wreport {
 class Var;
@@ -20,6 +20,6 @@ class CrexTableID;
 
 class Tables;
 class DTable;
-}
+} // namespace wreport
 
 #endif

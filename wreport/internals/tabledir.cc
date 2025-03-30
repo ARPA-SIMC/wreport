@@ -1,16 +1,16 @@
 #include "tabledir.h"
+#include "config.h"
 #include "error.h"
-#include "wreport/vartable.h"
 #include "wreport/dtable.h"
 #include "wreport/notes.h"
 #include "wreport/options.h"
 #include "wreport/utils/sys.h"
-#include "config.h"
-#include <map>
-#include <cstddef>
-#include <cstring>
-#include <cstdio>
+#include "wreport/vartable.h"
 #include <cerrno>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
+#include <map>
 
 using namespace std;
 
@@ -25,7 +25,9 @@ Table::Table(const std::filesystem::path& dirname, const std::string& filename)
     {
         btable_id = filename;
         dtable_id = filename;
-    } else {
+    }
+    else
+    {
         btable_id = filename.substr(0, extpos);
         dtable_id = btable_id;
     }
@@ -35,31 +37,20 @@ Table::Table(const std::filesystem::path& dirname, const std::string& filename)
     dtable_pathname = dirname / ("D"s + filename.substr(1));
 }
 
-void Table::print_id(FILE* out) const
-{
-    fprintf(out, "(raw data)");
-}
+void Table::print_id(FILE* out) const { fprintf(out, "(raw data)"); }
 
-void BufrTable::print_id(FILE* out) const
-{
-    id.print(out);
-}
+void BufrTable::print_id(FILE* out) const { id.print(out); }
 
-void CrexTable::print_id(FILE* out) const
-{
-    id.print(out);
-}
+void CrexTable::print_id(FILE* out) const { id.print(out); }
 
-
-Dir::Dir(const std::string& pathname)
-    : pathname(pathname), mtime(0)
+Dir::Dir(const std::string& pathname) : pathname(pathname), mtime(0)
 {
     refresh();
 }
 
 Dir::~Dir()
 {
-    for (auto t: tables)
+    for (auto t : tables)
         delete t;
 }
 
@@ -75,13 +66,15 @@ void Dir::refresh()
     if (mtime >= st.st_mtime)
         return;
 
-    for (const auto& e: dir)
+    for (const auto& e : dir)
     {
         size_t name_len = strlen(e.d_name);
 
         // Look for a .txt extension
-        if (name_len < 5) continue;
-        if (strcmp(e.d_name + name_len - 4, ".txt") != 0) continue;
+        if (name_len < 5)
+            continue;
+        if (strcmp(e.d_name + name_len - 4, ".txt") != 0)
+            continue;
 
         switch (e.d_name[0])
         {
@@ -91,22 +84,31 @@ void Dir::refresh()
                     case 11: // B000203.txt
                     {
                         int mt, ed, mtv;
-                        if (sscanf(e.d_name, "B%02d%02d%02d", &mt, &ed, &mtv) == 3)
-                            tables.push_back(new CrexTable(CrexTableID(ed, 0, 0, mt, mtv, 0, 0), pathname, e.d_name));
+                        if (sscanf(e.d_name, "B%02d%02d%02d", &mt, &ed, &mtv) ==
+                            3)
+                            tables.push_back(new CrexTable(
+                                CrexTableID(ed, 0, 0, mt, mtv, 0, 0), pathname,
+                                e.d_name));
                         break;
                     }
                     case 20: // B000000000001100.txt
                     {
                         int ce, sc, mt, lt;
-                        if (sscanf(e.d_name, "B00000%03d%03d%02d%02d", &sc, &ce, &mt, &lt) == 4)
-                            tables.push_back(new BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
+                        if (sscanf(e.d_name, "B00000%03d%03d%02d%02d", &sc, &ce,
+                                   &mt, &lt) == 4)
+                            tables.push_back(
+                                new BufrTable(BufrTableID(ce, sc, 0, mt, lt),
+                                              pathname, e.d_name));
                         break;
                     }
                     case 24: // B0000000000085014000.txt
                     {
                         int ce, sc, mt, lt, dummy;
-                        if (sscanf(e.d_name, "B00%03d%04d%04d%03d%03d", &dummy, &sc, &ce, &mt, &lt) == 5)
-                            tables.push_back(new BufrTable(BufrTableID(ce, sc, 0, mt, lt), pathname, e.d_name));
+                        if (sscanf(e.d_name, "B00%03d%04d%04d%03d%03d", &dummy,
+                                   &sc, &ce, &mt, &lt) == 5)
+                            tables.push_back(
+                                new BufrTable(BufrTableID(ce, sc, 0, mt, lt),
+                                              pathname, e.d_name));
                         break;
                     }
                 }
@@ -135,7 +137,8 @@ struct Query
     {
         if (BufrTable* cur = dynamic_cast<BufrTable*>(t))
         {
-            if (!is_acceptable(cur->id)) return;
+            if (!is_acceptable(cur->id))
+                return;
             if (!bufr_best)
                 bufr_best = cur;
             else
@@ -143,7 +146,8 @@ struct Query
         }
         else if (CrexTable* cur = dynamic_cast<CrexTable*>(t))
         {
-            if (!is_acceptable(cur->id)) return;
+            if (!is_acceptable(cur->id))
+                return;
             if (!crex_best)
                 crex_best = cur;
             else
@@ -186,11 +190,10 @@ struct Query
                 return nullptr;
             else
                 return crex_best;
+        else if (!crex_best)
+            return bufr_best;
         else
-            if (!crex_best)
-                return bufr_best;
-            else
-                return choose_best(*bufr_best, *crex_best);
+            return choose_best(*bufr_best, *crex_best);
     }
 
     void explain_result(FILE* out) const
@@ -205,10 +208,12 @@ struct Query
     }
 
     virtual ~Query() {}
-    virtual bool is_acceptable(const BufrTableID& id) const = 0;
-    virtual bool is_acceptable(const CrexTableID& id) const = 0;
-    virtual BufrTable* choose_best(BufrTable& first, BufrTable& second) const = 0;
-    virtual CrexTable* choose_best(CrexTable& first, CrexTable& second) const = 0;
+    virtual bool is_acceptable(const BufrTableID& id) const               = 0;
+    virtual bool is_acceptable(const CrexTableID& id) const               = 0;
+    virtual BufrTable* choose_best(BufrTable& first,
+                                   BufrTable& second) const               = 0;
+    virtual CrexTable* choose_best(CrexTable& first,
+                                   CrexTable& second) const               = 0;
     virtual Table* choose_best(BufrTable& first, CrexTable& second) const = 0;
 };
 
@@ -285,7 +290,7 @@ struct CrexQuery : public Query
     }
 };
 
-}
+} // namespace
 
 struct Index
 {
@@ -296,7 +301,7 @@ struct Index
     explicit Index(const vector<string>& dirs)
     {
         // Index the directories
-        for (const auto& d: dirs)
+        for (const auto& d : dirs)
             this->dirs.push_back(Dir(d));
     }
 
@@ -307,18 +312,21 @@ struct Index
         if (i != bufr_cache.end())
             return i->second;
 
-        // If it is the first time this combination is requested, look for the best match
+        // If it is the first time this combination is requested, look for the
+        // best match
         BufrQuery query(id);
-        for (const auto& d: dirs)
+        for (const auto& d : dirs)
             query.search(d);
 
         if (auto result = query.result())
         {
             bufr_cache[id] = result;
-            notes::logf("Matched table %s for ce %hu sc %hu mt %hhu mtv %hhu mtlv %hhu\n",
-                    result->btable_id.c_str(),
-                    id.originating_centre, id.originating_subcentre,
-                    id.master_table_number, id.master_table_version_number, id.master_table_version_number_local);
+            notes::logf("Matched table %s for ce %hu sc %hu mt %hhu mtv %hhu "
+                        "mtlv %hhu\n",
+                        result->btable_id.c_str(), id.originating_centre,
+                        id.originating_subcentre, id.master_table_number,
+                        id.master_table_version_number,
+                        id.master_table_version_number_local);
             return result;
         }
         return nullptr;
@@ -326,9 +334,10 @@ struct Index
 
     void explain_find_bufr(const BufrTableID& id, FILE* out)
     {
-        // If it is the first time this combination is requested, look for the best match
+        // If it is the first time this combination is requested, look for the
+        // best match
         BufrQuery query(id);
-        for (const auto& d: dirs)
+        for (const auto& d : dirs)
             query.explain_search(d, out);
         query.explain_result(out);
     }
@@ -340,18 +349,19 @@ struct Index
         if (i != crex_cache.end())
             return i->second;
 
-        // If it is the first time this combination is requested, look for the best match
+        // If it is the first time this combination is requested, look for the
+        // best match
         CrexQuery query(id);
-        for (const auto& d: dirs)
+        for (const auto& d : dirs)
             query.search(d);
 
         if (auto result = query.result())
         {
             crex_cache[id] = result;
             notes::logf("Matched table %s for mt %hhu mtv %hhu mtlv %hhu\n",
-                    result->btable_id.c_str(),
-                    id.master_table_number, id.master_table_version_number,
-                    id.master_table_version_number_local);
+                        result->btable_id.c_str(), id.master_table_number,
+                        id.master_table_version_number,
+                        id.master_table_version_number_local);
             return result;
         }
         return nullptr;
@@ -359,17 +369,18 @@ struct Index
 
     void explain_find_crex(const CrexTableID& id, FILE* out)
     {
-        // If it is the first time this combination is requested, look for the best match
+        // If it is the first time this combination is requested, look for the
+        // best match
         CrexQuery query(id);
-        for (const auto& d: dirs)
+        for (const auto& d : dirs)
             query.explain_search(d, out);
         query.explain_result(out);
     }
 
     const tabledir::Table* find(const std::string& basename)
     {
-        for (const auto& d: dirs)
-            for (auto& t: d.tables)
+        for (const auto& d : dirs)
+            for (auto& t : d.tables)
                 if (t->btable_id == basename)
                     return t;
         return nullptr;
@@ -377,30 +388,24 @@ struct Index
 
     void print(FILE* out) const
     {
-        for (const auto& d: dirs)
-            for (const auto& t: d.tables)
+        for (const auto& d : dirs)
+            for (const auto& t : d.tables)
             {
-                fprintf(out, "%s/%s:", d.pathname.c_str(), t->btable_id.c_str());
+                fprintf(out, "%s/%s:", d.pathname.c_str(),
+                        t->btable_id.c_str());
                 t->print_id(out);
                 fprintf(out, "\n");
             }
     }
 };
 
-
 /*
  * Tabledirs
  */
 
-Tabledirs::Tabledirs()
-    : index(0)
-{
-}
+Tabledirs::Tabledirs() : index(0) {}
 
-Tabledirs::~Tabledirs()
-{
-    delete index;
-}
+Tabledirs::~Tabledirs() { delete index; }
 
 void Tabledirs::add_default_directories()
 {
@@ -421,7 +426,7 @@ void Tabledirs::add_directory(const std::string& dir)
         clean_dir = "/";
 
     // Do not add a duplicate directory
-    for (const auto& d: dirs)
+    for (const auto& d : dirs)
         if (d == clean_dir)
             return;
     dirs.push_back(clean_dir);
@@ -433,50 +438,63 @@ void Tabledirs::add_directory(const std::string& dir)
 
 const tabledir::Table* Tabledirs::find_bufr(const BufrTableID& id)
 {
-    if (!index) index = new tabledir::Index(dirs);
-    if (options::var_master_table_version_override == options::MasterTableVersionOverride::NONE)
+    if (!index)
+        index = new tabledir::Index(dirs);
+    if (options::var_master_table_version_override ==
+        options::MasterTableVersionOverride::NONE)
         return index->find_bufr(id);
     BufrTableID overridden(id);
-    if (options::var_master_table_version_override == options::MasterTableVersionOverride::NEWEST)
-        overridden.master_table_version_number = BufrTableID::MASTER_TABLE_VERSION_NUMBER_NEWEST;
+    if (options::var_master_table_version_override ==
+        options::MasterTableVersionOverride::NEWEST)
+        overridden.master_table_version_number =
+            BufrTableID::MASTER_TABLE_VERSION_NUMBER_NEWEST;
     else
-        overridden.master_table_version_number = options::var_master_table_version_override;
+        overridden.master_table_version_number =
+            options::var_master_table_version_override;
     return index->find_bufr(overridden);
 }
 
 const tabledir::Table* Tabledirs::find_crex(const CrexTableID& id)
 {
-    if (options::var_master_table_version_override == options::MasterTableVersionOverride::NONE)
+    if (options::var_master_table_version_override ==
+        options::MasterTableVersionOverride::NONE)
         return index->find_crex(id);
     CrexTableID overridden(id);
-    if (options::var_master_table_version_override == options::MasterTableVersionOverride::NEWEST)
-        overridden.master_table_version_number = CrexTableID::MASTER_TABLE_VERSION_NUMBER_NEWEST;
+    if (options::var_master_table_version_override ==
+        options::MasterTableVersionOverride::NEWEST)
+        overridden.master_table_version_number =
+            CrexTableID::MASTER_TABLE_VERSION_NUMBER_NEWEST;
     else
-        overridden.master_table_version_number = options::var_master_table_version_override;
+        overridden.master_table_version_number =
+            options::var_master_table_version_override;
     return index->find_crex(overridden);
 }
 
 const tabledir::Table* Tabledirs::find(const std::string& basename)
 {
-    if (!index) index = new tabledir::Index(dirs);
+    if (!index)
+        index = new tabledir::Index(dirs);
     return index->find(basename);
 }
 
 void Tabledirs::print(FILE* out)
 {
-    if (!index) index = new tabledir::Index(dirs);
+    if (!index)
+        index = new tabledir::Index(dirs);
     index->print(out);
 }
 
 void Tabledirs::explain_find_bufr(const BufrTableID& id, FILE* out)
 {
-    if (!index) index = new tabledir::Index(dirs);
+    if (!index)
+        index = new tabledir::Index(dirs);
     index->explain_find_bufr(id, out);
 }
 
 void Tabledirs::explain_find_crex(const CrexTableID& id, FILE* out)
 {
-    if (!index) index = new tabledir::Index(dirs);
+    if (!index)
+        index = new tabledir::Index(dirs);
     index->explain_find_crex(id, out);
 }
 
@@ -491,6 +509,5 @@ Tabledirs& Tabledirs::get()
     return *default_tabledir;
 }
 
-
-}
-}
+} // namespace tabledir
+} // namespace wreport

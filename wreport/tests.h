@@ -21,18 +21,18 @@
 #ifndef WREPORT_TESTS_UTILS
 #define WREPORT_TESTS_UTILS
 
-#include <wreport/fwd.h>
-#include <wreport/utils/tests.h>
-#include <wreport/varinfo.h>
-#include <wreport/bulletin.h>
-#include <wreport/tests.h>
-#include <wreport/notes.h>
+#include <cstdlib>
 #include <filesystem>
+#include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <iostream>
-#include <cstdlib>
+#include <wreport/bulletin.h>
+#include <wreport/fwd.h>
+#include <wreport/notes.h>
+#include <wreport/tests.h>
+#include <wreport/utils/tests.h>
+#include <wreport/varinfo.h>
 
 namespace wreport {
 namespace tests {
@@ -48,7 +48,8 @@ std::filesystem::path datafile(const std::filesystem::path& fname);
  * Returns the current path the variable is not defined and if deflt is
  * nullptr.
  */
-std::filesystem::path path_from_env(const char* varname, const char* deflt = nullptr);
+std::filesystem::path path_from_env(const char* varname,
+                                    const char* deflt = nullptr);
 
 /**
  * Read the entire contents of a test file into a string
@@ -62,45 +63,60 @@ std::string slurpfile(const std::filesystem::path& name);
  */
 std::vector<std::filesystem::path> all_test_files(const std::string& encoding);
 
-void track_bulletin(Bulletin& b, const char* tag, const std::filesystem::path& fname);
+void track_bulletin(Bulletin& b, const char* tag,
+                    const std::filesystem::path& fname);
 
-template<typename BULLETIN>
-std::unique_ptr<BULLETIN> decode_checked(const std::string& buf, const char* name)
+template <typename BULLETIN>
+std::unique_ptr<BULLETIN> decode_checked(const std::string& buf,
+                                         const char* name)
 {
-    try {
+    try
+    {
         return BULLETIN::decode(buf, name);
-    } catch (wreport::error_parse& e) {
-        try {
+    }
+    catch (wreport::error_parse& e)
+    {
+        try
+        {
             auto h = BULLETIN::decode_header(buf, name);
             h->print_structured(stderr);
-        } catch (wreport::error& e) {
+        }
+        catch (wreport::error& e)
+        {
             std::cerr << "Dump interrupted: " << e.what();
         }
         throw;
     }
 }
 
-template<typename BULLETIN>
-std::unique_ptr<BULLETIN> decode_checked(const std::string& buf, const char* name, FILE* verbose)
+template <typename BULLETIN>
+std::unique_ptr<BULLETIN> decode_checked(const std::string& buf,
+                                         const char* name, FILE* verbose)
 {
-    try {
+    try
+    {
         return BULLETIN::decode_verbose(buf, verbose, name);
-    } catch (wreport::error_parse& e1) {
-        try {
+    }
+    catch (wreport::error_parse& e1)
+    {
+        try
+        {
             auto h = BULLETIN::decode_header(buf, name);
             h->print_structured(stderr);
-        } catch (wreport::error& e2) {
+        }
+        catch (wreport::error& e2)
+        {
             std::cerr << "Dump interrupted: " << e2.what();
         }
         throw;
     }
 }
 
-template<typename BULLETIN>
-struct TestCodec
+template <typename BULLETIN> struct TestCodec
 {
     std::filesystem::path fname;
-    std::function<void(const BULLETIN&)> check_contents = [](const BULLETIN&) noexcept {};
+    std::function<void(const BULLETIN&)> check_contents =
+        [](const BULLETIN&) noexcept {};
 
     explicit TestCodec(const std::filesystem::path& fname) : fname(fname) {}
     virtual ~TestCodec() {}
@@ -110,27 +126,39 @@ struct TestCodec
 
 void assert_var_equal(const Var& actual, const Var& expected);
 void assert_var_not_equal(const Var& actual, const Var& expected);
-template<typename Val>
+template <typename Val>
 void assert_var_value_equal(const Var& actual, Val expected);
-template<typename Val>
+template <typename Val>
 void assert_var_value_not_equal(const Var& actual, Val expected);
-
 
 struct ActualVar : public Actual<Var>
 {
     explicit ActualVar(const Var& actual) : Actual<Var>(actual) {}
 
-    void operator==(const Var& expected) const { assert_var_equal(_actual, expected); }
-    void operator!=(const Var& expected) const { assert_var_not_equal(_actual, expected); }
-    template<typename Val>
-    void operator==(Val expected) const { assert_var_value_equal(_actual, expected); }
-    template<typename Val>
-    void operator!=(Val expected) const { assert_var_value_not_equal(_actual, expected); }
+    void operator==(const Var& expected) const
+    {
+        assert_var_equal(_actual, expected);
+    }
+    void operator!=(const Var& expected) const
+    {
+        assert_var_not_equal(_actual, expected);
+    }
+    template <typename Val> void operator==(Val expected) const
+    {
+        assert_var_value_equal(_actual, expected);
+    }
+    template <typename Val> void operator!=(Val expected) const
+    {
+        assert_var_value_not_equal(_actual, expected);
+    }
     void isset() const;
     void isunset() const;
 };
 
-inline ActualVar actual(const wreport::Var& actual) { return ActualVar(actual); }
+inline ActualVar actual(const wreport::Var& actual)
+{
+    return ActualVar(actual);
+}
 
 struct ActualVarcode : public Actual<Varcode>
 {
@@ -140,9 +168,12 @@ struct ActualVarcode : public Actual<Varcode>
     void operator!=(Varcode expected) const;
 };
 
-inline ActualVarcode actual_varcode(Varcode actual) { return ActualVarcode(actual); }
+inline ActualVarcode actual_varcode(Varcode actual)
+{
+    return ActualVarcode(actual);
+}
 
-}
-}
+} // namespace tests
+} // namespace wreport
 
 #endif

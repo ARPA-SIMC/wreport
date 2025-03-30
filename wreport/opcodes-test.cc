@@ -1,5 +1,5 @@
-#include "tests.h"
 #include "opcodes.h"
+#include "tests.h"
 
 using namespace wreport;
 using namespace wreport::tests;
@@ -32,4 +32,4 @@ class Tests : public TestCase
     }
 } test("opcode");
 
-}
+} // namespace

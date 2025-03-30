@@ -13,4 +13,4 @@ void Opcodes::print(FILE* out) const
             fprintf(out, "%d%02d%03d ", WR_VAR_FXY(*i));
 }
 
-}
+} // namespace wreport

@@ -38,19 +38,20 @@ extern "C" {
 namespace wreport {
 namespace lua {
 
-template<typename T>
-void push_object(lua_State* L, T* obj, const char* class_name, const luaL_Reg* lib)
+template <typename T>
+void push_object(lua_State* L, T* obj, const char* class_name,
+                 const luaL_Reg* lib)
 {
     // The object we create is a userdata that holds a pointer to obj
     T** s = (T**)lua_newuserdata(L, sizeof(T*));
-    *s = obj;
+    *s    = obj;
 
     // Set the metatable for the userdata
     if (luaL_newmetatable(L, class_name))
     {
         // If the metatable wasn't previously created, create it now
         lua_pushstring(L, "__index");
-        lua_pushvalue(L, -2);  /* pushes the metatable */
+        lua_pushvalue(L, -2); /* pushes the metatable */
         lua_settable(L, -3);  /* metatable.__index = metatable */
 
         // Load normal methods
@@ -64,8 +65,8 @@ void push_object(lua_State* L, T* obj, const char* class_name, const luaL_Reg* l
     lua_setmetatable(L, -2);
 }
 
-}
-}
+} // namespace lua
+} // namespace wreport
 
 #endif
 

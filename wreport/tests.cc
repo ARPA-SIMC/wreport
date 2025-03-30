@@ -3,9 +3,9 @@
 #include "utils/sys.h"
 #include <cstdlib>
 #include <cstring>
-#include <unistd.h>
-#include <sys/types.h>
 #include <pwd.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -43,15 +43,17 @@ std::vector<std::filesystem::path> all_test_files(const std::string& encoding)
     std::vector<std::filesystem::path> res;
     std::filesystem::path relroot(encoding);
     sys::Path dir(testdatadir);
-    for (const auto& i: dir)
+    for (const auto& i : dir)
         if (str::endswith(i.d_name, "." + encoding))
             res.push_back(relroot / i.d_name);
     return res;
 }
 
-void track_bulletin(Bulletin& b, const char* tag, const std::filesystem::path& fname)
+void track_bulletin(Bulletin& b, const char* tag,
+                    const std::filesystem::path& fname)
 {
-    std::filesystem::path dumpfname = "/tmp/bulletin-"s + fname.filename().native() + "-" + tag;
+    std::filesystem::path dumpfname =
+        "/tmp/bulletin-"s + fname.filename().native() + "-" + tag;
     FILE* out = fopen(dumpfname.c_str(), "wt");
     fprintf(out, "Contents of %s %s:\n", fname.c_str(), tag);
     b.print(out);
@@ -60,7 +62,8 @@ void track_bulletin(Bulletin& b, const char* tag, const std::filesystem::path& f
     fprintf(out, "\nStructure of %s %s:\n", fname.c_str(), tag);
     b.print_structured(out);
     fclose(out);
-    fprintf(stderr, "%s %s dumped as %s\n", fname.c_str(), tag, dumpfname.c_str());
+    fprintf(stderr, "%s %s dumped as %s\n", fname.c_str(), tag,
+            dumpfname.c_str());
 }
 
 namespace {
@@ -82,8 +85,7 @@ void compare_values(const Var& avar, const Var& evar, const std::string& name)
         throw TestFailed(ss.str());
     }
 }
-}
-
+} // namespace
 
 void assert_var_equal(const Var& avar, const Var& evar)
 {
@@ -91,7 +93,8 @@ void assert_var_equal(const Var& avar, const Var& evar)
     if (avar.code() != evar.code())
     {
         std::stringstream ss;
-        ss << "variable codes differ: expected " << varcode_format(evar.code()) << " actual " << varcode_format(avar.code());
+        ss << "variable codes differ: expected " << varcode_format(evar.code())
+           << " actual " << varcode_format(avar.code());
         throw TestFailed(ss.str());
     }
 
@@ -103,8 +106,10 @@ void assert_var_equal(const Var& avar, const Var& evar)
     const Var* eattr = evar.next_attr();
     while (true)
     {
-        if (!aattr && !eattr) break;
-        // If both exists but codes are different, one of the two is missing an attribute
+        if (!aattr && !eattr)
+            break;
+        // If both exists but codes are different, one of the two is missing an
+        // attribute
         if (aattr && eattr && aattr->code() != eattr->code())
         {
             // Set the highest one to NULL, and use the next check to
@@ -119,13 +124,18 @@ void assert_var_equal(const Var& avar, const Var& evar)
             std::stringstream ss;
             ss << "attributes differ: ";
             if (aattr)
-                ss << "actual has " << varcode_format(aattr->code()) << " which was not expected";
+                ss << "actual has " << varcode_format(aattr->code())
+                   << " which was not expected";
             else
-                ss << "actual does not have attribute " << varcode_format(eattr->code()) << " which was expected to be " << eattr->format("undefined");
+                ss << "actual does not have attribute "
+                   << varcode_format(eattr->code())
+                   << " which was expected to be "
+                   << eattr->format("undefined");
             throw TestFailed(ss.str());
         }
 
-        compare_values(*aattr, *eattr, "attribute " + varcode_format(aattr->code()));
+        compare_values(*aattr, *eattr,
+                       "attribute " + varcode_format(aattr->code()));
 
         // Move to the next attribute
         aattr = aattr->next_attr();
@@ -144,47 +154,57 @@ void assert_var_not_equal(const Var& actual, const Var& expected)
 }
 
 namespace {
-template<typename T> bool equals(T a, T b) { return a == b; }
+template <typename T> bool equals(T a, T b) { return a == b; }
 bool equals(const char* a, const char* b) { return strcmp(a, b) == 0; }
-}
+} // namespace
 
-template<typename Val>
+template <typename Val>
 void assert_var_value_equal(const Var& actual, Val expected)
 {
     Var vexpected(actual.info(), expected);
     if (!actual.value_equals(vexpected))
     {
         std::stringstream ss;
-        ss << "actual variable value is " << actual.format() << " (" << actual.enq<Val>() << ") instead of " << expected;
+        ss << "actual variable value is " << actual.format() << " ("
+           << actual.enq<Val>() << ") instead of " << expected;
         throw TestFailed(ss.str());
     }
 }
 
-template<typename Val>
+template <typename Val>
 void assert_var_value_not_equal(const Var& actual, Val expected)
 {
     if (equals(actual.enq<Val>(), expected))
     {
         std::stringstream ss;
-        ss << "actual variable value is " << actual.format() << " while it should be " << expected;
+        ss << "actual variable value is " << actual.format()
+           << " while it should be " << expected;
         throw TestFailed(ss.str());
     }
 }
 
 template void assert_var_value_equal<int>(const Var& actual, int expected);
-template void assert_var_value_equal<double>(const Var& actual, double expected);
+template void assert_var_value_equal<double>(const Var& actual,
+                                             double expected);
 template void assert_var_value_equal<char*>(const Var& actual, char* expected);
-template void assert_var_value_equal<char const*>(const Var& actual, char const* expected);
-template void assert_var_value_equal<std::string>(const Var& actual, std::string expected);
+template void assert_var_value_equal<char const*>(const Var& actual,
+                                                  char const* expected);
+template void assert_var_value_equal<std::string>(const Var& actual,
+                                                  std::string expected);
 template void assert_var_value_not_equal<int>(const Var& actual, int expected);
-template void assert_var_value_not_equal<double>(const Var& actual, double expected);
-template void assert_var_value_not_equal<char*>(const Var& actual, char* expected);
-template void assert_var_value_not_equal<char const*>(const Var& actual, char const* expected);
-template void assert_var_value_not_equal<std::string>(const Var& actual, std::string expected);
+template void assert_var_value_not_equal<double>(const Var& actual,
+                                                 double expected);
+template void assert_var_value_not_equal<char*>(const Var& actual,
+                                                char* expected);
+template void assert_var_value_not_equal<char const*>(const Var& actual,
+                                                      char const* expected);
+template void assert_var_value_not_equal<std::string>(const Var& actual,
+                                                      std::string expected);
 
 void ActualVar::isset() const
 {
-    if (_actual.isset()) return;
+    if (_actual.isset())
+        return;
     std::stringstream ss;
     ss << "actual variable is unset, but it should not be";
     throw TestFailed(ss.str());
@@ -192,30 +212,35 @@ void ActualVar::isset() const
 
 void ActualVar::isunset() const
 {
-    if (!_actual.isset()) return;
+    if (!_actual.isset())
+        return;
     std::stringstream ss;
-    ss << "actual variable value is " << _actual.format() << ", but it should be unset";
+    ss << "actual variable value is " << _actual.format()
+       << ", but it should be unset";
     throw TestFailed(ss.str());
 }
 
 void ActualVarcode::operator==(Varcode expected) const
 {
-    if (expected == _actual) return;
+    if (expected == _actual)
+        return;
     std::stringstream ss;
-    ss << "actual varcode value is " << varcode_format(_actual) << " but it should be " << varcode_format(expected);
+    ss << "actual varcode value is " << varcode_format(_actual)
+       << " but it should be " << varcode_format(expected);
     throw TestFailed(ss.str());
 }
 
 void ActualVarcode::operator!=(Varcode expected) const
 {
-    if (expected != _actual) return;
+    if (expected != _actual)
+        return;
     std::stringstream ss;
-    ss << "actual varcode value is " << varcode_format(_actual) << " but it should not be";
+    ss << "actual varcode value is " << varcode_format(_actual)
+       << " but it should not be";
     throw TestFailed(ss.str());
 }
 
-template<typename BULLETIN>
-void TestCodec<BULLETIN>::run()
+template <typename BULLETIN> void TestCodec<BULLETIN>::run()
 {
     WREPORT_TEST_INFO(test_info);
 
@@ -228,7 +253,8 @@ void TestCodec<BULLETIN>::run()
 
     test_info() << fname << ": decode original version, verbose version";
     FILE* out = fopen("/dev/null", "w");
-    auto msg1a = wcallchecked(decode_checked<BULLETIN>(raw1, fname.c_str(), out));
+    auto msg1a =
+        wcallchecked(decode_checked<BULLETIN>(raw1, fname.c_str(), out));
     wassert(check_contents(*msg1a));
     fclose(out);
 
@@ -270,5 +296,5 @@ void TestCodec<BULLETIN>::run()
 template class TestCodec<BufrBulletin>;
 template class TestCodec<CrexBulletin>;
 
-}
-}
+} // namespace tests
+} // namespace wreport

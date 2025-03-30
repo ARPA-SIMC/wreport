@@ -10,8 +10,8 @@
  * All wreport exceptions are derived from wreport::error, which is in turn
  * derived from std::exception.
  *
- * All wreport exceptions also have an exception specific error code, which makes
- * it easy to turn a caught exception into an errno-style error code, when
+ * All wreport exceptions also have an exception specific error code, which
+ * makes it easy to turn a caught exception into an errno-style error code, when
  * providing C or Fortran bindings.
  */
 
@@ -20,40 +20,41 @@ namespace wreport {
 /// C-style error codes used by exceptions
 enum ErrorCode {
     /// No error
-    WR_ERR_NONE                 =  0,
+    WR_ERR_NONE          = 0,
     /// Item not found
-    WR_ERR_NOTFOUND             =  1,
+    WR_ERR_NOTFOUND      = 1,
     /// Wrong variable type
-    WR_ERR_TYPE                 =  2,
+    WR_ERR_TYPE          = 2,
     /// Cannot allocate memory
-    WR_ERR_ALLOC                =  3,
+    WR_ERR_ALLOC         = 3,
     /// ODBC error
-    WR_ERR_ODBC                 =  4,
+    WR_ERR_ODBC          = 4,
     /// Handle management error
-    WR_ERR_HANDLES              =  5,
+    WR_ERR_HANDLES       = 5,
     /// Buffer is too short to fit data
-    WR_ERR_TOOLONG              =  6,
+    WR_ERR_TOOLONG       = 6,
     /// Error reported by the system
-    WR_ERR_SYSTEM               =  7,
+    WR_ERR_SYSTEM        = 7,
     /// Consistency check failed
-    WR_ERR_CONSISTENCY          =  8,
+    WR_ERR_CONSISTENCY   = 8,
     /// Parse error
-    WR_ERR_PARSE                =  9,
+    WR_ERR_PARSE         = 9,
     /// Write error
-    WR_ERR_WRITE                = 10,
+    WR_ERR_WRITE         = 10,
     /// Regular expression error
-    WR_ERR_REGEX                = 11,
+    WR_ERR_REGEX         = 11,
     /// Feature not implemented
-    WR_ERR_UNIMPLEMENTED        = 12,
+    WR_ERR_UNIMPLEMENTED = 12,
     /// Value outside acceptable domain
-    WR_ERR_DOMAIN               = 13
+    WR_ERR_DOMAIN        = 13
 };
 
 /**
  * Tell the compiler that a function always throws and expects printf-style
  * arguments
  */
-#define WREPORT_THROWF_ATTRS(a, b) __attribute__ ((noreturn, format(printf, a, b)))
+#define WREPORT_THROWF_ATTRS(a, b)                                             \
+    __attribute__((noreturn, format(printf, a, b)))
 
 /// Base class for DB-All.e exceptions
 class error : public std::exception
@@ -96,8 +97,7 @@ public:
 };
 
 namespace errors {
-template<ErrorCode ERROR_CODE>
-class StringBase : public error
+template <ErrorCode ERROR_CODE> class StringBase : public error
 {
 public:
     /// error message returned by what()
@@ -109,9 +109,8 @@ public:
     ErrorCode code() const noexcept override { return ERROR_CODE; }
 
     const char* what() const noexcept override { return msg.c_str(); }
-
 };
-}
+} // namespace errors
 
 /// Reports that a search-like function could not find what was requested.
 class error_notfound : public errors::StringBase<WR_ERR_NOTFOUND>
@@ -214,7 +213,8 @@ public:
     error_parse(const char* file, int line, const std::string& msg);
 
     /// Throw the exception, building the message printf-style
-    static void throwf(const char* file, int line, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4);
+    static void throwf(const char* file, int line, const char* fmt, ...)
+        WREPORT_THROWF_ATTRS(3, 4);
 };
 
 /// Report an error while handling regular expressions
@@ -233,7 +233,8 @@ public:
     error_regexp(int code, void* re, const std::string& msg);
 
     /// Throw the exception, building the message printf-style
-    static void throwf(int code, void* re, const char* fmt, ...) WREPORT_THROWF_ATTRS(3, 4);
+    static void throwf(int code, void* re, const char* fmt, ...)
+        WREPORT_THROWF_ATTRS(3, 4);
 };
 
 /// Reports that a feature is still not implemented.
@@ -256,5 +257,5 @@ public:
     static void throwf(const char* fmt, ...) WREPORT_THROWF_ATTRS(1, 2);
 };
 
-}
+} // namespace wreport
 #endif

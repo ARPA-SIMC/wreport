@@ -1,8 +1,8 @@
 #ifndef WREPORT_BULLETIN_BITMAPS_H
 #define WREPORT_BULLETIN_BITMAPS_H
 
-#include <wreport/var.h>
 #include <vector>
+#include <wreport/var.h>
 
 namespace wreport {
 struct Var;
@@ -74,7 +74,6 @@ struct Bitmaps
     /// Last bitmap used
     Bitmap* last = nullptr;
 
-
     Bitmaps() {}
     Bitmaps(const Bitmaps&) = delete;
     ~Bitmaps();
@@ -97,6 +96,6 @@ struct Bitmaps
     bool active() const { return (bool)current; }
 };
 
-}
-}
+} // namespace bulletin
+} // namespace wreport
 #endif

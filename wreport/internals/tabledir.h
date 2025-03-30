@@ -1,10 +1,10 @@
 #ifndef WREPORT_TABLEDIR_H
 #define WREPORT_TABLEDIR_H
 
-#include <wreport/tableinfo.h>
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <wreport/tableinfo.h>
 
 namespace wreport {
 struct Vartable;
@@ -31,8 +31,11 @@ struct BufrTable : Table
 {
     BufrTableID id;
 
-    BufrTable(const BufrTableID& id, const std::string& dirname, const std::string& filename)
-        : Table(dirname, filename), id(id) {}
+    BufrTable(const BufrTableID& id, const std::string& dirname,
+              const std::string& filename)
+        : Table(dirname, filename), id(id)
+    {
+    }
 
     void print_id(FILE* out) const override;
 };
@@ -42,12 +45,14 @@ struct CrexTable : Table
 {
     CrexTableID id;
 
-    CrexTable(const CrexTableID& id, const std::string& dirname, const std::string& filename)
-        : Table(dirname, filename), id(id) {}
+    CrexTable(const CrexTableID& id, const std::string& dirname,
+              const std::string& filename)
+        : Table(dirname, filename), id(id)
+    {
+    }
 
     void print_id(FILE* out) const override;
 };
-
 
 /// Indexed version of a table directory
 struct Dir
@@ -58,7 +63,7 @@ struct Dir
 
     Dir(const std::string& pathname);
     Dir(const Dir&) = delete;
-    Dir(Dir&&) = default;
+    Dir(Dir&&)      = default;
     ~Dir();
 
     Dir& operator=(const Dir&) = delete;
@@ -111,7 +116,7 @@ public:
     static Tabledirs& get();
 };
 
-}
-}
+} // namespace tabledir
+} // namespace wreport
 
 #endif

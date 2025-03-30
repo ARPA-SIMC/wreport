@@ -23,9 +23,9 @@
 #ifndef WREPORT_BULLETIN_DDS_VALIDATOR_H
 #define WREPORT_BULLETIN_DDS_VALIDATOR_H
 
+#include <vector>
 #include <wreport/bulletin.h>
 #include <wreport/bulletin/internals.h>
-#include <vector>
 
 namespace wreport {
 namespace bulletin {
@@ -50,7 +50,7 @@ public:
      */
     DDSValidator(const Bulletin& b, unsigned subset_idx);
 
-    //void define_bitmap(unsigned bitmap_size) override;
+    // void define_bitmap(unsigned bitmap_size) override;
     void define_substituted_value(unsigned pos) override;
     void define_attribute(Varinfo info, unsigned pos) override;
     void define_raw_character_data(Varcode code) override;
@@ -58,7 +58,7 @@ public:
     void encode_var(Varinfo info, const Var& var) override;
 };
 
-}
-}
+} // namespace bulletin
+} // namespace wreport
 
 #endif

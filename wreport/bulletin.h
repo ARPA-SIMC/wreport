@@ -1,13 +1,13 @@
 #ifndef WREPORT_BULLETIN_H
 #define WREPORT_BULLETIN_H
 
-#include <wreport/var.h>
-#include <wreport/subset.h>
-#include <wreport/opcodes.h>
-#include <wreport/tables.h>
-#include <wreport/fwd.h>
-#include <vector>
 #include <memory>
+#include <vector>
+#include <wreport/fwd.h>
+#include <wreport/opcodes.h>
+#include <wreport/subset.h>
+#include <wreport/tables.h>
+#include <wreport/var.h>
 
 namespace wreport {
 
@@ -50,12 +50,14 @@ public:
     /**
      * BUFR Master table number.
      *
-     * A master table may be defined for a scientific discipline other than meteorology.
-     * The current list of master tables, along with their associated values in
-     * octet 4, is as follows:
+     * A master table may be defined for a scientific discipline other than
+     * meteorology. The current list of master tables, along with their
+     * associated values in octet 4, is as follows:
      *
-     * \l 0: Meteorology maintained by the World Meteorological Organization (WMO)
-     * \l 10: Oceanography maintained by the Intergovernmental Oceanographic Commission (IOC) of UNESCO
+     * \l 0: Meteorology maintained by the World Meteorological Organization
+     * (WMO)
+     * \l 10: Oceanography maintained by the Intergovernmental Oceanographic
+     * Commission (IOC) of UNESCO
      */
     uint8_t master_table_number = 0;
 
@@ -100,13 +102,13 @@ public:
     uint8_t update_sequence_number = 0;
 
     /// Reference year in bulletin header
-    uint16_t rep_year = 0;
+    uint16_t rep_year  = 0;
     /// Reference month in bulletin header
-    uint8_t rep_month = 0;
+    uint8_t rep_month  = 0;
     /// Reference day in bulletin header
-    uint8_t rep_day = 0;
+    uint8_t rep_day    = 0;
     /// Reference hour in bulletin header
-    uint8_t rep_hour = 0;
+    uint8_t rep_hour   = 0;
     /// Reference minute in bulletin header
     uint8_t rep_minute = 0;
     /// Reference second in bulletin header
@@ -121,39 +123,38 @@ public:
     /// Decoded variables
     std::vector<Subset> subsets;
 
+    Bulletin();
+    virtual ~Bulletin();
 
-	Bulletin();
-	virtual ~Bulletin();
-
-	/// Reset the bulletin
-	virtual void clear();
+    /// Reset the bulletin
+    virtual void clear();
 
     /// Type of source/target encoding
-    virtual const char* encoding_name() const throw () = 0;
+    virtual const char* encoding_name() const throw() = 0;
 
-	/**
-	 * Get a Subset from the message.
-	 *
-	 * The subset will be created if it does not exist, and it will be
-	 * memory managed by the Bulletin.
-	 *
-	 * @param subsection
-	 *   The subsection index (starting from 0)
-	 */
-	Subset& obtain_subset(unsigned subsection);
+    /**
+     * Get a Subset from the message.
+     *
+     * The subset will be created if it does not exist, and it will be
+     * memory managed by the Bulletin.
+     *
+     * @param subsection
+     *   The subsection index (starting from 0)
+     */
+    Subset& obtain_subset(unsigned subsection);
 
-	/**
-	 * Get a Subset from the message.
-	 *
-	 * An exception will be thrown if the subset does not exist
-	 *
-	 * @param subsection
-	 *   The subsection index (starting from 0)
-	 */
-	const Subset& subset(unsigned subsection) const;
+    /**
+     * Get a Subset from the message.
+     *
+     * An exception will be thrown if the subset does not exist
+     *
+     * @param subsection
+     *   The subsection index (starting from 0)
+     */
+    const Subset& subset(unsigned subsection) const;
 
-	/// Load a new set of tables to use for encoding this message
-	virtual void load_tables() = 0;
+    /// Load a new set of tables to use for encoding this message
+    virtual void load_tables() = 0;
 
     /// Encode the message
     virtual std::string encode() const = 0;
@@ -175,7 +176,7 @@ public:
      * @param indent
      *   Indent all output by this amount of spaces
      */
-    void print_datadesc(FILE* out, unsigned indent=0) const;
+    void print_datadesc(FILE* out, unsigned indent = 0) const;
 
     /**
      * Compute the differences between two bulletins
@@ -193,7 +194,6 @@ public:
     /// Diff format-specific details
     virtual unsigned diff_details(const Bulletin& msg) const;
 };
-
 
 /// Options used to configure BUFR decoding
 class BufrCodecOptions
@@ -214,15 +214,14 @@ public:
      * Create a BufrCodecOptions
      *
      * Options may be added at any time to future versions of the structure. To
-     * reduce the likelyhook of breaking ABI, construction on stack is discouraged
-     * in favour of an allocator function.
+     * reduce the likelyhook of breaking ABI, construction on stack is
+     * discouraged in favour of an allocator function.
      */
     static std::unique_ptr<BufrCodecOptions> create();
 
 protected:
     BufrCodecOptions();
 };
-
 
 /// BUFR bulletin implementation
 class BufrBulletin : public Bulletin
@@ -265,45 +264,45 @@ public:
      *
      * This is only filled in during decoding.
      */
-    unsigned section_end[6] = { 0, 0, 0, 0, 0, 0 };
-
+    unsigned section_end[6] = {0, 0, 0, 0, 0, 0};
 
     virtual ~BufrBulletin() override;
 
     void clear() override;
-    const char* encoding_name() const throw () override { return "BUFR"; }
+    const char* encoding_name() const throw() override { return "BUFR"; }
     void load_tables() override;
     std::string encode() const override;
     void print_details(FILE* out) const override;
     unsigned diff_details(const Bulletin& msg) const override;
 
-	/**
-	 * Read an encoded BUFR message from a stream
-	 *
-	 * @param in
-	 *   The stream to read from
-	 * @param buf
-	 *   The buffer where the data will be written
-	 * @param fname
-	 *   File name to use in error messages
-	 * @retval offset
-	 *   The offset in the file of the beginning of the BUFR data
-	 * @returns
-	 *   true if a message was found, false on EOF
-	 */
-    static bool read(FILE* in, std::string& buf, const char* fname=0, off_t* offset=0);
+    /**
+     * Read an encoded BUFR message from a stream
+     *
+     * @param in
+     *   The stream to read from
+     * @param buf
+     *   The buffer where the data will be written
+     * @param fname
+     *   File name to use in error messages
+     * @retval offset
+     *   The offset in the file of the beginning of the BUFR data
+     * @returns
+     *   true if a message was found, false on EOF
+     */
+    static bool read(FILE* in, std::string& buf, const char* fname = 0,
+                     off_t* offset = 0);
 
-	/**
-	 * Write an encoded BUFR message to a stream
-	 *
-	 * @param buf
-	 *   The buffer with the data to write
-	 * @param out
-	 *   The stream to write to
-	 * @param fname
-	 *   File name to use in error messages
-	 */
-    static void write(const std::string& buf, FILE* out, const char* fname=0);
+    /**
+     * Write an encoded BUFR message to a stream
+     *
+     * @param buf
+     *   The buffer with the data to write
+     * @param out
+     *   The stream to write to
+     * @param fname
+     *   File name to use in error messages
+     */
+    static void write(const std::string& buf, FILE* out, const char* fname = 0);
 
     /**
      * To prevent breaking ABI if new members are added to bulletins, direct
@@ -323,7 +322,9 @@ public:
      *   error messages
      * @returns The new bulletin with the decoded message
      */
-    static std::unique_ptr<BufrBulletin> decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0);
+    static std::unique_ptr<BufrBulletin>
+    decode_header(const std::string& raw, const char* fname = "(memory)",
+                  size_t offset = 0);
 
     /**
      * Parse only the header of an encoded BUFR message
@@ -339,7 +340,9 @@ public:
      *   error messages
      * @returns The new bulletin with the decoded message
      */
-    static std::unique_ptr<BufrBulletin> decode_header(const std::string& raw, const BufrCodecOptions& opts, const char* fname="(memory)", size_t offset=0);
+    static std::unique_ptr<BufrBulletin>
+    decode_header(const std::string& raw, const BufrCodecOptions& opts,
+                  const char* fname = "(memory)", size_t offset = 0);
 
     /**
      * Parse an encoded BUFR message
@@ -353,7 +356,9 @@ public:
      *   error messages
      * @returns The new bulletin with the decoded message
      */
-    static std::unique_ptr<BufrBulletin> decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
+    static std::unique_ptr<BufrBulletin> decode(const std::string& raw,
+                                                const char* fname = "(memory)",
+                                                size_t offset     = 0);
 
     /**
      * Parse an encoded BUFR message, printing decoding information
@@ -369,7 +374,9 @@ public:
      *   error messages
      * @returns The new bulletin with the decoded message
      */
-    static std::unique_ptr<BufrBulletin> decode_verbose(const std::string& raw, FILE* out, const char* fname="(memory)", size_t offset=0);
+    static std::unique_ptr<BufrBulletin>
+    decode_verbose(const std::string& raw, FILE* out,
+                   const char* fname = "(memory)", size_t offset = 0);
 
     /**
      * Parse an encoded BUFR message
@@ -385,12 +392,14 @@ public:
      *   error messages
      * @returns The new bulletin with the decoded message
      */
-    static std::unique_ptr<BufrBulletin> decode(const std::string& raw, const BufrCodecOptions& opts, const char* fname="(memory)", size_t offset=0);
+    static std::unique_ptr<BufrBulletin> decode(const std::string& raw,
+                                                const BufrCodecOptions& opts,
+                                                const char* fname = "(memory)",
+                                                size_t offset     = 0);
 
 protected:
     BufrBulletin();
 };
-
 
 /// CREX bulletin implementation
 class CrexBulletin : public Bulletin
@@ -433,41 +442,41 @@ public:
     /// True if the CREX message uses the check digit feature
     bool has_check_digit = false;
 
-
     void clear() override;
-    const char* encoding_name() const throw () override { return "CREX"; }
+    const char* encoding_name() const throw() override { return "CREX"; }
     void load_tables() override;
     std::string encode() const override;
     void print_details(FILE* out) const override;
     unsigned diff_details(const Bulletin& msg) const override;
 
-	/**
-	 * Read an encoded BUFR message from a stream
-	 *
-	 * @param in
-	 *   The stream to read from
-	 * @param buf
-	 *   The buffer where the data will be written
-	 * @param fname
-	 *   File name to use in error messages
-	 * @retval offset
-	 *   The offset in the file of the beginning of the BUFR data
-	 * @returns
-	 *   true if a message was found, false on EOF
-	 */
-    static bool read(FILE* in, std::string& buf, const char* fname=0, off_t* offset=0);
+    /**
+     * Read an encoded BUFR message from a stream
+     *
+     * @param in
+     *   The stream to read from
+     * @param buf
+     *   The buffer where the data will be written
+     * @param fname
+     *   File name to use in error messages
+     * @retval offset
+     *   The offset in the file of the beginning of the BUFR data
+     * @returns
+     *   true if a message was found, false on EOF
+     */
+    static bool read(FILE* in, std::string& buf, const char* fname = 0,
+                     off_t* offset = 0);
 
-	/**
-	 * Write an encoded BUFR message to a stream
-	 *
-	 * @param buf
-	 *   The buffer with the data to write
-	 * @param out
-	 *   The stream to write to
-	 * @param fname
-	 *   File name to use in error messages
-	 */
-    static void write(const std::string& buf, FILE* out, const char* fname=0);
+    /**
+     * Write an encoded BUFR message to a stream
+     *
+     * @param buf
+     *   The buffer with the data to write
+     * @param out
+     *   The stream to write to
+     * @param fname
+     *   File name to use in error messages
+     */
+    static void write(const std::string& buf, FILE* out, const char* fname = 0);
 
     /**
      * To prevent breaking ABI if new members are added to bulletins, direct
@@ -487,7 +496,9 @@ public:
      *   error messages
      * @returns The new bulletin with the decoded message
      */
-    static std::unique_ptr<CrexBulletin> decode_header(const std::string& raw, const char* fname="(memory)", size_t offset=0);
+    static std::unique_ptr<CrexBulletin>
+    decode_header(const std::string& raw, const char* fname = "(memory)",
+                  size_t offset = 0);
 
     /**
      * Parse an encoded BUFR message
@@ -501,7 +512,9 @@ public:
      *   error messages
      * @returns The new bulletin with the decoded message
      */
-    static std::unique_ptr<CrexBulletin> decode(const std::string& raw, const char* fname="(memory)", size_t offset=0);
+    static std::unique_ptr<CrexBulletin> decode(const std::string& raw,
+                                                const char* fname = "(memory)",
+                                                size_t offset     = 0);
 
     /**
      * Parse an encoded BUFR message, printing decoding information
@@ -517,12 +530,13 @@ public:
      *   error messages
      * @returns The new bulletin with the decoded message
      */
-    static std::unique_ptr<CrexBulletin> decode_verbose(const std::string& raw, FILE* out, const char* fname="(memory)", size_t offset=0);
+    static std::unique_ptr<CrexBulletin>
+    decode_verbose(const std::string& raw, FILE* out,
+                   const char* fname = "(memory)", size_t offset = 0);
 
 protected:
     CrexBulletin();
 };
-
 
 /**
  * The bulletin namespace contains bulletin implementation details, internals
@@ -536,5 +550,5 @@ protected:
 namespace bulletin {
 }
 
-}
+} // namespace wreport
 #endif

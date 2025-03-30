@@ -1,5 +1,5 @@
-#include "wreport/tests.h"
 #include "dds-validator.h"
+#include "wreport/tests.h"
 #include "wreport/utils/string.h"
 #include <set>
 
@@ -11,23 +11,28 @@ namespace {
 
 void validate(Bulletin& b)
 {
-    try {
+    try
+    {
         // Validate them
         for (unsigned i = 0; i < b.subsets.size(); ++i)
         {
             bulletin::DDSValidator validator(b, i);
             validator.run();
         }
-    } catch (std::exception& e1) {
-        try {
+    }
+    catch (std::exception& e1)
+    {
+        try
+        {
             b.print_structured(stderr);
-        } catch (std::exception& e2) {
+        }
+        catch (std::exception& e2)
+        {
             cerr << "dump interrupted: " << e2.what() << endl;
         }
         throw TestFailed(e1.what());
     }
 }
-
 
 class Tests : public TestCase
 {
@@ -51,17 +56,20 @@ class Tests : public TestCase
             blacklist.insert("bufr/issue58.bufr");
 
             auto files = tests::all_test_files("bufr");
-            for (const auto& i: files)
+            for (const auto& i : files)
             {
-                if (str::startswith(i, "bufr/afl-")) continue;
+                if (str::startswith(i, "bufr/afl-"))
+                    continue;
                 WREPORT_TEST_INFO(test_info);
-                if (blacklist.find(i) != blacklist.end()) continue;
+                if (blacklist.find(i) != blacklist.end())
+                    continue;
 
                 // Read the whole contents of the test file
                 std::string raw1 = tests::slurpfile(i);
 
                 // Decode the original contents
-                unique_ptr<BufrBulletin> msg1 = wcallchecked(BufrBulletin::decode(raw1, i.c_str()));
+                unique_ptr<BufrBulletin> msg1 =
+                    wcallchecked(BufrBulletin::decode(raw1, i.c_str()));
 
                 // Validate them
                 test_info() << i;
@@ -74,16 +82,18 @@ class Tests : public TestCase
             blacklist.insert("crex/test-temp0.crex");
 
             auto files = tests::all_test_files("crex");
-            for (const auto& i: files)
+            for (const auto& i : files)
             {
                 WREPORT_TEST_INFO(test_info);
-                if (blacklist.find(i) != blacklist.end()) continue;
+                if (blacklist.find(i) != blacklist.end())
+                    continue;
 
                 // Read the whole contents of the test file
                 std::string raw1 = tests::slurpfile(i);
 
                 // Decode the original contents
-                unique_ptr<CrexBulletin> msg1 = wcallchecked(CrexBulletin::decode(raw1, i.c_str()));
+                unique_ptr<CrexBulletin> msg1 =
+                    wcallchecked(CrexBulletin::decode(raw1, i.c_str()));
 
                 // Validate them
                 test_info() << i;
@@ -93,4 +103,4 @@ class Tests : public TestCase
     }
 } test("bulletin_dds_validator");
 
-}
+} // namespace

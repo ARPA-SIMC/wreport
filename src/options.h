@@ -22,9 +22,9 @@
 #ifndef WREP_OPTIONS_H
 #define WREP_OPTIONS_H
 
-#include <wreport/varinfo.h>
-#include <vector>
 #include <memory>
+#include <vector>
+#include <wreport/varinfo.h>
 
 namespace wreport {
 struct Bulletin;
@@ -59,10 +59,7 @@ struct Options
     std::vector<wreport::Varcode> varcodes;
 
     // Initialise with default values
-    Options()
-        : crex(false), verbose(false), action(DUMP)
-    {
-    }
+    Options() : crex(false), verbose(false), action(DUMP) {}
 
     void init_varcodes(const char* str);
 };
@@ -70,8 +67,10 @@ struct Options
 struct RawHandler
 {
     virtual ~RawHandler() {}
-    virtual void handle_raw_bufr(const std::string& data, const char* fname, long offset) = 0;
-    virtual void handle_raw_crex(const std::string& data, const char* fname, long offset) = 0;
+    virtual void handle_raw_bufr(const std::string& data, const char* fname,
+                                 long offset) = 0;
+    virtual void handle_raw_crex(const std::string& data, const char* fname,
+                                 long offset) = 0;
     virtual void done() {}
 };
 
@@ -81,10 +80,12 @@ struct BulletinHeadHandler : public RawHandler
     virtual ~BulletinHeadHandler() {}
 
     /// Decode and handle the decoded bulletin
-    void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset) override;
+    void handle_raw_bufr(const std::string& raw_data, const char* fname,
+                         long offset) override;
 
     /// Decode and handle the decoded bulletin
-    void handle_raw_crex(const std::string& raw_data, const char* fname, long offset) override;
+    void handle_raw_crex(const std::string& raw_data, const char* fname,
+                         long offset) override;
 
     virtual void handle(wreport::Bulletin&) = 0;
 };
@@ -95,15 +96,18 @@ struct BulletinFullHandler : public RawHandler
     virtual ~BulletinFullHandler() {}
 
     /// Decode and handle the decoded bulletin
-    void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset) override;
+    void handle_raw_bufr(const std::string& raw_data, const char* fname,
+                         long offset) override;
 
     /// Decode and handle the decoded bulletin
-    void handle_raw_crex(const std::string& raw_data, const char* fname, long offset) override;
+    void handle_raw_crex(const std::string& raw_data, const char* fname,
+                         long offset) override;
 
     virtual void handle(wreport::Bulletin&) = 0;
 };
 
 // Signature for functions that read bulletins from a file
-typedef void (*bulletin_reader)(const Options&, const char*, RawHandler& handler);
+typedef void (*bulletin_reader)(const Options&, const char*,
+                                RawHandler& handler);
 
 #endif

@@ -1,5 +1,5 @@
-#include "tests.h"
 #include "bulletin.h"
+#include "tests.h"
 
 using namespace wreport;
 using namespace wreport::tests;
@@ -16,14 +16,18 @@ class Tests : public TestCase
         add_method("obtain_subset", []() {
             unique_ptr<BufrBulletin> b(BufrBulletin::create());
             wassert(actual(b->subsets.size()) == 0u);
-            try {
+            try
+            {
                 b->obtain_subset(0);
                 throw TestFailed("error_consistency was not thrown");
-            } catch (error_consistency& e) {
-                wassert(actual(e.what()).contains("BUFR/CREX tables not loaded"));
+            }
+            catch (error_consistency& e)
+            {
+                wassert(
+                    actual(e.what()).contains("BUFR/CREX tables not loaded"));
             }
         });
     }
 } test("bulletin");
 
-}
+} // namespace

@@ -19,38 +19,40 @@
  * Author: Enrico Zini <enrico@enricozini.com>
  */
 
-#include <wreport/bulletin.h>
-#include <wreport/bulletin/dds-scanfeatures.h>
 #include "options.h"
 #include <cstring>
+#include <wreport/bulletin.h>
+#include <wreport/bulletin/dds-scanfeatures.h>
 
 struct PrintContents : public BulletinFullHandler
 {
     FILE* out;
-    PrintContents(FILE* out=stderr) : out(out) {}
+    PrintContents(FILE* out = stderr) : out(out) {}
 
     /// Dump the contents of a message
-    void handle(wreport::Bulletin& b) override
-    {
-        b.print(out);
-    }
+    void handle(wreport::Bulletin& b) override { b.print(out); }
 };
 
 struct PrintTrace : public BulletinFullHandler
 {
     FILE* out;
-    PrintTrace(FILE* out=stderr) : out(out) {}
+    PrintTrace(FILE* out = stderr) : out(out) {}
 
-    void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset) override
+    void handle_raw_bufr(const std::string& raw_data, const char* fname,
+                         long offset) override
     {
-        try {
+        try
+        {
             // Decode the raw data. fname and offset are optional and we pass
             // them just to have nicer error messages
-            auto bulletin = wreport::BufrBulletin::decode_verbose(raw_data, out, fname, offset);
+            auto bulletin = wreport::BufrBulletin::decode_verbose(
+                raw_data, out, fname, offset);
 
             // Do something with the decoded information
             handle(*bulletin);
-        } catch (std::exception& e) {
+        }
+        catch (std::exception& e)
+        {
             fprintf(stderr, "%s:%ld:%s\n", fname, offset, e.what());
         }
     }
@@ -60,32 +62,26 @@ struct PrintTrace : public BulletinFullHandler
 struct PrintStructure : public BulletinFullHandler
 {
     FILE* out;
-    PrintStructure(FILE* out=stderr) : out(out) {}
+    PrintStructure(FILE* out = stderr) : out(out) {}
 
     /// Dump the contents of a message, with structure
-    void handle(wreport::Bulletin& b) override
-    {
-        b.print_structured(out);
-    }
+    void handle(wreport::Bulletin& b) override { b.print_structured(out); }
 };
 
 struct PrintDDS : public BulletinHeadHandler
 {
     FILE* out;
-    PrintDDS(FILE* out=stderr) : out(out) {}
+    PrintDDS(FILE* out = stderr) : out(out) {}
 
     /// Dump the contents of the Data Descriptor Section a message
-    void handle(wreport::Bulletin& b) override
-    {
-        b.print_datadesc(out);
-    }
+    void handle(wreport::Bulletin& b) override { b.print_datadesc(out); }
 };
 
 struct PrintTables : public BulletinHeadHandler
 {
     FILE* out;
     bool header_printed;
-    PrintTables(FILE* out=stderr) : out(out), header_printed(false) {}
+    PrintTables(FILE* out = stderr) : out(out), header_printed(false) {}
 
     /// Dump the contents of the Data Descriptor Section a message
     void handle(wreport::Bulletin& b) override
@@ -94,13 +90,14 @@ struct PrintTables : public BulletinHeadHandler
         {
             if (!header_printed)
             {
-                fprintf(out, "%-*s\tOffset\tCentre\tSubc.\tMaster\tLocal\n", (int)b.fname.size(), "Filename");
+                fprintf(out, "%-*s\tOffset\tCentre\tSubc.\tMaster\tLocal\n",
+                        (int)b.fname.size(), "Filename");
                 header_printed = true;
             }
-            fprintf(out, "%s\t%zd\t%d\t%d\t%d\t%d\n",
-                    b.fname.c_str(), b.offset,
+            fprintf(out, "%s\t%zd\t%d\t%d\t%d\t%d\n", b.fname.c_str(), b.offset,
                     m->originating_centre, m->originating_subcentre,
-                    m->master_table_version_number, m->master_table_version_number_local);
+                    m->master_table_version_number,
+                    m->master_table_version_number_local);
         }
         else if (const CrexBulletin* m = dynamic_cast<const CrexBulletin*>(&b))
         {
@@ -109,14 +106,14 @@ struct PrintTables : public BulletinHeadHandler
                 fprintf(out, "Filename\tOffset\tMaster\tEdition\tTable\n");
                 header_printed = true;
             }
-            fprintf(out, "%s\t%zd\t%d\t%d\t%d\n",
-                    b.fname.c_str(), b.offset,
-                    m->master_table_number, m->edition_number, m->master_table_version_number);
+            fprintf(out, "%s\t%zd\t%d\t%d\t%d\n", b.fname.c_str(), b.offset,
+                    m->master_table_number, m->edition_number,
+                    m->master_table_version_number);
         }
         else
         {
-            fprintf(out, "%s\t%zd\tunknown message type\n",
-                    b.fname.c_str(), b.offset);
+            fprintf(out, "%s\t%zd\tunknown message type\n", b.fname.c_str(),
+                    b.offset);
         }
     }
 };
@@ -124,7 +121,7 @@ struct PrintTables : public BulletinHeadHandler
 struct PrintFeatures : public BulletinHeadHandler
 {
     FILE* out;
-    PrintFeatures(FILE* out=stderr) : out(out) {}
+    PrintFeatures(FILE* out = stderr) : out(out) {}
 
     /// Dump the contents of the Data Descriptor Section a message
     void handle(wreport::Bulletin& b) override
@@ -133,12 +130,13 @@ struct PrintFeatures : public BulletinHeadHandler
         scan.run();
         fprintf(out, "%s:%zd:", b.fname.c_str(), b.offset);
         bool first = true;
-        for (const auto& f: scan.features)
+        for (const auto& f : scan.features)
             if (first)
             {
                 fprintf(out, "%s", f.c_str());
                 first = false;
-            } else
+            }
+            else
                 fprintf(out, ",%s", f.c_str());
         fprintf(out, "\n");
     }

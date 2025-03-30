@@ -1,7 +1,7 @@
 #include "benchmark.h"
 #include "var.h"
-#include <vector>
 #include <cstdlib>
+#include <vector>
 
 using namespace wreport;
 using namespace wreport::benchmark;
@@ -38,22 +38,12 @@ struct VarBenchmark : Benchmark
     Task setb;
 
     VarBenchmark(const std::string& name)
-        : Benchmark(name),
-          create_unset(this, "new"),
-          create_i(this, "newi"),
-          create_d(this, "newd"),
-          create_c(this, "newc"),
-          create_b(this, "newb"),
-          isset(this, "isset"),
-          enqi(this, "enqi"),
-          enqd(this, "enqd"),
-          enqc(this, "enqc"),
-          enqb(this, "enqb"),
-          unset(this, "unset"),
-          seti(this, "seti"),
-          setd(this, "setd"),
-          setc(this, "setc"),
-          setb(this, "setb")
+        : Benchmark(name), create_unset(this, "new"), create_i(this, "newi"),
+          create_d(this, "newd"), create_c(this, "newc"),
+          create_b(this, "newb"), isset(this, "isset"), enqi(this, "enqi"),
+          enqd(this, "enqd"), enqc(this, "enqc"), enqb(this, "enqb"),
+          unset(this, "unset"), seti(this, "seti"), setd(this, "setd"),
+          setc(this, "setc"), setb(this, "setb")
     {
         repetitions = 100;
     }
@@ -61,16 +51,18 @@ struct VarBenchmark : Benchmark
     void setup_main()
     {
         Benchmark::setup_main();
-        varinfo_int.set_bufr(WR_VAR(0, 0, 0), "test integer variable", "number", 0, 10, 0, 10);
-        varinfo_double.set_bufr(WR_VAR(0, 0, 0), "test double variable", "number", 5, 10, -100000, 10);
+        varinfo_int.set_bufr(WR_VAR(0, 0, 0), "test integer variable", "number",
+                             0, 10, 0, 10);
+        varinfo_double.set_bufr(WR_VAR(0, 0, 0), "test double variable",
+                                "number", 5, 10, -100000, 10);
         varinfo_string.set_string(WR_VAR(0, 0, 0), "test string variable", 32);
         varinfo_binary.set_binary(WR_VAR(0, 0, 0), "test binary variable", 20);
         // Allocate space for the test vars
         vars_unset = (Var*)malloc(vars_count * sizeof(Var));
-        vars_i = (Var*)malloc(vars_count * sizeof(Var));
-        vars_d = (Var*)malloc(vars_count * sizeof(Var));
-        vars_c = (Var*)malloc(vars_count * sizeof(Var));
-        vars_b = (Var*)malloc(vars_count * sizeof(Var));
+        vars_i     = (Var*)malloc(vars_count * sizeof(Var));
+        vars_d     = (Var*)malloc(vars_count * sizeof(Var));
+        vars_c     = (Var*)malloc(vars_count * sizeof(Var));
+        vars_b     = (Var*)malloc(vars_count * sizeof(Var));
     }
 
     void teardown_main()
@@ -90,10 +82,10 @@ struct VarBenchmark : Benchmark
             {
                 switch (i % 4)
                 {
-                    case 0: new(&vars_unset[i]) Var(&varinfo_int); break;
-                    case 1: new(&vars_unset[i]) Var(&varinfo_double); break;
-                    case 2: new(&vars_unset[i]) Var(&varinfo_string); break;
-                    case 3: new(&vars_unset[i]) Var(&varinfo_binary); break;
+                    case 0: new (&vars_unset[i]) Var(&varinfo_int); break;
+                    case 1: new (&vars_unset[i]) Var(&varinfo_double); break;
+                    case 2: new (&vars_unset[i]) Var(&varinfo_string); break;
+                    case 3: new (&vars_unset[i]) Var(&varinfo_binary); break;
                 }
             }
         });
@@ -102,10 +94,14 @@ struct VarBenchmark : Benchmark
             {
                 switch (i % 4)
                 {
-                    case 0: new(&vars_i[i]) Var(&varinfo_int,           0); break;
-                    case 1: new(&vars_i[i]) Var(&varinfo_int,         100); break;
-                    case 2: new(&vars_i[i]) Var(&varinfo_int,  1234567890); break;
-                    case 3: new(&vars_i[i]) Var(&varinfo_int, -1234567890); break;
+                    case 0: new (&vars_i[i]) Var(&varinfo_int, 0); break;
+                    case 1: new (&vars_i[i]) Var(&varinfo_int, 100); break;
+                    case 2:
+                        new (&vars_i[i]) Var(&varinfo_int, 1234567890);
+                        break;
+                    case 3:
+                        new (&vars_i[i]) Var(&varinfo_int, -1234567890);
+                        break;
                 }
             }
         });
@@ -114,10 +110,14 @@ struct VarBenchmark : Benchmark
             {
                 switch (i % 4)
                 {
-                    case 0: new(&vars_d[i]) Var(&varinfo_double,     0.0); break;
-                    case 1: new(&vars_d[i]) Var(&varinfo_double,    -1.0); break;
-                    case 2: new(&vars_d[i]) Var(&varinfo_double,  1234.56789); break;
-                    case 3: new(&vars_d[i]) Var(&varinfo_double, -1234.56789); break;
+                    case 0: new (&vars_d[i]) Var(&varinfo_double, 0.0); break;
+                    case 1: new (&vars_d[i]) Var(&varinfo_double, -1.0); break;
+                    case 2:
+                        new (&vars_d[i]) Var(&varinfo_double, 1234.56789);
+                        break;
+                    case 3:
+                        new (&vars_d[i]) Var(&varinfo_double, -1234.56789);
+                        break;
                 }
             }
         });
@@ -126,10 +126,15 @@ struct VarBenchmark : Benchmark
             {
                 switch (i % 4)
                 {
-                    case 0: new(&vars_c[i]) Var(&varinfo_string, ""); break;
-                    case 1: new(&vars_c[i]) Var(&varinfo_string, "foo"); break;
-                    case 2: new(&vars_c[i]) Var(&varinfo_string, "lorem ipsum dolor sit antani"); break;
-                    case 3: new(&vars_c[i]) Var(&varinfo_string, "foobarbaz"); break;
+                    case 0: new (&vars_c[i]) Var(&varinfo_string, ""); break;
+                    case 1: new (&vars_c[i]) Var(&varinfo_string, "foo"); break;
+                    case 2:
+                        new (&vars_c[i]) Var(&varinfo_string,
+                                             "lorem ipsum dolor sit antani");
+                        break;
+                    case 3:
+                        new (&vars_c[i]) Var(&varinfo_string, "foobarbaz");
+                        break;
                 }
             }
         });
@@ -138,10 +143,18 @@ struct VarBenchmark : Benchmark
             {
                 switch (i % 4)
                 {
-                    case 0: new(&vars_b[i]) Var(&varinfo_binary, "\x00\x00"); break;
-                    case 1: new(&vars_b[i]) Var(&varinfo_binary, "\xff\xff"); break;
-                    case 2: new(&vars_b[i]) Var(&varinfo_binary, "\xaa\xaa"); break;
-                    case 3: new(&vars_b[i]) Var(&varinfo_binary, "\xca\xfe"); break;
+                    case 0:
+                        new (&vars_b[i]) Var(&varinfo_binary, "\x00\x00");
+                        break;
+                    case 1:
+                        new (&vars_b[i]) Var(&varinfo_binary, "\xff\xff");
+                        break;
+                    case 2:
+                        new (&vars_b[i]) Var(&varinfo_binary, "\xaa\xaa");
+                        break;
+                    case 3:
+                        new (&vars_b[i]) Var(&varinfo_binary, "\xca\xfe");
+                        break;
                 }
             }
         });
@@ -210,9 +223,9 @@ struct VarBenchmark : Benchmark
         seti.collect([&]() {
             for (unsigned i = 0; i < vars_count; ++i)
             {
-                vars_i[i].seti(          0);
-                vars_i[i].seti(        100);
-                vars_i[i].seti( 1234567890);
+                vars_i[i].seti(0);
+                vars_i[i].seti(100);
+                vars_i[i].seti(1234567890);
                 vars_i[i].seti(-1234567890);
                 vars_d[i].seti(-1234567890);
             }
@@ -220,10 +233,10 @@ struct VarBenchmark : Benchmark
         setd.collect([&]() {
             for (unsigned i = 0; i < vars_count; ++i)
             {
-                vars_i[i].setd( 1234567890);
-                vars_d[i].setd(    0.0    );
-                vars_d[i].setd(   -1.0    );
-                vars_d[i].setd( 1234.56789);
+                vars_i[i].setd(1234567890);
+                vars_d[i].setd(0.0);
+                vars_d[i].setd(-1.0);
+                vars_d[i].setd(1234.56789);
                 vars_d[i].setd(-1234.56789);
             }
         });
@@ -250,5 +263,4 @@ struct VarBenchmark : Benchmark
     }
 } test("var");
 
-}
-
+} // namespace

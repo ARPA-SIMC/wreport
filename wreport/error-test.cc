@@ -1,5 +1,5 @@
-#include "tests.h"
 #include "error.h"
+#include "tests.h"
 
 using namespace wreport;
 using namespace wreport::tests;
@@ -14,121 +14,166 @@ class Tests : public TestCase
     void register_tests() override
     {
         add_method("notfound", []() {
-            try {
+            try
+            {
                 throw error_notfound("foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_NOTFOUND);
                 wassert(actual(string(e.what())) == "foo");
             }
 
-            try {
+            try
+            {
                 error_notfound::throwf("%d", 42);
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_NOTFOUND);
                 wassert(actual(string(e.what())) == "42");
             }
         });
 
         add_method("type", []() {
-            try {
+            try
+            {
                 throw error_type("foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_TYPE);
                 wassert(actual(string(e.what())) == "foo");
             }
 
-            try {
+            try
+            {
                 error_type::throwf("%d", 42);
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_TYPE);
                 wassert(actual(string(e.what())) == "42");
             }
         });
 
         add_method("alloc", []() {
-            try {
+            try
+            {
                 throw error_alloc("foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_ALLOC);
                 wassert(actual(string(e.what())) == "foo");
             }
         });
 
         add_method("handles", []() {
-            try {
+            try
+            {
                 throw error_handles("foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_HANDLES);
                 wassert(actual(string(e.what())) == "foo");
             }
 
-            try {
+            try
+            {
                 error_handles::throwf("%d", 42);
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_HANDLES);
                 wassert(actual(string(e.what())) == "42");
             }
         });
 
         add_method("toolong", []() {
-            try {
+            try
+            {
                 throw error_toolong("foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_TOOLONG);
                 wassert(actual(string(e.what())) == "foo");
             }
 
-            try {
+            try
+            {
                 error_toolong::throwf("%d", 42);
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_TOOLONG);
                 wassert(actual(string(e.what())) == "42");
             }
         });
 
         add_method("system", []() {
-            try {
+            try
+            {
                 throw error_system("foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_SYSTEM);
                 wassert(actual(string(e.what()).substr(0, 5)) == "foo: ");
             }
 
-            try {
+            try
+            {
                 error_system::throwf("%d", 42);
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_SYSTEM);
                 wassert(actual(string(e.what()).substr(0, 4)) == "42: ");
             }
         });
 
         add_method("consistency", []() {
-            try {
+            try
+            {
                 throw error_consistency("foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_CONSISTENCY);
                 wassert(actual(string(e.what())) == "foo");
             }
 
-            try {
+            try
+            {
                 error_consistency::throwf("%d", 42);
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_CONSISTENCY);
                 wassert(actual(string(e.what())) == "42");
             }
         });
 
         add_method("parse", []() {
-            try {
+            try
+            {
                 throw error_parse("file", 42, "foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_PARSE);
                 wassert(actual(string(e.what())) == "file:42: foo");
             }
 
-            try {
+            try
+            {
                 error_parse::throwf("file", 42, "%d", 42);
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_PARSE);
                 wassert(actual(string(e.what())) == "file:42: 42");
             }
@@ -139,32 +184,44 @@ class Tests : public TestCase
         });
 
         add_method("unimplemented", []() {
-            try {
+            try
+            {
                 throw error_unimplemented("foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_UNIMPLEMENTED);
                 wassert(actual(string(e.what())) == "foo");
             }
 
-            try {
+            try
+            {
                 error_unimplemented::throwf("%d", 42);
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_UNIMPLEMENTED);
                 wassert(actual(string(e.what())) == "42");
             }
         });
 
         add_method("domain", []() {
-            try {
+            try
+            {
                 throw error_domain("foo");
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_DOMAIN);
                 wassert(actual(string(e.what())) == "foo");
             }
 
-            try {
+            try
+            {
                 error_domain::throwf("%d", 42);
-            } catch (error& e) {
+            }
+            catch (error& e)
+            {
                 wassert(actual(e.code()) == WR_ERR_DOMAIN);
                 wassert(actual(string(e.what())) == "42");
             }
@@ -172,4 +229,4 @@ class Tests : public TestCase
     }
 } tests("error");
 
-}
+} // namespace

@@ -1,8 +1,8 @@
+#include "buffers/crex.h"
 #include "bulletin.h"
 #include "bulletin/interpreter.h"
-#include "buffers/crex.h"
-#include <cstring>
 #include "config.h"
+#include <cstring>
 
 // #define TRACE_DECODER
 
@@ -10,7 +10,10 @@
 #define TRACE(...) fprintf(stderr, __VA_ARGS__)
 #define IFTRACE if (1)
 #else
-#define TRACE(...) do { } while (0)
+#define TRACE(...)                                                             \
+    do                                                                         \
+    {                                                                          \
+    } while (0)
 #define IFTRACE if (0)
 #endif
 
@@ -25,7 +28,9 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
     /* Read crex section 0 (Indicator section) */
     in.check_available_data(6, "initial header of CREX message");
     if (strncmp(in.cur, "CREX++", 6) != 0)
-        in.parse_error("data does not start with CREX header (\"%.6s\" was read instead)", in.cur);
+        in.parse_error(
+            "data does not start with CREX header (\"%.6s\" was read instead)",
+            in.cur);
 
     in.skip_data_and_spaces(6);
     TRACE(" -> is CREX\n");
@@ -40,11 +45,11 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
     {
         char edition[11];
         in.read_word(edition, 11);
-        if (sscanf(edition, "T%02hhu%02hhu%02hhu",
-                    &(out.master_table_number),
-                    &(out.edition_number),
-                    &(out.master_table_version_number)) != 3)
-            error_consistency::throwf("Edition (%s) is not in format Ttteevv", edition);
+        if (sscanf(edition, "T%02hhu%02hhu%02hhu", &(out.master_table_number),
+                   &(out.edition_number),
+                   &(out.master_table_version_number)) != 3)
+            error_consistency::throwf("Edition (%s) is not in format Ttteevv",
+                                      edition);
         out.master_table_version_number_bufr = 0;
         TRACE(" -> edition %d\n", strtol(edition_number + 1, 0, 10));
     }
@@ -52,28 +57,32 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
     /* A<atable code> */
     in.check_eof("A code");
     if (*in.cur != 'A')
-        in.parse_error("A Table informations not found in CREX data description");
+        in.parse_error(
+            "A Table informations not found in CREX data description");
     {
         char atable[20];
         in.read_word(atable, 20);
         TRACE("ATABLE \"%s\"\n", atable);
-        unsigned val = static_cast<unsigned>(strtoul(atable+1, 0, 10));
-        switch (strlen(atable)-1)
+        unsigned val = static_cast<unsigned>(strtoul(atable + 1, 0, 10));
+        switch (strlen(atable) - 1)
         {
             case 3:
-                out.data_category = static_cast<uint8_t>(val);
-                out.data_subcategory = 0xff;
+                out.data_category          = static_cast<uint8_t>(val);
+                out.data_subcategory       = 0xff;
                 out.data_subcategory_local = 0;
                 TRACE(" -> category %d\n", strtol(atable, 0, 10));
                 break;
             case 6:
-                out.data_category = static_cast<uint8_t>(val / 1000);
-                out.data_subcategory = static_cast<uint8_t>(val % 1000);
+                out.data_category          = static_cast<uint8_t>(val / 1000);
+                out.data_subcategory       = static_cast<uint8_t>(val % 1000);
                 out.data_subcategory_local = 0xff;
-                TRACE(" -> category %d, subcategory %d\n", val / 1000, val % 1000);
+                TRACE(" -> category %d, subcategory %d\n", val / 1000,
+                      val % 1000);
                 break;
             default:
-                error_consistency::throwf("Cannot parse an A table indicator %zu digits long", strlen(atable));
+                error_consistency::throwf(
+                    "Cannot parse an A table indicator %zu digits long",
+                    strlen(atable));
         }
     }
 
@@ -83,7 +92,8 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
     out.has_check_digit = false;
     while (1)
     {
-        if (*in.cur == 'B' || *in.cur == 'R' || *in.cur == 'C' || *in.cur == 'D')
+        if (*in.cur == 'B' || *in.cur == 'R' || *in.cur == 'C' ||
+            *in.cur == 'D')
         {
             in.check_available_data(6, "one data descriptor");
             out.datadesc.push_back(varcode_parse(in.cur));
@@ -91,24 +101,26 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
         }
         else if (*in.cur == 'E')
         {
-            out.has_check_digit = true;
-            in.has_check_digit = true;
+            out.has_check_digit     = true;
+            in.has_check_digit      = true;
             in.expected_check_digit = 1;
             in.skip_data_and_spaces(1);
         }
         else if (*in.cur == '+')
         {
             in.check_available_data(1, "end of data descriptor section");
-            if (*(in.cur+1) != '+')
-                in.parse_error("data descriptor section ends with only one '+'");
+            if (*(in.cur + 1) != '+')
+                in.parse_error(
+                    "data descriptor section ends with only one '+'");
             in.skip_data_and_spaces(2);
             break;
         }
     }
-    IFTRACE{
+    IFTRACE
+    {
         TRACE(" -> data descriptor section:");
         for (vector<Varcode>::const_iterator i = out.datadesc.begin();
-                i != out.datadesc.end(); ++i)
+             i != out.datadesc.end(); ++i)
             TRACE(" %01d%02d%03d", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
         TRACE("\n");
     }
@@ -117,7 +129,6 @@ void decode_header(buffers::CrexInput& in, CrexBulletin& out)
     out.load_tables();
 }
 
-
 struct CrexParser : public bulletin::Interpreter
 {
     /// Subset where decoded variables go
@@ -125,7 +136,8 @@ struct CrexParser : public bulletin::Interpreter
     buffers::CrexInput& in;
 
     CrexParser(Bulletin& bulletin, unsigned subset_idx, buffers::CrexInput& in)
-        : Interpreter(bulletin.tables, bulletin.datadesc), output_subset(bulletin.obtain_subset(subset_idx)), in(in)
+        : Interpreter(bulletin.tables, bulletin.datadesc),
+          output_subset(bulletin.obtain_subset(subset_idx)), in(in)
     {
     }
 
@@ -139,7 +151,8 @@ struct CrexParser : public bulletin::Interpreter
         // Parse value from the data section
         const char* d_start;
         const char* d_end;
-        in.parse_value(info->len, info->type != Vartype::String, &d_start, &d_end);
+        in.parse_value(info->len, info->type != Vartype::String, &d_start,
+                       &d_end);
 
         /* If the variable is not missing, set its value */
         if (*d_start != '/')
@@ -148,7 +161,9 @@ struct CrexParser : public bulletin::Interpreter
             {
                 std::string buf(d_start, d_end - d_start);
                 var.setc(buf.c_str());
-            } else {
+            }
+            else
+            {
                 int val = static_cast<int>(strtol(d_start, 0, 10));
                 var.seti(val);
                 res = val;
@@ -157,16 +172,16 @@ struct CrexParser : public bulletin::Interpreter
 
         /* Store the variable that we found */
         output_subset.store_variable(var);
-        IFTRACE{
-            TRACE("define_variable: stored variable: "); var.print(stderr); TRACE("\n");
+        IFTRACE
+        {
+            TRACE("define_variable: stored variable: ");
+            var.print(stderr);
+            TRACE("\n");
         }
         return res;
     }
 
-    void define_variable(Varinfo info) override
-    {
-        read_variable(info);
-    }
+    void define_variable(Varinfo info) override { read_variable(info); }
 
     unsigned define_delayed_replication_factor(Varinfo info) override
     {
@@ -180,7 +195,7 @@ void decode_data(buffers::CrexInput& in, CrexBulletin& out)
     in.mark_section_start(2);
 
     // Scan the various subsections
-    for (unsigned i = 0; ; ++i)
+    for (unsigned i = 0;; ++i)
     {
         CrexParser parser(out, i, in);
         parser.run();
@@ -189,7 +204,8 @@ void decode_data(buffers::CrexInput& in, CrexBulletin& out)
         in.check_eof("end of data section");
 
         if (*in.cur != '+')
-            in.parse_error("there should be a '+' at the end of the data section");
+            in.parse_error(
+                "there should be a '+' at the end of the data section");
         ++in.cur;
 
         /* Peek at the next character to see if it's end of section */
@@ -204,7 +220,8 @@ void decode_data(buffers::CrexInput& in, CrexBulletin& out)
 
     /* Decode crex optional section 3 (optional section) */
     in.mark_section_start(3);
-    in.check_available_data(4, "CREX optional section 3 or end of CREX message");
+    in.check_available_data(4,
+                            "CREX optional section 3 or end of CREX message");
     if (strncmp(in.cur, "SUPP", 4) == 0)
     {
         for (in.cur += 4; strncmp(in.cur, "++", 2) != 0; ++in.cur)
@@ -216,37 +233,30 @@ void decode_data(buffers::CrexInput& in, CrexBulletin& out)
     in.mark_section_start(4);
     in.check_available_data(4, "end of CREX message");
     if (strncmp(in.cur, "7777", 4) != 0)
-        in.parse_error("unexpected data after data section or optional section 3");
+        in.parse_error(
+            "unexpected data after data section or optional section 3");
 }
 
-}
-}
+} // namespace
+} // namespace bulletin
 
-std::unique_ptr<CrexBulletin> CrexBulletin::decode_header(const std::string& buf, const char* fname, size_t offset)
+std::unique_ptr<CrexBulletin>
+CrexBulletin::decode_header(const std::string& buf, const char* fname,
+                            size_t offset)
 {
-    auto res = CrexBulletin::create();
-    res->fname = fname;
+    auto res    = CrexBulletin::create();
+    res->fname  = fname;
     res->offset = offset;
     buffers::CrexInput in(buf, fname, offset);
     bulletin::decode_header(in, *res);
     return res;
 }
 
-std::unique_ptr<CrexBulletin> CrexBulletin::decode(const std::string& buf, const char* fname, size_t offset)
+std::unique_ptr<CrexBulletin>
+CrexBulletin::decode(const std::string& buf, const char* fname, size_t offset)
 {
-    auto res = CrexBulletin::create();
-    res->fname = fname;
-    res->offset = offset;
-    buffers::CrexInput in(buf, fname, offset);
-    bulletin::decode_header(in, *res);
-    bulletin::decode_data(in, *res);
-    return res;
-}
-
-std::unique_ptr<CrexBulletin> CrexBulletin::decode_verbose(const std::string& buf, FILE* out, const char* fname, size_t offset)
-{
-    auto res = CrexBulletin::create();
-    res->fname = fname;
+    auto res    = CrexBulletin::create();
+    res->fname  = fname;
     res->offset = offset;
     buffers::CrexInput in(buf, fname, offset);
     bulletin::decode_header(in, *res);
@@ -254,4 +264,17 @@ std::unique_ptr<CrexBulletin> CrexBulletin::decode_verbose(const std::string& bu
     return res;
 }
 
+std::unique_ptr<CrexBulletin>
+CrexBulletin::decode_verbose(const std::string& buf, FILE* out,
+                             const char* fname, size_t offset)
+{
+    auto res    = CrexBulletin::create();
+    res->fname  = fname;
+    res->offset = offset;
+    buffers::CrexInput in(buf, fname, offset);
+    bulletin::decode_header(in, *res);
+    bulletin::decode_data(in, *res);
+    return res;
 }
+
+} // namespace wreport

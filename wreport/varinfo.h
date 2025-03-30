@@ -2,8 +2,8 @@
 #define WREPORT_VARINFO_H
 
 #include <cstdint>
-#include <string>
 #include <iosfwd>
+#include <string>
 #include <wreport/fwd.h>
 
 namespace wreport {
@@ -20,37 +20,38 @@ namespace wreport {
  *
  * \li \b wreport::Varcode represents what is the quantity measured, and takes
  *    values from the WMO B tables used for BUFR and CREX encodings.
- *    The ::WR_VAR macro can be used to construct wreport::Varcode values, and the
+ *    The ::WR_VAR macro can be used to construct wreport::Varcode values, and
+ * the
  *    ::WR_VAR_F, ::WR_VAR_X and ::WR_VAR_Y macros can be used to access the
  *    various parts of the dba_varcode.
- * \li \b wreport::Varinfo contains all the expanded information about a variable:
- *    its wreport::Varcode, description, measurement units, significant digits,
- *    minimum and maximum values it can have and other information useful for
- *    serialisation and deserialisation of values.
+ * \li \b wreport::Varinfo contains all the expanded information about a
+ * variable: its wreport::Varcode, description, measurement units, significant
+ * digits, minimum and maximum values it can have and other information useful
+ * for serialisation and deserialisation of values.
  *
  * There are many B tables with slight differences used by different
- * meteorological centre or equipment.  This module allows to access 
+ * meteorological centre or equipment.  This module allows to access
  * different vartables using dba_vartable_create().
  *
- * wreport::Vartable and wreport::Varinfo have special memory management: they are never
- * deallocated.  This is a precise design choice to speed up passing and
- * copying wreport::Varinfo values, that are used very intensely as they accompany
- * all the physical values processed by wreport.
- * This behaviour should not be a cause of memory leaks, since a software would
- * only need to access a limited amount of B tables during its lifetime.
+ * wreport::Vartable and wreport::Varinfo have special memory management: they
+ * are never deallocated.  This is a precise design choice to speed up passing
+ * and copying wreport::Varinfo values, that are used very intensely as they
+ * accompany all the physical values processed by wreport. This behaviour should
+ * not be a cause of memory leaks, since a software would only need to access a
+ * limited amount of B tables during its lifetime.
  *
- * To construct a wreport::Varcode value one needs to provide three numbers: F, X
- * and Y.
+ * To construct a wreport::Varcode value one needs to provide three numbers: F,
+ * X and Y.
  *
  * \li \b F (2 bits) identifies the type of table entry represented by the
  * dba_varcode, and is always 0 for B tables.  Different values are only used
  * during encoding and decoding of BUFR and CREX messages and are not in use in
  * other parts of wreport.
  * \li \b X (6 bits) identifies a section of the table.
- * \li \b Y (8 bits) identifies the value within the section.  
+ * \li \b Y (8 bits) identifies the value within the section.
  *
- * The normal text representation of a wreport::Varcode for a WMO B table uses the
- * format Bxxyyy.
+ * The normal text representation of a wreport::Varcode for a WMO B table uses
+ * the format Bxxyyy.
  */
 
 /**
@@ -64,7 +65,10 @@ std::string varcode_format(Varcode code);
 /**
  * Create a WMO variable code from its F, X and Y components.
  */
-#define WR_VAR(f, x, y) (static_cast<wreport::Varcode>( (static_cast<unsigned>(f)<<14) | (static_cast<unsigned>(x)<<8) | static_cast<unsigned>(y) ))
+#define WR_VAR(f, x, y)                                                        \
+    (static_cast<wreport::Varcode>((static_cast<unsigned>(f) << 14) |          \
+                                   (static_cast<unsigned>(x) << 8) |           \
+                                   static_cast<unsigned>(y)))
 
 /**
  * Convert a XXYYY string to a WMO variable code.
@@ -72,10 +76,10 @@ std::string varcode_format(Varcode code);
  * This is useful only in rare cases, such as when parsing tables; use
  * descriptor_code() to parse proper entry names such as "B01003" or "D21301".
  */
-#define WR_STRING_TO_VAR(str) static_cast<wreport::Varcode>( \
-        (( ((str)[0] - '0')*10 + ((str)[1] - '0') ) << 8) | \
-        ( ((str)[2] - '0')*100 + ((str)[3] - '0')*10 + ((str)[4] - '0') ) \
-)
+#define WR_STRING_TO_VAR(str)                                                  \
+    static_cast<wreport::Varcode>(                                             \
+        ((((str)[0] - '0') * 10 + ((str)[1] - '0')) << 8) |                    \
+        (((str)[2] - '0') * 100 + ((str)[3] - '0') * 10 + ((str)[4] - '0')))
 
 /// Get the F part of a WMO variable code.
 #define WR_VAR_F(code) (((code) >> 14) & 0x3)
@@ -107,10 +111,8 @@ std::string varcode_format(Varcode code);
  */
 Varcode varcode_parse(const char* desc);
 
-
 /// Variable type
-enum class Vartype : unsigned
-{
+enum class Vartype : unsigned {
     // Integer value
     Integer,
     // Floating point value
@@ -120,7 +122,6 @@ enum class Vartype : unsigned
     // Opaque binary value
     Binary,
 };
-
 
 /// Return a string description of a Vartype
 const char* vartype_format(Vartype type);
@@ -234,17 +235,13 @@ struct _Varinfo
     double decode_binary(uint32_t val) const;
 
     /// Set all the base Varinfo fields, then call compute_range
-    void set_bufr(Varcode code,
-             const char* desc,
-             const char* unit,
-             int scale=0, unsigned len=0,
-             int bit_ref=0, int bit_len=0);
+    void set_bufr(Varcode code, const char* desc, const char* unit,
+                  int scale = 0, unsigned len = 0, int bit_ref = 0,
+                  int bit_len = 0);
 
     /// Set all the base Varinfo fields, then call compute_range
-    void set_crex(Varcode code,
-             const char* desc,
-             const char* unit,
-             int scale=0, unsigned len=0);
+    void set_crex(Varcode code, const char* desc, const char* unit,
+                  int scale = 0, unsigned len = 0);
 
     /**
      * Set all the fields to represent a string variable.
@@ -272,7 +269,6 @@ struct _Varinfo
     void compute_range();
 };
 
-
 /**
  * Varinfo reference.
  *
@@ -283,5 +279,5 @@ struct _Varinfo
  */
 typedef const _Varinfo* Varinfo;
 
-}
+} // namespace wreport
 #endif

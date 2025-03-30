@@ -51,7 +51,7 @@ extern thread_local bool var_clamp_domain_errors;
 struct DomainErrorHook
 {
     virtual ~DomainErrorHook();
-    virtual void handle_domain_error_int(Var& var, int32_t val) = 0;
+    virtual void handle_domain_error_int(Var& var, int32_t val)   = 0;
     virtual void handle_domain_error_double(Var& var, double val) = 0;
 };
 
@@ -64,14 +64,13 @@ struct DomainErrorHook
  */
 extern thread_local DomainErrorHook* var_hook_domain_errors;
 
-
 class MasterTableVersionOverride
 {
     int value;
 
 public:
     /// No override
-    static const int NONE = 0;
+    static const int NONE   = 0;
     /// Use the latest available master table number
     static const int NEWEST = -1;
 
@@ -79,14 +78,17 @@ public:
     MasterTableVersionOverride();
 
     /// Initialize from a value
-    // cppcheck-suppress noExplicitConstructor; This is intending to pose as an integer value
+    // cppcheck-suppress noExplicitConstructor; This is intending to pose as an
+    // integer value
     MasterTableVersionOverride(int value);
 
-    ~MasterTableVersionOverride() = default;
+    ~MasterTableVersionOverride()                                 = default;
     MasterTableVersionOverride(const MasterTableVersionOverride&) = default;
-    MasterTableVersionOverride(MasterTableVersionOverride&&) = default;
-    MasterTableVersionOverride& operator=(const MasterTableVersionOverride&) = default;
-    MasterTableVersionOverride& operator=(MasterTableVersionOverride&&) = default;
+    MasterTableVersionOverride(MasterTableVersionOverride&&)      = default;
+    MasterTableVersionOverride&
+    operator=(const MasterTableVersionOverride&) = default;
+    MasterTableVersionOverride&
+    operator=(MasterTableVersionOverride&&) = default;
 
     /// Access the variable as an integer
     operator int() const { return value; }
@@ -96,7 +98,8 @@ public:
  * If set, ignore the master table number in BUFR and CREX messages and use the
  * one from this variable.
  */
-extern thread_local MasterTableVersionOverride var_master_table_version_override;
+extern thread_local MasterTableVersionOverride
+    var_master_table_version_override;
 
 /**
  * Temporarily override a variable while this object is in scope.
@@ -108,34 +111,30 @@ extern thread_local MasterTableVersionOverride var_master_table_version_override
  * Example:
  * \code
  * {
- *     auto o = options::local_override(options::var_silent_domain_errors, true);
- *     var.setd(value)
+ *     auto o = options::local_override(options::var_silent_domain_errors,
+ * true); var.setd(value)
  * }
  * \endcode
  */
-template<typename T, typename T1 = T>
-struct LocalOverride
+template <typename T, typename T1 = T> struct LocalOverride
 {
     T old_value;
     T& param;
 
-    LocalOverride(T& param, T1 new_value)
-        : old_value(param), param(param)
+    LocalOverride(T& param, T1 new_value) : old_value(param), param(param)
     {
         param = new_value;
     }
-    ~LocalOverride()
-    {
-        param = old_value;
-    }
+    ~LocalOverride() { param = old_value; }
 };
 
-template<typename T, typename T1 = T> static inline LocalOverride<T> local_override(T& param, T1 new_value)
+template <typename T, typename T1 = T>
+static inline LocalOverride<T> local_override(T& param, T1 new_value)
 {
     return LocalOverride<T>(param, new_value);
 }
 
-}
-}
+} // namespace options
+} // namespace wreport
 
 #endif

@@ -4,4 +4,4 @@ namespace wreport {
 namespace python {
 
 }
-}
+} // namespace wreport

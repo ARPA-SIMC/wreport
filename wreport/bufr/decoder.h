@@ -1,10 +1,10 @@
 #ifndef WREPORT_BUFR_DECODER_H
 #define WREPORT_BUFR_DECODER_H
 
-#include <wreport/var.h>
+#include <wreport/bufr/input.h>
 #include <wreport/bulletin.h>
 #include <wreport/bulletin/interpreter.h>
-#include <wreport/bufr/input.h>
+#include <wreport/var.h>
 
 namespace wreport {
 namespace bufr {
@@ -19,13 +19,14 @@ struct Decoder
     /// Number of expected subsets (read in decode_header, used in decode_data)
     size_t expected_subsets;
     /// True if undefined attributes are added to the output, else false
-    bool conf_add_undef_attrs = false;
+    bool conf_add_undef_attrs        = false;
     /// Optional section length decoded from the message
     unsigned optional_section_length = 0;
     /// If set, be verbose and print a trace of decoding to the given file
-    FILE* verbose_output = nullptr;
+    FILE* verbose_output             = nullptr;
 
-    Decoder(const std::string& buf, const char* fname, size_t offset, BufrBulletin& out);
+    Decoder(const std::string& buf, const char* fname, size_t offset,
+            BufrBulletin& out);
 
     void read_options(const BufrCodecOptions& opts);
 
@@ -76,7 +77,8 @@ struct DecoderTarget
      */
     virtual const Var& decode_and_add_to_all(Varinfo info) = 0;
 
-    virtual const Var& decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size) = 0;
+    virtual const Var& decode_and_add_bitmap(const Tables& tables, Varcode code,
+                                             unsigned bitmap_size) = 0;
 
     /**
      * Decode an attribute with the given description, and add it to data at
@@ -93,7 +95,8 @@ struct DecoderTarget
      * Decode a B-table value with associated field, and add its value(s) to
      * the target subset(s)
      */
-    virtual void decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field) = 0;
+    virtual void decode_and_add_b_value_with_associated_field(
+        Varinfo info, const bulletin::AssociatedField& field) = 0;
 
     /**
      * Decode raw character data described by \a code and add it to the target
@@ -110,8 +113,10 @@ struct DecoderTarget
     /// Print the value(s) of the last variable(s) added to \a out
     virtual void print_last_variable_added(FILE* out) = 0;
 
-    /// Print the value(s) of the last attributes(s) with the given \a code added to \a out
-    virtual void print_last_attribute_added(FILE* out, Varcode code, unsigned pos) = 0;
+    /// Print the value(s) of the last attributes(s) with the given \a code
+    /// added to \a out
+    virtual void print_last_attribute_added(FILE* out, Varcode code,
+                                            unsigned pos) = 0;
 };
 
 struct UncompressedDecoderTarget : public DecoderTarget
@@ -125,15 +130,18 @@ struct UncompressedDecoderTarget : public DecoderTarget
     Varinfo lookup_info(unsigned pos) const override;
     Var decode_uniform_b_value(Varinfo info) override;
     const Var& decode_and_add_to_all(Varinfo info) override;
-    const Var& decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size) override;
+    const Var& decode_and_add_bitmap(const Tables& tables, Varcode code,
+                                     unsigned bitmap_size) override;
     void decode_and_set_attribute(Varinfo info, unsigned pos) override;
     void decode_and_add_b_value(Varinfo info) override;
-    void decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field) override;
+    void decode_and_add_b_value_with_associated_field(
+        Varinfo info, const bulletin::AssociatedField& field) override;
     void decode_and_add_raw_character_data(Varinfo info) override;
     int decode_c03_refval_override(unsigned bits) override;
 
     void print_last_variable_added(FILE* out) override;
-    void print_last_attribute_added(FILE* out, Varcode code, unsigned pos) override;
+    void print_last_attribute_added(FILE* out, Varcode code,
+                                    unsigned pos) override;
 };
 
 struct CompressedDecoderTarget : public DecoderTarget
@@ -150,18 +158,22 @@ struct CompressedDecoderTarget : public DecoderTarget
     Varinfo lookup_info(unsigned pos) const override;
     Var decode_uniform_b_value(Varinfo info) override;
     const Var& decode_and_add_to_all(Varinfo info) override;
-    const Var& decode_and_add_bitmap(const Tables& tables, Varcode code, unsigned bitmap_size) override;
+    const Var& decode_and_add_bitmap(const Tables& tables, Varcode code,
+                                     unsigned bitmap_size) override;
     void decode_and_set_attribute(Varinfo info, unsigned pos) override;
     void decode_and_add_b_value(Varinfo info) override;
-    void decode_and_add_b_value_with_associated_field(Varinfo info, const bulletin::AssociatedField& field) override;
+    void decode_and_add_b_value_with_associated_field(
+        Varinfo info, const bulletin::AssociatedField& field) override;
     void decode_and_add_raw_character_data(Varinfo info) override;
     int decode_c03_refval_override(unsigned bits) override;
 
     void print_last_variable_added(FILE* out) override;
-    void print_last_attribute_added(FILE* out, Varcode code, unsigned pos) override;
+    void print_last_attribute_added(FILE* out, Varcode code,
+                                    unsigned pos) override;
 
 protected:
-    void decode_b_value(Varinfo info, std::function<void(unsigned, Var&&)> dest);
+    void decode_b_value(Varinfo info,
+                        std::function<void(unsigned, Var&&)> dest);
 };
 
 struct DataSectionDecoder : public bulletin::Interpreter
@@ -208,11 +220,13 @@ public:
     /// How many spaces in an indentation level
     unsigned indent_step = 2;
 
-    VerboseDataSectionDecoder(Bulletin& bulletin, DecoderTarget& target, FILE* out);
+    VerboseDataSectionDecoder(Bulletin& bulletin, DecoderTarget& target,
+                              FILE* out);
 
     void b_variable(Varcode code) override;
     void c_modifier(Varcode code, Opcodes& next) override;
-    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
+    void r_replication(Varcode code, Varcode delayed_code,
+                       const Opcodes& ops) override;
     void run_d_expansion(Varcode code) override;
     unsigned define_delayed_replication_factor(Varinfo info) override;
     unsigned define_associated_field_significance(Varinfo info) override;
@@ -226,6 +240,6 @@ public:
     void define_raw_character_data(Varcode code) override;
 };
 
-}
-}
+} // namespace bufr
+} // namespace wreport
 #endif

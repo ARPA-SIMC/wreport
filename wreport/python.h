@@ -12,9 +12,9 @@
 
 extern "C" {
 /// wreport.Var python object
-typedef struct {
-    PyObject_HEAD
-    wreport::Var var;
+typedef struct
+{
+    PyObject_HEAD wreport::Var var;
 } wrpy_Var;
 
 /// wreport.Var python type
@@ -22,9 +22,8 @@ extern PyTypeObject* wrpy_Var_Type;
 }
 #endif
 
-
-#include <wreport/fwd.h>
 #include <string>
+#include <wreport/fwd.h>
 
 #ifndef PyObject_HEAD
 // Forward-declare PyObjetc and PyTypeObject
@@ -47,11 +46,12 @@ extern "C" {
  * \code
  * wrpy_c_api* wrpy = (wrpy_c_api*)PyCapsule_Import("_wreport._C_API", 0);
  * \endcode
- * 
+ *
  */
-struct wrpy_c_api {
+struct wrpy_c_api
+{
 
-// API version 1.x
+    // API version 1.x
 
     /// Create a new unset wreport.Var object
     // TODO: return PyObject* when we drop legacy support
@@ -99,18 +99,17 @@ struct wrpy_c_api {
     /// Var type
     PyTypeObject* var_type;
 
-// API version 1.1
+    // API version 1.1
 
     /// Create a new wreport.Var object, moving an existing var
     PyObject* (*var_create_move)(wreport::Var&&);
 
     /// Return the variable for a wreport.Var object
-    wreport:: Var* (*var)(PyObject* o);
+    wreport::Var* (*var)(PyObject* o);
 
     /// Create a new wreport.Var object with the value from another variable
     PyObject* (*var_create_v)(const wreport::Varinfo&, const wreport::Var&);
 };
-
 }
 
 #endif

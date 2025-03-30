@@ -1,9 +1,9 @@
 #include "var.h"
 #include "common.h"
-#include "varinfo.h"
-#include "utils/type.h"
 #include "utils/methods.h"
+#include "utils/type.h"
 #include "utils/values.h"
+#include "varinfo.h"
 
 using namespace std;
 using namespace wreport::python;
@@ -17,7 +17,8 @@ PyTypeObject* wrpy_Var_Type = nullptr;
 static wrpy_Var* wrpy_var_create(const wreport::Varinfo& v)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
-    if (!result) return nullptr;
+    if (!result)
+        return nullptr;
     new (&result->var) Var(v);
     return result;
 }
@@ -25,7 +26,8 @@ static wrpy_Var* wrpy_var_create(const wreport::Varinfo& v)
 static PyObject* wrpy_var_create_i(const wreport::Varinfo& v, int val)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
-    if (!result) return nullptr;
+    if (!result)
+        return nullptr;
     new (&result->var) Var(v, val);
     return (PyObject*)result;
 }
@@ -33,7 +35,8 @@ static PyObject* wrpy_var_create_i(const wreport::Varinfo& v, int val)
 static PyObject* wrpy_var_create_d(const wreport::Varinfo& v, double val)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
-    if (!result) return nullptr;
+    if (!result)
+        return nullptr;
     new (&result->var) Var(v, val);
     return (PyObject*)result;
 }
@@ -41,23 +44,28 @@ static PyObject* wrpy_var_create_d(const wreport::Varinfo& v, double val)
 static PyObject* wrpy_var_create_c(const wreport::Varinfo& v, const char* val)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
-    if (!result) return nullptr;
+    if (!result)
+        return nullptr;
     new (&result->var) Var(v, val);
     return (PyObject*)result;
 }
 
-static PyObject* wrpy_var_create_s(const wreport::Varinfo& v, const std::string& val)
+static PyObject* wrpy_var_create_s(const wreport::Varinfo& v,
+                                   const std::string& val)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
-    if (!result) return nullptr;
+    if (!result)
+        return nullptr;
     new (&result->var) Var(v, val);
     return (PyObject*)result;
 }
 
-static PyObject* wrpy_var_create_v(const wreport::Varinfo& v, const wreport::Var& val)
+static PyObject* wrpy_var_create_v(const wreport::Varinfo& v,
+                                   const wreport::Var& val)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
-    if (!result) return nullptr;
+    if (!result)
+        return nullptr;
     new (&result->var) Var(v);
     result->var.setval(val);
     return (PyObject*)result;
@@ -66,7 +74,8 @@ static PyObject* wrpy_var_create_v(const wreport::Varinfo& v, const wreport::Var
 static PyObject* wrpy_var_create_copy(const wreport::Var& v)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
-    if (!result) return nullptr;
+    if (!result)
+        return nullptr;
     new (&result->var) Var(v);
     return (PyObject*)result;
 }
@@ -74,7 +83,8 @@ static PyObject* wrpy_var_create_copy(const wreport::Var& v)
 static PyObject* wrpy_var_create_move(wreport::Var&& v)
 {
     wrpy_Var* result = PyObject_New(wrpy_Var, wrpy_Var_Type);
-    if (!result) return nullptr;
+    if (!result)
+        return nullptr;
     new (&result->var) Var(std::move(v));
     return (PyObject*)result;
 }
@@ -83,71 +93,78 @@ static wreport::Var* wrpy_var(PyObject* o)
 {
     if (!wrpy_Var_Check(o))
     {
-        PyErr_Format(PyExc_TypeError, "expected object of type wreport.Var, got %R", o);
+        PyErr_Format(PyExc_TypeError,
+                     "expected object of type wreport.Var, got %R", o);
         return nullptr;
     }
     return &((wrpy_Var*)o)->var;
 }
-
 }
 
 namespace {
 
 static _Varinfo dummy_var;
 
-
 struct code : public Getter<code, wrpy_Var>
 {
     constexpr static const char* name = "code";
-    constexpr static const char* doc = "variable code";
-    constexpr static void* closure = nullptr;
+    constexpr static const char* doc  = "variable code";
+    constexpr static void* closure    = nullptr;
 
     static PyObject* get(Impl* self, void* closure)
     {
-        try {
+        try
+        {
             return wrpy_varcode_format(self->var.code());
-        } WREPORT_CATCH_RETURN_PYO;
+        }
+        WREPORT_CATCH_RETURN_PYO;
     }
 };
 
 struct isset : public Getter<isset, wrpy_Var>
 {
     constexpr static const char* name = "isset";
-    constexpr static const char* doc = "true if the value is set";
-    constexpr static void* closure = nullptr;
+    constexpr static const char* doc  = "true if the value is set";
+    constexpr static void* closure    = nullptr;
 
     static PyObject* get(Impl* self, void* closure)
     {
-        try {
+        try
+        {
             if (self->var.isset())
                 Py_RETURN_TRUE;
             else
                 Py_RETURN_FALSE;
-        } WREPORT_CATCH_RETURN_PYO;
+        }
+        WREPORT_CATCH_RETURN_PYO;
     }
 };
 
 struct info : public Getter<info, wrpy_Var>
 {
     constexpr static const char* name = "info";
-    constexpr static const char* doc = "Varinfo for this variable";
-    constexpr static void* closure = nullptr;
+    constexpr static const char* doc  = "Varinfo for this variable";
+    constexpr static void* closure    = nullptr;
 
     static PyObject* get(Impl* self, void* closure)
     {
-        try {
+        try
+        {
             return (PyObject*)varinfo_create(self->var.info());
-        } WREPORT_CATCH_RETURN_PYO;
+        }
+        WREPORT_CATCH_RETURN_PYO;
     }
 };
 
 struct enqi : public MethNoargs<enqi, wrpy_Var>
 {
-    constexpr static const char* name = "enqi";
+    constexpr static const char* name      = "enqi";
     constexpr static const char* signature = "";
-    constexpr static const char* returns = "int";
-    constexpr static const char* summary = "get the value of the variable, as an int";
-    constexpr static const char* doc = R"(If the variable is a scaled decimal value,
+    constexpr static const char* returns   = "int";
+    constexpr static const char* summary =
+        "get the value of the variable, as an int";
+    constexpr static const char* doc =
+        R"(If the variable is a scaled decimal value,
 this returns its unscaled integer representation. This provides a way to work
 with the exact underlying representation of values, without dealing with the
 potential limitations of floating point representations.
@@ -155,34 +172,41 @@ potential limitations of floating point representations.
 
     static PyObject* run(Impl* self)
     {
-        try {
+        try
+        {
             return to_python(self->var.enqi());
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct enqd : public MethNoargs<enqd, wrpy_Var>
 {
-    constexpr static const char* name = "enqd";
+    constexpr static const char* name      = "enqd";
     constexpr static const char* signature = "";
-    constexpr static const char* returns = "float";
-    constexpr static const char* summary = "get the value of the variable, as a float";
+    constexpr static const char* returns   = "float";
+    constexpr static const char* summary =
+        "get the value of the variable, as a float";
 
     static PyObject* run(Impl* self)
     {
-        try {
+        try
+        {
             return to_python(self->var.enqd());
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct enqc : public MethNoargs<enqc, wrpy_Var>
 {
-    constexpr static const char* name = "enqc";
+    constexpr static const char* name      = "enqc";
     constexpr static const char* signature = "";
-    constexpr static const char* returns = "str";
-    constexpr static const char* summary = "get the value of the variable, as a str";
-    constexpr static const char* doc = R"(If the variable is a scaled decimal value,
+    constexpr static const char* returns   = "str";
+    constexpr static const char* summary =
+        "get the value of the variable, as a str";
+    constexpr static const char* doc =
+        R"(If the variable is a scaled decimal value,
 this returns its unscaled integer representation. This provides a way to work
 with the exact underlying representation of values, without dealing with the
 potential limitations of floating point representations.
@@ -190,107 +214,128 @@ potential limitations of floating point representations.
 
     static PyObject* run(Impl* self)
     {
-        try {
+        try
+        {
             return to_python(self->var.enqc());
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct enq : public MethNoargs<enq, wrpy_Var>
 {
-    constexpr static const char* name = "enq";
+    constexpr static const char* name      = "enq";
     constexpr static const char* signature = "";
-    constexpr static const char* returns = "Union[str, float, int]";
-    constexpr static const char* summary = "get the value of the variable, as int, float or str according the variable definition";
+    constexpr static const char* returns   = "Union[str, float, int]";
+    constexpr static const char* summary =
+        "get the value of the variable, as int, float or str according the "
+        "variable definition";
 
     static PyObject* run(Impl* self)
     {
-        try {
+        try
+        {
             return var_value_to_python(self->var);
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct enqa : public MethKwargs<enqa, wrpy_Var>
 {
-    constexpr static const char* name = "enqa";
+    constexpr static const char* name      = "enqa";
     constexpr static const char* signature = "code: str";
-    constexpr static const char* returns = "Optional[wreport.Var]";
+    constexpr static const char* returns   = "Optional[wreport.Var]";
     constexpr static const char* summary =
-        "get the variable for the attribute with the given code, or None if not found";
+        "get the variable for the attribute with the given code, or None if "
+        "not found";
 
     static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
     {
-        static const char* kwlist[] = { "code", nullptr };
+        static const char* kwlist[] = {"code", nullptr};
         const char* code;
-        if (!PyArg_ParseTupleAndKeywords(args, kw, "s", const_cast<char**>(kwlist), &code))
+        if (!PyArg_ParseTupleAndKeywords(args, kw, "s",
+                                         const_cast<char**>(kwlist), &code))
             return nullptr;
 
-        try {
+        try
+        {
             const Var* attr = self->var.enqa(varcode_parse(code));
             if (!attr)
                 Py_RETURN_NONE;
             return (PyObject*)var_create(*attr);
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct seta : public MethKwargs<seta, wrpy_Var>
 {
-    constexpr static const char* name = "seta";
+    constexpr static const char* name      = "seta";
     constexpr static const char* signature = "var: wreport.Var";
-    constexpr static const char* summary = "set an attribute in the variable";
+    constexpr static const char* summary   = "set an attribute in the variable";
 
     static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
     {
-        static const char* kwlist[] = { "var", nullptr };
+        static const char* kwlist[] = {"var", nullptr};
         wrpy_Var* var;
-        if (!PyArg_ParseTupleAndKeywords(args, kw, "O!", const_cast<char**>(kwlist), wrpy_Var_Type, &var))
+        if (!PyArg_ParseTupleAndKeywords(args, kw, "O!",
+                                         const_cast<char**>(kwlist),
+                                         wrpy_Var_Type, &var))
             return nullptr;
 
-        try {
+        try
+        {
             self->var.seta(var->var);
             Py_RETURN_NONE;
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct unseta : public MethKwargs<unseta, wrpy_Var>
 {
-    constexpr static const char* name = "unseta";
+    constexpr static const char* name      = "unseta";
     constexpr static const char* signature = "code: str";
-    constexpr static const char* summary = "unset the given attribute from the variable";
+    constexpr static const char* summary =
+        "unset the given attribute from the variable";
 
     static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
     {
-        static const char* kwlist[] = { "code", nullptr };
+        static const char* kwlist[] = {"code", nullptr};
         const char* code;
-        if (!PyArg_ParseTupleAndKeywords(args, kw, "s", const_cast<char**>(kwlist), &code))
+        if (!PyArg_ParseTupleAndKeywords(args, kw, "s",
+                                         const_cast<char**>(kwlist), &code))
             return nullptr;
 
-        try {
+        try
+        {
             self->var.unseta(varcode_parse(code));
             Py_RETURN_NONE;
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct get_attrs : public MethNoargs<get_attrs, wrpy_Var>
 {
-    constexpr static const char* name = "get_attrs";
+    constexpr static const char* name    = "get_attrs";
     constexpr static const char* returns = "List[wreport.Var]";
-    constexpr static const char* summary = "get the attributes of this variable";
+    constexpr static const char* summary =
+        "get the attributes of this variable";
 
     static PyObject* run(Impl* self)
     {
-        try {
+        try
+        {
             pyo_unique_ptr res(throw_ifnull(PyList_New(0)));
 
-            for (const Var* a = self->var.next_attr(); a != nullptr; a = a->next_attr())
+            for (const Var* a = self->var.next_attr(); a != nullptr;
+                 a            = a->next_attr())
             {
-                // Create an empty variable, then set value from the attribute. This is
-                // to avoid copying the rest of the attribute chain for every attribute
-                // we are returning
+                // Create an empty variable, then set value from the attribute.
+                // This is to avoid copying the rest of the attribute chain for
+                // every attribute we are returning
                 py_unique_ptr<wrpy_Var> var((wrpy_Var*)var_create(a->info()));
                 if (!var)
                     return nullptr;
@@ -300,25 +345,31 @@ struct get_attrs : public MethNoargs<get_attrs, wrpy_Var>
                     return nullptr;
             }
             return res.release();
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct get : public MethKwargs<get, wrpy_Var>
 {
-    constexpr static const char* name = "get";
+    constexpr static const char* name      = "get";
     constexpr static const char* signature = "default: Any=None";
-    constexpr static const char* returns = "Union[str, float, long, Any]";
-    constexpr static const char* summary = "get the value of the variable, as int, float or str according the variable definition. If the variable is unset, ``default`` is returned";
+    constexpr static const char* returns   = "Union[str, float, long, Any]";
+    constexpr static const char* summary =
+        "get the value of the variable, as int, float or str according the "
+        "variable definition. If the variable is unset, ``default`` is "
+        "returned";
 
     static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
     {
-        static const char* kwlist[] = { "default", nullptr };
-        PyObject* def = Py_None;
-        if (!PyArg_ParseTupleAndKeywords(args, kw, "|O", const_cast<char**>(kwlist), &def))
+        static const char* kwlist[] = {"default", nullptr};
+        PyObject* def               = Py_None;
+        if (!PyArg_ParseTupleAndKeywords(args, kw, "|O",
+                                         const_cast<char**>(kwlist), &def))
             return nullptr;
 
-        try {
+        try
+        {
             if (self->var.isset())
                 return var_value_to_python(self->var);
             else
@@ -326,36 +377,41 @@ struct get : public MethKwargs<get, wrpy_Var>
                 Py_INCREF(def);
                 return def;
             }
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct format : public MethKwargs<format, wrpy_Var>
 {
-    constexpr static const char* name = "format";
-    constexpr static const char* signature = "default: str=""";
-    constexpr static const char* returns = "str";
-    constexpr static const char* summary = "return a string with the formatted value of the variable";
+    constexpr static const char* name      = "format";
+    constexpr static const char* signature = "default: str="
+                                             "";
+    constexpr static const char* returns   = "str";
+    constexpr static const char* summary =
+        "return a string with the formatted value of the variable";
 
     static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
     {
-        static const char* kwlist[] = { "default", nullptr };
-        const char* def = "";
-        if (!PyArg_ParseTupleAndKeywords(args, kw, "|s", const_cast<char**>(kwlist), &def))
+        static const char* kwlist[] = {"default", nullptr};
+        const char* def             = "";
+        if (!PyArg_ParseTupleAndKeywords(args, kw, "|s",
+                                         const_cast<char**>(kwlist), &def))
             return nullptr;
 
-        try {
+        try
+        {
             return to_python(self->var.format(def));
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
-
 struct VarDef : public Type<VarDef, wrpy_Var>
 {
-    constexpr static const char* name = "Var";
+    constexpr static const char* name      = "Var";
     constexpr static const char* qual_name = "wreport.Var";
-    constexpr static const char* doc = R"(
+    constexpr static const char* doc       = R"(
 Var holds a measured value, which can be integer, float or string, and
 a :class:`Varinfo` with all available information (description, unit,
 precision, ...) related to it.
@@ -382,27 +438,33 @@ without dealing with the potential limitations of floating point
 representations.
 )";
     GetSetters<code, isset, info> getsetters;
-    Methods<enqi, enqd, enqc, enq, enqa, seta, unseta, get_attrs, get, format> methods;
+    Methods<enqi, enqd, enqc, enq, enqa, seta, unseta, get_attrs, get, format>
+        methods;
 
     static int _init(Impl* self, PyObject* args, PyObject* kw)
     {
-        static const char* kwlist[] = { "varinfo", "value", nullptr };
-        PyObject* varinfo_or_var = nullptr;
-        PyObject* val = nullptr;
-        if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O", const_cast<char**>(kwlist), &varinfo_or_var, &val))
+        static const char* kwlist[] = {"varinfo", "value", nullptr};
+        PyObject* varinfo_or_var    = nullptr;
+        PyObject* val               = nullptr;
+        if (!PyArg_ParseTupleAndKeywords(args, kw, "O|O",
+                                         const_cast<char**>(kwlist),
+                                         &varinfo_or_var, &val))
             return -1;
 
-        try {
+        try
+        {
             if (wrpy_Varinfo_Check(varinfo_or_var))
             {
                 if (val == nullptr)
                 {
-                    new (&self->var) Var(((const wrpy_Varinfo*)varinfo_or_var)->info);
+                    new (&self->var)
+                        Var(((const wrpy_Varinfo*)varinfo_or_var)->info);
                     return 0;
                 }
                 else
                 {
-                    new (&self->var) Var(((const wrpy_Varinfo*)varinfo_or_var)->info);
+                    new (&self->var)
+                        Var(((const wrpy_Varinfo*)varinfo_or_var)->info);
                     return var_value_from_python(val, self->var);
                 }
             }
@@ -414,10 +476,13 @@ representations.
             else
             {
                 new (&self->var) Var(&dummy_var);
-                PyErr_SetString(PyExc_ValueError, "First argument to wreport.Var should be wreport.Varinfo or wreport.Var");
+                PyErr_SetString(PyExc_ValueError,
+                                "First argument to wreport.Var should be "
+                                "wreport.Varinfo or wreport.Var");
                 return -1;
             }
-        } WREPORT_CATCH_RETURN_INT
+        }
+        WREPORT_CATCH_RETURN_INT
     }
 
     static void _dealloc(Impl* self)
@@ -429,14 +494,17 @@ representations.
 
     static PyObject* _str(Impl* self)
     {
-        try {
+        try
+        {
             return to_python(self->var.format("None"));
-        } WREPORT_CATCH_RETURN_PYO;
+        }
+        WREPORT_CATCH_RETURN_PYO;
     }
 
     static PyObject* _repr(Impl* self)
     {
-        try {
+        try
+        {
             std::string res = "Var('";
             res += varcode_format(self->var.code());
             res += "', ";
@@ -448,34 +516,33 @@ representations.
                         res += "'" + self->var.format() + "'";
                         break;
                     case Vartype::Integer:
-                    case Vartype::Decimal:
-                        res += self->var.format();
-                        break;
+                    case Vartype::Decimal: res += self->var.format(); break;
                 }
             else
                 res += "None";
             res += ")";
             return to_python(res);
-        } WREPORT_CATCH_RETURN_PYO;
+        }
+        WREPORT_CATCH_RETURN_PYO;
     }
 
     static PyObject* _richcompare(wrpy_Var* a, wrpy_Var* b, int op)
     {
-        PyObject *result;
+        PyObject* result;
         bool cmp;
 
         // Make sure both arguments are Vars.
-        if (!(wrpy_Var_Check(a) && wrpy_Var_Check(b))) {
+        if (!(wrpy_Var_Check(a) && wrpy_Var_Check(b)))
+        {
             result = Py_NotImplemented;
             goto out;
         }
 
-        switch (op) {
+        switch (op)
+        {
             case Py_EQ: cmp = a->var == b->var; break;
             case Py_NE: cmp = a->var != b->var; break;
-            default:
-                result = Py_NotImplemented;
-                goto out;
+            default:    result = Py_NotImplemented; goto out;
         }
         result = cmp ? Py_True : Py_False;
 
@@ -487,56 +554,79 @@ representations.
 
 VarDef* var_def = nullptr;
 
-}
+} // namespace
 
 namespace wreport {
 namespace python {
 
-PyObject* var_create(const wreport::Varinfo& v) { return (PyObject*)wrpy_var_create(v); }
-PyObject* var_create(const wreport::Varinfo& v, int val) { return wrpy_var_create_i(v, val); }
-PyObject* var_create(const wreport::Varinfo& v, double val) { return wrpy_var_create_d(v, val); }
-PyObject* var_create(const wreport::Varinfo& v, const char* val) { return wrpy_var_create_c(v, val); }
+PyObject* var_create(const wreport::Varinfo& v)
+{
+    return (PyObject*)wrpy_var_create(v);
+}
+PyObject* var_create(const wreport::Varinfo& v, int val)
+{
+    return wrpy_var_create_i(v, val);
+}
+PyObject* var_create(const wreport::Varinfo& v, double val)
+{
+    return wrpy_var_create_d(v, val);
+}
+PyObject* var_create(const wreport::Varinfo& v, const char* val)
+{
+    return wrpy_var_create_c(v, val);
+}
 PyObject* var_create(const wreport::Var& v) { return wrpy_var_create_copy(v); }
 
 PyObject* var_value_to_python(const wreport::Var& v)
 {
-    try {
+    try
+    {
         switch (v.info()->type)
         {
-            case Vartype::String:
-                return PyUnicode_FromString(v.enqc());
-            case Vartype::Binary:
-                return PyBytes_FromString(v.enqc());
-            case Vartype::Integer:
-                return PyLong_FromLong(v.enqi());
-            case Vartype::Decimal:
-                return PyFloat_FromDouble(v.enqd());
+            case Vartype::String:  return PyUnicode_FromString(v.enqc());
+            case Vartype::Binary:  return PyBytes_FromString(v.enqc());
+            case Vartype::Integer: return PyLong_FromLong(v.enqi());
+            case Vartype::Decimal: return PyFloat_FromDouble(v.enqd());
         }
         Py_RETURN_TRUE;
-    } WREPORT_CATCH_RETURN_PYO
+    }
+    WREPORT_CATCH_RETURN_PYO
 }
 
 int var_value_from_python(PyObject* o, wreport::Var& var)
 {
-    try {
+    try
+    {
         if (PyLong_Check(o))
         {
             var.seti(PyLong_AsLong(o));
-        } else if (PyFloat_Check(o)) {
+        }
+        else if (PyFloat_Check(o))
+        {
             var.setd(PyFloat_AsDouble(o));
-        } else if (PyBytes_Check(o)) {
+        }
+        else if (PyBytes_Check(o))
+        {
             var.setc(PyBytes_AsString(o));
-        } else if (PyUnicode_Check(o)) {
+        }
+        else if (PyUnicode_Check(o))
+        {
             var.sets(from_python<std::string>(o));
-        } else {
-            std::string repr = object_repr(o);
+        }
+        else
+        {
+            std::string repr      = object_repr(o);
             std::string type_repr = object_repr((PyObject*)o->ob_type);
-            string errmsg = "Value " + repr + " must be an instance of int, long, float, str, bytes, or unicode, instead of " + type_repr;
+            string errmsg         = "Value " + repr +
+                            " must be an instance of int, long, float, str, "
+                            "bytes, or unicode, instead of " +
+                            type_repr;
             PyErr_SetString(PyExc_TypeError, errmsg.c_str());
             return -1;
         }
         return 0;
-    } WREPORT_CATCH_RETURN_INT
+    }
+    WREPORT_CATCH_RETURN_INT
 }
 
 void register_var(PyObject* m, wrpy_c_api& c_api)
@@ -547,19 +637,19 @@ void register_var(PyObject* m, wrpy_c_api& c_api)
     var_def->define(wrpy_Var_Type, m);
 
     // Initialize the C api struct
-    c_api.var_create = wrpy_var_create;
-    c_api.var_create_i = wrpy_var_create_i;
-    c_api.var_create_d = wrpy_var_create_d;
-    c_api.var_create_c = wrpy_var_create_c;
-    c_api.var_create_s = wrpy_var_create_s;
-    c_api.var_create_v = wrpy_var_create_v;
-    c_api.var_create_copy = wrpy_var_create_copy;
-    c_api.var_value_to_python = var_value_to_python;
+    c_api.var_create            = wrpy_var_create;
+    c_api.var_create_i          = wrpy_var_create_i;
+    c_api.var_create_d          = wrpy_var_create_d;
+    c_api.var_create_c          = wrpy_var_create_c;
+    c_api.var_create_s          = wrpy_var_create_s;
+    c_api.var_create_v          = wrpy_var_create_v;
+    c_api.var_create_copy       = wrpy_var_create_copy;
+    c_api.var_value_to_python   = var_value_to_python;
     c_api.var_value_from_python = var_value_from_python;
-    c_api.var_type = wrpy_Var_Type;
-    c_api.var_create_move = wrpy_var_create_move;
-    c_api.var = wrpy_var;
+    c_api.var_type              = wrpy_Var_Type;
+    c_api.var_create_move       = wrpy_var_create_move;
+    c_api.var                   = wrpy_var;
 }
 
-}
-}
+} // namespace python
+} // namespace wreport

@@ -1,10 +1,10 @@
 #ifndef WREPORT_TABLES_H
 #define WREPORT_TABLES_H
 
-#include <wreport/varinfo.h>
-#include <wreport/fwd.h>
 #include <map>
 #include <string>
+#include <wreport/fwd.h>
+#include <wreport/varinfo.h>
 
 namespace wreport {
 
@@ -54,5 +54,5 @@ struct Tables
     Varinfo get_unknown(Varcode code, unsigned bit_len) const;
 };
 
-}
+} // namespace wreport
 #endif

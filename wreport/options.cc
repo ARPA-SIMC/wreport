@@ -1,17 +1,15 @@
 #include "options.h"
+#include <cerrno>
 #include <cstdlib>
 #include <cstring>
-#include <cerrno>
 
 namespace wreport {
 namespace options {
 
 thread_local bool var_silent_domain_errors = false;
-thread_local bool var_clamp_domain_errors = false;
+thread_local bool var_clamp_domain_errors  = false;
 
-DomainErrorHook::~DomainErrorHook()
-{
-}
+DomainErrorHook::~DomainErrorHook() {}
 
 thread_local DomainErrorHook* var_hook_domain_errors = nullptr;
 
@@ -31,7 +29,7 @@ MasterTableVersionOverride::MasterTableVersionOverride()
         value = NEWEST;
     else
     {
-        errno = 0;
+        errno       = 0;
         long lvalue = strtol(env, nullptr, 10);
         if (errno != 0)
             value = NONE;
@@ -40,12 +38,11 @@ MasterTableVersionOverride::MasterTableVersionOverride()
     }
 }
 
-MasterTableVersionOverride::MasterTableVersionOverride(int value)
-    : value(value)
+MasterTableVersionOverride::MasterTableVersionOverride(int value) : value(value)
 {
 }
 
 thread_local MasterTableVersionOverride var_master_table_version_override;
 
-}
-}
+} // namespace options
+} // namespace wreport

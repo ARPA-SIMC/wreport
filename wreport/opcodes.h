@@ -1,10 +1,10 @@
 #ifndef WREPORT_OPCODE_H
 #define WREPORT_OPCODE_H
 
-#include <wreport/varinfo.h>
-#include <wreport/error.h>
-#include <vector>
 #include <cstdio>
+#include <vector>
+#include <wreport/error.h>
+#include <wreport/varinfo.h>
 
 namespace wreport {
 
@@ -24,12 +24,16 @@ struct Opcodes
     const Varcode* end;
 
     /// Sequence spanning the whole vector
-    Opcodes(const std::vector<Varcode>& vals) : begin(vals.data()), end(begin + vals.size()) {}
+    Opcodes(const std::vector<Varcode>& vals)
+        : begin(vals.data()), end(begin + vals.size())
+    {
+    }
     /// Sequence from begin (inclusive) to end (excluded)
-    Opcodes(const Varcode* begin, const Varcode* end)
-        : begin(begin), end(end) {}
+    Opcodes(const Varcode* begin, const Varcode* end) : begin(begin), end(end)
+    {
+    }
 
-    Opcodes(const Opcodes& o) = default;
+    Opcodes(const Opcodes& o)            = default;
     Opcodes& operator=(const Opcodes& o) = default;
 
     /// Return the i-th varcode in the chain
@@ -54,7 +58,9 @@ struct Opcodes
      */
     Varcode pop_left()
     {
-        if (empty()) throw error_consistency("cannot do pop_left on an empty opcode sequence");
+        if (empty())
+            throw error_consistency(
+                "cannot do pop_left on an empty opcode sequence");
         return *begin++;
     }
 
@@ -67,7 +73,9 @@ struct Opcodes
     Opcodes pop_left(unsigned count)
     {
         if (size() < count)
-            error_consistency::throwf("cannot do pop_left(%u) on an opcode sequence of only %u elements", count, size());
+            error_consistency::throwf("cannot do pop_left(%u) on an opcode "
+                                      "sequence of only %u elements",
+                                      count, size());
         Opcodes res(begin, begin + count);
         begin += count;
         return res;
@@ -91,7 +99,7 @@ struct Opcodes
         if (begin == end)
             return *this;
         else
-            return Opcodes(begin+1, end);
+            return Opcodes(begin + 1, end);
     }
 
     /// Return the opcodes from \a skip until the end
@@ -118,5 +126,5 @@ struct Opcodes
     void print(FILE* out) const;
 };
 
-}
+} // namespace wreport
 #endif
