@@ -63,6 +63,14 @@ std::string slurpfile(const std::filesystem::path& name);
  */
 std::vector<std::filesystem::path> all_test_files(const std::string& encoding);
 
+/**
+ * Dump a bulletin to a simple but deterministic JSON line.
+ *
+ * This can be used to detect if the decoder has changed behaviour from
+ * previously known output.
+ */
+void dump_jsonl(const Bulletin& bulletin, std::stringstream& out);
+
 void track_bulletin(Bulletin& b, const char* tag,
                     const std::filesystem::path& fname);
 

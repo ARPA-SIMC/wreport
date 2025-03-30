@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# Regenerate the tarball of JSON decoder traces, which is used to detect
+# changes in decoder behaviour during tests.
+#
+# JSON traces are kept compressed (using extreme compression) because they
+# contain a lot of redundancy compared to the BUFR versions. They are
+# decompressed automatically at the start of tests.
+#
+# Run this script under run_local to use the current decoder implementation
+
+set -uex
+
+TARFILE=json.tar
+OUTFILE="$TARFILE.xz"
+
+# Move to the testdata directory
+cd $(readlink -f $(dirname $0))
+
+# Regenerate the JSON files
+wrep-make-testjson . -v
+
+# Regenerate the tarball
+rm -f "$OUTFILE"
+tar -cf "$TARFILE" --remove-files $(find . -type f -name "*.json")
+
+xz -9e "$TARFILE"

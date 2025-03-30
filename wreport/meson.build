@@ -16,6 +16,7 @@ libwreport_sources = [
         'opcodes.cc',
         'dtable.cc',
         'tables.cc',
+        'utils/json.cc',
         'utils/string.cc',
         'utils/sys.cc',
         'utils/subprocess.cc',
