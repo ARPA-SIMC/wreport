@@ -13,3 +13,8 @@ executable('wrep-make-testjson', 'wrep-make-testjson.cc',
 )
 
 install_data('wrep-importtable', install_dir: get_option('bindir'))
+
+test_decoder = find_program('./test-decoder')
+runtest = find_program('../runtest')
+
+test('decoder', runtest, args: [test_decoder])

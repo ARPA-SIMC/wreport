@@ -1,0 +1,63 @@
+#!/usr/bin/python3
+
+import json
+import os
+import sys
+import subprocess
+import tarfile
+from pathlib import Path
+from typing import Dict, Any, List, IO
+
+# Locate test data
+testdatadir = Path(os.environ["WREPORT_TESTDATA"])
+known_archive = testdatadir / "json.tar.xz"
+if not known_archive.exists():
+    raise AssertionError(f"{known_archive} not found")
+
+
+def load_expected(path: Path, fd: IO[bytes]):
+    expected: list[Dict[str, Any]] = []
+    for lineno, line in enumerate(fd, start=1):
+        uline = line.decode(errors="ignore")
+        try:
+            expected.append(json.loads(uline))
+        except Exception as e:
+            print(f"{tarinfo.name}:{lineno}: {e}", file=sys.stderr)
+            print(repr(line), file=sys.stderr)
+            return []
+    return expected
+
+
+def load_actual(path: Path):
+    proc = subprocess.run(
+        ["wrep-make-testjson", (testdatadir / path).as_posix()],
+        check=True,
+        stdout=subprocess.PIPE,
+    )
+    return [json.loads(line) for line in proc.stdout.splitlines()]
+
+
+ok = 0
+fail = 0
+
+# Load old test data
+with tarfile.open(known_archive) as tar:
+    for tarinfo in tar:
+        fd = tar.extractfile(tarinfo)
+        assert fd is not None
+        with fd:
+            path = Path(tarinfo.name)
+            expected = load_expected(path, fd)
+            actual = load_actual(path.with_suffix(""))
+            if actual != expected:
+                print("A", actual, file=sys.stderr)
+                print("E", expected, file=sys.stderr)
+                print(f"{path}: output mismatch", file=sys.stderr)
+                fail += 1
+            else:
+                ok += 1
+
+
+print(f"{ok} ok, {fail} failed")
+
+raise SystemExit(1 if fail else 0)

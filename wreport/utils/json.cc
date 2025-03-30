@@ -1,4 +1,4 @@
-#import "json.h"
+#include "json.h"
 #include <wreport/error.h>
 
 namespace wreport::json {
@@ -27,18 +27,25 @@ void JSON::addq(const std::string& val)
 {
     addc('"');
     for (const auto& c : val)
-        switch (c)
+    {
+        if (c < 32 or c & 0x80)
+            addc('?');
+        else
         {
-            case '"':  adds("\\\""); break;
-            case '\\': adds("\\\\"); break;
-            case '/':  adds("\\/"); break;
-            case '\b': adds("\\b"); break;
-            case '\f': adds("\\f"); break;
-            case '\n': adds("\\n"); break;
-            case '\r': adds("\\r"); break;
-            case '\t': adds("\\t"); break;
-            default:   addc(c); break;
+            switch (c)
+            {
+                case '"':  adds("\\\""); break;
+                case '\\': adds("\\\\"); break;
+                case '/':  adds("\\/"); break;
+                case '\b': adds("\\b"); break;
+                case '\f': adds("\\f"); break;
+                case '\n': adds("\\n"); break;
+                case '\r': adds("\\r"); break;
+                case '\t': adds("\\t"); break;
+                default:   addc(c); break;
+            }
         }
+    }
     addc('"');
 }
 

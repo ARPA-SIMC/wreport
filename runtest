@@ -1,5 +1,6 @@
 #!/bin/sh -e
 
+TOP_BUILDDIR=$(readlink -f "$PWD")
 TOP_SRCDIR=$(readlink -f $(dirname $0))
 PYTHON=${PYTHON:-$(which python3)}
 
@@ -31,6 +32,7 @@ export WREPORT_TABLES=$TOP_SRCDIR/tables
 export WREPORT_TESTDATA=$TOP_SRCDIR/testdata
 # See https://docs.python.org/3/library/devmode.html
 export PYTHONDEVMODE=1
+export PATH="$TOP_BUILDDIR/src:$PATH"
 
 ORIGDIR=`pwd`
 TESTDIR="`mktemp -d`"

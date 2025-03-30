@@ -154,6 +154,23 @@ void process_dir(const std::filesystem::path& path)
     }
 }
 
+void process_file(const std::filesystem::path& path)
+{
+    notes::logf("%s: processing\n", path.c_str());
+
+    Infile infile(path);
+    Outfile outfile("/dev/stdout");
+
+    try
+    {
+        infile.process(outfile);
+    }
+    catch (std::exception& e)
+    {
+        fprintf(stderr, "%s: %s\n", path.c_str(), e.what());
+    }
+}
+
 } // namespace
 
 int main(int argc, char* argv[])
@@ -211,7 +228,13 @@ int main(int argc, char* argv[])
     try
     {
         while (optind < argc)
-            process_dir(argv[optind++]);
+        {
+            fs::path path(argv[optind++]);
+            if (fs::is_directory(path))
+                process_dir(path);
+            else
+                process_file(path);
+        }
     }
     catch (std::exception& e)
     {
