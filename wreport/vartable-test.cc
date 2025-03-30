@@ -126,7 +126,7 @@ void Tests::register_tests()
         wassert(actual(info->scale) == 2);
         wassert(actual(info->bit_ref) == -8192);
         wassert(actual(info->bit_len) == 14u);
-        wassert(actual(info->len) == 5u);
+        wassert(actual(info->len) == 4u);
         wassert(actual(info->type) == Vartype::Decimal);
 
         info = table->query(WR_VAR(0, 7, 31));
@@ -202,7 +202,7 @@ void Tests::register_tests()
         wassert(actual(info->scale) == 2);
         wassert(actual(info->bit_ref) == -8192);
         wassert(actual(info->bit_len) == 14u);
-        wassert(actual(info->len) == 5u);
+        wassert(actual(info->len) == 4u);
         wassert(actual(info->type) == Vartype::Decimal);
 
         table = Vartable::load_bufr(table_pathname("B0000000000000014000.txt"));
@@ -216,7 +216,34 @@ void Tests::register_tests()
         wassert(actual(info->bit_len) == 6u);
         wassert(actual(info->len) == 2u);
         wassert(actual(info->type) == Vartype::Decimal);
+
+        info = table->query(WR_VAR(0, 1, 194));
+        wassert(actual(info->code) == WR_VAR(0, 1, 194));
+        wassert(actual(info->desc) == "CARRIER BALLOON/AIRCRAFT IDENTIFIER");
+        wassert(actual(info->unit) == "CCITTIA5");
+        wassert(actual(info->scale) == 0);
+        wassert(actual(info->bit_ref) == 0);
+        wassert(actual(info->bit_len) == 72u);
+        wassert(actual(info->len) == 9u);
+        wassert(actual(info->type) == Vartype::String);
     });
+    add_method("issue59_with_crex_data", []() {
+        // Test reading BUFR edition 4 tables
+        // const Vartable* table =
+        //     Vartable::load_bufr(table_pathname("B0000000000000033000.txt"));
+        const Vartable* table =
+            Vartable::load_bufr(table_pathname("B0000000000000012000.txt"));
+        Varinfo info = table->query(WR_VAR(0, 10, 35));
+        wassert(actual(info->code) == WR_VAR(0, 10, 35));
+        wassert(actual(info->desc) == "EARTH'S LOCAL RADIUS OF CURVATURE");
+        wassert(actual(info->unit) == "M");
+        wassert(actual(info->scale) == 1);
+        wassert(actual(info->bit_ref) == 62000000);
+        wassert(actual(info->bit_len) == 22u);
+        wassert(actual(info->len) == 8u);
+        wassert(actual(info->type) == Vartype::Decimal);
+    });
+
     add_method("wmo", []() {
         // Test reading WMO standard tables
         // const Vartable* table = NULL;

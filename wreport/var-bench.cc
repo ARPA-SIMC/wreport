@@ -52,9 +52,9 @@ struct VarBenchmark : Benchmark
     {
         Benchmark::setup_main();
         varinfo_int.set_bufr(WR_VAR(0, 0, 0), "test integer variable", "number",
-                             0, 10, 0, 10);
+                             0, 0, 10);
         varinfo_double.set_bufr(WR_VAR(0, 0, 0), "test double variable",
-                                "number", 5, 10, -100000, 10);
+                                "number", 5, -100000, 10);
         varinfo_string.set_string(WR_VAR(0, 0, 0), "test string variable", 32);
         varinfo_binary.set_binary(WR_VAR(0, 0, 0), "test binary variable", 20);
         // Allocate space for the test vars

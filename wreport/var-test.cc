@@ -486,7 +486,7 @@ void Tests::register_tests()
         };
         _Varinfo info;
         info.set_binary(WR_VAR(0, 0, 0), "TEST BINARY 3 bytes", 24);
-        wassert(actual(info.len) == 3);
+        wassert(actual(info.len) == 3u);
 
         Var var(&info, "\0\0\0\0");
         wassert(actual(to_hex(var.enqc())) == "00000000");
@@ -507,35 +507,41 @@ void Tests::register_tests()
         wassert(actual(to_hex(var.enqc())) == "AAAAAA00");
     });
 
-    add_method("seti", []() {
+    add_method("seti_positive", []() {
         _Varinfo vi;
-        vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 0, 10, 0, 32);
+        vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 0, 0, 31);
         Var var(&vi);
-        var.seti(0);
+        wassert(var.seti(0));
         wassert(actual(var.enqc()) == "0");
-        var.seti(1);
+        wassert(var.seti(1));
         wassert(actual(var.enqc()) == "1");
-        var.seti(100);
+        wassert(var.seti(100));
         wassert(actual(var.enqc()) == "100");
-        var.seti(1000);
+        wassert(var.seti(1000));
         wassert(actual(var.enqc()) == "1000");
-        var.seti(1234567890);
+        wassert(var.seti(1234567890));
         wassert(actual(var.enqc()) == "1234567890");
-        var.seti(45);
+        wassert(var.seti(45));
         wassert(actual(var.enqc()) == "45");
-        var.seti(-1);
+    });
+
+    add_method("seti_negative", []() {
+        _Varinfo vi;
+        Var var(&vi);
+        vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 0, -0x7fffffff, 31);
+        wassert(var.seti(-1));
         wassert(actual(var.enqc()) == "-1");
-        var.seti(-10800);
+        wassert(var.seti(-10800));
         wassert(actual(var.enqc()) == "-10800");
-        var.seti(-11000000);
+        wassert(var.seti(-11000000));
         wassert(actual(var.enqc()) == "-11000000");
-        var.seti(-2147483647);
+        wassert(var.seti(-2147483647));
         wassert(actual(var.enqc()) == "-2147483647");
     });
 
     add_method("setd", []() {
         _Varinfo vi;
-        vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 2, 5, 0, 16);
+        vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 2, 0, 16);
         Var var(&vi);
         var.setd(0);
         wassert(actual(var.enqc()) == "0");
@@ -607,7 +613,7 @@ void Tests::register_tests()
 
     add_method("issue17", []() {
         _Varinfo vi;
-        vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 2, 5, 0, 16);
+        vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 2, 0, 16);
         Var var(&vi);
         wassert(var.sets("None"));
         wassert_false(var.isset());

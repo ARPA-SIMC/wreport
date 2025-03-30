@@ -9,7 +9,9 @@
 #include "config.h"
 #include "error.h"
 #include "internals/tabledir.h"
+#include "notes.h"
 #include "tableinfo.h"
+#include <algorithm>
 #include <climits>
 #include <cmath>
 #include <cstring>
@@ -78,7 +80,7 @@ struct fd_closer
     ~fd_closer() { fclose(fd); }
 };
 
-static long getnumber(char* str)
+static long getnumber(const char* str)
 {
     while (*str && isspace(*str))
         ++str;
@@ -120,6 +122,9 @@ struct VartableEntry
 
     VartableEntry() = default;
 
+    /**
+     * Build an altered entry created for BUFR table C modifiers
+     */
     VartableEntry(const VartableEntry& other, int new_scale,
                   unsigned new_bit_len, int new_bit_ref)
         : varinfo(other.varinfo), alterations(other.alterations)
@@ -131,44 +136,14 @@ struct VartableEntry
 #endif
 
         // Apply the alterations
-        varinfo.bit_len = new_bit_len;
-        switch (varinfo.type)
-        {
-            case Vartype::Integer:
-            case Vartype::Decimal:
-                varinfo.len = digits_per_bits(varinfo.bit_len);
-                break;
-            case Vartype::String: varinfo.len = varinfo.bit_len / 8; break;
-            case Vartype::Binary:
-                varinfo.len = static_cast<unsigned>(ceil(varinfo.bit_len / 8));
-                break;
-        }
-
-        varinfo.scale = new_scale;
-        switch (varinfo.type)
-        {
-            case Vartype::String:
-            case Vartype::Binary: break;
-            case Vartype::Integer:
-                if (varinfo.scale)
-                    varinfo.type = Vartype::Decimal;
-                break;
-            case Vartype::Decimal:
-                if (!varinfo.scale)
-                    varinfo.type = Vartype::Integer;
-                break;
-        }
-
-        varinfo.bit_ref = new_bit_ref;
+        varinfo.set_bufr(varinfo.code, varinfo.desc, varinfo.unit, new_scale,
+                         new_bit_ref, new_bit_len);
 
 #if 0
         fprintf(stderr, "After alteration(w:%d,s:%d): bl %d len %d scale %d\n",
                 WR_ALT_WIDTH(change), WR_ALT_SCALE(change),
                 i->bit_len, i->len, i->scale);
 #endif
-
-        // Postprocess the data, filling in minval and maxval
-        varinfo.compute_range();
     }
 
     /**
@@ -331,6 +306,15 @@ static void normalise_unit(char* unit)
         strcpy(unit, "FLAG TABLE");
 }
 
+static void read_space_padded(char* dest, const char* src, size_t len)
+{
+    memcpy(dest, src, len);
+    dest[len] = 0;
+    // Convert the description from space-padded to zero-padded
+    for (int i = len - 1; i >= 0 && isspace(dest[i]); --i)
+        dest[i] = 0;
+}
+
 struct BufrVartable : public VartableBase
 {
     /// Create and load a BUFR B table
@@ -343,68 +327,38 @@ struct BufrVartable : public VartableBase
                                  pathname.c_str());
         fd_closer closer(in); // Close in on exit
 
+        char desc_buf[65];
+        char unit_buf[25];
         char line[200];
         int line_no = 0;
         while (fgets(line, 200, in) != NULL)
         {
+            size_t line_length = strlen(line);
             line_no++;
 
-            if (strlen(line) < 119)
+            if (line_length < 119)
                 throw error_parse(pathname.c_str(), line_no,
                                   "bufr table line too short");
             // fprintf(stderr, "Line: %s\n", line);
-
-            /* FMT='(1x,A,1x,A64,47x,A24,I3,8x,I3)' */
+            // FMT='(1x,A,1x,A64,47x,A24,I3,8x,I3)'
 
             // Append a new entry;
             _Varinfo* entry = obtain(line_no, WR_STRING_TO_VAR(line + 2));
 
             // Read the description
-            memcpy(entry->desc, line + 8, 64);
-            // Convert the description from space-padded to zero-padded
-            for (int i = 63; i >= 0 && isspace(entry->desc[i]); --i)
-                entry->desc[i] = 0;
+            read_space_padded(desc_buf, line + 8, 64);
 
-            // Read the unit
-            memcpy(entry->unit, line + 73, 24);
-            // Convert the unit from space-padded to zero-padded
-            for (int i = 23; i >= 0 && isspace(entry->unit[i]); --i)
-                entry->unit[i] = 0;
-            normalise_unit(entry->unit);
+            // Read the BUFR unit
+            read_space_padded(unit_buf, line + 73, 24);
+            normalise_unit(unit_buf);
 
-            entry->scale   = static_cast<int>(getnumber(line + 98));
-            entry->bit_ref = static_cast<int>(getnumber(line + 102));
-            entry->bit_len = static_cast<unsigned>(getnumber(line + 115));
-
-            // Set the is_string flag based on the unit
-            if (strcmp(entry->unit, "CCITTIA5") == 0)
-            {
-                entry->type = Vartype::String;
-                entry->len  = entry->bit_len / 8;
-            }
-            else
-            {
-                if (entry->scale)
-                    entry->type = Vartype::Decimal;
-                else
-                    entry->type = Vartype::Integer;
-
-                // Compute the decimal length as the maximum number of digits
-                // needed to encode 2**bit_len
-                if (entry->bit_len == 1)
-                    entry->len = 1;
-                else
-                    entry->len = static_cast<unsigned>(
-                        ceil(entry->bit_len * log10(2.0)));
-            }
-
-            // Postprocess the data, filling in minval and maxval
-            entry->compute_range();
-
-            /*
-            fprintf(stderr, "Debug: B%05d len %d scale %d type %s desc %s\n",
-                    bcode, entry->len, entry->scale, entry->type, entry->desc);
-            */
+            entry->set_bufr(entry->code, desc_buf, unit_buf,
+                            // scale
+                            static_cast<int>(getnumber(line + 98)),
+                            // bit_ref
+                            static_cast<int>(getnumber(line + 102)),
+                            // bit_len
+                            static_cast<unsigned>(getnumber(line + 115)));
         }
     }
 };
@@ -421,6 +375,8 @@ struct CrexVartable : public VartableBase
                                  pathname.c_str());
         fd_closer closer(in); // Close in on exit
 
+        char desc_buf[65];
+        char unit_buf[25];
         char line[200];
         int line_no = 0;
         while (fgets(line, 200, in) != NULL)
@@ -430,8 +386,8 @@ struct CrexVartable : public VartableBase
 
             if (strlen(line) < 157)
             {
-                // Rows for delayed replicators do not have crex entries, so we
-                // skip them
+                // Rows for delayed replicators do not have crex entries, so
+                // we skip them
                 if (WR_VAR_X(code) != 31)
                     throw error_parse(pathname.c_str(), line_no,
                                       "crex table line too short");
@@ -439,49 +395,23 @@ struct CrexVartable : public VartableBase
                     continue;
             }
             // fprintf(stderr, "Line: %s\n", line);
-
-            /* FMT='(1x,A,1x,A64,47x,A24,I3,8x,I3)' */
+            // FMT='(1x,A,1x,A64,47x,A24,I3,8x,I3)'
 
             // Append a new entry;
             _Varinfo* entry = obtain(line_no, code);
 
             // Read the description
-            memcpy(entry->desc, line + 8, 64);
-            // Convert the description from space-padded to zero-padded
-            for (int i = 63; i >= 0 && isspace(entry->desc[i]); --i)
-                entry->desc[i] = 0;
+            read_space_padded(desc_buf, line + 8, 64);
 
             // Read the CREX unit
-            memcpy(entry->unit, line + 119, 24);
-            // Convert the unit from space-padded to zero-padded
-            for (int i = 23; i >= 0 && isspace(entry->unit[i]); --i)
-                entry->unit[i] = 0;
-            normalise_unit(entry->unit);
+            read_space_padded(unit_buf, line + 119, 24);
+            normalise_unit(unit_buf);
 
-            entry->scale = static_cast<int>(getnumber(line + 143));
-            entry->len   = static_cast<unsigned>(getnumber(line + 149));
-
-            // Ignore the BUFR part: since it can have a different measurement
-            // unit, we cannot really use that information. It will just mean
-            // that values loaded using CREX tables cannot be encoded in binary
-            entry->bit_ref = 0;
-            entry->bit_len = 0;
-
-            // Set the is_string flag based on the unit
-            if (strcmp(entry->unit, "CHARACTER") == 0)
-                entry->type = Vartype::String;
-            else if (entry->scale)
-                entry->type = Vartype::Decimal;
-            else
-                entry->type = Vartype::Integer;
-
-            // Postprocess the data, filling in minval and maxval
-            entry->compute_range();
-
-            /*
-            fprintf(stderr, "Debug: B%05d len %d scale %d type %s desc %s\n",
-                    bcode, entry->len, entry->scale, entry->type, entry->desc);
-            */
+            entry->set_crex(code, desc_buf, unit_buf,
+                            // Scale
+                            static_cast<int>(getnumber(line + 143)),
+                            // Length
+                            static_cast<unsigned>(getnumber(line + 149)));
         }
     }
 };

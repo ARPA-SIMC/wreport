@@ -998,6 +998,24 @@ declare_test("bufr/tempforecast.bufr", [](const BufrBulletin& msg) {
             wassert_false(s[64].next_attr());
         }
     });
+
+    declare_test("bufr/issue59.bufr", [](const BufrBulletin& msg) {
+        wassert(actual((int)msg.edition_number) == 4);
+        wassert(actual(msg.rep_year) == 2025);
+        // TODO: validate these
+        wassert(actual((unsigned)msg.data_subcategory_local) == 14u);
+        wassert(actual(msg.subsets.size()) == 1u);
+
+        {
+            const Subset& s = msg.subset(0);
+            wassert(actual(s.size()) == 7210u);
+            wassert(actual_varcode(s[0].code()) == WR_VAR(0, 1, 7));
+            wassert(actual(s[0].enqs()) == "803");
+
+            wassert(actual_varcode(s[34].code()) == WR_VAR(0, 10, 35));
+            wassert(actual(s[34].enqd()) == 6349182.0);
+        }
+    });
 }
 
 #if 0

@@ -6,6 +6,7 @@
 * Add a decoder trace snapshot in test data to detect unexpected behaviour
   changes in the decoder
 * Fix incorrect padding when reading values of binary variables
+* Redesign calculation of variable domain boundaries (#59)
 
 # New in version 3.38
 

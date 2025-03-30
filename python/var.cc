@@ -631,7 +631,7 @@ int var_value_from_python(PyObject* o, wreport::Var& var)
 
 void register_var(PyObject* m, wrpy_c_api& c_api)
 {
-    dummy_var.set_bufr(0, "Invalid variable", "?", 0, 1, 0, 1);
+    dummy_var.set_bufr(0, "Invalid variable", "?", 0, 0, 1);
 
     var_def = new VarDef;
     var_def->define(wrpy_Var_Type, m);

@@ -99,8 +99,23 @@ std::string varcode_format(Varcode code)
     return buf;
 }
 
+/// Return the number of digits in the given number
+static unsigned count_digits(uint32_t val)
+{
+    return (val >= 1000000000)  ? 10
+           : (val >= 100000000) ? 9
+           : (val >= 10000000)  ? 8
+           : (val >= 1000000)   ? 7
+           : (val >= 100000)    ? 6
+           : (val >= 10000)     ? 5
+           : (val >= 1000)      ? 4
+           : (val >= 100)       ? 3
+           : (val >= 10)        ? 2
+                                : 1;
+}
+
 void _Varinfo::set_bufr(Varcode code, const char* desc, const char* unit,
-                        int scale, unsigned len, int bit_ref, int bit_len)
+                        int scale, int32_t bit_ref, unsigned bit_len)
 {
     this->code = code;
     strncpy(this->desc, desc, 63);
@@ -108,16 +123,78 @@ void _Varinfo::set_bufr(Varcode code, const char* desc, const char* unit,
     strncpy(this->unit, unit, 23);
     this->unit[23] = 0;
     this->scale    = scale;
-    this->len      = len;
     this->bit_ref  = bit_ref;
     this->bit_len  = bit_len;
-    if (strcmp(unit, "CCITTIA5") == 0)
-        this->type = Vartype::String;
-    else if (scale == 0)
-        this->type = Vartype::Integer;
+    compute_type();
+
+    // Compute storage length and ranges
+    if (type == Vartype::String or type == Vartype::Binary)
+    {
+        if (bit_len % 8)
+            len = bit_len / 8 + 1;
+        else
+            len = bit_len / 8;
+        imin = imax = 0;
+        dmin = dmax = 0.0;
+        return;
+    }
+
+    // Compute the decimal length as the maximum number of
+    // digits needed to encode both the minimum and maximum *unscaled* values
+    // in the variable domain
+    imin = bit_ref;
+
+    uint32_t maxval = bit_len == 31 ? 0x7fffffff : (1 << bit_len) - 1;
+    // We need to subtract 1 because 2^bit_len-1 is the
+    // BUFR missing value. However, we cannot do it with the delayed
+    // replication factors (encoded in 8 bits) because RADAR BUFR messages have
+    // 255 subsets, and the replication factor is not interpreted as missing.
+    // We need to assume that the missing value does not apply to delayed
+    // replication factors.
+    if (WR_VAR_X(code) != 31)
+        maxval -= 1;
+
+    if (bit_len == 31 and bit_ref > 0)
+    {
+        len  = 10;
+        imax = maxval;
+        error_consistency::throwf(
+            "%01d%02d%03d scaled value does not fit in a signed 32bit "
+            "integer (%d bits with a base value of %d)",
+            WR_VAR_FXY(code), bit_len, bit_ref);
+    }
+
+    if (bit_ref == 0)
+    {
+        imax = maxval;
+        if (bit_len == 1)
+            len = 1;
+        else
+            len = count_digits(maxval);
+    }
+    else if (bit_ref < 0)
+    {
+        imax = maxval + bit_ref;
+        len  = max(count_digits(-bit_ref), count_digits(abs(imax)));
+    }
     else
-        this->type = Vartype::Decimal;
-    compute_range();
+    {
+        if ((0x7ffffffe - maxval) < (unsigned)bit_ref)
+        {
+            len  = 10;
+            imax = maxval;
+            error_consistency::throwf(
+                "%01d%02d%03d scaled value does not fit in a signed "
+                "32bit "
+                "integer (%d bits with a base value of %d)",
+                WR_VAR_FXY(code), bit_len, bit_ref);
+        }
+        imax = maxval + bit_ref;
+        len  = max(count_digits(bit_ref), count_digits(imax));
+    }
+
+    dmin = decode_decimal(imin);
+    dmax = decode_decimal(imax);
 }
 
 void _Varinfo::set_crex(Varcode code, const char* desc, const char* unit,
@@ -132,45 +209,9 @@ void _Varinfo::set_crex(Varcode code, const char* desc, const char* unit,
     this->len      = len;
     this->bit_ref  = 0;
     this->bit_len  = 0;
-    if (strcmp(unit, "CHARACTER") == 0)
-        this->type = Vartype::String;
-    else if (scale == 0)
-        this->type = Vartype::Integer;
-    else
-        this->type = Vartype::Decimal;
-    compute_range();
-}
+    compute_type();
 
-void _Varinfo::set_string(Varcode code, const char* desc, unsigned len)
-{
-    this->code = code;
-    strncpy(this->desc, desc, 63);
-    this->desc[63] = 0;
-    strncpy(this->unit, "CCITTIA5", 24);
-    this->scale   = 0;
-    this->len     = len;
-    this->bit_ref = 0;
-    this->bit_len = len * 8;
-    this->type    = Vartype::String;
-    compute_range();
-}
-
-void _Varinfo::set_binary(Varcode code, const char* desc, unsigned bit_len)
-{
-    this->code = code;
-    strncpy(this->desc, desc, 63);
-    this->desc[63] = 0;
-    strncpy(this->unit, "UNKNOWN", 24);
-    this->scale   = 0;
-    this->len     = static_cast<unsigned>(ceil(bit_len / 8.0));
-    this->bit_ref = 0;
-    this->bit_len = bit_len;
-    this->type    = Vartype::Binary;
-    compute_range();
-}
-
-void _Varinfo::compute_range()
-{
+    // Compute range
     switch (type)
     {
         case Vartype::String:
@@ -185,40 +226,50 @@ void _Varinfo::compute_range()
                 imin = INT_MIN;
                 imax = INT_MAX;
             }
-            else if (bit_len == 0)
+            else
             {
-                // Ignore binary encoding if we do not have information for it
+                // Ignore binary encoding if we do not have information for
+                // it
 
                 // We subtract 2 because 10^len-1 is the
                 // CREX missing value
                 imin = static_cast<int>(-(intexp10(len) - 1.0));
                 imax = static_cast<int>((intexp10(len) - 2.0));
             }
-            else
-            {
-                int bit_min = bit_ref;
-                int bit_max = (1 << bit_len) + bit_ref;
-                // We subtract 2 because 2^bit_len-1 is the
-                // BUFR missing value.
-                // We cannot subtract 2 from the delayed replication
-                // factors because RADAR BUFR messages have 255
-                // subsets, and the delayed replication field is 8
-                // bits, so 255 is the missing value, and if we
-                // disallow it here we cannot import radars anymore.
-                if (WR_VAR_X(code) != 31)
-                    bit_max -= 2;
-                // We subtract 2 because 10^len-1 is the
-                // CREX missing value
-                int dec_min = static_cast<int>(-(intexp10(len) - 1.0));
-                int dec_max = static_cast<int>((intexp10(len) - 2.0));
-
-                imin = max(bit_min, dec_min);
-                imax = min(bit_max, dec_max);
-            }
             dmin = decode_decimal(imin);
             dmax = decode_decimal(imax);
             break;
     }
+}
+
+void _Varinfo::set_string(Varcode code, const char* desc, unsigned len)
+{
+    this->code = code;
+    strncpy(this->desc, desc, 63);
+    this->desc[63] = 0;
+    strncpy(this->unit, "CCITTIA5", 24);
+    this->scale   = 0;
+    this->len     = len;
+    this->bit_ref = 0;
+    this->bit_len = len * 8;
+    this->type    = Vartype::String;
+    imin = imax = 0;
+    dmin = dmax = 0.0;
+}
+
+void _Varinfo::set_binary(Varcode code, const char* desc, unsigned bit_len)
+{
+    this->code = code;
+    strncpy(this->desc, desc, 63);
+    this->desc[63] = 0;
+    strncpy(this->unit, "UNKNOWN", 24);
+    this->scale   = 0;
+    this->len     = static_cast<unsigned>(ceil(bit_len / 8.0));
+    this->bit_ref = 0;
+    this->bit_len = bit_len;
+    this->type    = Vartype::Binary;
+    imin = imax = 0;
+    dmin = dmax = 0.0;
 }
 
 static const double scales[] = {
@@ -255,7 +306,8 @@ double _Varinfo::decode_binary(uint32_t ival) const
 {
     if (bit_len == 0)
         error_consistency::throwf(
-            "cannot decode %01d%02d%03d from binary, because the information "
+            "cannot decode %01d%02d%03d from binary, because the "
+            "information "
             "needed is missing from the B table in use",
             WR_VAR_FXY(code));
     if (scale >= 0)
@@ -299,11 +351,23 @@ unsigned _Varinfo::encode_binary(double fval) const
     else
         res = rint(fval - bit_ref);
     if (res < 0)
-        error_consistency::throwf(
-            "Cannot encode %01d%02d%03d %f to %u bits using scale %d and ref "
-            "%d: encoding gives negative value %f",
-            WR_VAR_FXY(code), fval, bit_len, scale, bit_ref, res);
+        error_consistency::throwf("Cannot encode %01d%02d%03d %f to %u "
+                                  "bits using scale %d and ref "
+                                  "%d: encoding gives negative value %f",
+                                  WR_VAR_FXY(code), fval, bit_len, scale,
+                                  bit_ref, res);
     return (unsigned)res;
+}
+
+void _Varinfo::compute_type()
+{
+    // Set the is_string flag based on the unit
+    if (strcmp(unit, "CCITTIA5") == 0 or strcmp(unit, "CHARACTER") == 0)
+        type = Vartype::String;
+    else if (scale)
+        type = Vartype::Decimal;
+    else
+        type = Vartype::Integer;
 }
 
 } // namespace wreport

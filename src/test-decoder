@@ -58,8 +58,8 @@ with tarfile.open(known_archive) as tar:
             expected = load_expected(path, fd)
             actual = load_actual(path.with_suffix(""))
             if actual != expected:
-                print("A", actual, file=sys.stderr)
-                print("E", expected, file=sys.stderr)
+                # print("A", actual, file=sys.stderr)
+                # print("E", expected, file=sys.stderr)
                 print(f"{path}: output mismatch", file=sys.stderr)
                 fail += 1
             else:

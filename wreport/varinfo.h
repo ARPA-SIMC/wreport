@@ -236,8 +236,7 @@ struct _Varinfo
 
     /// Set all the base Varinfo fields, then call compute_range
     void set_bufr(Varcode code, const char* desc, const char* unit,
-                  int scale = 0, unsigned len = 0, int bit_ref = 0,
-                  int bit_len = 0);
+                  int scale = 0, int32_t bit_ref = 0, unsigned bit_len = 0);
 
     /// Set all the base Varinfo fields, then call compute_range
     void set_crex(Varcode code, const char* desc, const char* unit,
@@ -261,12 +260,8 @@ struct _Varinfo
      */
     void set_binary(Varcode code, const char* desc, unsigned bit_len);
 
-    /**
-     * Compute the widest ranges for imin, imax, dmin and dmax that can fit any
-     * value that can be encoded both with (scale, len) and with (scale,
-     * bit_ref, bit_len)
-     */
-    void compute_range();
+    /// Compute the entry type
+    void compute_type();
 };
 
 /**
