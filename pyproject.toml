@@ -1,0 +1,13 @@
+[tool.black]
+line-length = 80
+
+[tool.isort]
+profile = "black"
+line_length = 80
+
+[tool.pylint.MAIN]
+max-line-length = 80
+
+# flake8 is configured in setup.cfg because of its maintainers
+# https://pypi.org/project/Flake8-pyproject/ exists but would mean another
+# dependency

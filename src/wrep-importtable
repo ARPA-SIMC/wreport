@@ -6,6 +6,7 @@ import xml.dom.minidom as xmd
 import xml.dom as xdom
 import argparse
 import logging
+from typing import Dict
 
 log = logging.getLogger("wrep-importtable")
 
@@ -16,10 +17,10 @@ log = logging.getLogger("wrep-importtable")
 # The tables are currently (as of 2014-08-01) published here:
 # http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/LatestVERSION.html
 # http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/PrevVERSIONS/PreviousVERSIONS.html
-DOWNLOAD_URL = "http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/latestTables.zip"
+DOWNLOAD_URL = "http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/latestTables.zip"  # noqa: E501
 
-BUFR_UNIT_MAP = {"CCITT IA5": "CCITTIA5"}
-CREX_UNIT_MAP = {}
+BUFR_UNIT_MAP: Dict[str, str] = {"CCITT IA5": "CCITTIA5"}
+CREX_UNIT_MAP: Dict[str, str] = {}
 
 
 class Fail(BaseException):
@@ -78,8 +79,8 @@ class Table(object):
 class TableB(Table):
     def parse_xml(self, text):
         """
-        Read an XML B table from the given file descriptor and yield DICTs with all
-        the <key>value</key> elements of B table records
+        Read an XML B table from the given file descriptor and yield DICTs with
+        all the <key>value</key> elements of B table records
         """
         dom = xmd.parseString(text)
         for n in dom.documentElement.childNodes:
@@ -107,14 +108,19 @@ class TableB(Table):
             el_name = data.get("ElementName_en", None)
             if el_name is None:
                 el_name = data["ElementName_E"]
-            if "CREX_Unit" not in data or "CREX_Scale" not in data or "CREX_DataWidth_Char" not in data:
+            if (
+                "CREX_Unit" not in data
+                or "CREX_Scale" not in data
+                or "CREX_DataWidth_Char" not in data
+            ):
                 yield " %-6.6s %-64.64s %-24.24s %3d %12d %3d" % (
                     data["FXY"],
                     el_name,
                     normalise_bufr_unit(data["BUFR_Unit"]),
                     int(data["BUFR_Scale"]),
                     int(data["BUFR_ReferenceValue"]),
-                    int(data["BUFR_DataWidth_Bits"]))
+                    int(data["BUFR_DataWidth_Bits"]),
+                )
             else:
                 yield " %-6.6s %-64.64s %-24.24s %3d %12d %3d %-24.24s %2d %9d" % (
                     data["FXY"],
@@ -125,10 +131,13 @@ class TableB(Table):
                     int(data["BUFR_DataWidth_Bits"]),
                     normalise_crex_unit(data["CREX_Unit"]),
                     int(data["CREX_Scale"]),
-                    int(data["CREX_DataWidth_Char"]))
+                    int(data["CREX_DataWidth_Char"]),
+                )
 
     def write_files(self):
-        out1 = open("B0000000000000{:03d}{:03d}.txt".format(self.v, self.sv), "w")
+        out1 = open(
+            "B0000000000000{:03d}{:03d}.txt".format(self.v, self.sv), "w"
+        )
         log.info("Writing %s...", out1.name)
         out2 = open("B00{:02d}{:02d}.txt".format(self.v, self.sv), "w")
         log.info("Writing %s...", out2.name)
@@ -158,9 +167,9 @@ class TableD(Table):
                 continue
             if "TableD" not in n.nodeName:
                 continue
-            # This is an odd way to encode a D table: each element maps a D code to
-            # one element of its expansion, instead of mapping a D code to a list
-            # of expanded codes
+            # This is an odd way to encode a D table: each element maps a D
+            # code to one element of its expansion, instead of mapping a D code
+            # to a list of expanded codes
             fxy1 = None
             fxy2 = None
             for x in n.childNodes:
@@ -186,7 +195,9 @@ class TableD(Table):
 
 class TableDBUFR(TableD):
     def write_files(self):
-        out = open("D0000000000000{:03d}{:03d}.txt".format(self.v, self.sv), "w")
+        out = open(
+            "D0000000000000{:03d}{:03d}.txt".format(self.v, self.sv), "w"
+        )
         log.info("Writing %s...", out.name)
         try:
             for line in self.output_lines():
@@ -207,9 +218,15 @@ class TableDCREX(TableD):
 
 
 class Tables(object):
-    re_fname_b = re.compile(r"^BUFRCREX[^/]+/BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_TableB_(?:E|en).xml$")
-    re_fname_bufr_d = re.compile(r"BUFRCREX[^/]+/BUFR_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_TableD_(?:E|en).xml$")
-    re_fname_crex_d = re.compile(r"BUFRCREX[^/]+/CREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_TableD_(?:E|en).xml$")
+    re_fname_b = re.compile(
+        r"^BUFRCREX[^/]+/BUFRCREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_TableB_(?:E|en).xml$"
+    )
+    re_fname_bufr_d = re.compile(
+        r"BUFRCREX[^/]+/BUFR_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_TableD_(?:E|en).xml$"
+    )
+    re_fname_crex_d = re.compile(
+        r"BUFRCREX[^/]+/CREX_(?P<v>\d+)_(?P<sv>\d+)_(?P<lv>\d+)_TableD_(?:E|en).xml$"
+    )
 
     def __init__(self):
         self.table_b = None
@@ -224,6 +241,7 @@ class Tables(object):
 
         def read_version(mo):
             return int(mo.group("v")), int(mo.group("sv")), int(mo.group("lv"))
+
         try:
             zf.testzip()
             for i in zf.infolist():
@@ -238,14 +256,18 @@ class Tables(object):
                 if mo is not None:
                     log.info("Processing BUFR D table %s", i.filename)
                     fd = zf.open(i, "r")
-                    self.table_d_bufr = TableDBUFR(*read_version(mo), text=fd.read())
+                    self.table_d_bufr = TableDBUFR(
+                        *read_version(mo), text=fd.read()
+                    )
                     fd.close()
                     continue
                 mo = self.re_fname_crex_d.match(i.filename)
                 if mo is not None:
                     log.info("Processing CREX D table %s", i.filename)
                     fd = zf.open(i, "r")
-                    self.table_d_crex = TableDCREX(*read_version(mo), text=fd.read())
+                    self.table_d_crex = TableDCREX(
+                        *read_version(mo), text=fd.read()
+                    )
                     fd.close()
                     continue
                 log.info("Skipping %s", i.filename)
@@ -260,17 +282,26 @@ class Tables(object):
 
 def main():
     parser = argparse.ArgumentParser(
-            description="builds ECMWF-style BUFR/CREX table files from zipped WMO XML table information."
-                        " Files are written in the current directory."
-                        " New files can be found at "
-                        " https://community.wmo.int/activity-areas/wis/latest-version"
-                        # " http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/LatestVERSION.html"
-            )
-    parser.add_argument("--verbose", "-v", action="store_true", help="verbose output")
+        description=(
+            "builds ECMWF-style BUFR/CREX table files from zipped WMO XML table"
+            " information."
+            " Files are written in the current directory."
+            " New files can be found at "
+            " https://community.wmo.int/activity-areas/wis/latest-version"
+            # " http://www.wmo.int/pages/prog/www/WMOCodes/WMO306_vI2/LatestVERSION/LatestVERSION.html" # noqa: E501
+        )
+    )
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="verbose output"
+    )
     parser.add_argument("--debug", action="store_true", help="debug output")
     parser.add_argument("--zipfile", action="store", help="zip file to open")
-    parser.add_argument("--btable", action="store", help="xml file to open for B table")
-    parser.add_argument("--dtable", action="store", help="xml file to open for D table")
+    parser.add_argument(
+        "--btable", action="store", help="xml file to open for B table"
+    )
+    parser.add_argument(
+        "--dtable", action="store", help="xml file to open for D table"
+    )
     args = parser.parse_args()
 
     log_format = "%(asctime)-15s %(levelname)s %(message)s"
@@ -298,7 +329,10 @@ def main():
             table = TableDBUFR(255, 255, 255, text=fd.read())
             table.write_files()
 
-    log.info("Done. You can copy the table files to the table directory (see wrep --info for its location).")
+    log.info(
+        "Done. You can copy the table files to the table directory"
+        " (see wrep --info for its location)."
+    )
 
 
 if __name__ == "__main__":
