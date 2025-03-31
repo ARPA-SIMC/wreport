@@ -1,4 +1,5 @@
 #include "tests.h"
+#include "utils/json.h"
 #include "utils/string.h"
 #include "utils/sys.h"
 #include <cstdlib>
@@ -47,6 +48,87 @@ std::vector<std::filesystem::path> all_test_files(const std::string& encoding)
         if (str::endswith(i.d_name, "." + encoding))
             res.push_back(relroot / i.d_name);
     return res;
+}
+
+namespace {
+void add_header(json::Dict& d, const Bulletin& bulletin)
+{
+    d.add_unsigned("mtn", (int)bulletin.master_table_number);
+    d.add_nullable("dc", bulletin.data_category, 0xff);
+    d.add_nullable("ds", bulletin.data_subcategory, 0xff);
+    d.add_nullable("dsl", bulletin.data_subcategory_local, 0xff);
+    d.add_nullable("oc", bulletin.originating_centre, 0xffff);
+    d.add_nullable("osc", bulletin.originating_subcentre, 0xffff);
+    d.add_unsigned("usn", bulletin.update_sequence_number);
+
+    if (const auto* bufr = dynamic_cast<const BufrBulletin*>(&bulletin))
+    {
+        d.add_unsigned("ed", bufr->edition_number);
+        d.add_nullable("mtvn", bufr->master_table_version_number, 0xff);
+        d.add_nullable("mtvn", bufr->master_table_version_number, 0xff);
+        d.add_bool("c", bufr->compression);
+    }
+    else if (const auto& crex = dynamic_cast<const CrexBulletin*>(&bulletin))
+    {
+        d.add_unsigned("ed", crex->edition_number);
+        d.add_nullable("mtvn", crex->master_table_version_number, 0xff);
+        d.add_nullable("mtvnb", crex->master_table_version_number_bufr, 0xff);
+        d.add_nullable("mtvnl", crex->master_table_version_number_local, 0xff);
+        d.add_bool("c", crex->has_check_digit);
+    }
+    else
+    {
+        error_consistency::throwf("unsupported bulletin type");
+    }
+
+    d.add_nullable("ye", bulletin.rep_year, 0xffff);
+    d.add_nullable("mo", bulletin.rep_month, 0xff);
+    d.add_nullable("da", bulletin.rep_day, 0xff);
+    d.add_nullable("ho", bulletin.rep_hour, 0xff);
+    d.add_nullable("mi", bulletin.rep_minute, 0xff);
+    d.add_nullable("se", bulletin.rep_second, 0xff);
+}
+
+void add_var(json::Dict& d, const Var& var)
+{
+    d.add("c", varcode_format(var.code()));
+    if (var.isset())
+        d.add("v", var.enqs());
+    if (var.next_attr())
+    {
+        auto attrs = d.add_list("a");
+        for (const Var* a = var.next_attr(); a != NULL; a = a->next_attr())
+        {
+            auto attr = attrs.add_dict();
+            add_var(attr, *a);
+        }
+    }
+}
+
+} // namespace
+
+void dump_jsonl(const Bulletin& bulletin, std::stringstream& buf)
+{
+    using namespace wreport::json;
+
+    JSONL out(buf);
+    auto bdict = out.dict();
+    {
+        auto head = bdict.add_dict("h");
+        add_header(head, bulletin);
+    }
+    {
+        auto subsets = bdict.add_list("s");
+        for (const auto& subset : bulletin.subsets)
+        {
+            auto vars = subsets.add_list();
+            for (const auto& var : subset)
+            {
+                auto v = vars.add_dict();
+                add_var(v, var);
+            }
+        }
+    }
 }
 
 void track_bulletin(Bulletin& b, const char* tag,

@@ -409,8 +409,8 @@ std::string Var::enqs() const
 
     switch (m_info->type)
     {
-        case Vartype::String:
-        case Vartype::Binary:  return m_value.c;
+        case Vartype::String:  return m_value.c;
+        case Vartype::Binary:  return std::string(m_value.c, m_info->len);
         case Vartype::Integer:
         case Vartype::Decimal: return int32_to_stdstr(m_value.i);
     }
@@ -532,7 +532,8 @@ void Var::assign_b_checked(const uint8_t* val, unsigned size)
             m_value.c[m_info->len - 1] &=
                 static_cast<unsigned char>((1 << (m_info->bit_len % 8)) - 1);
     }
-    m_isset = true;
+    m_value.c[m_info->len] = 0;
+    m_isset                = true;
 }
 
 void Var::assign_c_checked(const char* val, unsigned size)

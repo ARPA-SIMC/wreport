@@ -471,6 +471,42 @@ void Tests::register_tests()
         wassert(actual(memcmp(var06a.enqc(), "\x3f", 1) == 0).istrue());
     });
 
+    add_method("binary_padding", []() {
+        // Check that everything is 0-padded
+        // Use enqc to access the storage buffer
+        auto to_hex = [](const char* buf) {
+            std::string res;
+            for (unsigned i = 0; i < 4; ++i)
+            {
+                char cbuf[4];
+                snprintf(cbuf, 3, "%02hhX", static_cast<unsigned char>(buf[i]));
+                res += cbuf;
+            }
+            return res;
+        };
+        _Varinfo info;
+        info.set_binary(WR_VAR(0, 0, 0), "TEST BINARY 3 bytes", 24);
+        wassert(actual(info.len) == 3);
+
+        Var var(&info, "\0\0\0\0");
+        wassert(actual(to_hex(var.enqc())) == "00000000");
+
+        // Check that 0-padding happens
+        memcpy(const_cast<char*>(var.enqc()), "\xff\xff\xff\xff", 4);
+        var.setc("\xaa\x00\x00");
+        wassert(actual(to_hex(var.enqc())) == "AA000000");
+
+        // Check that 0-padding happens also when setting the full length
+        memcpy(const_cast<char*>(var.enqc()), "\xff\xff\xff\xff", 4);
+        var.setc("\xaa\xaa\xaa");
+        wassert(actual(to_hex(var.enqc())) == "AAAAAA00");
+
+        // Check that 0-padding happens also when setting with a longer input
+        memcpy(const_cast<char*>(var.enqc()), "\xff\xff\xff\xff", 4);
+        var.setc("\xaa\xaa\xaa\xaa\xaa");
+        wassert(actual(to_hex(var.enqc())) == "AAAAAA00");
+    });
+
     add_method("seti", []() {
         _Varinfo vi;
         vi.set_bufr(WR_VAR(0, 0, 0), "TEST", "?", 0, 10, 0, 32);
