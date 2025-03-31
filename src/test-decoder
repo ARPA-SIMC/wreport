@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 
+import fnmatch
 import json
+import re
 import os
 import sys
 import subprocess
@@ -13,6 +15,10 @@ testdatadir = Path(os.environ["WREPORT_TESTDATA"])
 known_archive = testdatadir / "json.tar.xz"
 if not known_archive.exists():
     raise AssertionError(f"{known_archive} not found")
+
+test_only: re.Pattern | None = None
+if pattern := os.environ.get("TEST_ONLY"):
+    test_only = re.compile(fnmatch.translate(pattern))
 
 
 def load_expected(path: Path, fd: IO[bytes]):
@@ -43,6 +49,8 @@ fail = 0
 # Load old test data
 with tarfile.open(known_archive) as tar:
     for tarinfo in tar:
+        if test_only and not test_only.match(tarinfo.name):
+            continue
         fd = tar.extractfile(tarinfo)
         assert fd is not None
         with fd:
