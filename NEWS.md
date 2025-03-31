@@ -3,6 +3,9 @@
 * Allow to override master table version numbers via the
   `WREPORT_MASTER_TABLE_VERSION` environment variable (see
   [README.md](README.md) for details) (#58)
+* Add a decoder trace snapshot in test data to detect unexpected behaviour
+  changes in the decoder
+* Fix incorrect padding when reading values of binary variables
 
 # New in version 3.38
 
