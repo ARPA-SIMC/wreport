@@ -26,53 +26,6 @@ Vartable::~Vartable() {}
 
 namespace {
 
-unsigned digits_per_bits(unsigned bit_count)
-{
-    // for i in range(33): print("case {:2}: return {:2}; // {}".format(i,
-    // len(str(2**i)), 2**i))
-    switch (bit_count)
-    {
-        case 0:
-            error_consistency::throwf(
-                "binary values 0 bits long are not supported");
-        case 1:  return 1;  // 2
-        case 2:  return 1;  // 4
-        case 3:  return 1;  // 8
-        case 4:  return 2;  // 16
-        case 5:  return 2;  // 32
-        case 6:  return 2;  // 64
-        case 7:  return 3;  // 128
-        case 8:  return 3;  // 256
-        case 9:  return 3;  // 512
-        case 10: return 4;  // 1024
-        case 11: return 4;  // 2048
-        case 12: return 4;  // 4096
-        case 13: return 4;  // 8192
-        case 14: return 5;  // 16384
-        case 15: return 5;  // 32768
-        case 16: return 5;  // 65536
-        case 17: return 6;  // 131072
-        case 18: return 6;  // 262144
-        case 19: return 6;  // 524288
-        case 20: return 7;  // 1048576
-        case 21: return 7;  // 2097152
-        case 22: return 7;  // 4194304
-        case 23: return 7;  // 8388608
-        case 24: return 8;  // 16777216
-        case 25: return 8;  // 33554432
-        case 26: return 8;  // 67108864
-        case 27: return 9;  // 134217728
-        case 28: return 9;  // 268435456
-        case 29: return 9;  // 536870912
-        case 30: return 10; // 1073741824
-        case 31: return 10; // 2147483648
-        case 32: return 10; // 4294967296
-        default:
-            error_consistency::throwf(
-                "binary values of more than 32 bits are not supported");
-    }
-}
-
 struct fd_closer
 {
     FILE* fd;
@@ -378,22 +331,15 @@ struct CrexVartable : public VartableBase
         char desc_buf[65];
         char unit_buf[25];
         char line[200];
-        int line_no = 0;
+        int line_no    = 0;
+        unsigned found = 0;
         while (fgets(line, 200, in) != NULL)
         {
             line_no++;
             Varcode code = WR_STRING_TO_VAR(line + 2);
 
             if (strlen(line) < 157)
-            {
-                // Rows for delayed replicators do not have crex entries, so
-                // we skip them
-                if (WR_VAR_X(code) != 31)
-                    throw error_parse(pathname.c_str(), line_no,
-                                      "crex table line too short");
-                else
-                    continue;
-            }
+                continue;
             // fprintf(stderr, "Line: %s\n", line);
             // FMT='(1x,A,1x,A64,47x,A24,I3,8x,I3)'
 
@@ -412,7 +358,12 @@ struct CrexVartable : public VartableBase
                             static_cast<int>(getnumber(line + 143)),
                             // Length
                             static_cast<unsigned>(getnumber(line + 149)));
+            ++found;
         }
+        if (!found)
+            error_consistency::throwf(
+                "%s: table does not contain any CREX information",
+                pathname.c_str());
     }
 };
 
