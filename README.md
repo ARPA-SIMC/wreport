@@ -62,7 +62,6 @@ If you want to build the package yourself:
 
 ## Environment variables
 
-
 These environment variables can be used to control wreport's behaviour at runtime:
 
 * `WREPORT_TABLES`: Table directory to search before the builtin one.
@@ -72,6 +71,21 @@ These environment variables can be used to control wreport's behaviour at runtim
   the version configured in BUFR/CREX messages. It accepts positive integers,
   and the value `newest` requesting the newest available table.
 
+## Importing new tables
+
+WMO BUFR/CREX decoding tables can be downloaded in XML formats at these URLs,
+looking for "FM 94 BUFR and FM 95 CREX":
+
+* https://community.wmo.int/activity-areas/wis/latest-version
+* https://community.wmo.int/activity-areas/wis/previous-versions
+
+Download the whole `.zip` files, and use wrep-importtable to convert them to
+the format wreport uses. For example:
+
+    src/wrep-importtable --zipfile=BUFR4-v41.zip
+
+This will generate `B*.txt` and `D*.txt` files that can be copied to `tables/`
+or to a directory set in the `WREPORT_EXTRA_TABLES` environment variable.
 
 ## AFL instrumentation
 

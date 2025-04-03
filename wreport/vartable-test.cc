@@ -4,10 +4,13 @@
 #include "vartable.h"
 #include <cstdlib>
 #include <cstring>
+#include <filesystem>
+#include <set>
 
 using namespace wreport;
 using namespace wreport::tests;
 using namespace std;
+namespace fs = std::filesystem;
 
 namespace {
 
@@ -244,12 +247,23 @@ void Tests::register_tests()
         wassert(actual(info->type) == Vartype::Decimal);
     });
 
-    add_method("wmo", []() {
+    add_method("parse_all_tables", []() {
         // Test reading WMO standard tables
-        // const Vartable* table = NULL;
-        /* table = */ Vartable::get_bufr("B0000000000000012000");
-        /* table = */ Vartable::get_bufr("B0000000000000013000");
-        /* table = */ Vartable::get_bufr("B0000000000000014000");
+        std::set<std::string> bufr_only = {
+            "B000000000980000.txt",     "B000000000980601.txt",
+            "B000000000980600.txt",     "B000000000980201.txt",
+            "B0000000000098013102.txt", "B000000000981201.txt",
+            "B000000000981200.txt",     "B000000000981101.txt",
+        };
+        auto tabledir = path_from_env("WREPORT_TABLES");
+        for (const auto& entry : fs::directory_iterator(tabledir))
+        {
+            if (entry.path().filename().native()[0] != 'B')
+                continue;
+            Vartable::load_bufr(entry);
+            if (bufr_only.find(entry.path().filename()) == bufr_only.end())
+                Vartable::load_crex(entry);
+        }
     });
 }
 
