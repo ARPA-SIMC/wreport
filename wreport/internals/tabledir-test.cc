@@ -82,7 +82,7 @@ void Tests::register_tests()
         const tabledir::BufrTable* bt =
             dynamic_cast<const tabledir::BufrTable*>(t);
         wassert_true(bt != 0);
-        wassert(actual((int)bt->id.master_table_version_number) == 33);
+        wassert(actual((int)bt->id.master_table_version_number) == 41);
     });
     add_method("override_crex_with_newest", [] {
         auto& td = tabledir::Tabledirs::get();
@@ -95,7 +95,7 @@ void Tests::register_tests()
         const tabledir::BufrTable* bt =
             dynamic_cast<const tabledir::BufrTable*>(t);
         wassert_true(bt != 0);
-        wassert(actual((int)bt->id.master_table_version_number) == 33);
+        wassert(actual((int)bt->id.master_table_version_number) == 41);
     });
     add_method("tabledir_bufr_wmo", []() {
         auto& td = tabledir::Tabledirs::get();
