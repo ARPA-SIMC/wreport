@@ -1,7 +1,8 @@
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky8.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky9.png)](https://simc.arpae.it/moncic-ci/wreport/)
-[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora38.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora40.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora42.png)](https://simc.arpae.it/moncic-ci/wreport/)
+
 [![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/)
 
 # WREPORT
