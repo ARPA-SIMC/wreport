@@ -8,7 +8,7 @@ import sys
 import subprocess
 import tarfile
 from pathlib import Path
-from typing import Dict, Any, IO
+from typing import Dict, Any, IO, Optional
 
 # Locate test data
 testdatadir = Path(os.environ["WREPORT_TESTDATA"])
@@ -16,7 +16,7 @@ known_archive = testdatadir / "json.tar.xz"
 if not known_archive.exists():
     raise AssertionError(f"{known_archive} not found")
 
-test_only: re.Pattern | None = None
+test_only: Optional[re.Pattern] = None
 pattern = os.environ.get("TEST_ONLY")
 if pattern:
     test_only = re.compile(fnmatch.translate(pattern))
