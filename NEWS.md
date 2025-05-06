@@ -1,5 +1,6 @@
-# New in version UNRELEASED
+# New in version 3.39
 
+* Add new WMO tables
 * Allow to override master table version numbers via the
   `WREPORT_MASTER_TABLE_VERSION` environment variable (see
   [README.md](README.md) for details) (#58)
