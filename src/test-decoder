@@ -8,7 +8,7 @@ import sys
 import subprocess
 import tarfile
 from pathlib import Path
-from typing import Dict, Any, List, IO
+from typing import Dict, Any, IO
 
 # Locate test data
 testdatadir = Path(os.environ["WREPORT_TESTDATA"])
@@ -17,7 +17,8 @@ if not known_archive.exists():
     raise AssertionError(f"{known_archive} not found")
 
 test_only: re.Pattern | None = None
-if pattern := os.environ.get("TEST_ONLY"):
+pattern = os.environ.get("TEST_ONLY")
+if pattern:
     test_only = re.compile(fnmatch.translate(pattern))
 
 
