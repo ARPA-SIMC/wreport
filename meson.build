@@ -111,11 +111,12 @@ else
 endif
 
 subdir('wreport')
-subdir('src')
 
 if python3.found()
     subdir('python')
 endif
+
+subdir('src')
 
 if build_docs
     subdir('doc')
