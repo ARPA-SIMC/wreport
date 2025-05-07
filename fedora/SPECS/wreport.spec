@@ -1,4 +1,4 @@
-%global releaseno 1
+%global releaseno 2
 
 # Note: define srcarchivename in CI build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
