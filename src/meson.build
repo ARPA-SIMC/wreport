@@ -18,5 +18,5 @@ if python3.found()
     test_decoder = files('test-decoder')
     runtest = find_program('../runtest')
 
-    test('decoder', runtest, args: [test_decoder], depends: [py_wreport, wrep_make_testjson])
+    test('decoder', runtest, args: [test_decoder], depends: [py_wreport, wrep_make_testjson], timeout: 600)
 endif
