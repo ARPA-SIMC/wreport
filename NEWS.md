@@ -1,3 +1,11 @@
+# New in version UNDEFINED
+
+* Fixed an accidental API/ABI break introduced in 3.39 (#61)
+* Added `varinfo_create_bufr` and `varinfo_delete_bufr` to create `Varinfo`
+  entries outside of tables. (#61)
+* Moved those internal functions that are not used by reverse dependencies to
+  wreport/internals
+
 # New in version 3.39
 
 * Add new WMO tables
