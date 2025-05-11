@@ -234,34 +234,20 @@ struct _Varinfo
      */
     double decode_binary(uint32_t val) const;
 
-    /// Set all the base Varinfo fields, then call compute_range
-    void set_bufr(Varcode code, const char* desc, const char* unit,
-                  int scale = 0, int32_t bit_ref = 0, unsigned bit_len = 0);
-
-    /// Set all the base Varinfo fields, then call compute_range
-    void set_crex(Varcode code, const char* desc, const char* unit,
-                  int scale = 0, unsigned len = 0);
-
     /**
-     * Set all the fields to represent a string variable.
+     * Setup this variable as a BUFR variable.
      *
-     * @param code the variable code
-     * @param desc the variable description
-     * @param len the maximum string length
-     */
-    void set_string(Varcode code, const char* desc, unsigned len);
-
-    /**
-     * Set all the fields to represent an opaque binary variable.
+     * This is a compatibility method for existing old code. The functions used
+     * to initialize _Varinfo structures are in internals/varinfo.h, and a new
+     * API for creating _Varinfo structures outside of tables has not yet been
+     * designed.
      *
-     * @param code the variable code
-     * @param desc the variable description
-     * @param bit_len the variable length in bits
+     * @param len
+     *   this is ignored and computed from the other arguments
      */
-    void set_binary(Varcode code, const char* desc, unsigned bit_len);
-
-    /// Compute the entry type
-    void compute_type();
+    [[deprecated("Use varinfo_create_bufr")]] void
+    set_bufr(Varcode code, const char* desc, const char* unit, int scale = 0,
+             unsigned len = 0, int bit_ref = 0, int bit_len = 0);
 };
 
 /**
@@ -273,6 +259,23 @@ struct _Varinfo
  * pointers.
  */
 typedef const _Varinfo* Varinfo;
+
+/**
+ * Allocate a new Varinfo to store BUFR values
+ *
+ * @returns
+ *   The newly allocated Varinfo, to be deallocated with delete_varinfo()
+ */
+Varinfo varinfo_create_bufr(Varcode code, const char* desc, const char* unit,
+                            unsigned bit_len, uint32_t bit_ref = 0,
+                            int scale = 0);
+
+/**
+ * Deallocate a Varinfo created with create_bufr().
+ *
+ * Sets info to nullptr;
+ */
+void varinfo_delete(Varinfo&& info);
 
 } // namespace wreport
 #endif

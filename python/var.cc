@@ -103,7 +103,7 @@ static wreport::Var* wrpy_var(PyObject* o)
 
 namespace {
 
-static _Varinfo dummy_var;
+static Varinfo dummy_var = nullptr;
 
 struct code : public Getter<code, wrpy_Var>
 {
@@ -475,7 +475,7 @@ representations.
             }
             else
             {
-                new (&self->var) Var(&dummy_var);
+                new (&self->var) Var(dummy_var);
                 PyErr_SetString(PyExc_ValueError,
                                 "First argument to wreport.Var should be "
                                 "wreport.Varinfo or wreport.Var");
@@ -631,7 +631,7 @@ int var_value_from_python(PyObject* o, wreport::Var& var)
 
 void register_var(PyObject* m, wrpy_c_api& c_api)
 {
-    dummy_var.set_bufr(0, "Invalid variable", "?", 0, 0, 1);
+    dummy_var = varinfo_create_bufr(0, "Invalid variable", "?", 1);
 
     var_def = new VarDef;
     var_def->define(wrpy_Var_Type, m);

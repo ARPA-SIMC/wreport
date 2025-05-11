@@ -2,6 +2,7 @@
 #include "dtable.h"
 #include "error.h"
 #include "internals/tabledir.h"
+#include "internals/varinfo.h"
 #include "vartable.h"
 
 using namespace std;
@@ -87,7 +88,7 @@ Varinfo Tables::get_bitmap(Varcode code, const std::string& bitmap) const
 
     auto new_entry = bitmap_table.emplace(make_pair(bitmap, _Varinfo()));
     _Varinfo& vi   = new_entry.first->second;
-    vi.set_string(code, "DATA PRESENT BITMAP", bitmap.size());
+    varinfo::set_string(vi, code, "DATA PRESENT BITMAP", bitmap.size());
     return &vi;
 }
 
@@ -106,7 +107,7 @@ Varinfo Tables::get_chardata(Varcode code, unsigned len) const
 
     auto new_entry = chardata_table.emplace(make_pair(code, _Varinfo()));
     _Varinfo& vi   = new_entry.first->second;
-    vi.set_string(code, "CHARACTER DATA", len);
+    varinfo::set_string(vi, code, "CHARACTER DATA", len);
     return &vi;
 }
 
@@ -125,7 +126,7 @@ Varinfo Tables::get_unknown(Varcode code, unsigned bit_len) const
 
     auto new_entry = unknown_table.emplace(make_pair(bit_len, _Varinfo()));
     _Varinfo& vi   = new_entry.first->second;
-    vi.set_binary(code, "UNKNOWN LOCAL DESCRIPTOR", bit_len);
+    varinfo::set_binary(vi, code, "UNKNOWN LOCAL DESCRIPTOR", bit_len);
     return &vi;
 }
 
