@@ -1,33 +1,23 @@
-%global releaseno 2
+%global releaseno 1
 
 # Note: define srcarchivename in CI build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.39
+Version: 3.40
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
 Source0: https://github.com/arpa-simc/%{name}/archive/v%{version}-%{releaseno}.tar.gz#/%{srcarchivename}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-%if 0%{?rhel} == 7
-%define python3_vers python36
-# being sure to have python 3.6 interpreter
-BuildRequires: python3-rpm-macros >= 3-23
-%else
-%define python3_vers python3
-%endif
 
 BuildRequires: doxygen
 BuildRequires: meson
 BuildRequires: gcc-c++
 BuildRequires: pkgconfig(lua) >= 5.1.1
-BuildRequires: %{python3_vers}-devel
-%if 0%{?rhel} != 7
-# see https://github.com/ARPA-SIMC/wreport/issues/31
-BuildRequires: %{python3_vers}-sphinx
-BuildRequires: %{python3_vers}-breathe
-%endif
+BuildRequires: python3-devel
+BuildRequires: python3-sphinx
+BuildRequires: python3-breathe
 BuildRequires: /usr/bin/rst2html
 
 Summary: Tools for working with weather reports
@@ -94,12 +84,12 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
   * Read and write BUFR version 2, 3, and 4
   * Read and write CREX
 
-%package -n %{python3_vers}-%{name}3
+%package -n python3-%{name}3
 Summary: shared library for working with weather reports
 Group: Applications/Meteo
 Requires: lib%{name}3 = %{?epoch:%epoch:}%{version}-%{release}
 
-%description -n %{python3_vers}-%{name}3
+%description -n python3-%{name}3
 libwreport is a C++ library to read and write weather reports in BUFR and CREX
  formats.
 
@@ -147,23 +137,26 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 
 %files -n lib%{name}-doc
 %defattr(-,root,root,-)
-%if 0%{?rhel} != 7
-# see https://github.com/ARPA-SIMC/wreport/issues/31
 %doc %{_docdir}/%{name}/libwreport.doxytags
 %exclude %{_docdir}/%{name}/html/.doctrees/*
 %doc %{_docdir}/%{name}/html/*
 %doc %{_docdir}/%{name}/examples/*
 %exclude %{_docdir}/%{name}/xml/*
 %exclude %{_docdir}/%{name}/html/.buildinfo
-%endif
 
-%files -n %{python3_vers}-%{name}3
+%files -n python3-%{name}3
 %defattr(-,root,root,-)
 %dir %{python3_sitearch}/wreport/
 %{python3_sitearch}/wreport/*
 %{python3_sitearch}/_wreport*.so
 
 %changelog
+* Wed May 14 2025 Daniele Branchini <dbranchini@Branchini-LP-SMR.smr.arpa.emr.net> - 3.40-1
+- Fixed an accidental API/ABI break introduced in 3.39 (#61)
+- Added `varinfo_create_bufr` and `varinfo_delete_bufr` to create `Varinfo`entries outside of tables. (#61)
+- Moved those internal functions that are not used by reverse dependencies to wreport/internals
+- Dropped spec support for CentOS7
+
 * Thu May 25 2023 Emanuele Di Giacomo <edigiacomo@arpe.it> - 3.36-1
 - Include cstdint in wreport/utils/string.cc (#55)
 - Updated wobble

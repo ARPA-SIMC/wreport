@@ -1,4 +1,4 @@
-# New in version UNDEFINED
+# New in version 3.40
 
 * Fixed an accidental API/ABI break introduced in 3.39 (#61)
 * Added `varinfo_create_bufr` and `varinfo_delete_bufr` to create `Varinfo`
