@@ -1,4 +1,4 @@
-%global releaseno 1
+%global releaseno 2
 
 # Note: define srcarchivename in CI build only.
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
@@ -151,7 +151,10 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %{python3_sitearch}/_wreport*.so
 
 %changelog
-* Wed May 14 2025 Daniele Branchini <dbranchini@Branchini-LP-SMR.smr.arpa.emr.net> - 3.40-1
+* Mon May 26 2025 Daniele Branchini <dbranchini@arpae.it> - 3.40-2
+- Removed useless test (#62)
+
+* Wed May 14 2025 Daniele Branchini <dbranchini@arpae.it> - 3.40-1
 - Fixed an accidental API/ABI break introduced in 3.39 (#61)
 - Added `varinfo_create_bufr` and `varinfo_delete_bufr` to create `Varinfo`entries outside of tables. (#61)
 - Moved those internal functions that are not used by reverse dependencies to wreport/internals
