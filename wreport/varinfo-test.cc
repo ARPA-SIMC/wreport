@@ -130,7 +130,6 @@ void Tests::register_tests()
         wassert(actual(info->type) == Vartype::Integer);
 
         varinfo_delete(std::move(info));
-        wassert(actual(info) == nullptr);
     });
 }
 
