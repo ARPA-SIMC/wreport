@@ -89,7 +89,10 @@ endif
 configure_file(output: 'config.h', configuration: conf_data)
 
 pymod = import('python')
-python3 = pymod.find_installation('python3', required: false)
+python3 = disabler()
+if get_option('python')
+    python3 = pymod.find_installation('python3', required: false)
+endif
 
 if python3.found()
     # FIXME: python3.path() is only available from meson 0.50: this is a workaround
