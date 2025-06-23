@@ -50,7 +50,7 @@ struct Terminal
     operator FILE*() { return out; }
 };
 
-} // namespace term
-} // namespace wreport
+}
+}
 
 #endif

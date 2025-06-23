@@ -1,6 +1,5 @@
 /*
- * @author Enrico Zini <enrico@enricozini.org>, Peter Rockai (mornfall)
- * <me@mornfall.net>
+ * @author Enrico Zini <enrico@enricozini.org>, Peter Rockai (mornfall) <me@mornfall.net>
  * @brief Utility functions for the unit tests
  *
  * Copyright (C) 2006--2007  Peter Rockai (mornfall) <me@mornfall.net>
@@ -8,14 +7,14 @@
  */
 
 #include "tests.h"
+#include "testrunner.h"
 #include "string.h"
 #include "sys.h"
-#include "testrunner.h"
 #include <cmath>
-#include <fcntl.h>
 #include <iomanip>
-#include <regex.h>
 #include <sys/types.h>
+#include <fcntl.h>
+#include <regex.h>
 
 using namespace std;
 using namespace wreport;
@@ -44,13 +43,14 @@ void TestStackFrame::format(std::ostream& out) const
     out << endl;
 }
 
+
 /*
  * TestStack
  */
 
 void TestStack::backtrace(std::ostream& out) const
 {
-    for (const auto& frame : *this)
+    for (const auto& frame: *this)
         frame.format(out);
 }
 
@@ -61,15 +61,18 @@ std::string TestStack::backtrace() const
     return ss.str();
 }
 
+
 /*
  * TestFailed
  */
 
-TestFailed::TestFailed(const std::exception& e) : message(typeid(e).name())
+TestFailed::TestFailed(const std::exception& e)
+    : message(typeid(e).name())
 {
-    message += ": ";
-    message += e.what();
+   message += ": ";
+   message += e.what();
 }
+
 
 /*
  * TestSkipped
@@ -77,6 +80,7 @@ TestFailed::TestFailed(const std::exception& e) : message(typeid(e).name())
 
 TestSkipped::TestSkipped() {}
 TestSkipped::TestSkipped(const std::string& reason_) : reason(reason_) {}
+
 
 #if 0
 std::string Location::fail_msg(const std::string& error) const
@@ -113,8 +117,7 @@ std::ostream& LocationInfo::operator()()
 
 void assert_startswith(const std::string& actual, const std::string& expected)
 {
-    if (str::startswith(actual, expected))
-        return;
+    if (str::startswith(actual, expected)) return;
     std::stringstream ss;
     ss << "'" << actual << "' does not start with '" << expected << "'";
     throw TestFailed(ss.str());
@@ -122,8 +125,7 @@ void assert_startswith(const std::string& actual, const std::string& expected)
 
 void assert_endswith(const std::string& actual, const std::string& expected)
 {
-    if (str::endswith(actual, expected))
-        return;
+    if (str::endswith(actual, expected)) return;
     std::stringstream ss;
     ss << "'" << actual << "' does not end with '" << expected << "'";
     throw TestFailed(ss.str());
@@ -131,8 +133,7 @@ void assert_endswith(const std::string& actual, const std::string& expected)
 
 void assert_contains(const std::string& actual, const std::string& expected)
 {
-    if (actual.find(expected) != std::string::npos)
-        return;
+    if (actual.find(expected) != std::string::npos) return;
     std::stringstream ss;
     ss << "'" << actual << "' does not contain '" << expected << "'";
     throw TestFailed(ss.str());
@@ -140,8 +141,7 @@ void assert_contains(const std::string& actual, const std::string& expected)
 
 void assert_not_contains(const std::string& actual, const std::string& expected)
 {
-    if (actual.find(expected) == std::string::npos)
-        return;
+    if (actual.find(expected) == std::string::npos) return;
     std::stringstream ss;
     ss << "'" << actual << "' contains '" << expected << "'";
     throw TestFailed(ss.str());
@@ -155,12 +155,16 @@ struct Regexp
     regex_t compiled;
     regmatch_t matches[2];
 
-    Regexp(const char* regex_) : regex(regex_)
+    Regexp(const char* regex_)
+        : regex(regex_)
     {
         if (int err = regcomp(&compiled, this->regex.c_str(), REG_EXTENDED))
             raise_error(err);
     }
-    ~Regexp() { regfree(&compiled); }
+    ~Regexp()
+    {
+        regfree(&compiled);
+    }
 
     bool search(const char* s)
     {
@@ -180,24 +184,21 @@ struct Regexp
     }
 };
 
-} // namespace
+}
 
 void assert_re_matches(const std::string& actual, const std::string& expected)
 {
     Regexp re(expected.c_str());
-    if (re.search(actual.c_str()))
-        return;
+    if (re.search(actual.c_str())) return;
     std::stringstream ss;
     ss << "'" << actual << "' does not match '" << expected << "'";
     throw TestFailed(ss.str());
 }
 
-void assert_not_re_matches(const std::string& actual,
-                           const std::string& expected)
+void assert_not_re_matches(const std::string& actual, const std::string& expected)
 {
     Regexp re(expected.c_str());
-    if (!re.search(actual.c_str()))
-        return;
+    if (!re.search(actual.c_str())) return;
     std::stringstream ss;
     ss << "'" << actual << "' should not match '" << expected << "'";
     throw TestFailed(ss.str());
@@ -208,13 +209,15 @@ void assert_true(std::nullptr_t)
     throw TestFailed("actual value nullptr is not true");
 }
 
-void assert_false(std::nullptr_t) {}
+void assert_false(std::nullptr_t)
+{
+}
+
 
 static void _actual_must_be_set(const char* actual)
 {
     if (!actual)
-        throw TestFailed(
-            "actual value is the null pointer instead of a valid string");
+        throw TestFailed("actual value is the null pointer instead of a valid string");
 }
 
 void ActualCString::operator==(const char* expected) const
@@ -226,15 +229,13 @@ void ActualCString::operator==(const char* expected) const
     else if (expected)
     {
         std::stringstream ss;
-        ss << "actual value is nullptr instead of the expected string \""
-           << str::encode_cstring(expected) << "\"";
+        ss << "actual value is nullptr instead of the expected string \"" << str::encode_cstring(expected) << "\"";
         throw TestFailed(ss.str());
     }
     else
     {
         std::stringstream ss;
-        ss << "actual value is the string \"" << str::encode_cstring(_actual)
-           << "\" instead of nullptr";
+        ss << "actual value is the string \"" << str::encode_cstring(_actual) << "\" instead of nullptr";
         throw TestFailed(ss.str());
     }
 }
@@ -250,8 +251,7 @@ void ActualCString::operator!=(const char* expected) const
     if (expected && _actual)
         assert_not_equal<std::string, std::string>(_actual, expected);
     else if (!expected && !_actual)
-        throw TestFailed("actual and expected values are both nullptr but they "
-                         "should be different");
+        throw TestFailed("actual and expected values are both nullptr but they should be different");
 }
 
 void ActualCString::operator!=(const std::string& expected) const
@@ -367,8 +367,8 @@ void ActualPath::is(const std::filesystem::path& expected) const
     if (anorm != enorm)
     {
         std::stringstream ss;
-        ss << "path '" << _actual << "' is not the same as '" << expected
-           << "' (" << anorm << " != " << enorm << ")";
+        ss << "path '" << _actual << "' is not the same as '" << expected << "' ("
+           << anorm << " != " << enorm << ")";
         throw TestFailed(ss.str());
     }
 }
@@ -399,8 +399,7 @@ void ActualPath::path_endswith(const std::filesystem::path& expected) const
     auto ai = _actual.end(), ae = expected.end();
     while (ai != _actual.begin() && ae != expected.begin())
     {
-        --ai;
-        --ae;
+        --ai; --ae;
         if (*ai != *ae)
             goto fail;
     }
@@ -426,16 +425,13 @@ void ActualPath::path_not_contains(const std::filesystem::path& expected) const
 
 void ActualPath::exists() const
 {
-    if (std::filesystem::exists(_actual))
-        return;
-    throw TestFailed("file " + _actual.string() +
-                     " does not exist and it should");
+    if (std::filesystem::exists(_actual)) return;
+    throw TestFailed("file " + _actual.string() + " does not exist and it should");
 }
 
 void ActualPath::not_exists() const
 {
-    if (!std::filesystem::exists(_actual))
-        return;
+    if (!std::filesystem::exists(_actual)) return;
     throw TestFailed("file " + _actual.string() + " exists and it should not");
 }
 
@@ -443,25 +439,21 @@ void ActualPath::empty() const
 {
     size_t size = sys::size(_actual);
     if (size > 0)
-        throw TestFailed("file " + _actual.string() + " is " +
-                         std::to_string(size) + "b instead of being empty");
+        throw TestFailed("file " + _actual.string() + " is " + std::to_string(size) + "b instead of being empty");
 }
 
 void ActualPath::not_empty() const
 {
     size_t size = sys::size(_actual);
     if (size == 0)
-        throw TestFailed("file " + _actual.string() +
-                         " is empty and it should not be");
+        throw TestFailed("file " + _actual.string() + " is empty and it should not be");
 }
 
 void ActualPath::contents_equal(const std::string& data) const
 {
     std::string content = sys::read_file(_actual);
     if (content != data)
-        throw TestFailed("file " + _actual.string() + " contains '" +
-                         str::encode_cstring(content) + "' instead of '" +
-                         str::encode_cstring(data) + "'");
+        throw TestFailed("file " + _actual.string() + " contains '" + str::encode_cstring(content) + "' instead of '" + str::encode_cstring(data) + "'");
 }
 
 void ActualPath::contents_equal(const std::vector<uint8_t>& data) const
@@ -469,8 +461,7 @@ void ActualPath::contents_equal(const std::vector<uint8_t>& data) const
     return contents_equal(std::string(data.begin(), data.end()));
 }
 
-void ActualPath::contents_equal(
-    const std::initializer_list<std::string>& lines) const
+void ActualPath::contents_equal(const std::initializer_list<std::string>& lines) const
 {
     std::vector<std::string> actual_lines;
     std::string content = str::rstrip(sys::read_file(_actual));
@@ -479,24 +470,17 @@ void ActualPath::contents_equal(
     std::copy(splitter.begin(), splitter.end(), back_inserter(actual_lines));
 
     if (actual_lines.size() != lines.size())
-        throw TestFailed("file " + _actual.string() + " contains " +
-                         std::to_string(actual_lines.size()) + " lines ('" +
-                         str::encode_cstring(content) + "') instead of " +
-                         std::to_string(lines.size()) + " lines");
+        throw TestFailed("file " + _actual.string() + " contains " + std::to_string(actual_lines.size()) + " lines ('" + str::encode_cstring(content) + "') instead of " + std::to_string(lines.size()) + " lines");
 
     auto ai = actual_lines.begin();
     auto ei = lines.begin();
     for (unsigned i = 0; i < actual_lines.size(); ++i, ++ai, ++ei)
     {
-        string actual_line   = str::rstrip(*ai);
+        string actual_line = str::rstrip(*ai);
         string expected_line = str::rstrip(*ei);
         if (*ai != *ei)
-            throw TestFailed("file " + _actual.string() +
-                             " actual contents differ from expected at line #" +
-                             std::to_string(i + 1) + " ('" +
-                             str::encode_cstring(actual_line) +
-                             "' instead of '" +
-                             str::encode_cstring(expected_line) + "')");
+            throw TestFailed("file " + _actual.string() + " actual contents differ from expected at line #" + std::to_string(i + 1) + " ('" + str::encode_cstring(actual_line) + "' instead of '" + str::encode_cstring(expected_line) + "')");
+
     }
 }
 
@@ -507,25 +491,21 @@ void ActualPath::contents_startwith(const std::string& data) const
     in.read_all_or_throw(buf.data(), buf.size());
     *(buf.data() + buf.size()) = 0;
     if (buf != data)
-        throw TestFailed("file " + _actual.string() + " starts with '" +
-                         str::encode_cstring(buf) + "' instead of '" +
-                         str::encode_cstring(data) + "'");
+        throw TestFailed("file " + _actual.string() + " starts with '" + str::encode_cstring(buf) + "' instead of '" + str::encode_cstring(data) + "'");
 }
 
 void ActualPath::contents_match(const std::string& data_re) const
 {
     std::string content = sys::read_file(_actual);
     Regexp re(data_re.c_str());
-    if (re.search(content.c_str()))
-        return;
+    if (re.search(content.c_str())) return;
     std::stringstream ss;
-    ss << "file " + _actual.string() << " contains "
-       << str::encode_cstring(content) << " which does not match " << data_re;
+    ss << "file " + _actual.string() << " contains " << str::encode_cstring(content)
+       << " which does not match " << data_re;
     throw TestFailed(ss.str());
 }
 
-void ActualPath::contents_match(
-    const std::initializer_list<std::string>& lines_re) const
+void ActualPath::contents_match(const std::initializer_list<std::string>& lines_re) const
 {
     std::vector<std::string> actual_lines;
     std::string content = str::rstrip(sys::read_file(_actual));
@@ -533,8 +513,8 @@ void ActualPath::contents_match(
     str::Split splitter(content, "\n");
     std::copy(splitter.begin(), splitter.end(), back_inserter(actual_lines));
 
-    auto ai         = actual_lines.begin();
-    auto ei         = lines_re.begin();
+    auto ai = actual_lines.begin();
+    auto ei = lines_re.begin();
     unsigned lineno = 1;
     while (ei != lines_re.end())
     {
@@ -546,8 +526,7 @@ void ActualPath::contents_match(
                 ++ei;
             else
             {
-                if (ai != actual_lines.end())
-                    ++ai;
+                if (ai != actual_lines.end()) ++ai;
                 ++ei;
                 ++lineno;
             }
@@ -555,45 +534,39 @@ void ActualPath::contents_match(
         }
 
         std::stringstream ss;
-        ss << "file " << _actual.string()
-           << " actual contents differ from expected at line #" << lineno
-           << " ('" << str::encode_cstring(actual_line) << "' does not match '"
-           << str::encode_cstring(*ei) << "')";
+        ss << "file " << _actual .string()<< " actual contents differ from expected at line #" << lineno
+           << " ('" << str::encode_cstring(actual_line)
+           << "' does not match '" << str::encode_cstring(*ei) << "')";
         throw TestFailed(ss.str());
     }
 }
 
 void ActualDouble::almost_equal(double expected, unsigned places) const
 {
-    double epsilon = 4.9 * exp10(-static_cast<int>(places + 1));
+    double epsilon = 4.9*exp10(-static_cast<int>(places+1));
     if (fabs(_actual - expected) < epsilon)
         return;
     std::stringstream ss;
-    ss << std::setprecision(places + 1) << fixed << _actual
-       << " is different than the expected " << expected;
+    ss << std::setprecision(places + 1) << fixed << _actual << " is different than the expected " << expected;
     throw TestFailed(ss.str());
 }
 
 void ActualDouble::not_almost_equal(double expected, unsigned places) const
 {
-    double epsilon = 4.9 * exp10(-static_cast<int>(places + 1));
+    double epsilon = 4.9*exp10(-static_cast<int>(places+1));
     if (fabs(_actual - expected) > epsilon)
         return;
     std::stringstream ss;
-    ss << std::setprecision(places + 1) << fixed << _actual
-       << " is the same as the expected " << expected;
+    ss << std::setprecision(places + 1) << fixed << _actual << " is the same as the expected " << expected;
     throw TestFailed(ss.str());
 }
 
 void ActualFunction::throws(const std::string& what_match) const
 {
     bool thrown = false;
-    try
-    {
+    try {
         _actual();
-    }
-    catch (std::exception& e)
-    {
+    } catch (std::exception& e) {
         thrown = true;
         wassert(actual(e.what()).matches(what_match));
     }
@@ -601,19 +574,21 @@ void ActualFunction::throws(const std::string& what_match) const
         throw TestFailed("code did not throw any exception");
 }
 
+
+
 /*
  * TestCase
  */
 
-TestCase::TestCase(const std::string& name_) : name(name_)
+TestCase::TestCase(const std::string& name_)
+    : name(name_)
 {
     TestRegistry::get().register_test_case(*this);
 }
 
 void TestCase::register_tests_once()
 {
-    if (tests_registered)
-        return;
+    if (tests_registered) return;
     tests_registered = true;
     register_tests();
 }
@@ -631,17 +606,12 @@ TestCaseResult TestCase::run_tests(TestController& controller)
 
     bool skip_all = false;
     string skip_all_reason;
-    try
-    {
+    try {
         setup();
-    }
-    catch (TestSkipped& e)
-    {
-        skip_all        = true;
+    } catch (TestSkipped& e) {
+        skip_all = true;
         skip_all_reason = e.reason;
-    }
-    catch (std::exception& e)
-    {
+    } catch (std::exception& e) {
         res.set_setup_failed(e);
         controller.test_case_end(*this, res);
         return res;
@@ -649,28 +619,23 @@ TestCaseResult TestCase::run_tests(TestController& controller)
 
     if (skip_all)
     {
-        for (auto& method : methods)
+        for (auto& method: methods)
         {
             TestMethodResult tmr(name, method.name);
             controller.test_method_begin(method, tmr);
-            tmr.skipped        = true;
+            tmr.skipped = true;
             tmr.skipped_reason = skip_all_reason;
             controller.test_method_end(method, tmr);
             res.add_test_method(move(tmr));
         }
-    }
-    else
-    {
-        for (auto& m : methods)
+    } else {
+        for (auto& m: methods)
             res.add_test_method(run_test(controller, m));
     }
 
-    try
-    {
+    try {
         teardown();
-    }
-    catch (std::exception& e)
-    {
+    } catch (std::exception& e) {
         res.set_teardown_failed(e);
     }
 
@@ -678,8 +643,7 @@ TestCaseResult TestCase::run_tests(TestController& controller)
     return res;
 }
 
-TestMethodResult TestCase::run_test(TestController& controller,
-                                    TestMethod& method)
+TestMethodResult TestCase::run_test(TestController& controller, TestMethod& method)
 {
     TestMethodResult res(name, method.name);
 
@@ -702,57 +666,40 @@ TestMethodResult TestCase::run_test(TestController& controller,
     // Take time now for measuring elapsed time of the test method
     sys::Clock timer(CLOCK_MONOTONIC);
 
-    try
-    {
+    try {
         method_setup(res);
-    }
-    catch (TestSkipped& e)
-    {
-        res.skipped        = true;
+    } catch (TestSkipped& e) {
+        res.skipped = true;
         res.skipped_reason = e.reason;
         controller.test_method_end(method, res);
         return res;
-    }
-    catch (std::exception& e)
-    {
+    } catch (std::exception& e) {
         res.set_setup_exception(e);
         run = false;
     }
 
     if (run)
     {
-        try
-        {
+        try {
             method.test_function();
-        }
-        catch (TestSkipped& e)
-        {
-            res.skipped        = true;
+        } catch (TestSkipped& e) {
+            res.skipped = true;
             res.skipped_reason = e.reason;
-        }
-        catch (TestFailed& e)
-        {
+        } catch (TestFailed& e) {
             // Location::fail_test() was called
             res.set_failed(e);
-        }
-        catch (std::exception& e)
-        {
+        } catch (std::exception& e) {
             // std::exception was thrown
             res.set_exception(e);
-        }
-        catch (...)
-        {
+        } catch (...) {
             // An unknown exception was thrown
             res.set_unknown_exception();
         }
     }
 
-    try
-    {
+    try {
         method_teardown(res);
-    }
-    catch (std::exception& e)
-    {
+    } catch (std::exception& e) {
         res.set_teardown_exception(e);
     }
 
@@ -762,5 +709,5 @@ TestMethodResult TestCase::run_test(TestController& controller,
     return res;
 }
 
-} // namespace tests
-} // namespace wreport
+}
+}
