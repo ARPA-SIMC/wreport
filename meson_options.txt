@@ -1,0 +1,1 @@
+option('python', type: 'boolean', value: true, description: 'Enable Python support')
