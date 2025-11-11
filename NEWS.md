@@ -1,3 +1,9 @@
+# New in version 3.41
+
+* Updated wobble and wobblepy
+* Added missing file (#63)
+* Make Python support optional
+
 # New in version 3.40
 
 * Fixed an accidental API/ABI break introduced in 3.39 (#61)
