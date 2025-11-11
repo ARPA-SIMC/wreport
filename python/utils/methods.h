@@ -4,8 +4,7 @@
 #include "core.h"
 #include <array>
 
-namespace wreport {
-namespace python {
+namespace wreport::python {
 
 /**
  * Build a function docstring from its components.
@@ -136,7 +135,6 @@ template <> struct Methods<>
     PyMethodDef* as_py() { return 0; }
 };
 
-} // namespace python
-} // namespace wreport
+} // namespace wreport::python
 
 #endif

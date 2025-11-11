@@ -1,7 +1,5 @@
 #include "core.h"
 
-namespace wreport {
-namespace python {
+namespace wreport::python {
 
-}
-} // namespace wreport
+} // namespace wreport::python

@@ -1,8 +1,7 @@
 #include "methods.h"
 #include <string>
 
-namespace wreport {
-namespace python {
+namespace wreport::python {
 
 std::string build_method_doc(const char* name, const char* signature,
                              const char* returns, const char* summary,
@@ -64,5 +63,4 @@ std::string build_method_doc(const char* name, const char* signature,
     return res;
 }
 
-} // namespace python
-} // namespace wreport
+} // namespace wreport::python

@@ -5,8 +5,7 @@
 #include <Python.h>
 #include <stdexcept>
 
-namespace wreport {
-namespace python {
+namespace wreport::python {
 
 #define pass_kwlist(kwlist)                                                    \
     (const_cast<char**>(static_cast<const char**>(kwlist)))
@@ -178,7 +177,6 @@ template <typename T> inline T* throw_ifnull(T* o)
     return o;
 }
 
-} // namespace python
-} // namespace wreport
+} // namespace wreport::python
 
 #endif

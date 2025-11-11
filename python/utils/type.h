@@ -5,8 +5,7 @@
 #include "methods.h"
 #include <array>
 
-namespace wreport {
-namespace python {
+namespace wreport::python {
 
 template <typename Child, typename IMPL> struct Getter
 {
@@ -264,7 +263,6 @@ template <typename Child, typename IMPL> struct Type
     }
 };
 
-} // namespace python
-} // namespace wreport
+} // namespace wreport::python
 
 #endif
