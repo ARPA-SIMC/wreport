@@ -11,8 +11,7 @@
 #include <cstdio>
 #include <string>
 
-namespace wreport {
-namespace term {
+namespace wreport::term {
 
 struct Terminal
 {
@@ -50,7 +49,6 @@ struct Terminal
     operator FILE*() { return out; }
 };
 
-}
-}
+} // namespace wreport::term
 
 #endif
