@@ -4,7 +4,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.41
+Version: 3.42
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -151,6 +151,9 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %{python3_sitearch}/_wreport*.so
 
 %changelog
+* Thu Mar 05 2026 Davide Cesari  <dcesari@arpae.it> - 3.42-1
+- Add missing tables
+
 * Tue Nov 11 2025 Emanuele Di Giacomo <edigiacomo@arpae.it> - 3.41-1
 - Updated wobble and wobblepy
 - Added missing file (#63)
