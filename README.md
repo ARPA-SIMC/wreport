@@ -1,7 +1,8 @@
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky8.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky9.png)](https://simc.arpae.it/moncic-ci/wreport/)
-[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora40.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky10.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora42.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora44.png)](https://simc.arpae.it/moncic-ci/wreport/)
 
 [![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/)
 
@@ -101,7 +102,7 @@ To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
 
 The author of wreport is Enrico Zini <enrico@enricozini.com>
 
-wreport is Copyright (C) 2005-2024 ARPAE-SIMC <urpsim@arpae.it>
+wreport is Copyright (C) 2005-2026 ARPAE-SIMC <urpsim@arpae.it>
 
 wreport is licensed under the terms of the GNU General Public License version
 2.
