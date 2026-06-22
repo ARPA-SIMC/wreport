@@ -1,3 +1,7 @@
+# New in version UNRELEASED
+
+* Build with Fedora 44 (#65)
+
 # New in version 3.41
 
 * Updated wobble and wobblepy

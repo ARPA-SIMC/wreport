@@ -2,7 +2,7 @@
 
 TOP_BUILDDIR=$(readlink -f "$PWD")
 TOP_SRCDIR=$(readlink -f $(dirname $0))
-PYTHON=${PYTHON:-$(which python3)}
+PYTHON=${PYTHON:-$(command -v python3)}
 
 if [ "$1" = "PYTHON" ]
 then

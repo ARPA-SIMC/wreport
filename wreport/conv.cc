@@ -70,7 +70,7 @@ struct Conv
         return *this;
     }
 
-    int compare(const char* ofrom, const char* oto) const
+    int compare(const char* ofrom, const char* oto) const noexcept
     {
         if (int res = strcmp(from, ofrom))
             return res;
@@ -79,7 +79,7 @@ struct Conv
         return 0;
     }
 
-    int compare(const Conv& o) const
+    int compare(const Conv& o) const noexcept
     {
         if (int res = strcmp(from, o.from))
             return res;
@@ -88,9 +88,9 @@ struct Conv
         return 0;
     }
 
-    bool operator<(const Conv& o) const { return compare(o) < 0; }
+    bool operator<(const Conv& o) const noexcept { return compare(o) < 0; }
 
-    bool operator==(const Conv& o) const { return compare(o) == 0; }
+    bool operator==(const Conv& o) const noexcept { return compare(o) == 0; }
 };
 
 struct ConvertRepository
