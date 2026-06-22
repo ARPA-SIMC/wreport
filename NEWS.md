@@ -1,6 +1,10 @@
-# New in version UNRELEASED
+# New in verison 3.43
 
 * Build with Fedora 44 (#65)
+
+# New in version 3.42
+
+* Add missing tables
 
 # New in version 3.41
 
