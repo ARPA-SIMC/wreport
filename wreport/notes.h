@@ -4,7 +4,7 @@
 #include <iosfwd>
 
 #ifndef WREPORT_PRINTF_ATTRS
-#define WREPORT_PRINTF_ATTRS(a, b) __attribute__ ((format(printf, a, b)))
+#define WREPORT_PRINTF_ATTRS(a, b) __attribute__((format(printf, a, b)))
 #endif
 
 namespace wreport {
@@ -24,10 +24,10 @@ void set_target(std::ostream& out);
 std::ostream* get_target();
 
 /// Return true if there is any target to which notes are sent
-bool logs() throw ();
+bool logs() throw();
 
 /// Output stream to send notes to
-std::ostream& log() throw ();
+std::ostream& log() throw();
 
 /// printf-style logging
 void logf(const char* fmt, ...) WREPORT_PRINTF_ATTRS(1, 2);
@@ -51,13 +51,10 @@ struct Collect
         old = get_target();
         set_target(out);
     }
-    ~Collect()
-    {
-        set_target(*old);
-    }
+    ~Collect() { set_target(*old); }
 };
 
-}
-}
+} // namespace notes
+} // namespace wreport
 
 #endif

@@ -1,17 +1,17 @@
 #ifndef WREPORT_PYTHON_VAR_H
 #define WREPORT_PYTHON_VAR_H
 
-#include <wreport/var.h>
-#include <wreport/python.h>
 #include "utils/core.h"
+#include <wreport/python.h>
+#include <wreport/var.h>
 
 extern "C" {
 
 #ifndef WREPORT_3_21_COMPAT
 /// wreport.Var python object
-typedef struct {
-    PyObject_HEAD
-    wreport::Var var;
+typedef struct
+{
+    PyObject_HEAD wreport::Var var;
 } wrpy_Var;
 
 /// wreport.Var python type
@@ -19,12 +19,10 @@ extern PyTypeObject* wrpy_Var_Type;
 #endif
 
 /// Check if an object is of wreport.Var type or subtype
-#define wrpy_Var_Check(ob) \
-    (Py_TYPE(ob) == wrpy_Var_Type || \
+#define wrpy_Var_Check(ob)                                                     \
+    (Py_TYPE(ob) == wrpy_Var_Type ||                                           \
      PyType_IsSubtype(Py_TYPE(ob), wrpy_Var_Type))
-
 }
-
 
 namespace wreport {
 namespace python {
@@ -40,7 +38,7 @@ int var_value_from_python(PyObject* o, wreport::Var& var);
 
 void register_var(PyObject* m, wrpy_c_api& c_c_api);
 
-}
-}
+} // namespace python
+} // namespace wreport
 
 #endif

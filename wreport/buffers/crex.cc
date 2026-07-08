@@ -1,7 +1,7 @@
 #include "crex.h"
+#include "config.h"
 #include "wreport/var.h"
 #include <cstdarg>
-#include "config.h"
 
 /*
 // #define TRACE_INTERPRETER
@@ -15,28 +15,22 @@
 #endif
 */
 
-
 using namespace std;
 
 namespace wreport {
 namespace buffers {
 
 CrexInput::CrexInput(const std::string& in, const char* fname, size_t offset)
-    : data(in.c_str()), data_len(in.size()), fname(fname), offset(offset), cur(data), has_check_digit(false)
+    : data(in.c_str()), data_len(in.size()), fname(fname), offset(offset),
+      cur(data), has_check_digit(false)
 {
     for (int i = 0; i < 5; ++i)
         sec[i] = 0;
 }
 
-bool CrexInput::eof() const
-{
-    return cur >= data + data_len;
-}
+bool CrexInput::eof() const { return cur >= data + data_len; }
 
-unsigned CrexInput::remaining() const
-{
-    return data + data_len - cur;
-}
+unsigned CrexInput::remaining() const { return data + data_len - cur; }
 
 void CrexInput::parse_error(const char* fmt, ...) const
 {
@@ -49,7 +43,8 @@ void CrexInput::parse_error(const char* fmt, ...) const
         message = nullptr;
     va_end(ap);
 
-    if (asprintf(&context, "%s:%zu+%d: %s", fname, offset, (int)(cur - data), message ? message : fmt) == -1)
+    if (asprintf(&context, "%s:%zu+%d: %s", fname, offset, (int)(cur - data),
+                 message ? message : fmt) == -1)
         context = nullptr;
 
     string msg(context ? context : fmt);
@@ -64,7 +59,8 @@ void CrexInput::check_eof(const char* expected) const
         parse_error("end of CREX message while looking for %s", expected);
 }
 
-void CrexInput::check_available_data(unsigned datalen, const char* expected) const
+void CrexInput::check_available_data(unsigned datalen,
+                                     const char* expected) const
 {
     if (cur + datalen > data + data_len)
         parse_error("end of CREX message while looking for %s", expected);
@@ -100,9 +96,11 @@ void CrexInput::read_word(char* buf, size_t len)
     skip_spaces();
 }
 
-void CrexInput::parse_value(int len, int is_signed, const char** d_start, const char** d_end)
+void CrexInput::parse_value(int len, int is_signed, const char** d_start,
+                            const char** d_end)
 {
-    //TRACE("crex_decoder_parse_value(%d, %s): ", len, is_signed ? "signed" : "unsigned");
+    // TRACE("crex_decoder_parse_value(%d, %s): ", len, is_signed ? "signed" :
+    // "unsigned");
 
     /* Check for 2 more because we may have extra sign and check digit */
     check_available_data(len + 2, "end of data descriptor section");
@@ -110,11 +108,10 @@ void CrexInput::parse_value(int len, int is_signed, const char** d_start, const 
     if (has_check_digit)
     {
         if ((*cur - '0') != expected_check_digit)
-            parse_error("check digit mismatch: expected %d, found %d, rest of message: %.*s",
-                    expected_check_digit,
-                    (*cur - '0'),
-                    (int)remaining(),
-                    cur);
+            parse_error("check digit mismatch: expected %d, found %d, rest of "
+                        "message: %.*s",
+                        expected_check_digit, (*cur - '0'), (int)remaining(),
+                        cur);
 
         expected_check_digit = (expected_check_digit + 1) % 10;
         ++cur;
@@ -137,7 +134,7 @@ void CrexInput::parse_value(int len, int is_signed, const char** d_start, const 
     /* Skip trailing spaces */
     skip_spaces();
 
-    //TRACE("%.*s\n", *d_end - *d_start, *d_start);
+    // TRACE("%.*s\n", *d_end - *d_start, *d_start);
 }
 
 void CrexInput::debug_dump_next(const char* desc) const
@@ -148,15 +145,9 @@ void CrexInput::debug_dump_next(const char* desc) const
     {
         switch (*(cur + i))
         {
-            case '\r':
-                fputs("\\r", stderr);
-                break;
-            case '\n':
-                fputs("\\n", stderr);
-                break;
-            default:
-                putc(*(cur + i), stderr);
-                break;
+            case '\r': fputs("\\r", stderr); break;
+            case '\n': fputs("\\n", stderr); break;
+            default:   putc(*(cur + i), stderr); break;
         }
     }
     if (cur + 30 < data + data_len)
@@ -164,15 +155,12 @@ void CrexInput::debug_dump_next(const char* desc) const
     putc('\n', stderr);
 }
 
-
-CrexOutput::CrexOutput(std::string& buf) : buf(buf), has_check_digit(0), expected_check_digit(0)
+CrexOutput::CrexOutput(std::string& buf)
+    : buf(buf), has_check_digit(0), expected_check_digit(0)
 {
 }
 
-void CrexOutput::raw_append(const char* str, int len)
-{
-    buf.append(str, len);
-}
+void CrexOutput::raw_append(const char* str, int len) { buf.append(str, len); }
 
 void CrexOutput::raw_appendf(const char* fmt, ...)
 {
@@ -187,7 +175,8 @@ void CrexOutput::raw_appendf(const char* fmt, ...)
 
 void CrexOutput::encode_check_digit()
 {
-    if (!has_check_digit) return;
+    if (!has_check_digit)
+        return;
 
     char c = '0' + expected_check_digit;
     raw_append(&c, 1);
@@ -214,17 +203,20 @@ void CrexOutput::append_var(Varinfo info, const Var& var)
     {
         case Vartype::String:
             raw_appendf("%-*.*s", len, len, var.enqc());
-            // TRACE("encode_b string len: %d val %-*.*s\n", len, len, len, var.value());
+            // TRACE("encode_b string len: %d val %-*.*s\n", len, len, len,
+            // var.value());
             break;
         case Vartype::Binary:
-            throw error_unimplemented("cannot encode a binary variable into a CREX message");
+            throw error_unimplemented(
+                "cannot encode a binary variable into a CREX message");
         case Vartype::Integer:
         case Vartype::Decimal: {
             int val = var.enqi();
 
             /* FIXME: here goes handling of active C table modifiers */
 
-            if (val < 0) ++len;
+            if (val < 0)
+                ++len;
 
             raw_appendf("%0*d", len, val);
             // TRACE("encode_b num len: %d val %0*d\n", len, len, val);
@@ -233,5 +225,5 @@ void CrexOutput::append_var(Varinfo info, const Var& var)
     }
 }
 
-}
-}
+} // namespace buffers
+} // namespace wreport

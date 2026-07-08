@@ -1,9 +1,9 @@
 #ifndef WREPORT_BUFFERS_CREX_H
 #define WREPORT_BUFFERS_CREX_H
 
+#include <string>
 #include <wreport/error.h>
 #include <wreport/varinfo.h>
-#include <string>
 
 namespace wreport {
 struct Var;
@@ -52,7 +52,6 @@ struct CrexInput
 
     /// Value of the next expected check digit
     int expected_check_digit;
-
 
     /**
      * Wrap a string into a CrexInput
@@ -137,7 +136,8 @@ struct CrexInput
      * @retval d_end
      *   End of the parsed token
      */
-    void parse_value(int len, int is_signed, const char** d_start, const char** d_end);
+    void parse_value(int len, int is_signed, const char** d_start,
+                     const char** d_end);
 
     /// Dump to stderr the contents of the next bit of buffer
     void debug_dump_next(const char* desc) const;
@@ -157,7 +157,6 @@ struct CrexOutput
     /// Value of the next expected check digit
     int expected_check_digit;
 
-
     /**
      * Wrap a string with a CrexOutput
      *
@@ -170,7 +169,8 @@ struct CrexOutput
     void raw_append(const char* str, int len);
 
     /// Append a printf-formatted string
-    void raw_appendf(const char* fmt, ...) __attribute__ ((format(printf, 2, 3)));
+    void raw_appendf(const char* fmt, ...)
+        __attribute__((format(printf, 2, 3)));
 
     /// Generate and append a check digit
     void encode_check_digit();
@@ -182,6 +182,6 @@ struct CrexOutput
     void append_var(Varinfo info, const Var& var);
 };
 
-}
-}
+} // namespace buffers
+} // namespace wreport
 #endif

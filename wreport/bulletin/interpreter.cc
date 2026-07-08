@@ -1,10 +1,10 @@
 #include "interpreter.h"
+#include "wreport/dtable.h"
 #include "wreport/error.h"
 #include "wreport/notes.h"
-#include "wreport/dtable.h"
-#include "wreport/vartable.h"
 #include "wreport/tables.h"
 #include "wreport/var.h"
+#include "wreport/vartable.h"
 
 // #define TRACE_INTERPRETER
 
@@ -12,7 +12,10 @@
 #define TRACE(...) fprintf(stderr, __VA_ARGS__)
 #define IFTRACE if (1)
 #else
-#define TRACE(...) do { } while (0)
+#define TRACE(...)                                                             \
+    do                                                                         \
+    {                                                                          \
+    } while (0)
 #define IFTRACE if (0)
 #endif
 
@@ -39,7 +42,7 @@ void Interpreter::run()
             case 1: {
                 // Replicate the next X elements Y times
                 Varcode delayed_replication_code = 0;
-                unsigned count = WR_VAR_Y(cur);
+                unsigned count                   = WR_VAR_Y(cur);
                 if (count == 0 && !opcodes.empty())
                 {
                     // Delayed replication, if replicator is there. In case of
@@ -55,24 +58,26 @@ void Interpreter::run()
                     delayed_replication_code = WR_VAR(0, 31, 12);
 
                 if (bitmaps.pending_definitions)
-                    r_bitmap(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
+                    r_bitmap(cur, delayed_replication_code,
+                             opcodes.pop_left(WR_VAR_X(cur)));
                 else
-                    r_replication(cur, delayed_replication_code, opcodes.pop_left(WR_VAR_X(cur)));
+                    r_replication(cur, delayed_replication_code,
+                                  opcodes.pop_left(WR_VAR_X(cur)));
                 break;
             }
             case 2:
                 // Generic notification
                 c_modifier(cur, opcodes);
                 break;
-            case 3:
-            {
+            case 3: {
                 opcode_stack.push(tables.dtable->query(cur));
                 run_d_expansion(cur);
                 opcode_stack.pop();
                 break;
             }
             default:
-                error_consistency::throwf("cannot handle opcode %01d%02d%03d", WR_VAR_FXY(cur));
+                error_consistency::throwf("cannot handle opcode %01d%02d%03d",
+                                          WR_VAR_FXY(cur));
         }
     }
 }
@@ -82,7 +87,7 @@ Varinfo Interpreter::get_varinfo(Varcode code)
     Varinfo peek = tables.btable->query(code);
 
     if (!c_scale_change && !c_width_change && !c_string_len_override &&
-            !c_scale_ref_width_increase && c03_refval_overrides.empty())
+        !c_scale_ref_width_increase && c03_refval_overrides.empty())
         return peek;
 
     int scale = peek->scale;
@@ -95,7 +100,8 @@ Varinfo Interpreter::get_varinfo(Varcode code)
     int bit_len = peek->bit_len;
     if (peek->type == Vartype::String && c_string_len_override)
     {
-        TRACE("get_varinfo:overriding string to %d bytes\n", c_string_len_override);
+        TRACE("get_varinfo:overriding string to %d bytes\n",
+              c_string_len_override);
         bit_len = c_string_len_override * 8;
     }
     else if (c_width_change)
@@ -107,10 +113,11 @@ Varinfo Interpreter::get_varinfo(Varcode code)
     int bit_ref = peek->bit_ref;
     if (c_scale_ref_width_increase)
     {
-        static const int pow10[10] = {
-            1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000
-        };
-        TRACE("get_varinfo:applying %d increase of scale, ref, width\n", c_scale_ref_width_increase);
+        static const int pow10[10] = {1,         10,        100,     1000,
+                                      10000,     100000,    1000000, 10000000,
+                                      100000000, 1000000000};
+        TRACE("get_varinfo:applying %d increase of scale, ref, width\n",
+              c_scale_ref_width_increase);
         scale += c_scale_ref_width_increase;
         bit_len += (10 * c_scale_ref_width_increase + 2) / 3;
         bit_ref *= pow10[c_scale_ref_width_increase];
@@ -123,7 +130,8 @@ Varinfo Interpreter::get_varinfo(Varcode code)
         bit_ref = refval->second;
     }
 
-    TRACE("get_info:requesting alteration scale:%d, bit_len:%d, bit_ref: %d\n", scale, bit_len, bit_ref);
+    TRACE("get_info:requesting alteration scale:%d, bit_len:%d, bit_ref: %d\n",
+          scale, bit_len, bit_ref);
     return tables.btable->query_altered(code, scale, bit_len, bit_ref);
 }
 
@@ -132,21 +140,28 @@ void Interpreter::b_variable(Varcode code)
     if (c03_refval_override_bits)
     {
         define_c03_refval_override(code);
-        TRACE("C03 reference value override for %01d%02d%03d (%u bits) read as %d\n",
-                WR_VAR_FXY(code), c03_refval_override_bits, c03_refval_overrides[code]);
-    } else {
+        TRACE("C03 reference value override for %01d%02d%03d (%u bits) read as "
+              "%d\n",
+              WR_VAR_FXY(code), c03_refval_override_bits,
+              c03_refval_overrides[code]);
+    }
+    else
+    {
         Varinfo info = get_varinfo(code);
         // Choose which value we should encode
         if (WR_VAR_F(code) == 0 && WR_VAR_X(code) == 33 && bitmaps.active())
         {
             // Attribute of the variable pointed by the bitmap
             unsigned pos = bitmaps.next();
-            TRACE("b_variable attribute %01d%02d%03d subset pos %u\n", WR_VAR_FXY(code), pos);
+            TRACE("b_variable attribute %01d%02d%03d subset pos %u\n",
+                  WR_VAR_FXY(code), pos);
             define_attribute(info, pos);
-        } else {
+        }
+        else
+        {
             // Proper variable
-            TRACE("b_variable variable %01d%02d%03d\n",
-                    WR_VAR_F(info->code), WR_VAR_X(info->code), WR_VAR_Y(info->code));
+            TRACE("b_variable variable %01d%02d%03d\n", WR_VAR_F(info->code),
+                  WR_VAR_X(info->code), WR_VAR_Y(info->code));
             if (associated_field.bit_count)
                 define_variable_with_associated_field(info);
             else
@@ -205,11 +220,16 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
             {
                 TRACE("End of reference value changes\n");
                 c03_refval_override_bits = 0;
-            } else {
-                TRACE("Change reference values, %u bit reference values follow\n", bits);
+            }
+            else
+            {
+                TRACE(
+                    "Change reference values, %u bit reference values follow\n",
+                    bits);
                 // Change decoded mode:
                 // B codes now store overridden reference values
-                // Overridden reference values must then be used when those B codes are found again
+                // Overridden reference values must then be used when those B
+                // codes are found again
                 c03_refval_override_bits = bits;
             }
             break;
@@ -231,22 +251,31 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
             TRACE("Set C04 bits to %d\n", nbits);
             // FIXME: nested C04 modifiers are not currently implemented
             if (nbits && associated_field.bit_count)
-                throw error_unimplemented("nested C04 modifiers are not yet implemented");
+                throw error_unimplemented(
+                    "nested C04 modifiers are not yet implemented");
             if (nbits > 32)
-                error_unimplemented::throwf("C04 modifier wants %u bits but only at most 32 are supported", nbits);
+                error_unimplemented::throwf("C04 modifier wants %u bits but "
+                                            "only at most 32 are supported",
+                                            nbits);
             if (nbits)
             {
                 Varcode sig_code = next.pop_left();
                 if (sig_code != WR_VAR(0, 31, 21))
-                    error_consistency::throwf("C04%03u modifier is followed by data descriptor %01d%02d%03d instead of B31021",
-                            nbits, WR_VAR_FXY(sig_code));
+                    error_consistency::throwf(
+                        "C04%03u modifier is followed by data descriptor "
+                        "%01d%02d%03d instead of B31021",
+                        nbits, WR_VAR_FXY(sig_code));
 
-                // Get encoding informations for this associated_field_significance
+                // Get encoding informations for this
+                // associated_field_significance
                 Varinfo info = tables.btable->query(WR_VAR(0, 31, 21));
 
                 // Get the value for B31021, defaulting to 63 if missing
-                associated_field.significance = define_associated_field_significance(info);
-                TRACE("Associated field of %u bits with significance %u\n", associated_field.bit_count, associated_field.significance);
+                associated_field.significance =
+                    define_associated_field_significance(info);
+                TRACE("Associated field of %u bits with significance %u\n",
+                      associated_field.bit_count,
+                      associated_field.significance);
             }
             associated_field.bit_count = nbits;
             break;
@@ -296,14 +325,16 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
             /*
              * Increase scale, reference value and data width.
              *
-             * For Table B elements, which are not CCITTIA5, code or flag tables:
+             * For Table B elements, which are not CCITTIA5, code or flag
+             * tables:
              *  1. Add Y to the existing scale factor
              *  2. Multiply the existing reference value by 10^Y
              *  3. Calculate ( ( 10 * Y ) + 2 ) / 3 , disregard any fractional
              *     remainder and add the result to the existing bit width.
              */
             int change = WR_VAR_Y(code);
-            TRACE("Increase scale, reference value and data width by %d\n", change);
+            TRACE("Increase scale, reference value and data width by %d\n",
+                  change);
             c_scale_ref_width_increase = change;
             break;
         }
@@ -315,9 +346,12 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
              * specified data width given for each CCITTIA5 element in Table B.
              */
             int change = WR_VAR_Y(code);
-            IFTRACE {
+            IFTRACE
+            {
                 if (change)
-                    TRACE("decode_c_data:character size overridden to %d chars for all fields\n", change);
+                    TRACE("decode_c_data:character size overridden to %d chars "
+                          "for all fields\n",
+                          change);
                 else
                     TRACE("decode_c_data:character size overridde end\n");
             }
@@ -332,10 +366,9 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
              * defined by the data present bit-map
              */
             if (WR_VAR_Y(code) != 0)
-                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
-                            WR_VAR_F(code),
-                            WR_VAR_X(code),
-                            WR_VAR_Y(code));
+                error_consistency::throwf(
+                    "C modifier %d%02d%03d not yet supported", WR_VAR_F(code),
+                    WR_VAR_X(code), WR_VAR_Y(code));
             bitmaps.pending_definitions = code;
             break;
         case 23:
@@ -361,11 +394,14 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
                      * values operator
                      */
                     if (!bitmaps.active())
-                        error_consistency::throwf("found C23255 while there is no active bitmap");
+                        error_consistency::throwf(
+                            "found C23255 while there is no active bitmap");
                     define_substituted_value(bitmaps.next());
                     break;
                 default:
-                    error_consistency::throwf("C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
+                    error_consistency::throwf(
+                        "C modifier %d%02d%03d not yet supported",
+                        WR_VAR_FXY(code));
             }
             break;
         case 36:
@@ -392,8 +428,9 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
                     bitmaps.discard_last();
                     break;
                 default:
-                    error_consistency::throwf("C modifier %d%02d%03d uses unsupported y=%03d",
-                            WR_VAR_FXY(code), WR_VAR_Y(code));
+                    error_consistency::throwf(
+                        "C modifier %d%02d%03d uses unsupported y=%03d",
+                        WR_VAR_FXY(code), WR_VAR_Y(code));
                     break;
             }
             break;
@@ -404,32 +441,31 @@ void Interpreter::c_modifier(Varcode code, Opcodes& next)
             {
                 used += do_r_data(ops.sub(1), var_pos);
             } else
-                error_consistency::throwf("C modifier %d%02d%03d not yet supported",
-                            WR_VAR_F(code),
-                            WR_VAR_X(code),
-                            WR_VAR_Y(code));
-            break;
+                error_consistency::throwf("C modifier %d%02d%03d not yet
+        supported", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code)); break;
             */
         default:
-            notes::logf("ignoring unsupported C modifier %01d%02d%03d", WR_VAR_FXY(code));
+            notes::logf("ignoring unsupported C modifier %01d%02d%03d",
+                        WR_VAR_FXY(code));
             break;
             /*
-            error_unimplemented::throwf("C modifier %d%02d%03d is not yet supported",
-                        WR_VAR_F(code),
-                        WR_VAR_X(code),
-                        WR_VAR_Y(code));
+            error_unimplemented::throwf("C modifier %d%02d%03d is not yet
+            supported", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
             */
     }
 }
 
-void Interpreter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+void Interpreter::r_replication(Varcode code, Varcode delayed_code,
+                                const Opcodes& ops)
 {
     // unsigned group = WR_VAR_X(code);
     unsigned count = WR_VAR_Y(code);
 
-    IFTRACE{
+    IFTRACE
+    {
         TRACE("visitor r_replication %01d%02d%03d, %u times, %u opcodes: ",
-                WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code), count, WR_VAR_X(code));
+              WR_VAR_F(delayed_code), WR_VAR_X(delayed_code),
+              WR_VAR_Y(delayed_code), count, WR_VAR_X(code));
         ops.print(stderr);
         TRACE("\n");
     }
@@ -440,10 +476,12 @@ void Interpreter::r_replication(Varcode code, Varcode delayed_code, const Opcode
     if (count == 0)
     {
         Varinfo info = tables.btable->query(delayed_code);
-        count = define_delayed_replication_factor(info);
+        count        = define_delayed_replication_factor(info);
     }
-    IFTRACE {
-        TRACE("visitor r_replication %d items %d times%s\n", WR_VAR_X(code), count, delayed_code ? " (delayed)" : "");
+    IFTRACE
+    {
+        TRACE("visitor r_replication %d items %d times%s\n", WR_VAR_X(code),
+              count, delayed_code ? " (delayed)" : "");
         TRACE("Repeat opcodes: ");
         ops.print(stderr);
         TRACE("\n");
@@ -458,87 +496,96 @@ void Interpreter::r_replication(Varcode code, Varcode delayed_code, const Opcode
     }
 }
 
-void Interpreter::run_r_repetition(unsigned cur, unsigned total)
-{
-    run();
-}
+void Interpreter::run_r_repetition(unsigned cur, unsigned total) { run(); }
 
-void Interpreter::r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops)
+void Interpreter::r_bitmap(Varcode code, Varcode delayed_code,
+                           const Opcodes& ops)
 {
     // Get and check the opcode count, which must be 1
     unsigned opcode_count = WR_VAR_X(code);
     if (opcode_count != 1)
-        error_consistency::throwf("bitmap section replicates %u descriptors instead of one", opcode_count);
+        error_consistency::throwf(
+            "bitmap section replicates %u descriptors instead of one",
+            opcode_count);
 
     // And the opcode must be B31031
     if (ops[0] != WR_VAR(0, 31, 31))
-        error_consistency::throwf("bitmap element descriptor is %01d%02d%03d instead of B31031", WR_VAR_FXY(ops[0]));
+        error_consistency::throwf(
+            "bitmap element descriptor is %01d%02d%03d instead of B31031",
+            WR_VAR_FXY(ops[0]));
 
     // Get the bitmap size
     unsigned count = WR_VAR_Y(code);
     if (!count)
     {
         Varinfo rep_info = tables.btable->query(delayed_code);
-        count = define_bitmap_delayed_replication_factor(rep_info);
+        count            = define_bitmap_delayed_replication_factor(rep_info);
     }
 
     define_bitmap(count);
     bitmaps.pending_definitions = 0;
 }
 
-void Interpreter::run_d_expansion(Varcode code)
-{
-    run();
-}
+void Interpreter::run_d_expansion(Varcode code) { run(); }
 
 void Interpreter::define_bitmap(unsigned bitmap_size)
 {
-    throw error_unimplemented("define_bitmap is not implemented in this interpreter");
+    throw error_unimplemented(
+        "define_bitmap is not implemented in this interpreter");
 }
 
 unsigned Interpreter::define_delayed_replication_factor(Varinfo info)
 {
-    throw error_unimplemented("define_delayed_replication_factor is not implemented in this interpreter");
+    throw error_unimplemented("define_delayed_replication_factor is not "
+                              "implemented in this interpreter");
 }
 
 unsigned Interpreter::define_bitmap_delayed_replication_factor(Varinfo info)
 {
-    throw error_unimplemented("define_bitmap_delayed_replication_factor is not implemented in this interpreter");
+    throw error_unimplemented("define_bitmap_delayed_replication_factor is not "
+                              "implemented in this interpreter");
 }
 
 unsigned Interpreter::define_associated_field_significance(Varinfo info)
 {
-    throw error_unimplemented("define_associated_field_significance is not implemented in this interpreter");
+    throw error_unimplemented("define_associated_field_significance is not "
+                              "implemented in this interpreter");
 }
 
 void Interpreter::define_c03_refval_override(Varcode code)
 {
-    throw error_unimplemented("define_c03_refval_override is not implemented in this interpreter");
+    throw error_unimplemented(
+        "define_c03_refval_override is not implemented in this interpreter");
 }
 
 void Interpreter::define_variable(Varinfo info)
 {
-    throw error_unimplemented("define_variable is not implemented in this interpreter");
+    throw error_unimplemented(
+        "define_variable is not implemented in this interpreter");
 }
 
 void Interpreter::define_variable_with_associated_field(Varinfo info)
 {
-    throw error_unimplemented("define_variable_with_associated_field is not implemented in this interpreter");
+    throw error_unimplemented("define_variable_with_associated_field is not "
+                              "implemented in this interpreter");
 }
 
 void Interpreter::define_substituted_value(unsigned pos)
 {
-    throw error_unimplemented("define_substituted_variable is not implemented in this interpreter");
+    throw error_unimplemented(
+        "define_substituted_variable is not implemented in this interpreter");
 }
 
 void Interpreter::define_attribute(Varinfo info, unsigned pos)
 {
-    throw error_unimplemented("define_attribute is not implemented in this interpreter");
+    throw error_unimplemented(
+        "define_attribute is not implemented in this interpreter");
 }
 
 void Interpreter::define_raw_character_data(Varcode code)
 {
-    throw error_unimplemented("define_raw_character_data is not implemented in this interpreter");
+    throw error_unimplemented(
+        "define_raw_character_data is not implemented in this interpreter");
 }
 
 void Interpreter::print_c_modifier(FILE* out, Varcode code, Opcodes& next)
@@ -546,64 +593,65 @@ void Interpreter::print_c_modifier(FILE* out, Varcode code, Opcodes& next)
     switch (WR_VAR_X(code))
     {
         case 1:
-            fprintf(out, "change data width to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            fprintf(out, "change data width to %d\n",
+                    WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
             break;
         case 2:
-            fprintf(out, "change data scale to %d\n", WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
+            fprintf(out, "change data scale to %d\n",
+                    WR_VAR_Y(code) ? WR_VAR_Y(code) - 128 : 0);
             break;
         case 4:
             fprintf(out, "%d bits of associated field\n", WR_VAR_Y(code));
             break;
-        case 5:
-            fputs("character data\n", out);
-            break;
+        case 5: fputs("character data\n", out); break;
         case 6:
             if (next.empty())
-                fprintf(out, "local descriptor (unknown) %d bits long\n", WR_VAR_Y(code));
+                fprintf(out, "local descriptor (unknown) %d bits long\n",
+                        WR_VAR_Y(code));
             else
-                fprintf(out, "local descriptor %d%02d%03d %d bits long\n", WR_VAR_FXY(next[0]), WR_VAR_Y(code));
+                fprintf(out, "local descriptor %d%02d%03d %d bits long\n",
+                        WR_VAR_FXY(next[0]), WR_VAR_Y(code));
             break;
         case 7:
-            fprintf(out, "change data scale, reference value and data width by %d\n", WR_VAR_Y(code));
+            fprintf(out,
+                    "change data scale, reference value and data width by %d\n",
+                    WR_VAR_Y(code));
             break;
         case 8:
-            fprintf(out, "change width of string fields to %d\n", WR_VAR_Y(code));
+            fprintf(out, "change width of string fields to %d\n",
+                    WR_VAR_Y(code));
             break;
-        case 22:
-            fputs("quality information with bitmap\n", out);
-            break;
+        case 22: fputs("quality information with bitmap\n", out); break;
         case 23:
             switch (WR_VAR_Y(code))
             {
-                case 0:
-                    fputs("substituted values bitmap\n", out);
-                    break;
-                case 255:
-                    fputs("one substituted value\n", out);
-                    break;
+                case 0:   fputs("substituted values bitmap\n", out); break;
+                case 255: fputs("one substituted value\n", out); break;
                 default:
-                    fprintf(out, "C modifier %d%02d%03d not yet supported", WR_VAR_FXY(code));
+                    fprintf(out, "C modifier %d%02d%03d not yet supported",
+                            WR_VAR_FXY(code));
                     break;
             }
             break;
-        case 36:
-            fputs("define data present bitmap for reuse\n", out);
-            break;
+        case 36: fputs("define data present bitmap for reuse\n", out); break;
         case 37:
             // Use defined data present bitmap
             switch (WR_VAR_Y(code))
             {
                 case 0: fputs("reuse last data present bitmap\n", out); break;
-                case 255: fputs("cancel reuse of the last defined bitmap\n", out); break;
-                default: fprintf(out, "C modifier %d%02d%03d uses unsupported y=%03d", WR_VAR_FXY(code), WR_VAR_Y(code)); break;
+                case 255:
+                    fputs("cancel reuse of the last defined bitmap\n", out);
+                    break;
+                default:
+                    fprintf(out,
+                            "C modifier %d%02d%03d uses unsupported y=%03d",
+                            WR_VAR_FXY(code), WR_VAR_Y(code));
+                    break;
             }
             break;
-        default:
-            fputs("(C modifier)\n", out);
-            break;
+        default: fputs("(C modifier)\n", out); break;
     }
 }
-
 
 Printer::Printer(const Tables& tables, const Opcodes& opcodes)
     : Interpreter(tables, opcodes), out(stdout), indent(0), indent_step(2)
@@ -612,8 +660,8 @@ Printer::Printer(const Tables& tables, const Opcodes& opcodes)
 
 void Printer::print_lead(Varcode code)
 {
-    fprintf(out, "%*s%d%02d%03d",
-            static_cast<int>(indent), "", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+    fprintf(out, "%*s%d%02d%03d", static_cast<int>(indent), "", WR_VAR_F(code),
+            WR_VAR_X(code), WR_VAR_Y(code));
 }
 
 void Printer::b_variable(Varcode code)
@@ -625,20 +673,24 @@ void Printer::b_variable(Varcode code)
         {
             Varinfo info = tables.btable->query(code);
             fprintf(out, " %s[%s]", info->desc, info->unit);
-        } else
-            fprintf(out, " (missing in B table %s)", tables.btable->path().c_str());
+        }
+        else
+            fprintf(out, " (missing in B table %s)",
+                    tables.btable->path().c_str());
     }
     putc('\n', out);
 }
 
 void Printer::c_modifier(Varcode code, Opcodes& next)
 {
-    print_lead(code); putc(' ', out);
+    print_lead(code);
+    putc(' ', out);
     Interpreter::print_c_modifier(out, code, next);
     Interpreter::c_modifier(code, next);
 }
 
-void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+void Printer::r_replication(Varcode code, Varcode delayed_code,
+                            const Opcodes& ops)
 {
     print_lead(code);
     unsigned group = WR_VAR_X(code);
@@ -647,8 +699,8 @@ void Printer::r_replication(Varcode code, Varcode delayed_code, const Opcodes& o
     if (count)
         fprintf(out, " %u times\n", count);
     else
-        fprintf(out, " (delayed %d%02d%03d) times\n",
-                WR_VAR_F(delayed_code), WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code));
+        fprintf(out, " (delayed %d%02d%03d) times\n", WR_VAR_F(delayed_code),
+                WR_VAR_X(delayed_code), WR_VAR_Y(delayed_code));
     indent += indent_step;
     opcode_stack.push(ops);
     run();
@@ -665,17 +717,11 @@ void Printer::run_d_expansion(Varcode code)
     indent -= indent_step;
 }
 
-void Printer::define_variable(Varinfo info)
-{
-}
+void Printer::define_variable(Varinfo info) {}
 
-void Printer::define_variable_with_associated_field(Varinfo info)
-{
-}
+void Printer::define_variable_with_associated_field(Varinfo info) {}
 
-void Printer::define_bitmap(unsigned bitmap_size)
-{
-}
+void Printer::define_bitmap(unsigned bitmap_size) {}
 
 unsigned Printer::define_associated_field_significance(Varinfo info)
 {
@@ -689,5 +735,5 @@ unsigned Printer::define_bitmap_delayed_replication_factor(Varinfo info)
     return 0;
 }
 
-}
-}
+} // namespace bulletin
+} // namespace wreport

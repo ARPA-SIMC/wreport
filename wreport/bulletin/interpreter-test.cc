@@ -1,9 +1,9 @@
-#include "wreport/tests.h"
-#include "interpreter.h"
-#include "wreport/vartable.h"
-#include "wreport/dtable.h"
-#include "wreport/utils/string.h"
 #include "config.h"
+#include "interpreter.h"
+#include "wreport/dtable.h"
+#include "wreport/tests.h"
+#include "wreport/utils/string.h"
+#include "wreport/vartable.h"
 
 using namespace wreport;
 using namespace wreport::tests;
@@ -20,11 +20,19 @@ struct VisitCounter : public bulletin::Interpreter
     unsigned count_d;
 
     VisitCounter(const Tables& tables, const Opcodes& opcodes)
-        : bulletin::Interpreter(tables, opcodes), count_b(0), count_r_plain(0), count_r_delayed(0), count_c(0), count_d(0) {}
+        : bulletin::Interpreter(tables, opcodes), count_b(0), count_r_plain(0),
+          count_r_delayed(0), count_c(0), count_d(0)
+    {
+    }
 
     void b_variable(Varcode code) override { ++count_b; }
-    void c_modifier(Varcode code, Opcodes& next) override { ++count_c; bulletin::Interpreter::c_modifier(code, next); }
-    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override
+    void c_modifier(Varcode code, Opcodes& next) override
+    {
+        ++count_c;
+        bulletin::Interpreter::c_modifier(code, next);
+    }
+    void r_replication(Varcode code, Varcode delayed_code,
+                       const Opcodes& ops) override
     {
         if (delayed_code)
             ++count_r_delayed;
@@ -51,8 +59,10 @@ class Tests : public TestCase
             // Test visitor
             auto testdatadir = path_from_env("WREPORT_TABLES", TABLE_DIR);
             Tables tables;
-            tables.btable = Vartable::load_bufr(testdatadir / "B0000000000000014000.txt");
-            tables.dtable = DTable::load_bufr(testdatadir / "D0000000000000014000.txt");
+            tables.btable =
+                Vartable::load_bufr(testdatadir / "B0000000000000014000.txt");
+            tables.dtable =
+                DTable::load_bufr(testdatadir / "D0000000000000014000.txt");
             Opcodes ops = tables.dtable->query(WR_VAR(3, 0, 10));
             wassert(actual(ops.size()) == 4u);
 
@@ -68,5 +78,4 @@ class Tests : public TestCase
     }
 } test("bulletin_interpreter");
 
-}
-
+} // namespace

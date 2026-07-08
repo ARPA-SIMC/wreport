@@ -30,7 +30,6 @@ struct AssociatedField
     /// Significance of C04yyy field according to code table B31021
     unsigned significance;
 
-
     AssociatedField(const Vartable& btable);
     ~AssociatedField();
 
@@ -50,6 +49,6 @@ struct AssociatedField
     const Var* get_attribute(const Var& var) const;
 };
 
-}
-}
+} // namespace bulletin
+} // namespace wreport
 #endif

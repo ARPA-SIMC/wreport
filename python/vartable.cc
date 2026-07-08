@@ -1,11 +1,11 @@
 #include "vartable.h"
-#include "varinfo.h"
 #include "common.h"
-#include "utils/type.h"
 #include "utils/methods.h"
+#include "utils/type.h"
 #include "utils/values.h"
-#include <wreport/vartable.h>
+#include "varinfo.h"
 #include <wreport/tableinfo.h>
+#include <wreport/vartable.h>
 
 using namespace std;
 using namespace wreport;
@@ -15,7 +15,6 @@ using namespace wreport;
 extern "C" {
 
 PyTypeObject* wrpy_Vartable_Type = nullptr;
-
 }
 
 namespace {
@@ -23,23 +22,25 @@ namespace {
 struct pathname : public Getter<pathname, wrpy_Vartable>
 {
     constexpr static const char* name = "pathname";
-    constexpr static const char* doc = "name of the table";
-    constexpr static void* closure = nullptr;
+    constexpr static const char* doc  = "name of the table";
+    constexpr static void* closure    = nullptr;
 
     static PyObject* get(Impl* self, void* closure)
     {
-        try {
+        try
+        {
             return to_python(self->table->path());
-        } WREPORT_CATCH_RETURN_PYO;
+        }
+        WREPORT_CATCH_RETURN_PYO;
     }
 };
 
 struct load_bufr : public ClassMethKwargs<load_bufr>
 {
-    constexpr static const char* name = "load_bufr";
+    constexpr static const char* name      = "load_bufr";
     constexpr static const char* signature = "pathname: str";
-    constexpr static const char* returns = "wreport.Vartable";
-    constexpr static const char* summary = R"(
+    constexpr static const char* returns   = "wreport.Vartable";
+    constexpr static const char* summary   = R"(
 Load BUFR information from a Table B file and return it as a
 wreport.Vartable.
 
@@ -52,18 +53,20 @@ wreport.Vartable.
         if (!PyArg_ParseTuple(args, "s", &pathname))
             return nullptr;
 
-        try {
+        try
+        {
             return (PyObject*)vartable_create(Vartable::load_bufr(pathname));
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 struct load_crex : public ClassMethKwargs<load_crex>
 {
-    constexpr static const char* name = "load_crex";
+    constexpr static const char* name      = "load_crex";
     constexpr static const char* signature = "pathname: str";
-    constexpr static const char* returns = "wreport.Vartable";
-    constexpr static const char* summary = R"(
+    constexpr static const char* returns   = "wreport.Vartable";
+    constexpr static const char* summary   = R"(
 Load CREX information from a Table B file and return it as a
 wreport.Vartable.
 
@@ -76,9 +79,11 @@ wreport.Vartable.
         if (!PyArg_ParseTuple(args, "s", &pathname))
             return nullptr;
 
-        try {
+        try
+        {
             return (PyObject*)vartable_create(Vartable::load_crex(pathname));
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
@@ -86,14 +91,16 @@ struct get_bufr : public ClassMethKwargs<get_bufr>
 {
     constexpr static const char* name = "get_bufr";
     constexpr static const char* signature =
-        "basename: str=None, originating_centre: int=0, originating_subcentre: int=0,"
-        "master_table_number: int=0, master_table_version_number: int=None, master_table_version_number_local: int=0";
+        "basename: str=None, originating_centre: int=0, originating_subcentre: "
+        "int=0,"
+        "master_table_number: int=0, master_table_version_number: int=None, "
+        "master_table_version_number_local: int=0";
     constexpr static const char* returns = "wreport.Vartable";
     constexpr static const char* summary = R"(
 Look up a table B file using the information given, then load BUFR
 information from it.
 )";
-    constexpr static const char* doc = R"(
+    constexpr static const char* doc     = R"(
 You need to provide either basename or master_table_version_number.
 
 :arg basename: load the table with the given name in ``/usr/share/wreport/``
@@ -106,40 +113,47 @@ You need to provide either basename or master_table_version_number.
 
     static PyObject* run(PyTypeObject* cls, PyObject* args, PyObject* kw)
     {
-        static const char* kwlist[] = {
-            "basename", "originating_centre", "originating_subcentre",
-            "master_table_number", "master_table_version_number",
-            "master_table_version_number_local", nullptr };
+        static const char* kwlist[] = {"basename",
+                                       "originating_centre",
+                                       "originating_subcentre",
+                                       "master_table_number",
+                                       "master_table_version_number",
+                                       "master_table_version_number_local",
+                                       nullptr};
 
-        const char* basename = nullptr;
-        int originating_centre = 0;
-        int originating_subcentre = 0;
-        int master_table_number = 0;
-        int master_table_version_number = -1;
+        const char* basename                  = nullptr;
+        int originating_centre                = 0;
+        int originating_subcentre             = 0;
+        int master_table_number               = 0;
+        int master_table_version_number       = -1;
         int master_table_version_number_local = 0;
-        if (!PyArg_ParseTupleAndKeywords(args, kw, "|siiiii",
-                    const_cast<char**>(kwlist), &basename,
-                    &originating_centre, &originating_subcentre,
-                    &master_table_number, &master_table_version_number,
-                    &master_table_version_number_local))
+        if (!PyArg_ParseTupleAndKeywords(
+                args, kw, "|siiiii", const_cast<char**>(kwlist), &basename,
+                &originating_centre, &originating_subcentre,
+                &master_table_number, &master_table_version_number,
+                &master_table_version_number_local))
             return nullptr;
 
-        try {
+        try
+        {
             if (basename)
                 return (PyObject*)vartable_create(Vartable::get_bufr(basename));
 
             if (master_table_version_number == -1)
             {
-                PyErr_SetString(PyExc_ValueError, "Please pass either basename or master_table_version_number");
+                PyErr_SetString(PyExc_ValueError,
+                                "Please pass either basename or "
+                                "master_table_version_number");
                 return nullptr;
             }
 
-            BufrTableID id(
-                originating_centre, originating_subcentre, master_table_number,
-                master_table_version_number, master_table_version_number_local);
+            BufrTableID id(originating_centre, originating_subcentre,
+                           master_table_number, master_table_version_number,
+                           master_table_version_number_local);
 
             return (PyObject*)vartable_create(Vartable::get_bufr(id));
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
@@ -147,15 +161,17 @@ struct get_crex : public ClassMethKwargs<get_crex>
 {
     constexpr static const char* name = "get_crex";
     constexpr static const char* signature =
-        "basename: str=None, edition_number=2, originating_centre: int=0, originating_subcentre: int=0,"
+        "basename: str=None, edition_number=2, originating_centre: int=0, "
+        "originating_subcentre: int=0,"
         "master_table_number: int=0, master_table_version_number: int=None,"
-        "master_table_version_number_bufr: int=None, master_table_version_number_local: int=0";
+        "master_table_version_number_bufr: int=None, "
+        "master_table_version_number_local: int=0";
     constexpr static const char* returns = "wreport.Vartable";
     constexpr static const char* summary = R"(
 Look up a table B file using the information given, then load CREX
 information from it.
 )";
-    constexpr static const char* doc = R"(
+    constexpr static const char* doc     = R"(
 You need to provide either basename or master_table_version_number
 or master_table_version_number_bufr.
 
@@ -171,55 +187,68 @@ or master_table_version_number_bufr.
 
     static PyObject* run(PyTypeObject* cls, PyObject* args, PyObject* kw)
     {
-        static const char* kwlist[] = {
-            "basename", "edition_number", "originating_centre", "originating_subcentre",
-            "master_table_number", "master_table_version_number",
-            "master_table_version_number_bufr",
-            "master_table_version_number_local", nullptr };
-        const char* basename = nullptr;
-        int edition_number = 2;
-        int originating_centre = 0;
-        int originating_subcentre = 0;
-        int master_table_number = 0;
-        int master_table_version_number = -1;
-        int master_table_version_number_bufr = -1;
+        static const char* kwlist[]           = {"basename",
+                                                 "edition_number",
+                                                 "originating_centre",
+                                                 "originating_subcentre",
+                                                 "master_table_number",
+                                                 "master_table_version_number",
+                                                 "master_table_version_number_bufr",
+                                                 "master_table_version_number_local",
+                                                 nullptr};
+        const char* basename                  = nullptr;
+        int edition_number                    = 2;
+        int originating_centre                = 0;
+        int originating_subcentre             = 0;
+        int master_table_number               = 0;
+        int master_table_version_number       = -1;
+        int master_table_version_number_bufr  = -1;
         int master_table_version_number_local = 0;
-        if (!PyArg_ParseTupleAndKeywords(args, kw, "|siiiiiii",
-                    const_cast<char**>(kwlist), &basename,
-                    &edition_number, &originating_centre, &originating_subcentre,
-                    &master_table_number, &master_table_version_number,
-                    &master_table_version_number_bufr,
-                    &master_table_version_number_local))
+        if (!PyArg_ParseTupleAndKeywords(
+                args, kw, "|siiiiiii", const_cast<char**>(kwlist), &basename,
+                &edition_number, &originating_centre, &originating_subcentre,
+                &master_table_number, &master_table_version_number,
+                &master_table_version_number_bufr,
+                &master_table_version_number_local))
             return nullptr;
 
-        try {
+        try
+        {
             if (basename)
                 return (PyObject*)vartable_create(Vartable::get_crex(basename));
 
-            if (master_table_version_number == -1 && master_table_version_number_bufr == -1)
+            if (master_table_version_number == -1 &&
+                master_table_version_number_bufr == -1)
             {
-                PyErr_SetString(PyExc_ValueError, "Please pass at least one of basename, master_table_version_number, or master_table_version_number_bufr");
+                PyErr_SetString(PyExc_ValueError,
+                                "Please pass at least one of basename, "
+                                "master_table_version_number, or "
+                                "master_table_version_number_bufr");
                 return nullptr;
             }
 
-            CrexTableID id(
-                edition_number, originating_centre, originating_subcentre, master_table_number,
-                master_table_version_number == -1 ? 0xff : master_table_version_number,
-                master_table_version_number_bufr == -1 ? 0xff : master_table_version_number_bufr,
-                master_table_version_number_local);
+            CrexTableID id(edition_number, originating_centre,
+                           originating_subcentre, master_table_number,
+                           master_table_version_number == -1
+                               ? 0xff
+                               : master_table_version_number,
+                           master_table_version_number_bufr == -1
+                               ? 0xff
+                               : master_table_version_number_bufr,
+                           master_table_version_number_local);
 
             return (PyObject*)vartable_create(Vartable::get_crex(id));
-        } WREPORT_CATCH_RETURN_PYO
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
-
 
 struct VartableDef : public Type<VartableDef, wrpy_Vartable>
 
 {
-    constexpr static const char* name = "Vartable";
+    constexpr static const char* name      = "Vartable";
     constexpr static const char* qual_name = "wreport.Vartable";
-    constexpr static const char* doc = R"(
+    constexpr static const char* doc       = R"(
 Collection of Varinfo objects indexed by WMO BUFR/CREX table B code.
 
 A Vartable is instantiated by one of the :meth:`get_bufr`, :meth:`get_crex`,
@@ -231,28 +260,29 @@ A Vartable is instantiated by one of the :meth:`get_bufr`, :meth:`get_crex`,
     GetSetters<pathname> getsetters;
     Methods<get_bufr, get_crex, load_bufr, load_crex> methods;
 
-    static void _dealloc(Impl* self)
-    {
-        Py_TYPE(self)->tp_free(self);
-    }
+    static void _dealloc(Impl* self) { Py_TYPE(self)->tp_free(self); }
 
     static PyObject* _str(Impl* self)
     {
-        try {
+        try
+        {
             return to_python(self->table->path().native());
-        } WREPORT_CATCH_RETURN_PYO;
+        }
+        WREPORT_CATCH_RETURN_PYO;
     }
 
     static PyObject* _repr(Impl* self)
     {
-        return PyUnicode_FromFormat("Vartable('%s')", self->table->path().c_str());
+        return PyUnicode_FromFormat("Vartable('%s')",
+                                    self->table->path().c_str());
     }
 
     static int _init(Impl* self, PyObject* args, PyObject* kw)
     {
         // People should not invoke Varinfo() as a constructor, but if they do,
         // this is better than a segfault later on
-        PyErr_SetString(PyExc_NotImplementedError, "Vartable objects cannot be constructed explicitly");
+        PyErr_SetString(PyExc_NotImplementedError,
+                        "Vartable objects cannot be constructed explicitly");
         return -1;
     }
 
@@ -262,17 +292,17 @@ A Vartable is instantiated by one of the :meth:`get_bufr`, :meth:`get_crex`,
         return 0;
     }
 
-    static PyObject* sq_item(Impl* self, Py_ssize_t i)
-    {
-        Py_RETURN_NONE;
-    }
+    static PyObject* sq_item(Impl* self, Py_ssize_t i) { Py_RETURN_NONE; }
 
-    static int sq_contains(Impl* self, PyObject *value)
+    static int sq_contains(Impl* self, PyObject* value)
     {
-        try {
+        try
+        {
             std::string varname = from_python<std::string>(value);
-            return self->table->contains(varcode_parse(varname.c_str())) ? 1 : 0;
-        } WREPORT_CATCH_RETURN_INT
+            return self->table->contains(varcode_parse(varname.c_str())) ? 1
+                                                                         : 0;
+        }
+        WREPORT_CATCH_RETURN_INT
     }
 
     static long int mp_length(Impl* self)
@@ -283,16 +313,19 @@ A Vartable is instantiated by one of the :meth:`get_bufr`, :meth:`get_crex`,
 
     static PyObject* mp_subscript(wrpy_Vartable* self, PyObject* key)
     {
-        try {
+        try
+        {
             std::string varname = from_python<std::string>(key);
-            return (PyObject*)varinfo_create(self->table->query(varcode_parse(varname.c_str())));
-        } WREPORT_CATCH_RETURN_PYO
+            return (PyObject*)varinfo_create(
+                self->table->query(varcode_parse(varname.c_str())));
+        }
+        WREPORT_CATCH_RETURN_PYO
     }
 };
 
 VartableDef* vartable_def = nullptr;
 
-}
+} // namespace
 
 namespace wreport {
 namespace python {
@@ -300,7 +333,8 @@ namespace python {
 PyObject* vartable_create(const wreport::Vartable* table)
 {
     wrpy_Vartable* result = PyObject_New(wrpy_Vartable, wrpy_Vartable_Type);
-    if (!result) return nullptr;
+    if (!result)
+        return nullptr;
     result->table = table;
     return (PyObject*)result;
 }
@@ -312,8 +346,8 @@ void register_vartable(PyObject* m, wrpy_c_api& c_api)
 
     // Initialize the C api struct
     c_api.vartable_create = vartable_create;
-    c_api.vartable_type = wrpy_Vartable_Type;
+    c_api.vartable_type   = wrpy_Vartable_Type;
 }
 
-}
-}
+} // namespace python
+} // namespace wreport

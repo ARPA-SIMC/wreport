@@ -28,4 +28,4 @@ namespace wreport {
 namespace lua {
 
 }
-}
+} // namespace wreport

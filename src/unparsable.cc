@@ -25,28 +25,39 @@ struct CopyUnparsable : public RawHandler
     FILE* log;
     unsigned unparsed;
 
-    CopyUnparsable(FILE* out, FILE* log=0) : out(out), log(log), unparsed(0) {}
-
-    void handle_raw_bufr(const std::string& raw_data, const char* fname, long offset) override
+    CopyUnparsable(FILE* out, FILE* log = 0) : out(out), log(log), unparsed(0)
     {
-        try {
+    }
+
+    void handle_raw_bufr(const std::string& raw_data, const char* fname,
+                         long offset) override
+    {
+        try
+        {
             BufrBulletin::decode(raw_data, fname, offset);
-        } catch (std::exception& e) {
-            if (log) fprintf(log, "%s\n", e.what());
+        }
+        catch (std::exception& e)
+        {
+            if (log)
+                fprintf(log, "%s\n", e.what());
             fwrite(raw_data.data(), raw_data.size(), 1, out);
             ++unparsed;
         }
     }
 
-    void handle_raw_crex(const std::string& raw_data, const char* fname, long offset) override
+    void handle_raw_crex(const std::string& raw_data, const char* fname,
+                         long offset) override
     {
-        try {
+        try
+        {
             CrexBulletin::decode(raw_data, fname, offset);
-        } catch (std::exception& e) {
-            if (log) fprintf(log, "%s\n", e.what());
+        }
+        catch (std::exception& e)
+        {
+            if (log)
+                fprintf(log, "%s\n", e.what());
             fwrite(raw_data.data(), raw_data.size(), 1, out);
             ++unparsed;
         }
     }
 };
-

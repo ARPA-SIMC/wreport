@@ -1,0 +1,8 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH="@top_srcdir@/wreport:$LD_LIBRARY_PATH"
+export WREPORT_TABLES="@top_srcdir@/tables/"
+export PYTHONPATH="@top_srcdir@/python:@top_builddir@/python"
+export PATH="@top_srcdir@/src:@top_builddir@/src:$PATH"
+
+exec "$@"

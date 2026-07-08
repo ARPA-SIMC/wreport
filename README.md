@@ -1,7 +1,9 @@
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky8.png)](https://simc.arpae.it/moncic-ci/wreport/)
 [![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky9.png)](https://simc.arpae.it/moncic-ci/wreport/)
-[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora38.png)](https://simc.arpae.it/moncic-ci/wreport/)
-[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora40.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/rocky10.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora42.png)](https://simc.arpae.it/moncic-ci/wreport/)
+[![Build Status](https://simc.arpae.it/moncic-ci/wreport/fedora44.png)](https://simc.arpae.it/moncic-ci/wreport/)
+
 [![Build Status](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/simc/stable/package/wreport/)
 
 # WREPORT
@@ -60,7 +62,34 @@ If you want to build the package yourself:
 - rpm: the packaging files are in `fedora` directory of the `master` branch.
 - deb: the packaging files are in the debian branches (e.g. `debian/sid`, `ubuntu/jammy`, etc.)
 
-### AFL instrumentation
+## Environment variables
+
+These environment variables can be used to control wreport's behaviour at runtime:
+
+* `WREPORT_TABLES`: Table directory to search before the builtin one.
+* `WREPORT_EXTRA_TABLES`: Extra table directory to search before
+  `WREPORT_TABLES` or the builtin one.
+* `WREPORT_MASTER_TABLE_VERSION`: force the use of this master table instead of
+  the version configured in BUFR/CREX messages. It accepts positive integers,
+  and the value `newest` requesting the newest available table.
+
+## Importing new tables
+
+WMO BUFR/CREX decoding tables can be downloaded in XML formats at these URLs,
+looking for "FM 94 BUFR and FM 95 CREX":
+
+* https://community.wmo.int/activity-areas/wis/latest-version
+* https://community.wmo.int/activity-areas/wis/previous-versions
+
+Download the whole `.zip` files, and use wrep-importtable to convert them to
+the format wreport uses. For example:
+
+    src/wrep-importtable --zipfile=BUFR4-v41.zip
+
+This will generate `B*.txt` and `D*.txt` files that can be copied to `tables/`
+or to a directory set in the `WREPORT_EXTRA_TABLES` environment variable.
+
+## AFL instrumentation
 
 To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
 
@@ -73,7 +102,7 @@ To run wreport using [American Fuzzy Lop](http://lcamtuf.coredump.cx/afl/):
 
 The author of wreport is Enrico Zini <enrico@enricozini.com>
 
-wreport is Copyright (C) 2005-2024 ARPAE-SIMC <urpsim@arpae.it>
+wreport is Copyright (C) 2005-2026 ARPAE-SIMC <urpsim@arpae.it>
 
 wreport is licensed under the terms of the GNU General Public License version
 2.

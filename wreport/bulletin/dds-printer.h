@@ -1,10 +1,10 @@
 #ifndef WREPORT_BULLETIN_DDS_PRINTER_H
 #define WREPORT_BULLETIN_DDS_PRINTER_H
 
+#include <cstdio>
+#include <vector>
 #include <wreport/bulletin.h>
 #include <wreport/bulletin/internals.h>
-#include <vector>
-#include <cstdio>
 
 namespace wreport {
 namespace bulletin {
@@ -41,10 +41,11 @@ public:
     void encode_var(Varinfo info, const Var& var) override;
     void encode_associated_field(const Var& var) override;
 
-    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
+    void r_replication(Varcode code, Varcode delayed_code,
+                       const Opcodes& ops) override;
     void run_d_expansion(Varcode code) override;
 };
 
-}
-}
+} // namespace bulletin
+} // namespace wreport
 #endif

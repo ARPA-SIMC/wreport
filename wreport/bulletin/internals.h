@@ -1,12 +1,12 @@
 #ifndef WREPORT_BULLETIN_INTERNALS_H
 #define WREPORT_BULLETIN_INTERNALS_H
 
-#include <wreport/varinfo.h>
-#include <wreport/opcodes.h>
-#include <wreport/bulletin/interpreter.h>
-#include <vector>
-#include <memory>
 #include <cmath>
+#include <memory>
+#include <vector>
+#include <wreport/bulletin/interpreter.h>
+#include <wreport/opcodes.h>
+#include <wreport/varinfo.h>
 
 namespace wreport {
 class Var;
@@ -67,6 +67,6 @@ struct UncompressedEncoder : public bulletin::Interpreter
     virtual void encode_associated_field(const Var& var);
 };
 
-}
-}
+} // namespace bulletin
+} // namespace wreport
 #endif

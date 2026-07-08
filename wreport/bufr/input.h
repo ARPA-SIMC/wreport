@@ -1,11 +1,11 @@
 #ifndef WREPORT_BUFR_INPUT_H
 #define WREPORT_BUFR_INPUT_H
 
+#include <functional>
+#include <string>
+#include <wreport/bulletin.h>
 #include <wreport/error.h>
 #include <wreport/var.h>
-#include <wreport/bulletin.h>
-#include <string>
-#include <functional>
 
 namespace wreport {
 struct Bulletin;
@@ -20,7 +20,10 @@ struct DispatchToSubsets
 {
     Bulletin& out;
     unsigned subset_count;
-    DispatchToSubsets(Bulletin& out, unsigned subset_count) : out(out), subset_count(subset_count) {}
+    DispatchToSubsets(Bulletin& out, unsigned subset_count)
+        : out(out), subset_count(subset_count)
+    {
+    }
 
     void add_missing(Varinfo info)
     {
@@ -37,7 +40,6 @@ struct DispatchToSubsets
         out.subsets[subset].store_variable(var);
     }
 };
-
 
 /**
  * Binary buffer with bit-level read operations
@@ -88,7 +90,6 @@ public:
     /// Offsets of the start of BUFR sections
     unsigned sec[6];
 
-
     /**
      * Wrap a string iinto a Input
      *
@@ -123,7 +124,10 @@ public:
     unsigned offset() const { return s4_cursor; }
 
     /// Return the number of bits left in the message to be decoded
-    unsigned bits_left() const { return static_cast<unsigned>((data_len - s4_cursor) * 8 + pbyte_len); }
+    unsigned bits_left() const
+    {
+        return static_cast<unsigned>((data_len - s4_cursor) * 8 + pbyte_len);
+    }
 
     /// Read a byte value at offset \a pos
     inline unsigned read_byte(unsigned pos) const
@@ -153,7 +157,8 @@ public:
      * Read a big endian integer value \a byte_len bytes long, at offset \a pos
      * inside section \a section
      */
-    inline unsigned read_number(unsigned section, unsigned pos, unsigned byte_len) const
+    inline unsigned read_number(unsigned section, unsigned pos,
+                                unsigned byte_len) const
     {
         return read_number(sec[section] + pos, byte_len);
     }
@@ -167,7 +172,9 @@ public:
         uint32_t result = 0;
 
         if (s4_cursor == data_len)
-            parse_error("end of buffer while looking for %u bits of bit-packed data", n);
+            parse_error(
+                "end of buffer while looking for %u bits of bit-packed data",
+                n);
 
         // TODO: review and benchmark and possibly simplify
         // (a possible alternative approach is to keep a current bitmask that
@@ -178,7 +185,7 @@ public:
             if (pbyte_len == 0)
             {
                 pbyte_len = 8;
-                pbyte = data[s4_cursor++];
+                pbyte     = data[s4_cursor++];
             }
             result <<= 1;
             if (pbyte & 0x80)
@@ -196,14 +203,16 @@ public:
     void skip_bits(unsigned n)
     {
         if (s4_cursor == data_len)
-            parse_error("end of buffer while looking for %u bits of bit-packed data", n);
+            parse_error(
+                "end of buffer while looking for %u bits of bit-packed data",
+                n);
 
         for (unsigned i = 0; i < n; i++)
         {
             if (pbyte_len == 0)
             {
                 pbyte_len = 8;
-                pbyte = data[s4_cursor++];
+                pbyte     = data[s4_cursor++];
             }
             pbyte <<= 1;
             pbyte_len--;
@@ -211,7 +220,8 @@ public:
     }
 
     /// Dump to stderr 'count' bits of 'buf', starting at the 'ofs-th' bit
-    void debug_dump_next_bits(const char* desc, unsigned count, const std::vector<unsigned>& groups={}) const;
+    void debug_dump_next_bits(const char* desc, unsigned count,
+                              const std::vector<unsigned>& groups = {}) const;
 
     /**
      * Match the given pattern as regexp on the still unread input bitstream,
@@ -223,10 +233,13 @@ public:
     void parse_error(const char* fmt, ...) const WREPORT_THROWF_ATTRS(2, 3);
 
     /// Throw an error_parse at the given decoding location
-    void parse_error(unsigned pos, const char* fmt, ...) const WREPORT_THROWF_ATTRS(3, 4);
+    void parse_error(unsigned pos, const char* fmt, ...) const
+        WREPORT_THROWF_ATTRS(3, 4);
 
-    /// Throw an error_parse at the given decoding location inside the given section
-    void parse_error(unsigned section, unsigned pos, const char* fmt, ...) const WREPORT_THROWF_ATTRS(4, 5);
+    /// Throw an error_parse at the given decoding location inside the given
+    /// section
+    void parse_error(unsigned section, unsigned pos, const char* fmt, ...) const
+        WREPORT_THROWF_ATTRS(4, 5);
 
     /**
      * Check that the input buffer contains at least \a datalen characters
@@ -240,7 +253,8 @@ public:
      *    name of what we are about to decode, used for generating nice error
      *    messages
      */
-    void check_available_data(unsigned pos, size_t datalen, const char* expected);
+    void check_available_data(unsigned pos, size_t datalen,
+                              const char* expected);
 
     /**
      * Check that the input buffer contains at least \a datalen characters
@@ -256,7 +270,8 @@ public:
      *   Name of what we are about to decode, used for generating nice error
      *   messages
      */
-    void check_available_message_data(unsigned section, unsigned pos, size_t datalen, const char* expected);
+    void check_available_message_data(unsigned section, unsigned pos,
+                                      size_t datalen, const char* expected);
 
     /**
      * Check that the given section in the input buffer contains at least \a
@@ -272,7 +287,8 @@ public:
      *   Name of what we are about to decode, used for generating nice error
      *   messages
      */
-    void check_available_section_data(unsigned section, unsigned pos, size_t datalen, const char* expected);
+    void check_available_section_data(unsigned section, unsigned pos,
+                                      size_t datalen, const char* expected);
 
     /**
      * Decode a compressed number as described by dest.info(), ad set it as
@@ -301,23 +317,29 @@ public:
     /**
      * Decode the base value for a variable in a compressed BUFR
      */
-    bool decode_compressed_base(Varinfo info, uint32_t& base, uint32_t& diffbits);
+    bool decode_compressed_base(Varinfo info, uint32_t& base,
+                                uint32_t& diffbits);
 
     /**
      * Decode a number as described by \a info from a compressed bufr with
      * \a subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_compressed_number(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
+    void decode_compressed_number(Varinfo info, unsigned subsets,
+                                  std::function<void(unsigned, Var&&)> dest);
 
     void decode_string(Varinfo info, unsigned subsets, DispatchToSubsets& dest);
 
-    void decode_compressed_number(Varinfo info, unsigned subsets, DispatchToSubsets& dest);
+    void decode_compressed_number(Varinfo info, unsigned subsets,
+                                  DispatchToSubsets& dest);
 
     /**
      * Decode a number as described by \a info from a compressed bufr with
      * \a subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_compressed_number_af(Varinfo info, const bulletin::AssociatedField& afield, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
+    void decode_compressed_number_af(Varinfo info,
+                                     const bulletin::AssociatedField& afield,
+                                     unsigned subsets,
+                                     std::function<void(unsigned, Var&&)> dest);
 
     /**
      * Decode a number as described by dest.info(), and set it as value for \a
@@ -380,7 +402,8 @@ public:
      * Decode a string as described by \a info from a compressed bufr with \a
      * subsets subsets, and send the resulting variables to \a dest
      */
-    void decode_string(Varinfo info, unsigned subsets, std::function<void(unsigned, Var&&)> dest);
+    void decode_string(Varinfo info, unsigned subsets,
+                       std::function<void(unsigned, Var&&)> dest);
 
     /**
      * Decode a generic binary value as-is, as described by dest.info(), ad set
@@ -420,6 +443,6 @@ public:
     std::string decode_compressed_bitmap(unsigned size);
 };
 
-}
-}
+} // namespace bufr
+} // namespace wreport
 #endif

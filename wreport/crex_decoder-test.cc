@@ -145,7 +145,7 @@ class Tests : public TestCase
                 wassert(actual_varcode(s[9].code()) == WR_VAR(0, 5, 2));
                 wassert(actual(s[9].enqd()) == 68.27);
                 wassert(actual_varcode(s[10].code()) == WR_VAR(0, 6, 2));
-                wassert(actual(s[10].enqd()) ==  9.68);
+                wassert(actual(s[10].enqd()) == 9.68);
             };
             test.run("crex/test-mare0.crex");
         });
@@ -162,7 +162,7 @@ class Tests : public TestCase
                 wassert(actual(s.size()) == 32u);
 
                 wassert(actual_varcode(s[9].code()) == WR_VAR(0, 5, 2));
-                wassert(actual(s[9].enqd()) ==  43.02);
+                wassert(actual(s[9].enqd()) == 43.02);
                 wassert(actual_varcode(s[10].code()) == WR_VAR(0, 6, 2));
                 wassert(actual(s[10].enqd()) == -12.45);
             };
@@ -209,4 +209,4 @@ class Tests : public TestCase
     }
 } test("crex_decoder");
 
-}
+} // namespace

@@ -1,10 +1,10 @@
 #ifndef WREPORT_DTABLE_H
 #define WREPORT_DTABLE_H
 
-#include <wreport/opcodes.h>
 #include <filesystem>
 #include <string>
 #include <vector>
+#include <wreport/opcodes.h>
 
 namespace wreport {
 
@@ -17,7 +17,8 @@ public:
     virtual ~DTable();
 
     /// Return the pathname of the file from which this table has been loaded
-    [[deprecated("Use path() instead")]] virtual std::string pathname() const = 0;
+    [[deprecated("Use path() instead")]] virtual std::string
+    pathname() const = 0;
 
     /**
      * Query the DTable
@@ -50,7 +51,6 @@ public:
     static const DTable* load_crex(const std::string& pathname);
 };
 
-
-}
+} // namespace wreport
 
 #endif

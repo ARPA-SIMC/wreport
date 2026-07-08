@@ -1,3 +1,36 @@
+# New in verison 3.43
+
+* Build with Fedora 44 (#65)
+
+# New in version 3.42
+
+* Add missing tables
+
+# New in version 3.41
+
+* Updated wobble and wobblepy
+* Added missing file (#63)
+* Make Python support optional
+
+# New in version 3.40
+
+* Fixed an accidental API/ABI break introduced in 3.39 (#61)
+* Added `varinfo_create_bufr` and `varinfo_delete_bufr` to create `Varinfo`
+  entries outside of tables. (#61)
+* Moved those internal functions that are not used by reverse dependencies to
+  wreport/internals
+
+# New in version 3.39
+
+* Add new WMO tables
+* Allow to override master table version numbers via the
+  `WREPORT_MASTER_TABLE_VERSION` environment variable (see
+  [README.md](README.md) for details) (#58)
+* Add a decoder trace snapshot in test data to detect unexpected behaviour
+  changes in the decoder
+* Fix incorrect padding when reading values of binary variables
+* Redesign calculation of variable domain boundaries (#59)
+
 # New in version 3.38
 
 * Updated code to use C++17 features

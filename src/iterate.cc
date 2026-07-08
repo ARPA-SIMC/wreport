@@ -26,8 +26,10 @@ struct PrintVars : public BulletinFullHandler
     FILE* out;
     const std::vector<wreport::Varcode>& codes;
 
-    PrintVars(const std::vector<wreport::Varcode>& codes, FILE* out=stdout)
-        : out(out), codes(codes) {}
+    PrintVars(const std::vector<wreport::Varcode>& codes, FILE* out = stdout)
+        : out(out), codes(codes)
+    {
+    }
 
     const Var* find_varcode(const wreport::Subset& subset, Varcode code)
     {
@@ -57,4 +59,4 @@ struct PrintVars : public BulletinFullHandler
     }
 };
 
-}
+} // namespace

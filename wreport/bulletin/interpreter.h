@@ -1,12 +1,12 @@
 #ifndef WREPORT_BULLETIN_INTERPETER_H
 #define WREPORT_BULLETIN_INTERPETER_H
 
-#include <wreport/bulletin/bitmaps.h>
-#include <wreport/bulletin/associated_fields.h>
-#include <wreport/opcodes.h>
-#include <wreport/tables.h>
 #include <memory>
 #include <stack>
+#include <wreport/bulletin/associated_fields.h>
+#include <wreport/bulletin/bitmaps.h>
+#include <wreport/opcodes.h>
+#include <wreport/tables.h>
 
 namespace wreport {
 struct Vartable;
@@ -66,7 +66,7 @@ public:
     Interpreter(const Tables& tables, const Opcodes& opcodes);
     virtual ~Interpreter();
 
-    Interpreter(const Interpreter&) = delete;
+    Interpreter(const Interpreter&)            = delete;
     Interpreter& operator=(const Interpreter&) = delete;
 
     /// Run the interpreter
@@ -102,12 +102,14 @@ public:
      * @param ops
      *   The replicated operators
      */
-    virtual void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops);
+    virtual void r_replication(Varcode code, Varcode delayed_code,
+                               const Opcodes& ops);
 
     /**
      * Handle a replicated section which defines a bitmap
      */
-    virtual void r_bitmap(Varcode code, Varcode delayed_code, const Opcodes& ops);
+    virtual void r_bitmap(Varcode code, Varcode delayed_code,
+                          const Opcodes& ops);
 
     /**
      * Executes a repetition of the opcodes on top of the stack.
@@ -215,7 +217,6 @@ public:
     static void print_c_modifier(FILE* out, Varcode code, Opcodes& nex);
 };
 
-
 /**
  * Interpreter that pretty-prints the opcodes using indentation to show
  * structure
@@ -254,7 +255,8 @@ public:
 
     void b_variable(Varcode code) override;
     void c_modifier(Varcode code, Opcodes& next) override;
-    void r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops) override;
+    void r_replication(Varcode code, Varcode delayed_code,
+                       const Opcodes& ops) override;
     void run_d_expansion(Varcode code) override;
     void define_variable(Varinfo info) override;
     void define_variable_with_associated_field(Varinfo info) override;
@@ -263,7 +265,6 @@ public:
     unsigned define_associated_field_significance(Varinfo info) override;
 };
 
-
-}
-}
+} // namespace bulletin
+} // namespace wreport
 #endif

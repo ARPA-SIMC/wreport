@@ -19,12 +19,12 @@
  * Author: Enrico Zini <enrico@enricozini.com>
  */
 
+#include "config.h"
+#include <cstdio>
+#include <iostream>
+#include <string>
 #include <wreport/error.h>
 #include <wreport/notes.h>
-#include <string>
-#include <iostream>
-#include <cstdio>
-#include "config.h"
 
 #ifdef HAS_GETOPT_LONG
 #include <getopt.h>
@@ -37,41 +37,37 @@ using namespace std;
 // the documentation
 #include "makebuoy.cc"
 
-void do_usage(FILE* out)
-{
-    fputs("Usage: examples [options]\n", out);
-}
+void do_usage(FILE* out) { fputs("Usage: examples [options]\n", out); }
 
 void do_help(FILE* out)
 {
     do_usage(out);
-    fputs(
-        "Run wreport examples\n"
-        "Options:\n"
-        "  -v,--verbose        verbose operation\n"
-        "  -h,--help           print this help message\n"
-        "  -B,--makebuoy       generate a buoy BUFR message\n"
+    fputs("Run wreport examples\n"
+          "Options:\n"
+          "  -v,--verbose        verbose operation\n"
+          "  -h,--help           print this help message\n"
+          "  -B,--makebuoy       generate a buoy BUFR message\n"
 #ifndef HAS_GETOPT_LONG
-        "NOTE: long options are not supported on this system\n"
+          "NOTE: long options are not supported on this system\n"
 #endif
-    , out);
+          ,
+          out);
 }
 
 int main(int argc, char* argv[])
 {
 #ifdef HAS_GETOPT_LONG
-    static struct option long_options[] =
-    {
-        /* These options set a flag. */
-        {"makebuoy",  no_argument,       NULL, 'B'},
-        {"verbose",   no_argument,       NULL, 'v'},
-        {"help",      no_argument,       NULL, 'h'},
-        {0, 0, 0, 0}
+    static struct option long_options[] = {
+  /* These options set a flag. */
+        {"makebuoy", no_argument, NULL, 'B'},
+        {"verbose",  no_argument, NULL, 'v'},
+        {"help",     no_argument, NULL, 'h'},
+        {0,          0,           0,    0  }
     };
 #endif
 
     // Parse command line options
-    bool verbose = false;
+    bool verbose                   = false;
     enum { HELP, MAKEBUOY } action = HELP;
     while (1)
     {
@@ -79,8 +75,7 @@ int main(int argc, char* argv[])
         int option_index = 0;
 
 #ifdef HAS_GETOPT_LONG
-        int c = getopt_long(argc, argv, "vh",
-                long_options, &option_index);
+        int c = getopt_long(argc, argv, "vh", long_options, &option_index);
 #else
         int c = getopt(argc, argv, "vh");
 #endif
@@ -106,17 +101,16 @@ int main(int argc, char* argv[])
         notes::set_target(cerr);
 
     // Run the handler for the action requested by the user
-    try {
+    try
+    {
         switch (action)
         {
-            case HELP:
-                do_help(stdout);
-                return 0;
-            case MAKEBUOY:
-                do_makebuoy();
-                return 0;
+            case HELP:     do_help(stdout); return 0;
+            case MAKEBUOY: do_makebuoy(); return 0;
         }
-    } catch (std::exception& e) {
+    }
+    catch (std::exception& e)
+    {
         fprintf(stderr, "%s\n", e.what());
         return 1;
     }

@@ -1,11 +1,11 @@
 #ifndef WREPORT_BUFFERS_BUFR_H
 #define WREPORT_BUFFERS_BUFR_H
 
+#include <cstdint>
+#include <functional>
+#include <string>
 #include <wreport/error.h>
 #include <wreport/var.h>
-#include <string>
-#include <functional>
-#include <cstdint>
 
 namespace wreport {
 struct Var;
@@ -43,34 +43,22 @@ struct BufrOutput
      * Append a string \a len bits long to the output buffer as it is,
      * ignoring partially encoded bits
      */
-    void raw_append(const char* str, size_t len)
+    void raw_append(const char* str, size_t len) { out.append(str, len); }
+
+    [[deprecated("Use the version with size_t len")]] void
+    raw_append(const char* str, int len)
     {
         out.append(str, len);
     }
-
-    [[deprecated("Use the version with size_t len")]] void raw_append(const char* str, int len)
-    {
-        out.append(str, len);
-    }
-
 
     /// Append a 16 bits integer
-    void append_short(unsigned short val)
-    {
-        add_bits(val, 16);
-    }
+    void append_short(unsigned short val) { add_bits(val, 16); }
 
     /// Append an 8 bits integer
-    void append_byte(unsigned char val)
-    {
-        add_bits(val, 8);
-    }
+    void append_byte(unsigned char val) { add_bits(val, 8); }
 
     /// Append a missing value \a len_bits long
-    void append_missing(unsigned len_bits)
-    {
-        add_bits(0xffffffff, len_bits);
-    }
+    void append_missing(unsigned len_bits) { add_bits(0xffffffff, len_bits); }
 
     /// Append a string variable
     void append_string(const Var& var, unsigned len_bits);
@@ -94,8 +82,7 @@ struct BufrOutput
     void flush();
 };
 
-
-}
-}
+} // namespace buffers
+} // namespace wreport
 
 #endif

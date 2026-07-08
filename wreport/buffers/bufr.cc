@@ -1,7 +1,7 @@
 #include "bufr.h"
+#include "config.h"
 #include "wreport/var.h"
 #include <cstdarg>
-#include "config.h"
 
 // #define TRACE_INTERPRETER
 
@@ -22,19 +22,15 @@ namespace {
 // Return a value with bitlen bits set to 1
 static inline uint32_t all_ones(int bitlen)
 {
-    return ((1 << (bitlen - 1))-1) | (1 << (bitlen - 1));
+    return ((1 << (bitlen - 1)) - 1) | (1 << (bitlen - 1));
 }
 
-}
+} // namespace
 
 namespace wreport {
 namespace buffers {
 
-
-BufrOutput::BufrOutput(std::string& out)
-    : out(out), pbyte(0), pbyte_len(0)
-{
-}
+BufrOutput::BufrOutput(std::string& out) : out(out), pbyte(0), pbyte_len(0) {}
 
 void BufrOutput::add_bits(uint32_t val, int n)
 {
@@ -42,14 +38,14 @@ void BufrOutput::add_bits(uint32_t val, int n)
     uint32_t mask = 1 << (n - 1);
     int i;
 
-    for (i = 0; i < n; i++) 
+    for (i = 0; i < n; i++)
     {
         pbyte <<= 1;
         pbyte |= ((val & mask) != 0) ? 1 : 0;
         val <<= 1;
         pbyte_len++;
 
-        if (pbyte_len == 8) 
+        if (pbyte_len == 8)
             flush();
     }
 #if 0
@@ -74,7 +70,8 @@ void BufrOutput::append_string(const char* val, unsigned len_bits)
     bool eol = false;
     for (i = 0, bi = 0; bi < len_bits; ++i)
     {
-        //TRACE("append_string:len: %d, i: %d, bi: %d, eol: %d\n", len_bits, i, bi, (int)eol);
+        // TRACE("append_string:len: %d, i: %d, bi: %d, eol: %d\n", len_bits, i,
+        // bi, (int)eol);
         if (!eol && !val[i])
             eol = true;
 
@@ -125,9 +122,7 @@ void BufrOutput::append_var(Varinfo info, const Var& var)
     }
     switch (info->type)
     {
-        case Vartype::String:
-            append_string(var.enqc(), info->bit_len);
-            break;
+        case Vartype::String: append_string(var.enqc(), info->bit_len); break;
         case Vartype::Binary:
             append_binary((const unsigned char*)var.enqc(), info->bit_len);
             break;
@@ -139,14 +134,12 @@ void BufrOutput::append_var(Varinfo info, const Var& var)
     }
 }
 
-void BufrOutput::append_missing(Varinfo info)
-{
-    append_missing(info->bit_len);
-}
+void BufrOutput::append_missing(Varinfo info) { append_missing(info->bit_len); }
 
 void BufrOutput::flush()
 {
-    if (pbyte_len == 0) return;
+    if (pbyte_len == 0)
+        return;
 
     while (pbyte_len < 8)
     {
@@ -156,9 +149,8 @@ void BufrOutput::flush()
 
     out.append((const char*)&pbyte, 1);
     pbyte_len = 0;
-    pbyte = 0;
+    pbyte     = 0;
 }
 
-
-}
-}
+} // namespace buffers
+} // namespace wreport

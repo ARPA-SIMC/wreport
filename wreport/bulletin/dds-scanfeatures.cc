@@ -16,16 +16,16 @@ void ScanFeatures::c_modifier(Varcode code, Opcodes& next)
             if (next.empty())
                 features.insert(varcode_format(code));
             else
-                features.insert(varcode_format(code) + ":" + varcode_format(next[0]));
+                features.insert(varcode_format(code) + ":" +
+                                varcode_format(next[0]));
             break;
-        default:
-            features.insert(varcode_format(code));
-            break;
+        default: features.insert(varcode_format(code)); break;
     }
     Interpreter::c_modifier(code, next);
 }
 
-void ScanFeatures::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+void ScanFeatures::r_replication(Varcode code, Varcode delayed_code,
+                                 const Opcodes& ops)
 {
     if (delayed_code)
         features.insert("Rxx000:" + varcode_format(delayed_code));
@@ -36,13 +36,9 @@ void ScanFeatures::r_replication(Varcode code, Varcode delayed_code, const Opcod
     opcode_stack.pop();
 }
 
-void ScanFeatures::define_variable(Varinfo info)
-{
-}
+void ScanFeatures::define_variable(Varinfo info) {}
 
-void ScanFeatures::define_bitmap(unsigned bitmap_size)
-{
-}
+void ScanFeatures::define_bitmap(unsigned bitmap_size) {}
 
 unsigned ScanFeatures::define_associated_field_significance(Varinfo info)
 {
@@ -54,5 +50,5 @@ unsigned ScanFeatures::define_bitmap_delayed_replication_factor(Varinfo info)
     return 0;
 }
 
-}
-}
+} // namespace bulletin
+} // namespace wreport

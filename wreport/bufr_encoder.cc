@@ -1,10 +1,10 @@
+#include "buffers/bufr.h"
 #include "bulletin.h"
 #include "bulletin/internals.h"
-#include "buffers/bufr.h"
-#include "vartable.h"
-#include <netinet/in.h>
-#include <cstring>
 #include "config.h"
+#include "vartable.h"
+#include <cstring>
+#include <netinet/in.h>
 
 // #define TRACE_ENCODER
 
@@ -12,7 +12,10 @@
 #define TRACE(...) fprintf(stderr, __VA_ARGS__)
 #define IFTRACE if (1)
 #else
-#define TRACE(...) do { } while (0)
+#define TRACE(...)                                                             \
+    do                                                                         \
+    {                                                                          \
+    } while (0)
 #define IFTRACE if (0)
 #endif
 
@@ -71,18 +74,23 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
     {
         const Var& var = get_var();
         if (WR_VAR_F(var.code()) != 2)
-            error_consistency::throwf("variable at %u is %01d%02d%03d and not a data present bitmap",
-                    current_var-1, WR_VAR_F(var.code()), WR_VAR_X(var.code()), WR_VAR_Y(var.code()));
-        IFTRACE{
+            error_consistency::throwf(
+                "variable at %u is %01d%02d%03d and not a data present bitmap",
+                current_var - 1, WR_VAR_F(var.code()), WR_VAR_X(var.code()),
+                WR_VAR_Y(var.code()));
+        IFTRACE
+        {
             TRACE("Encoding data present bitmap:");
             var.print(stderr);
         }
 
-        //TRACE("encode_r_data bitmap %d items %d times%s\n", group, count, delayed_code ? " (delayed)" : "");
+        // TRACE("encode_r_data bitmap %d items %d times%s\n", group, count,
+        // delayed_code ? " (delayed)" : "");
 
         if (var.info()->len != bitmap_size)
-            error_consistency::throwf("bitmap given is %u bits long, but we need to encode %u bits",
-                    var.info()->len, bitmap_size);
+            error_consistency::throwf(
+                "bitmap given is %u bits long, but we need to encode %u bits",
+                var.info()->len, bitmap_size);
 
         // Encode the bitmap here directly
         for (unsigned i = 0; i < bitmap_size; ++i)
@@ -92,24 +100,24 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
     }
     void define_raw_character_data(Varcode code) override
     {
-        const Var& var = get_var();
+        const Var& var  = get_var();
         const char* val = var.enq("");
         ob.append_string(val, WR_VAR_Y(code) * 8);
     }
 
     void define_c03_refval_override(Varcode code) override
     {
-        // Scan the subset looking for a variables with the given code, to see what
-        // is its bit_ref
-        bool found = false;
+        // Scan the subset looking for a variables with the given code, to see
+        // what is its bit_ref
+        bool found  = false;
         int bit_ref = 0;
-        for (const auto& var: current_subset)
+        for (const auto& var : current_subset)
         {
             Varinfo info = var.info();
             if (info->code == code)
             {
                 bit_ref = info->bit_ref;
-                found = true;
+                found   = true;
                 break;
             }
         }
@@ -118,9 +126,8 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
         {
             // If not found, take the default
             Varinfo info = current_subset.tables->btable->query(code);
-            bit_ref = info->bit_ref;
+            bit_ref      = info->bit_ref;
         }
-
 
         // Encode
         uint32_t encoded;
@@ -128,22 +135,26 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
         if (bit_ref < 0)
         {
             encoded = -bit_ref;
-            nbits = 32 - __builtin_clz(encoded);
+            nbits   = 32 - __builtin_clz(encoded);
             encoded |= 1 << (c03_refval_override_bits - 1);
-        } else {
+        }
+        else
+        {
             encoded = bit_ref;
-            nbits = 32 - __builtin_clz(encoded);
+            nbits   = 32 - __builtin_clz(encoded);
         }
 
         // Check if it fits (encoded bits plus 1 for the sign)
         if (nbits + 1 > c03_refval_override_bits)
-            error_consistency::throwf("C03 reference value override requested for value %d, encoded as %u, which does not fit in %u bits (requires %u bits)", bit_ref, encoded, c03_refval_override_bits, nbits + 1);
+            error_consistency::throwf(
+                "C03 reference value override requested for value %d, encoded "
+                "as %u, which does not fit in %u bits (requires %u bits)",
+                bit_ref, encoded, c03_refval_override_bits, nbits + 1);
 
         ob.add_bits(encoded, c03_refval_override_bits);
         c03_refval_overrides[code] = bit_ref;
     }
 };
-
 
 struct Encoder
 {
@@ -158,10 +169,9 @@ struct Encoder
      * We have to memorise offsets rather than pointers, because e->out->buf
      * can get reallocated during the encoding
      */
-    size_t sec[6] = { 0, 0, 0, 0, 0, 0 };
+    size_t sec[6] = {0, 0, 0, 0, 0, 0};
 
-    Encoder(const BufrBulletin& in, buffers::BufrOutput& out)
-        : in(in), out(out)
+    Encoder(const BufrBulletin& in, buffers::BufrOutput& out) : in(in), out(out)
     {
     }
 
@@ -198,11 +208,13 @@ void Encoder::encode_sec1ed3()
     out.add_bits(18, 24);
     // Master table number
     out.append_byte(in.master_table_number);
-    // Originating/generating sub-centre (defined by Originating/generating centre)
+    // Originating/generating sub-centre (defined by Originating/generating
+    // centre)
     out.append_byte(static_cast<uint8_t>(in.originating_subcentre));
     // Originating/generating centre (Common Code tableC-1)
     out.append_byte(static_cast<uint8_t>(in.originating_centre));
-    // Update sequence number (zero for original BUFR messages; incremented for updates)
+    // Update sequence number (zero for original BUFR messages; incremented for
+    // updates)
     out.append_byte(in.update_sequence_number);
     // Bit 1: 0 No optional section, 1 Optional section included
     // Bits 2 to 8 set to zero (reserved)
@@ -212,13 +224,15 @@ void Encoder::encode_sec1ed3()
     out.append_byte(in.data_category);
     // Data sub-category (defined by local ADP centres)
     out.append_byte(in.data_subcategory_local);
-    // Version number of master tables used (currently 9 for WMO FM 94 BUFR tables)
+    // Version number of master tables used (currently 9 for WMO FM 94 BUFR
+    // tables)
     out.append_byte(in.master_table_version_number);
     // Version number of local tables used to augment the master table in use
     out.append_byte(in.master_table_version_number_local);
 
     // Year of century
-    out.append_byte(static_cast<uint8_t>(in.rep_year == 2000 ? 100 : (in.rep_year % 100)));
+    out.append_byte(
+        static_cast<uint8_t>(in.rep_year == 2000 ? 100 : (in.rep_year % 100)));
     // Month
     out.append_byte(in.rep_month);
     // Day
@@ -244,9 +258,11 @@ void Encoder::encode_sec1ed4()
     out.append_byte(0);
     // Originating/generating centre (Common Code tableC-1)
     out.append_short(in.originating_centre);
-    // Originating/generating sub-centre (defined by Originating/generating centre)
+    // Originating/generating sub-centre (defined by Originating/generating
+    // centre)
     out.append_short(in.originating_subcentre);
-    // Update sequence number (zero for original BUFR messages; incremented for updates)
+    // Update sequence number (zero for original BUFR messages; incremented for
+    // updates)
     out.append_byte(in.update_sequence_number);
     // Bit 1: 0 No optional section, 1 Optional section included
     // Bits 2 to 8 set to zero (reserved)
@@ -258,7 +274,8 @@ void Encoder::encode_sec1ed4()
     out.append_byte(in.data_subcategory);
     // Local subcategory (defined by local ADP centres)
     out.append_byte(in.data_subcategory_local);
-    // Version number of master tables used (currently 9 for WMO FM 94 BUFR tables)
+    // Version number of master tables used (currently 9 for WMO FM 94 BUFR
+    // tables)
     out.append_byte(in.master_table_version_number);
     // Version number of local tables used to augment the master table in use
     out.append_byte(in.master_table_version_number_local);
@@ -290,9 +307,11 @@ void Encoder::encode_sec2()
 
         // Length of section
         if (pad)
-            out.add_bits(static_cast<uint32_t>(4 + in.optional_section.size() + 1), 24);
+            out.add_bits(
+                static_cast<uint32_t>(4 + in.optional_section.size() + 1), 24);
         else
-            out.add_bits(static_cast<uint32_t>(4 + in.optional_section.size()), 24);
+            out.add_bits(static_cast<uint32_t>(4 + in.optional_section.size()),
+                         24);
 
         // Set to 0 (reserved)
         out.append_byte(0);
@@ -301,7 +320,8 @@ void Encoder::encode_sec2()
         out.raw_append(in.optional_section.data(), in.optional_section.size());
 
         // Pad to even number of bytes
-        if (pad) out.append_byte(0);
+        if (pad)
+            out.append_byte(0);
     }
 
     TRACE("sec2 ends at %zu\n", out.out.size());
@@ -371,7 +391,7 @@ void Encoder::encode_sec4()
     TRACE("sec4 ends at %zu\n", out.out.size());
 }
 
-}
+} // namespace
 
 string BufrBulletin::encode() const
 {
@@ -389,7 +409,8 @@ string BufrBulletin::encode() const
         case 3: e.encode_sec1ed3(); break;
         case 4: e.encode_sec1ed4(); break;
         default:
-            error_unimplemented::throwf("Encoding BUFR edition %d is not implemented", edition_number);
+            error_unimplemented::throwf(
+                "Encoding BUFR edition %d is not implemented", edition_number);
     }
 
     e.encode_sec2();
@@ -416,4 +437,4 @@ string BufrBulletin::encode() const
     return buf;
 }
 
-}
+} // namespace wreport

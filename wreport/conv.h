@@ -106,6 +106,6 @@ double convert_units_get_mul(const char* from, const char* to);
  *   True if conversion is supported, else false.
  */
 bool convert_units_allowed(const char* from, const char* to);
-}
+} // namespace wreport
 
 #endif

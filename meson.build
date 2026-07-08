@@ -1,4 +1,4 @@
-project('wreport', 'cpp', version: '3.38', license : 'GPL-2.0-or-later', default_options: ['warning_level=3', 'cpp_std=c++17'])
+project('wreport', 'cpp', version: '3.43', license : 'GPL-2.0-or-later', default_options: ['warning_level=3', 'cpp_std=c++17'], meson_version: '>= 0.58')
 # TODO: use warning_level=everything in newer meson
 
 cpp = meson.get_compiler('cpp')
@@ -89,7 +89,10 @@ endif
 configure_file(output: 'config.h', configuration: conf_data)
 
 pymod = import('python')
-python3 = pymod.find_installation('python3', required: false)
+python3 = disabler()
+if get_option('python')
+    python3 = pymod.find_installation('python3', required: false)
+endif
 
 if python3.found()
     # FIXME: python3.path() is only available from meson 0.50: this is a workaround
@@ -111,11 +114,12 @@ else
 endif
 
 subdir('wreport')
-subdir('src')
 
 if python3.found()
     subdir('python')
 endif
+
+subdir('src')
 
 if build_docs
     subdir('doc')
@@ -130,3 +134,9 @@ pkg.generate(libwreport,
     filebase: 'libwreport',
     requires: [lua_dep],
 )
+#
+# Generate the builddir's version of run-local
+run_local_cfg = configure_file(output: 'run-local', input: 'run-local.in', configuration: {
+    'top_srcdir': meson.project_source_root(),
+    'top_builddir': meson.project_build_root(),
+})

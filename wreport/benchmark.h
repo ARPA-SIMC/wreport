@@ -5,10 +5,10 @@
  * Simple benchmark infrastructure.
  */
 
+#include <cstdio>
+#include <functional>
 #include <string>
 #include <vector>
-#include <functional>
-#include <cstdio>
 
 namespace wreport {
 namespace benchmark {
@@ -25,9 +25,9 @@ struct Task
     // Number of time this task has run
     unsigned run_count = 0;
     // Total user time
-    clock_t utime = 0;
+    clock_t utime      = 0;
     // Total system time
-    clock_t stime = 0;
+    clock_t stime      = 0;
 
     Task(Benchmark* parent, const std::string& name);
 
@@ -35,19 +35,19 @@ struct Task
     void collect(std::function<void()> f);
 };
 
-
 /// Notify of progress during benchmark execution
 struct Progress
 {
     virtual ~Progress() {}
 
-    virtual void start_benchmark(const Benchmark& b) = 0;
-    virtual void end_benchmark(const Benchmark& b) = 0;
-    virtual void start_iteration(const Benchmark& b, unsigned cur, unsigned total) = 0;
-    virtual void end_iteration(const Benchmark& b, unsigned cur, unsigned total) = 0;
+    virtual void start_benchmark(const Benchmark& b)                = 0;
+    virtual void end_benchmark(const Benchmark& b)                  = 0;
+    virtual void start_iteration(const Benchmark& b, unsigned cur,
+                                 unsigned total)                    = 0;
+    virtual void end_iteration(const Benchmark& b, unsigned cur,
+                               unsigned total)                      = 0;
     virtual void test_failed(const Benchmark& b, std::exception& e) = 0;
 };
-
 
 /**
  * Basic progress implementation writing progress information to the given
@@ -58,15 +58,16 @@ struct BasicProgress : Progress
     FILE* out;
     FILE* err;
 
-    BasicProgress(FILE* out=stdout, FILE* err=stderr);
+    BasicProgress(FILE* out = stdout, FILE* err = stderr);
 
     void start_benchmark(const Benchmark& b) override;
-    void start_iteration(const Benchmark& b, unsigned cur, unsigned total) override;
-    void end_iteration(const Benchmark& b, unsigned cur, unsigned total) override;
+    void start_iteration(const Benchmark& b, unsigned cur,
+                         unsigned total) override;
+    void end_iteration(const Benchmark& b, unsigned cur,
+                       unsigned total) override;
     void end_benchmark(const Benchmark& b) override;
     void test_failed(const Benchmark& b, std::exception& e) override;
 };
-
 
 /**
  * Base class for all benchmarks.
@@ -156,7 +157,7 @@ struct Registry
     static void basic_run(int argc, const char* argv[]);
 };
 
-}
-}
+} // namespace benchmark
+} // namespace wreport
 
 #endif

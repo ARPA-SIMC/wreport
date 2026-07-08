@@ -20,10 +20,11 @@ void DDSPrinter::print_context(Varinfo info, unsigned var_pos)
 void DDSPrinter::print_context(Varcode code, unsigned var_pos)
 {
     fprintf(out, "%2u.%2u ", subset_no, var_pos);
-    for (vector<Varcode>::const_iterator i = stack.begin();
-            i != stack.end(); ++i)
+    for (vector<Varcode>::const_iterator i = stack.begin(); i != stack.end();
+         ++i)
         fprintf(out, "%01d%02d%03d/", WR_VAR_F(*i), WR_VAR_X(*i), WR_VAR_Y(*i));
-    fprintf(out, "%01d%02d%03d: ", WR_VAR_F(code), WR_VAR_X(code), WR_VAR_Y(code));
+    fprintf(out, "%01d%02d%03d: ", WR_VAR_F(code), WR_VAR_X(code),
+            WR_VAR_Y(code));
 }
 
 void DDSPrinter::run_d_expansion(Varcode code)
@@ -33,7 +34,8 @@ void DDSPrinter::run_d_expansion(Varcode code)
     stack.pop_back();
 }
 
-void DDSPrinter::r_replication(Varcode code, Varcode delayed_code, const Opcodes& ops)
+void DDSPrinter::r_replication(Varcode code, Varcode delayed_code,
+                               const Opcodes& ops)
 {
     stack.push_back(code);
     UncompressedEncoder::r_replication(code, delayed_code, ops);
@@ -60,7 +62,8 @@ void DDSPrinter::encode_associated_field(const Var& var)
     if (att)
         att->print(out);
     else
-        fprintf(out, "associated field with significance %u is not present", associated_field.significance);
+        fprintf(out, "associated field with significance %u is not present",
+                associated_field.significance);
 }
 
 void DDSPrinter::encode_var(Varinfo info, const Var& var)
@@ -105,5 +108,5 @@ void DDSPrinter::define_attribute(Varinfo info, unsigned pos)
     print_attr(info, pos);
 }
 
-}
-}
+} // namespace bulletin
+} // namespace wreport

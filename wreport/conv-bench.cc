@@ -1,7 +1,7 @@
 #include "benchmark.h"
 #include "conv.h"
-#include <vector>
 #include <cstdlib>
+#include <vector>
 
 using namespace wreport;
 using namespace wreport::benchmark;
@@ -17,8 +17,7 @@ struct ConvBenchmark : Benchmark
     Task conv_linear_longname;
 
     ConvBenchmark(const std::string& name)
-        : Benchmark(name),
-          conv_identity(this, "conv_identity"),
+        : Benchmark(name), conv_identity(this, "conv_identity"),
           conv_identity_longname(this, "conv_identity_longname"),
           conv_linear(this, "conv_linear"),
           conv_linear_longname(this, "conv_linear_longname")
@@ -26,15 +25,9 @@ struct ConvBenchmark : Benchmark
         repetitions = 500;
     }
 
-    void setup_main()
-    {
-        Benchmark::setup_main();
-    }
+    void setup_main() { Benchmark::setup_main(); }
 
-    void teardown_main()
-    {
-        Benchmark::teardown_main();
-    }
+    void teardown_main() { Benchmark::teardown_main(); }
 
     void main() override
     {
@@ -77,5 +70,4 @@ struct ConvBenchmark : Benchmark
     }
 } test("conv");
 
-}
-
+} // namespace

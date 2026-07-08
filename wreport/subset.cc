@@ -1,10 +1,10 @@
 #include "subset.h"
-#include "tables.h"
-#include "vartable.h"
-#include "notes.h"
-#include "utils/sys.h"
-#include <cstring>
 #include "config.h"
+#include "notes.h"
+#include "tables.h"
+#include "utils/sys.h"
+#include "vartable.h"
+#include <cstring>
 
 using namespace std;
 
@@ -12,7 +12,8 @@ namespace wreport {
 
 Subset::Subset(const Tables& tables) : tables(&tables)
 {
-    if (!tables.loaded()) throw error_consistency("BUFR/CREX tables not loaded");
+    if (!tables.loaded())
+        throw error_consistency("BUFR/CREX tables not loaded");
     reserve(128);
 }
 
@@ -20,21 +21,16 @@ Subset::~Subset() {}
 
 Subset& Subset::operator=(Subset&& s)
 {
-    if (this == &s) return *this;
+    if (this == &s)
+        return *this;
     std::vector<Var>::operator=(s);
     tables = s.tables;
     return *this;
 }
 
-void Subset::store_variable(const Var& var)
-{
-	push_back(var);
-}
+void Subset::store_variable(const Var& var) { push_back(var); }
 
-void Subset::store_variable(Var&& var)
-{
-    emplace_back(move(var));
-}
+void Subset::store_variable(Var&& var) { emplace_back(move(var)); }
 
 void Subset::store_variable(Varcode code, const Var& var)
 {
@@ -66,10 +62,7 @@ void Subset::store_variable_undef(Varcode code)
     push_back(Var(info));
 }
 
-void Subset::store_variable_undef(Varinfo info)
-{
-    push_back(Var(info));
-}
+void Subset::store_variable_undef(Varinfo info) { push_back(Var(info)); }
 
 void Subset::append_c_with_dpb(Varcode ccode, int, const char* bitmap)
 {
@@ -98,18 +91,18 @@ int Subset::append_dpb(Varcode ccode, unsigned size, Varcode attr)
         // Check if the variable has the attribute we want
         if ((*this)[src].enqa(attr) == NULL)
             bitmap[dst] = '-';
-		else
-		{
-			bitmap[dst] = '+';
-			++count;
-		}
-	}
-	bitmap[size] = 0;
+        else
+        {
+            bitmap[dst] = '+';
+            ++count;
+        }
+    }
+    bitmap[size] = 0;
 
-	// Append the bitmap to the message
-	append_c_with_dpb(ccode, size, bitmap);
+    // Append the bitmap to the message
+    append_c_with_dpb(ccode, size, bitmap);
 
-	return count;
+    return count;
 }
 
 void Subset::append_fixed_dpb(Varcode ccode, int size)
@@ -137,23 +130,26 @@ unsigned Subset::diff(const Subset& s2) const
     if (tables->btable->path() != s2.tables->btable->path())
     {
         notes::logf("B tables differ (first is %s, second is %s)\n",
-                tables->btable->path().c_str(), s2.tables->btable->path().c_str());
+                    tables->btable->path().c_str(),
+                    s2.tables->btable->path().c_str());
         return 1;
     }
 
     // Compare vars
     if (size() != s2.size())
     {
-        notes::logf("Number of variables differ (first is %zu, second is %zu)\n",
-                size(), s2.size());
+        notes::logf(
+            "Number of variables differ (first is %zu, second is %zu)\n",
+            size(), s2.size());
         return 1;
     }
     for (size_t i = 0; i < size(); ++i)
     {
         unsigned diff_ = (*this)[i].diff(s2[i]);
-        if (diff_ > 0) return diff_;
+        if (diff_ > 0)
+            return diff_;
     }
     return 0;
 }
 
-}
+} // namespace wreport

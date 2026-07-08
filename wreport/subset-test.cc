@@ -1,5 +1,5 @@
-#include "tests.h"
 #include "subset.h"
+#include "tests.h"
 
 using namespace wreport;
 using namespace wreport::tests;
@@ -13,9 +13,8 @@ class Tests : public TestCase
 
     void register_tests() override
     {
-        add_method("empty", []() noexcept {
-        });
+        add_method("empty", []() noexcept {});
     }
 } test("subset");
 
-}
+} // namespace

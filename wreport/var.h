@@ -1,12 +1,12 @@
 #ifndef WREPORT_VAR_H
 #define WREPORT_VAR_H
 
+#include <cstdio>
+#include <memory>
+#include <string>
 #include <wreport/error.h>
 #include <wreport/fwd.h>
 #include <wreport/varinfo.h>
-#include <cstdio>
-#include <string>
-#include <memory>
 
 struct lua_State;
 
@@ -54,12 +54,14 @@ protected:
 
     /// Copy the value from var. var is assumed to have the same varinfo as us.
     void copy_value(const Var& var);
-    /// Move the value from var. var is assumed to have the same varinfo as us. var is left unset.
+    /// Move the value from var. var is assumed to have the same varinfo as us.
+    /// var is left unset.
     void move_value(Var& var);
     void assign_i_checked(int32_t val);
     void assign_d_checked(double val);
     void assign_b_checked(const uint8_t* val, unsigned size);
-    [[deprecated("Use the version with const uint8_t*")]] void assign_b_checked(uint8_t* val, unsigned size);
+    [[deprecated("Use the version with const uint8_t*")]] void
+    assign_b_checked(uint8_t* val, unsigned size);
     void assign_c_checked(const char* val, unsigned size);
 
 public:
@@ -138,14 +140,13 @@ public:
     bool value_equals(const Var& var) const;
 
     /// Retrieve the Varcode for a variable
-    Varcode code() const throw () { return m_info->code; }
+    Varcode code() const throw() { return m_info->code; }
 
     /// Get informations about the variable
-    Varinfo info() const throw () { return m_info; }
+    Varinfo info() const throw() { return m_info; }
 
     /// @returns true if the variable is defined, else false
-    bool isset() const throw () { return m_isset; }
-
+    bool isset() const throw() { return m_isset; }
 
     /**
      * Get the value as an integer.
@@ -178,8 +179,7 @@ public:
     std::string enqs() const;
 
     /// Templated version of enq
-    template<typename T>
-    T enq() const
+    template <typename T> T enq() const
     {
         throw error_unimplemented("getting value of unsupported type");
     }
@@ -188,10 +188,10 @@ public:
      * Return the variable value, or the given default value if the variable is
      * not set
      */
-    template<typename T>
-    T enq(T default_value) const
+    template <typename T> T enq(T default_value) const
     {
-        if (!isset()) return default_value;
+        if (!isset())
+            return default_value;
         return enq<T>();
     }
 
@@ -262,7 +262,11 @@ public:
     void set(double val) { setd(val); }
     void set(const char* val) { setc(val); }
     void set(const std::string& val) { setc(val.c_str()); }
-    void set(const Var& var) { setval(var); setattrs(var); }
+    void set(const Var& var)
+    {
+        setval(var);
+        setattrs(var);
+    }
     /// @}
 
     /// Unset the value
@@ -277,8 +281,8 @@ public:
      * @param code
      *   The wreport::Varcode of the attribute requested.  See @ref vartable.h
      * @returns attr
-     *   A pointer to the attribute if it exists, else NULL.  The pointer points to
-     *   the internal representation and must not be deallocated by the caller.
+     *   A pointer to the attribute if it exists, else NULL.  The pointer points
+     * to the internal representation and must not be deallocated by the caller.
      */
     const Var* enqa(Varcode code) const;
 
@@ -287,8 +291,8 @@ public:
      * wreport::Varcode will be replaced.
      *
      * @param attr
-     *   The attribute to add.  It will be copied inside var, and memory management
-     *   will still be in charge of the caller.
+     *   The attribute to add.  It will be copied inside var, and memory
+     * management will still be in charge of the caller.
      */
     void seta(const Var& attr);
 
@@ -307,8 +311,8 @@ public:
      * wreport::Varcode will be replaced.
      *
      * @param attr
-     *   The attribute to add.  It will be used directly, and var will take care of
-     *   its memory management.
+     *   The attribute to add.  It will be used directly, and var will take care
+     * of its memory management.
      */
     void seta(std::unique_ptr<Var>&& attr);
 
@@ -334,10 +338,10 @@ public:
      * @param ifundef
      *   String to use if the variable is undefiend
      */
-    std::string format(const char* ifundef="") const;
+    std::string format(const char* ifundef = "") const;
 
     /// Write the formatted value of this variable to an output stream
-    void format(FILE* out, const char* ifundef="") const;
+    void format(FILE* out, const char* ifundef = "") const;
 
     /**
      * Print the variable to an output stream
@@ -361,7 +365,7 @@ public:
      * @param out
      *   The output stream to use for printing
      */
-    void print_without_attrs(FILE* out, const char* end="\n") const;
+    void print_without_attrs(FILE* out, const char* end = "\n") const;
 
     /**
      * Print the variable to an output stream, without its attributes
@@ -383,7 +387,6 @@ public:
      *   The number of differences found and reported
      */
     unsigned diff(const Var& var) const;
-
 
     /**
      * Push the variable as an object in the lua stack
@@ -411,11 +414,11 @@ public:
     static const Var* lua_const_check(struct lua_State* L, int idx);
 };
 
-template<> inline int Var::enq() const { return enqi(); }
-template<> inline float Var::enq() const { return static_cast<float>(enqd()); }
-template<> inline double Var::enq() const { return enqd(); }
-template<> inline const char* Var::enq() const { return enqc(); }
-template<> inline std::string Var::enq() const { return enqs(); }
+template <> inline int Var::enq() const { return enqi(); }
+template <> inline float Var::enq() const { return static_cast<float>(enqd()); }
+template <> inline double Var::enq() const { return enqd(); }
+template <> inline const char* Var::enq() const { return enqc(); }
+template <> inline std::string Var::enq() const { return enqs(); }
 
-}
+} // namespace wreport
 #endif

@@ -1,6 +1,6 @@
+#include "buffers/crex.h"
 #include "bulletin.h"
 #include "bulletin/internals.h"
-#include "buffers/crex.h"
 #include "config.h"
 
 // #define TRACE_ENCODER
@@ -9,7 +9,10 @@
 #define TRACE(...) fprintf(stderr, __VA_ARGS__)
 #define IFTRACE if (1)
 #else
-#define TRACE(...) do { } while (0)
+#define TRACE(...)                                                             \
+    do                                                                         \
+    {                                                                          \
+    } while (0)
 #define IFTRACE if (0)
 #endif
 
@@ -37,7 +40,8 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
     void define_variable(Varinfo info) override
     {
         const Var& var = get_var();
-        IFTRACE {
+        IFTRACE
+        {
             TRACE("encode_var ");
             var.print(stderr);
         }
@@ -47,7 +51,8 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
     unsigned define_delayed_replication_factor(Varinfo info) override
     {
         const Var& var = get_var();
-        IFTRACE {
+        IFTRACE
+        {
             TRACE("encode_semantic_var ");
             var.print(stderr);
         }
@@ -56,8 +61,7 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
             case WR_VAR(0, 31, 1):
             case WR_VAR(0, 31, 2):
             case WR_VAR(0, 31, 11):
-            case WR_VAR(0, 31, 12):
-            {
+            case WR_VAR(0, 31, 12): {
                 unsigned count = var.enqi();
 
                 /* Encode the repetition count */
@@ -80,31 +84,27 @@ struct DDSEncoder : public bulletin::UncompressedEncoder
 void encode_sec1(const CrexBulletin& in, buffers::CrexOutput out)
 {
     if (in.data_subcategory == 0xff)
-        out.raw_appendf("T%02hhd%02hhd%02hhd A%03hhd",
-                in.master_table_number,
-                in.edition_number,
-                in.master_table_version_number,
-                in.data_category);
+        out.raw_appendf("T%02hhd%02hhd%02hhd A%03hhd", in.master_table_number,
+                        in.edition_number, in.master_table_version_number,
+                        in.data_category);
     else
         out.raw_appendf("T%02hhd%02hhd%02hhd A%03hhd%03hhd",
-                in.master_table_number,
-                in.edition_number,
-                in.master_table_version_number,
-                in.data_category,
-                in.data_subcategory);
+                        in.master_table_number, in.edition_number,
+                        in.master_table_version_number, in.data_category,
+                        in.data_subcategory);
 
     /* Encode the data descriptor section */
 
     for (vector<Varcode>::const_iterator i = in.datadesc.begin();
-            i != in.datadesc.end(); ++i)
+         i != in.datadesc.end(); ++i)
     {
         char prefix;
         switch (WR_VAR_F(*i))
         {
-            case 0: prefix = 'B'; break;
-            case 1: prefix = 'R'; break;
-            case 2: prefix = 'C'; break;
-            case 3: prefix = 'D'; break;
+            case 0:  prefix = 'B'; break;
+            case 1:  prefix = 'R'; break;
+            case 2:  prefix = 'C'; break;
+            case 3:  prefix = 'D'; break;
             default: prefix = '?'; break;
         }
 
@@ -124,7 +124,7 @@ void encode_sec1(const CrexBulletin& in, buffers::CrexOutput out)
     out.raw_append("++\r\r\n", 5);
 }
 
-}
+} // namespace
 
 string CrexBulletin::encode() const
 {
@@ -136,12 +136,12 @@ string CrexBulletin::encode() const
     out.raw_append("CREX++\r\r\n", 9);
 
     // Encode section 1
-    //int sec1_start = out.buf.size();
+    // int sec1_start = out.buf.size();
     encode_sec1(*this, out);
     TRACE("SEC1 encoded as [[[%s]]]", out.buf.substr(sec1_start).c_str());
 
     /* Encode section 2 */
-    //int sec2_start = out.buf.size();
+    // int sec2_start = out.buf.size();
 
     // Encode all subsets
     for (unsigned i = 0; i < subsets.size(); ++i)
@@ -154,13 +154,13 @@ string CrexBulletin::encode() const
     TRACE("SEC2 encoded as [[[%s]]]", out.buf.substr(sec2_start).c_str());
 
     /* Encode section 3 */
-    //int sec3_start = out.buf.size();
+    // int sec3_start = out.buf.size();
     /* Nothing to do, as we have no custom section */
 
     /* Encode section 4 */
-    //int sec4_start = out.buf.size();
+    // int sec4_start = out.buf.size();
     out.raw_append("7777\r\r\n", 7);
     return buf;
 }
 
-}
+} // namespace wreport

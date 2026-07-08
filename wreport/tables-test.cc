@@ -1,5 +1,5 @@
-#include "tests.h"
 #include "tables.h"
+#include "tests.h"
 #include "wreport/dtable.h"
 
 using namespace wreport;
@@ -20,4 +20,4 @@ class Tests : public TestCase
     }
 } test("tables");
 
-}
+} // namespace

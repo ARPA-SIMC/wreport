@@ -1,11 +1,11 @@
 #ifndef WREPORT_VARTABLE_H
 #define WREPORT_VARTABLE_H
 
-#include <wreport/varinfo.h>
 #include <filesystem>
-#include <string>
 #include <functional>
+#include <string>
 #include <wreport/fwd.h>
+#include <wreport/varinfo.h>
 
 namespace wreport {
 
@@ -64,7 +64,9 @@ public:
      *   The resulting Varinfo is stored inside the Vartable, can be freely
      *   copied around and does not need to be deallocated.
      */
-    virtual Varinfo query_altered(Varcode code, int new_scale, unsigned new_bit_len, int new_bit_ref) const = 0;
+    virtual Varinfo query_altered(Varcode code, int new_scale,
+                                  unsigned new_bit_len,
+                                  int new_bit_ref) const = 0;
 
     /**
      * Iterate the whole contents of the table.
@@ -81,7 +83,9 @@ public:
      * Once loaded, the table will be cached in memory for reuse, and
      * further calls to load_bufr() will return the cached version.
      */
-    [[deprecated("Use load_bufr(filesystem::path& instead")]] static const Vartable* load_bufr(const std::string& pathname);
+    [[deprecated(
+        "Use load_bufr(filesystem::path& instead")]] static const Vartable*
+    load_bufr(const std::string& pathname);
     static const Vartable* load_bufr(const std::filesystem::path& pathname);
     static const Vartable* load_bufr(const char* pathname);
 
@@ -91,7 +95,9 @@ public:
      * Once loaded, the table will be cached in memory for reuse, and
      * further calls to load_crex() will return the cached version.
      */
-    [[deprecated("Use load_crex(filesystem::path& instead")]] static const Vartable* load_crex(const std::string& pathname);
+    [[deprecated(
+        "Use load_crex(filesystem::path& instead")]] static const Vartable*
+    load_crex(const std::string& pathname);
     static const Vartable* load_crex(const std::filesystem::path& pathname);
     static const Vartable* load_crex(const char* pathname);
 
@@ -111,6 +117,6 @@ public:
     virtual std::filesystem::path path() const = 0;
 };
 
-}
+} // namespace wreport
 
 #endif

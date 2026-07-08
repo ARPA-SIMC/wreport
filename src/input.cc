@@ -19,8 +19,8 @@
  * Author: Enrico Zini <enrico@enricozini.com>
  */
 
-#include <wreport/bulletin.h>
 #include "options.h"
+#include <wreport/bulletin.h>
 
 using namespace wreport;
 
@@ -36,7 +36,8 @@ void read_bufr_raw(const Options& opts, const char* fname, RawHandler& handler)
 
     // Use a generic try/catch block to ensure we always close the input file,
     // even in case of errors
-    try {
+    try
+    {
         // String used to hold raw data read from the input file
         std::string raw_data;
 
@@ -53,7 +54,9 @@ void read_bufr_raw(const Options& opts, const char* fname, RawHandler& handler)
 
         // Cleanup
         fclose(in);
-    } catch (...) {
+    }
+    catch (...)
+    {
         fclose(in);
         throw;
     }
@@ -76,7 +79,8 @@ void read_crex_raw(const Options& opts, const char* fname, RawHandler& handler)
 
     // Use a generic try/catch block to ensure we always close the input file,
     // even in case of errors
-    try {
+    try
+    {
         // Create a CREX bulletin
         unique_ptr<Bulletin> bulletin(CrexBulletin::create());
 
@@ -96,10 +100,12 @@ void read_crex_raw(const Options& opts, const char* fname, RawHandler& handler)
 
         // Cleanup
         fclose(in);
-    } catch (...) {
+    }
+    catch (...)
+    {
         fclose(in);
         throw;
     }
 }
 
-}
+} // namespace
