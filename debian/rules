@@ -3,7 +3,7 @@
 export DEB_PYTHON_INSTALL_LAYOUT = deb
 
 %:
-	dh $@ --buildsystem=pybuild --with python3 --without autoreconf -Smeson
+	dh $@ --buildsystem=pybuild --without autoreconf
 
 override_dh_auto_install:
 	dh_auto_install

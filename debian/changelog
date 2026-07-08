@@ -1,16 +1,9 @@
-wreport (3.38-1) unstable; urgency=medium
+wreport (3.43-1) unstable; urgency=medium
 
-  * Include cstdint in wreport/utils/string.cc (#55)
-  * Updated wobble
+  * New upstream version
+  * Updated Standards-Version, no changes required
 
- -- Emanuele Di Giacomo <edigiacomo@arpae.it>  Wed,  4 Sep 2024 11:49:00 +0200
-
-wreport (3.36-1) unstable; urgency=medium
-
-  * Include cstdint in wreport/utils/string.cc (#55)
-  * Updated wobble
-
- -- Emanuele Di Giacomo <edigiacomo@arpae.it>  Wed, 30 May 2023 13:26:00 +0200
+ -- Enrico Zini <enrico@debian.org>  Wed, 08 Jul 2026 18:10:09 +0200
 
 wreport (3.36-1) unstable; urgency=medium
 
@@ -30,12 +23,6 @@ wreport (3.35-2) unstable; urgency=medium
   * Mark the two test executable as debian/not-installed for now
 
  -- Enrico Zini <enrico@debian.org>  Sat, 19 Nov 2022 13:29:35 +0100
-
-wreport (3.35-1) unstable; urgency=medium
-
-  * Fixed a corner case in decoding of associated fields (#52)
-
- -- Emanuele Di Giacomo <edigiacomo@arpae.it>  Wed, 19 Oct 2022 10:50:22 +0200
 
 wreport (3.34-1) unstable; urgency=medium
 
