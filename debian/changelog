@@ -4,6 +4,7 @@ wreport (3.43-2) UNRELEASED; urgency=medium
   * Remove redundant Priority: optional from source stanza.
   * Replace FSF postal address with a reference to
     https://www.gnu.org/licenses/.
+  * Trim trailing whitespace.
 
  -- enrico <enrico@d198949a7665>  Fri, 10 Jul 2026 10:31:14 +0000
 
@@ -154,7 +155,7 @@ wreport (3.3-1) unstable; urgency=medium
 wreport (2.15-1) UNRELEASED; urgency=medium
 
   * New upstream version
-     - Added BUFR/CREX tables version 23 
+     - Added BUFR/CREX tables version 23
      - Changed table selection algorithm to allow for smarter euristics
      - If a table is not found but there is a suitable newer one, try using it
      - Implemented decoding of associated fields in compresed BUFR messages
@@ -252,7 +253,7 @@ wreport (2.6-1) UNRELEASED; urgency=low
 
 wreport (2.5-1) UNRELEASED; urgency=low
 
-  * New upstream version 
+  * New upstream version
      - Added wreport::options to configure library behaviour
      - Implemented options::var_silent_domain_errors to silence domain
        errors and just unset the variable when assigning out of range values.
@@ -261,7 +262,7 @@ wreport (2.5-1) UNRELEASED; urgency=low
 
 wreport (2.4-1) unstable; urgency=low
 
-  * New upstream version 
+  * New upstream version
      - Added compatibility functions to build on odd systems
   * Updated standards-version, no change required
   * Added Vcs-Svn header
@@ -302,7 +303,7 @@ wreport (2.0-1) unstable; urgency=low
 
 wreport (1.8-1) unstable; urgency=low
 
-  * New upstream version 
+  * New upstream version
      - Initial support for C04yyy modifiers
      - More detailed repetition operator notifications to DDS interpreters
      - Added a way to export low-level details about decoded BUFR messages
@@ -360,7 +361,7 @@ wreport (1.3-1) unstable; urgency=low
 
 wreport (1.2-1) unstable; urgency=low
 
-  * New upstream version 
+  * New upstream version
      - Added templated version of Var::enq()
      - Added Var::enq(default_value)
      - Better error messages on missing B and D table entries
@@ -370,7 +371,7 @@ wreport (1.2-1) unstable; urgency=low
 
 wreport (1.1-1) unstable; urgency=low
 
-  * New upstream version 
+  * New upstream version
      - Fixed a segfault when handling large messages with bitmaps.
 
  -- Enrico Zini <enrico@debian.org>  Mon, 25 Oct 2010 14:56:29 +0200
@@ -380,4 +381,3 @@ wreport (1.0-1) unstable; urgency=low
   * Initial version, forked from DB-All.e.
 
  -- Enrico Zini <enrico@debian.org>  Sat, 30 Sep 2006 17:42:22 +0200
-
