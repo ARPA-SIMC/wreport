@@ -63,7 +63,6 @@ Description: shared library for working with weather reports
  This is the shared library for C programs.
 
 Package: wreport-common
-Section: misc
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}
