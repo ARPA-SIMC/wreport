@@ -1,6 +1,7 @@
 wreport (3.43-2) UNRELEASED; urgency=medium
 
   * Remove field Section on binary package wreport-common that duplicates source.
+  * Remove redundant Priority: optional from source stanza.
 
  -- enrico <enrico@d198949a7665>  Fri, 10 Jul 2026 10:31:14 +0000
 
