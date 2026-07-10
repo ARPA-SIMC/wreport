@@ -1,5 +1,6 @@
 wreport (3.43-2) UNRELEASED; urgency=medium
 
+  [ Enrico Zini ]
   * Remove field Section on binary package wreport-common that duplicates source.
   * Remove redundant Priority: optional from source stanza.
   * Replace FSF postal address with a reference to
@@ -7,8 +8,9 @@ wreport (3.43-2) UNRELEASED; urgency=medium
   * Trim trailing whitespace.
   * Update standards version to 4.7.4, no changes needed.
   * Set upstream metadata fields: Bug-Database, Repository-Browse.
+  * Depend on pkgconf instead of pkg-config
 
- -- enrico <enrico@d198949a7665>  Fri, 10 Jul 2026 10:31:14 +0000
+ -- Enrico Zini <enrico@debian.org>  Fri, 10 Jul 2026 10:31:14 +0000
 
 wreport (3.43-1) unstable; urgency=medium
 
