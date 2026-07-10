@@ -5,6 +5,7 @@ wreport (3.43-2) UNRELEASED; urgency=medium
   * Replace FSF postal address with a reference to
     https://www.gnu.org/licenses/.
   * Trim trailing whitespace.
+  * Update standards version to 4.7.4, no changes needed.
 
  -- enrico <enrico@d198949a7665>  Fri, 10 Jul 2026 10:31:14 +0000
 
