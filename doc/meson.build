@@ -1,5 +1,3 @@
-## Process this file with automake to produce Makefile.in
-
 doxygen_doc_sources = ['../wreport/main.dox',  '../wreport/style.dox', '../wreport/features.dox']
 
 sphinx_doc_sources = [
