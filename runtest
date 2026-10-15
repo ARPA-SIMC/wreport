@@ -30,6 +30,7 @@ fi
 
 export WREPORT_TABLES=$TOP_SRCDIR/tables
 export WREPORT_TESTDATA=$TOP_SRCDIR/testdata
+export PYTHONPATH="$TOP_SRCDIR/python:$TOP_BUILDDIR/wreport/python"
 # See https://docs.python.org/3/library/devmode.html
 export PYTHONDEVMODE=1
 export PATH="$TOP_BUILDDIR/src:$PATH"

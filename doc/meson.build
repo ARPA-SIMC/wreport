@@ -35,7 +35,7 @@ build_docs = configure_file(output: 'build-docs', input: 'build-docs.in', config
     'doc_build': meson.current_build_dir(),
     'top_builddir': meson.project_build_root(),
     'pythonpath_src': meson.project_source_root() / 'python',
-    'pythonpath_build': meson.project_build_root() / 'python',
+    'pythonpath_build': meson.project_build_root() / 'wreport' / 'python',
 })
 
 built_docs = custom_target('built_docs',

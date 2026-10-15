@@ -183,3 +183,5 @@ test_wreport = executable('test-wreport', test_wreport_sources,
 runtest = find_program('../runtest')
 
 test('wreport', runtest, args: [test_wreport])
+
+subdir('python')
