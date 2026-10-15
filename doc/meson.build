@@ -3,6 +3,7 @@ doxygen_doc_sources = ['../wreport/main.dox',  '../wreport/style.dox', '../wrepo
 sphinx_doc_sources = [
     'conf.py',
     'index.rst',
+    'tutorials/tutorial-template.md',
     'explanations/concepts.rst',
     'references/python/wreport.rst',
     'references/cpp/wreport.rst',

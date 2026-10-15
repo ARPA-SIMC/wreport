@@ -38,6 +38,8 @@ Documentation index
    :maxdepth: 2
    :caption: Tutorials
 
+   tutorials/tutorial-template
+
 .. toctree::
    :maxdepth: 2
    :caption: Howtos
