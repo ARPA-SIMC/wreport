@@ -1,5 +1,7 @@
-C++ wreport namespace
-=====================
+.. _cpp-api:
+
+C++ API
+=======
 
 .. toctree::
     :maxdepth: 2

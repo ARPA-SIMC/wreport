@@ -1,14 +1,15 @@
 doxygen_doc_sources = ['../wreport/main.dox',  '../wreport/style.dox', '../wreport/features.dox']
 
 sphinx_doc_sources = [
-    'src/conf.py',
-    'src/index.rst',
-    'src/python/wreport.rst',
-    'src/cpp/wreport.rst',
-    'src/cpp/errors.rst',
-    'src/cpp/conv.rst',
-    'src/cpp/var.rst',
-    'src/cpp/bulletin.rst',
+    'conf.py',
+    'index.rst',
+    'explanations/concepts.rst',
+    'references/python/wreport.rst',
+    'references/cpp/wreport.rst',
+    'references/cpp/errors.rst',
+    'references/cpp/conv.rst',
+    'references/cpp/var.rst',
+    'references/cpp/bulletin.rst',
 ]
 
 # Generate doxygen configuration

@@ -1,8 +1,10 @@
-Python wreport package
-======================
+.. _python-api:
+
+Python API
+==========
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
 
 Module contents
@@ -11,3 +13,8 @@ Module contents
 .. automodule:: wreport
     :members:
     :undoc-members:
+
+Module index
+------------
+
+* :ref:`modindex`
