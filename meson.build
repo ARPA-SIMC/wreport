@@ -121,6 +121,8 @@ endif
 
 subdir('src')
 
+subdir('examples')
+
 if build_docs
     subdir('doc')
 endif

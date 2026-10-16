@@ -1,0 +1,3 @@
+#!/bin/sh
+set -ue
+$TOP_BUILDDIR/examples/dump $WREPORT_TESTDATA/bufr/gts-buoy1.bufr | grep -Fq '001:019:B05001:   44.06000 LATITUDE (HIGH ACCURACY) (DEGREE)'

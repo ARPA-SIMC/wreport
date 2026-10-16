@@ -13,6 +13,7 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import re
 
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
@@ -21,13 +22,24 @@ import os
 # -- Project information -----------------------------------------------------
 
 project = "wreport"
-copyright = "2019, Enrico Zini"
+copyright = "ARPAE-SIM"
 author = "Enrico Zini"
 
 # The short X.Y version
 version = ""
 # The full version, including alpha/beta/rc tags
-release = "3.23"
+release: str
+with open("../meson.build", "rt") as fd:
+    re_version = re.compile(r"^project\(.+,\s*version:\s*'([^']+)'")
+    for line in fd:
+        mo = re_version.match(line)
+        if mo is not None:
+            release = mo.group(1)
+            break
+    else:
+        raise RuntimeError(
+            "Could not read release version from toplevel meson.build"
+        )
 
 
 # -- General configuration ---------------------------------------------------
@@ -57,7 +69,7 @@ templates_path = ["_templates"]
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+source_suffix = {".rst": "restructuredtext", ".md": "myst"}
 
 # The master toctree document.
 master_doc = "index"
@@ -67,7 +79,7 @@ master_doc = "index"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.

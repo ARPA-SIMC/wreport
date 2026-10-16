@@ -15,7 +15,7 @@ Introduction
 
 ``wreport`` is a library for parsing weather information encoded in
 `BUFR <https://en.wikipedia.org/wiki/BUFR>`_ and
-`CREX <https://community.wmo.int/site/knowledge-hub/programmes-and-initiatives/wmo-information-system-wis/about-manual-codes-volume-i3/bufr-edition-3-and-crex-edition-1`_
+`CREX <https://community.wmo.int/site/knowledge-hub/programmes-and-initiatives/wmo-information-system-wis/about-manual-codes-volume-i3/bufr-edition-3-and-crex-edition-1>`_
 formats.
 
 ``wreport`` is designed to be the encoding and decoding library for code that
@@ -39,6 +39,7 @@ Documentation index
    :caption: Tutorials
 
    tutorials/tutorial-template
+   tutorials/cpp-read-files
 
 .. toctree::
    :maxdepth: 2

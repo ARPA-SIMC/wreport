@@ -28,6 +28,8 @@ fi
 
 ## Set up the test environment
 
+export TOP_SRCDIR
+export TOP_BUILDDIR
 export WREPORT_TABLES=$TOP_SRCDIR/tables
 export WREPORT_TESTDATA=$TOP_SRCDIR/testdata
 export PYTHONPATH="$TOP_SRCDIR/python:$TOP_BUILDDIR/wreport/python"

@@ -4,6 +4,7 @@ sphinx_doc_sources = [
     'conf.py',
     'index.rst',
     'tutorials/tutorial-template.md',
+    'tutorials/cpp-read-files.md',
     'explanations/concepts.rst',
     'references/python/wreport.rst',
     'references/cpp/wreport.rst',
@@ -11,6 +12,7 @@ sphinx_doc_sources = [
     'references/cpp/conv.rst',
     'references/cpp/var.rst',
     'references/cpp/bulletin.rst',
+    ex_dump
 ]
 
 # Generate doxygen configuration
@@ -47,5 +49,3 @@ built_docs = custom_target('built_docs',
     install_dir: docdir,
     install: true,
 )
-
-install_subdir('examples', install_dir: docdir)
