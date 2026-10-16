@@ -1,38 +1,24 @@
 /*
- * input - BUFR and CREX input examples
+ * Copyright © ARPA-SIM <urpsim@smr.arpa.emr.it>
  *
- * Copyright (C) 2011  ARPA-SIM <urpsim@smr.arpa.emr.it>
+ * This file is part of wreport. It is subject to the license terms in the
+ * LICENSE file found in the top level directory of this distribution.
  *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- *
- * Author: Enrico Zini <enrico@enricozini.com>
+ * No part of wreport, including this file, may be copied, modified,
+ * propagated, or distributed except according to the terms contained in the
+ * LICENSE file.
  */
 
-#include "options.h"
-#include <wreport/bulletin.h>
+#include "read_raw.h"
 
 using namespace wreport;
 
-namespace {
-
-// Read all BUFR messages from a file
-void read_bufr_raw(const Options& opts, const char* fname, RawHandler& handler)
+void read_bufr_raw(const char* fname, RawMessageHandler& handler)
 {
     // Open the input file
     FILE* in = fopen(fname, "rb");
     if (in == NULL)
-        error_system::throwf("opening file %s", fname);
+        error_system::throwf("opening BUFR file %s", fname);
 
     // Use a generic try/catch block to ensure we always close the input file,
     // even in case of errors
@@ -62,30 +48,25 @@ void read_bufr_raw(const Options& opts, const char* fname, RawHandler& handler)
     }
 }
 
-/*
- * Read all CREX messages from a file
- *
- * Note that the code is basically the same as with reading BUFRs, with only
- * two changes:
- *  - it uses a CrexBulletin instead of a BufrBulletin
- *  - it uses CrexBulletin::read instead of BufrBulletin::read
- */
-void read_crex_raw(const Options& opts, const char* fname, RawHandler& handler)
+void read_crex_raw(const char* fname, RawMessageHandler& handler)
 {
+    /*
+     * Note that the code is the same as with reading BUFRs, except for the
+     * text open mode, and for using CrexBulletin::read instead of
+     * BufrBulletin::read
+     */
+
     // Open the input file
     FILE* in = fopen(fname, "rt");
     if (in == NULL)
-        error_system::throwf("opening file %s", fname);
+        error_system::throwf("opening CREX file %s", fname);
 
     // Use a generic try/catch block to ensure we always close the input file,
     // even in case of errors
     try
     {
-        // Create a CREX bulletin
-        unique_ptr<Bulletin> bulletin(CrexBulletin::create());
-
         // String used to hold raw data read from the input file
-        string raw_data;
+        std::string raw_data;
 
         // (optional) offset of the start of the CREX message read, which we
         // pass to the decoder to have nicer error messages
@@ -107,5 +88,3 @@ void read_crex_raw(const Options& opts, const char* fname, RawHandler& handler)
         throw;
     }
 }
-
-} // namespace
