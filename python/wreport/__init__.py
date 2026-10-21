@@ -12,11 +12,19 @@ from _wreport import (
     Vartable,
     RawBufrIterator,
     RawCrexIterator,
+    BufrIterator,
+    CrexIterator,
+    BufrHeaderIterator,
+    CrexHeaderIterator,
     Bulletin,
 )
 
-read_bufr = RawBufrIterator
-read_crex = RawCrexIterator
+read_bufr_raw = RawBufrIterator
+read_crex_raw = RawCrexIterator
+read_bufr = BufrIterator
+read_crex = CrexIterator
+read_bufr_headers = BufrHeaderIterator
+read_crex_headers = CrexHeaderIterator
 
 __all__ = (
     "convert_units",
@@ -25,7 +33,15 @@ __all__ = (
     "Vartable",
     "RawBufrIterator",
     "RawCrexIterator",
+    "BufrIterator",
+    "CrexIterator",
+    "BufrHeaderIterator",
+    "CrexHeaderIterator",
     "Bulletin",
+    "read_bufr_raw",
+    "read_crex_raw",
     "read_bufr",
     "read_crex",
+    "read_bufr_headers",
+    "read_crex_headers",
 )

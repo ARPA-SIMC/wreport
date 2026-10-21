@@ -14,6 +14,10 @@ using namespace wreport;
 namespace {
 struct RawBufrIterator;
 struct RawCrexIterator;
+struct BufrIterator;
+struct CrexIterator;
+struct BufrHeaderIterator;
+struct CrexHeaderIterator;
 struct BulletinDef;
 } // namespace
 
@@ -22,24 +26,26 @@ RawBufrIterator* raw_bufr_iterator = nullptr;
 PyTypeObject* wrpy_RawBufrIterator_Type;
 RawCrexIterator* raw_crex_iterator = nullptr;
 PyTypeObject* wrpy_RawCrexIterator_Type;
+
+BufrIterator* bufr_iterator = nullptr;
+PyTypeObject* wrpy_BufrIterator_Type;
+CrexIterator* crex_iterator = nullptr;
+PyTypeObject* wrpy_CrexIterator_Type;
+
+BufrHeaderIterator* bufr_header_iterator = nullptr;
+PyTypeObject* wrpy_BufrHeaderIterator_Type;
+CrexHeaderIterator* crex_header_iterator = nullptr;
+PyTypeObject* wrpy_CrexHeaderIterator_Type;
+
 BulletinDef* bulletin_def = nullptr;
 PyTypeObject* wrpy_Bulletin_Type;
 }
 
 namespace {
 
-struct RawBufrIterator : public Type<RawBufrIterator, wrpy_RawBufrIterator>
+template <typename Child, typename Impl>
+struct RawIterator : public Type<Child, Impl>
 {
-    constexpr static const char* name      = "RawBufrIterator";
-    constexpr static const char* qual_name = "wreport.RawBufrIterator";
-    constexpr static const char* doc       = R"(
-Read a file, generating all BUFR messages that it contains.
-
-Each message is generated as a tuple ``(offset: int, message: str)``.
-
-Messages are raw strings, which need to be decoded to access their contents.
-)";
-
     GetSetters<> getsetters;
     Methods<> methods;
 
@@ -81,7 +87,7 @@ Messages are raw strings, which need to be decoded to access their contents.
         off_t offset;
         try
         {
-            if (!BufrBulletin::read_file(*self->file, buf, &offset))
+            if (!Child::do_read(*self->file, buf, offset))
             {
                 PyErr_SetNone(PyExc_StopIteration);
                 return nullptr;
@@ -98,7 +104,28 @@ Messages are raw strings, which need to be decoded to access their contents.
     }
 };
 
-struct RawCrexIterator : public Type<RawCrexIterator, wrpy_RawCrexIterator>
+struct RawBufrIterator
+    : public RawIterator<RawBufrIterator, wrpy_RawBufrIterator>
+{
+    constexpr static const char* name      = "RawBufrIterator";
+    constexpr static const char* qual_name = "wreport.RawBufrIterator";
+    constexpr static const char* doc       = R"(
+Read a file, generating all BUFR messages that it contains.
+
+Each message is generated as a tuple ``(offset: int, message: str)``.
+
+Messages are raw strings, which need to be decoded to access their contents.
+)";
+
+    static bool do_read(wreport::InputFile& file, std::string& buf,
+                        off_t& offset)
+    {
+        return BufrBulletin::read_file(file, buf, &offset);
+    }
+};
+
+struct RawCrexIterator
+    : public RawIterator<RawCrexIterator, wrpy_RawCrexIterator>
 {
     constexpr static const char* name      = "RawCrexIterator";
     constexpr static const char* qual_name = "wreport.RawCrexIterator";
@@ -110,6 +137,16 @@ Each message is generated as a tuple ``(offset: int, message: str)``.
 Messages are raw strings, which need to be decoded to access their contents.
 )";
 
+    static bool do_read(wreport::InputFile& file, std::string& buf,
+                        off_t& offset)
+    {
+        return CrexBulletin::read_file(file, buf, &offset);
+    }
+};
+
+template <typename Child, typename Impl>
+struct BulletinIterator : public Type<Child, Impl>
+{
     GetSetters<> getsetters;
     Methods<> methods;
 
@@ -123,7 +160,7 @@ Messages are raw strings, which need to be decoded to access their contents.
         Py_TYPE(self)->tp_free(self);
     }
 
-    static int _init(wrpy_RawCrexIterator* self, PyObject* args, PyObject* kw)
+    static int _init(wrpy_RawBufrIterator* self, PyObject* args, PyObject* kw)
     {
         static const char* kwlist[] = {"file", NULL};
         PyObject* arg_file          = nullptr;
@@ -139,35 +176,114 @@ Messages are raw strings, which need to be decoded to access their contents.
         return 0;
     }
 
-    static PyObject* _iter(wrpy_RawCrexIterator* self)
+    static PyObject* _iter(wrpy_RawBufrIterator* self)
     {
         Py_INCREF(self);
         return (PyObject*)self;
     }
 
-    static PyObject* _iternext(wrpy_RawCrexIterator* self)
+    static PyObject* _iternext(wrpy_RawBufrIterator* self)
     {
-        std::string buf;
-        off_t offset;
         try
         {
-            if (!CrexBulletin::read_file(*self->file, buf, &offset))
+            auto bulletin = Child::do_read(*self->file);
+            if (!bulletin)
             {
                 PyErr_SetNone(PyExc_StopIteration);
                 return nullptr;
             }
 
-            pyo_unique_ptr py_offset(to_python(offset));
-            pyo_unique_ptr py_bytes(throw_ifnull(
-                PyBytes_FromStringAndSize(buf.data(), buf.size())));
-            pyo_unique_ptr res(
-                throw_ifnull(PyTuple_Pack(2, py_offset.get(), py_bytes.get())));
-
-            return res.release();
+            return bulletin_to_python(std::move(bulletin));
         }
         WREPORT_CATCH_RETURN_PYO;
     }
 };
+
+struct BufrIterator : public BulletinIterator<BufrIterator, wrpy_BufrIterator>
+{
+    constexpr static const char* name      = "BufrIterator";
+    constexpr static const char* qual_name = "wreport.BufrIterator";
+    constexpr static const char* doc       = R"(
+Read a file, generating all decoded BUFR bulletins that it contains.
+
+It generates :py:class:`wreport.Bulletin` objects.
+)";
+
+    static std::unique_ptr<wreport::Bulletin> do_read(wreport::InputFile& file)
+    {
+        std::string buf;
+        off_t offset;
+        if (!BufrBulletin::read_file(file, buf, &offset))
+            return std::unique_ptr<wreport::Bulletin>();
+        return BufrBulletin::decode(buf, file.name().c_str(), offset);
+    }
+};
+
+struct CrexIterator : public BulletinIterator<CrexIterator, wrpy_CrexIterator>
+{
+    constexpr static const char* name      = "CrexIterator";
+    constexpr static const char* qual_name = "wreport.CrexIterator";
+    constexpr static const char* doc       = R"(
+Read a file, generating all decoded CREX bulletins that it contains.
+
+It generates :py:class:`wreport.Bulletin` objects.
+)";
+
+    static std::unique_ptr<wreport::Bulletin> do_read(wreport::InputFile& file)
+    {
+        std::string buf;
+        off_t offset;
+        if (!CrexBulletin::read_file(file, buf, &offset))
+            return std::unique_ptr<wreport::Bulletin>();
+        return CrexBulletin::decode(buf, file.name().c_str(), offset);
+    }
+};
+
+struct BufrHeaderIterator
+    : public BulletinIterator<BufrHeaderIterator, wrpy_BufrHeaderIterator>
+{
+    constexpr static const char* name      = "BufrHeaderIterator";
+    constexpr static const char* qual_name = "wreport.BufrHeaderIterator";
+    constexpr static const char* doc       = R"(
+Read a file, decoding BUFR headers only, generating all bulletins that it contains.
+
+It generates :py:class:`wreport.Bulletin` objects.
+)";
+
+    static std::unique_ptr<wreport::Bulletin> do_read(wreport::InputFile& file)
+    {
+        std::string buf;
+        off_t offset;
+        if (!BufrBulletin::read_file(file, buf, &offset))
+            return std::unique_ptr<wreport::Bulletin>();
+        return BufrBulletin::decode_header(buf, file.name().c_str(), offset);
+    }
+};
+
+struct CrexHeaderIterator
+    : public BulletinIterator<CrexHeaderIterator, wrpy_CrexHeaderIterator>
+{
+    constexpr static const char* name      = "CrexHeaderIterator";
+    constexpr static const char* qual_name = "wreport.CrexHeaderIterator";
+    constexpr static const char* doc       = R"(
+Read a file, decoding CREX headers only, generating all bulletins that it contains.
+
+It generates :py:class:`wreport.Bulletin` objects.
+)";
+
+    static std::unique_ptr<wreport::Bulletin> do_read(wreport::InputFile& file)
+    {
+        std::string buf;
+        off_t offset;
+        if (!CrexBulletin::read_file(file, buf, &offset))
+            return std::unique_ptr<wreport::Bulletin>();
+        return CrexBulletin::decode_header(buf, file.name().c_str(), offset);
+    }
+};
+
+/*
+ * Bulletin
+ */
 
 struct fname : public Getter<fname, wrpy_Bulletin>
 {
@@ -874,6 +990,18 @@ void register_bulletin(PyObject* m, wrpy_c_api& c_api)
 
     raw_crex_iterator = new RawCrexIterator;
     raw_crex_iterator->define(wrpy_RawCrexIterator_Type, m);
+
+    bufr_iterator = new BufrIterator;
+    bufr_iterator->define(wrpy_BufrIterator_Type, m);
+
+    crex_iterator = new CrexIterator;
+    crex_iterator->define(wrpy_CrexIterator_Type, m);
+
+    bufr_header_iterator = new BufrHeaderIterator;
+    bufr_header_iterator->define(wrpy_BufrHeaderIterator_Type, m);
+
+    crex_header_iterator = new CrexHeaderIterator;
+    crex_header_iterator->define(wrpy_CrexHeaderIterator_Type, m);
 
     bulletin_def = new BulletinDef;
     bulletin_def->define(wrpy_Bulletin_Type, m);
