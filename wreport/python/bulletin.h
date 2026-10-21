@@ -35,9 +35,28 @@ extern PyTypeObject* wrpy_RawCrexIterator_Type;
 #define wrpy_RawCrexIterator_Check(ob)                                         \
     (Py_TYPE(ob) == wrpy_RawCrexIterator_Type ||                               \
      PyType_IsSubtype(Py_TYPE(ob), wrpy_RawCrexIterator_Type))
+
+/// wreport.Bulletin python object
+typedef struct
+{
+    PyObject_HEAD wreport::Bulletin* bulletin;
+} wrpy_Bulletin;
+
+extern PyTypeObject* wrpy_Bulletin_Type;
+
+#define wrpy_Bulletin_Check(ob)                                                \
+    (Py_TYPE(ob) == wrpy_Bulletin_Type ||                                      \
+     PyType_IsSubtype(Py_TYPE(ob), wrpy_Bulletin_Type))
 }
 
 namespace wreport::python {
+
+/**
+ * Pass a bulletin to Python code.
+ *
+ * Python takes ownership of the bulletin object
+ */
+PyObject* bulletin_to_python(std::unique_ptr<wreport::Bulletin> bulletin);
 
 void register_bulletin(PyObject* m, wrpy_c_api& c_c_api);
 

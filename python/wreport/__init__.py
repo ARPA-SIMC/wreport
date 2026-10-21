@@ -12,6 +12,7 @@ from _wreport import (
     Vartable,
     RawBufrIterator,
     RawCrexIterator,
+    Bulletin,
 )
 
 read_bufr = RawBufrIterator
@@ -24,6 +25,7 @@ __all__ = (
     "Vartable",
     "RawBufrIterator",
     "RawCrexIterator",
+    "Bulletin",
     "read_bufr",
     "read_crex",
 )
