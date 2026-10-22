@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <wreport/files.h>
 #include <wreport/fwd.h>
 #include <wreport/opcodes.h>
 #include <wreport/subset.h>
@@ -293,6 +294,16 @@ public:
                      off_t* offset = 0);
 
     /**
+     * Read an encoded BUFR message from a file
+     *
+     * @param in
+     *   The stream to read from
+     * @param buf
+     *   The buffer where the data will be written
+     */
+    static bool read_file(InputFile& in, std::string& buf, off_t* offset = 0);
+
+    /**
      * Write an encoded BUFR message to a stream
      *
      * @param buf
@@ -450,7 +461,7 @@ public:
     unsigned diff_details(const Bulletin& msg) const override;
 
     /**
-     * Read an encoded BUFR message from a stream
+     * Read an encoded CREX message from a stream
      *
      * @param in
      *   The stream to read from
@@ -459,12 +470,22 @@ public:
      * @param fname
      *   File name to use in error messages
      * @retval offset
-     *   The offset in the file of the beginning of the BUFR data
+     *   The offset in the file of the beginning of the CREX data
      * @returns
      *   true if a message was found, false on EOF
      */
     static bool read(FILE* in, std::string& buf, const char* fname = 0,
                      off_t* offset = 0);
+
+    /**
+     * Read an encoded CREX message from a file
+     *
+     * @param in
+     *   The stream to read from
+     * @param buf
+     *   The buffer where the data will be written
+     */
+    static bool read_file(InputFile& in, std::string& buf, off_t* offset = 0);
 
     /**
      * Write an encoded BUFR message to a stream

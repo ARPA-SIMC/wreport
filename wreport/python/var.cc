@@ -575,6 +575,13 @@ PyObject* var_create(const wreport::Varinfo& v, const char* val)
 {
     return wrpy_var_create_c(v, val);
 }
+PyObject* var_create(const wreport::Varinfo& v, PyObject* obj)
+{
+    py_unique_ptr<wrpy_Var> res(throw_ifnull(wrpy_var_create(v)));
+    if (var_value_from_python(obj, res->var) != 0)
+        return nullptr;
+    return (PyObject*)res.release();
+}
 PyObject* var_create(const wreport::Var& v) { return wrpy_var_create_copy(v); }
 
 PyObject* var_value_to_python(const wreport::Var& v)

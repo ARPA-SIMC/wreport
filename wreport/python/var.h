@@ -31,6 +31,7 @@ PyObject* var_create(const wreport::Varinfo& v);
 PyObject* var_create(const wreport::Varinfo& v, int val);
 PyObject* var_create(const wreport::Varinfo& v, double val);
 PyObject* var_create(const wreport::Varinfo& v, const char* val);
+PyObject* var_create(const wreport::Varinfo& v, PyObject* obj);
 PyObject* var_create(const wreport::Var& v);
 
 PyObject* var_value_to_python(const wreport::Var& v);

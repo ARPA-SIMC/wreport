@@ -1,3 +1,4 @@
+#include "bulletin.h"
 #include "common.h"
 #include "config.h"
 #include "utils/methods.h"
@@ -80,6 +81,7 @@ PyMODINIT_FUNC PyInit__wreport(void)
         register_varinfo(m, c_api);
         register_vartable(m, c_api);
         register_var(m, c_api);
+        register_bulletin(m, c_api);
 
         // Create a Capsule containing the API struct's address
         pyo_unique_ptr c_api_object(throw_ifnull(
