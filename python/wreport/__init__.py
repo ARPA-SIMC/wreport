@@ -17,6 +17,9 @@ from _wreport import (
     BufrHeaderIterator,
     CrexHeaderIterator,
     Bulletin,
+    BulletinSubsetIterator,
+    Subset,
+    SubsetVarIterator,
 )
 
 read_bufr_raw = RawBufrIterator
@@ -38,6 +41,9 @@ __all__ = (
     "BufrHeaderIterator",
     "CrexHeaderIterator",
     "Bulletin",
+    "BulletinSubsetIterator",
+    "Subset",
+    "SubsetVarIterator",
     "read_bufr_raw",
     "read_crex_raw",
     "read_bufr",

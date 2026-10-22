@@ -4,7 +4,9 @@
 #include "utils/methods.h"
 #include "utils/type.h"
 #include "utils/values.h"
+#include "var.h"
 #include "wreport/utils/string.h"
+#include <algorithm>
 #include <datetime.h>
 
 using namespace std;
@@ -19,6 +21,9 @@ struct CrexIterator;
 struct BufrHeaderIterator;
 struct CrexHeaderIterator;
 struct BulletinDef;
+struct BulletinSubsetIteratorDef;
+struct SubsetDef;
+struct SubsetVarIteratorDef;
 } // namespace
 
 extern "C" {
@@ -39,6 +44,14 @@ PyTypeObject* wrpy_CrexHeaderIterator_Type;
 
 BulletinDef* bulletin_def = nullptr;
 PyTypeObject* wrpy_Bulletin_Type;
+BulletinSubsetIteratorDef* bulletin_subset_iterator_def = nullptr;
+PyTypeObject* wrpy_BulletinSubsetIterator_Type;
+
+SubsetDef* subset_def = nullptr;
+PyTypeObject* wrpy_Subset_Type;
+
+SubsetVarIteratorDef* subset_var_iterator_def = nullptr;
+PyTypeObject* wrpy_SubsetVarIterator_Type;
 }
 
 namespace {
@@ -721,7 +734,7 @@ struct optional_section : public Getter<optional_section, wrpy_Bulletin>
     }
 };
 
-struct datadesc : public Getter<datadesc, wrpy_Bulletin>
+struct datadesc : public GetSetter<datadesc, wrpy_Bulletin>
 {
     constexpr static const char* name = "datadesc";
     constexpr static const char* doc =
@@ -743,6 +756,36 @@ struct datadesc : public Getter<datadesc, wrpy_Bulletin>
             return res.release();
         }
         WREPORT_CATCH_RETURN_PYO;
+    }
+
+    static int set(Impl* self, PyObject* value, void* closure)
+    {
+        try
+        {
+            std::vector<Varcode> datadesc;
+
+            if (not PySequence_Check(value))
+            {
+                PyErr_Format(PyExc_TypeError, "%R is not a sequence", value);
+                return -1;
+            }
+
+            Py_ssize_t size = PySequence_Size(value);
+            if (size == -1)
+                return -1;
+
+            for (unsigned pos = 0; pos < size; ++pos)
+            {
+                pyo_unique_ptr val(
+                    throw_ifnull(PySequence_GetItem(value, pos)));
+                std::string varname = from_python<std::string>(val);
+                datadesc.emplace_back(varcode_parse(varname.c_str()));
+            }
+
+            self->bulletin->datadesc = datadesc;
+            return 0;
+        }
+        WREPORT_CATCH_RETURN_INT;
     }
 };
 
@@ -902,7 +945,7 @@ as a Sequence of subsets with data.
 
         res += "@";
 
-        if (self->bulletin->fname.empty())
+        if (not self->bulletin->fname.empty())
         {
             res += self->bulletin->fname;
             res += "+";
@@ -924,7 +967,7 @@ as a Sequence of subsets with data.
             res += "\"????\"";
 
         res += ", fname=";
-        if (self->bulletin->fname.empty())
+        if (not self->bulletin->fname.empty())
         {
             res += '"';
             res += str::encode_cstring(self->bulletin->fname);
@@ -953,8 +996,405 @@ as a Sequence of subsets with data.
 
     static PyObject* sq_item(Impl* self, Py_ssize_t i)
     {
-        PyErr_SetString(PyExc_NotImplementedError, "__getitem__");
-        return nullptr;
+        try
+        {
+            if (i < 0 or (unsigned) i >= self->bulletin->subsets.size())
+            {
+                PyErr_SetString(PyExc_IndexError, "invalid subset index");
+                return nullptr;
+            }
+            py_unique_ptr<wrpy_Subset> res(
+                throw_ifnull(PyObject_New(wrpy_Subset, wrpy_Subset_Type)));
+            Py_XINCREF(self);
+            res->bulletin = self;
+            res->subset   = i;
+            return (PyObject*)res.release();
+        }
+        WREPORT_CATCH_RETURN_PYO;
+    }
+
+    static PyObject* _iter(Impl* self)
+    {
+        try
+        {
+            py_unique_ptr<wrpy_BulletinSubsetIterator> res(
+                throw_ifnull(PyObject_New(wrpy_BulletinSubsetIterator,
+                                          wrpy_BulletinSubsetIterator_Type)));
+            Py_XINCREF(self);
+            res->bulletin = self;
+            res->subset   = 0;
+            return (PyObject*)res.release();
+        }
+        WREPORT_CATCH_RETURN_PYO;
+    }
+};
+
+struct BulletinSubsetIteratorDef
+    : public Type<BulletinSubsetIteratorDef, wrpy_BulletinSubsetIterator>
+{
+    constexpr static const char* name      = "BulletinSubsetIterator";
+    constexpr static const char* qual_name = "wreport.BulletinSubsetIterator";
+    constexpr static const char* doc       = R"(
+Iterate :py:class:`wreport.Subset` entries from a :py:class:`wreport.Bulletin`.
+)";
+    GetSetters<> getsetters;
+    Methods<> methods;
+
+    static void _dealloc(Impl* self)
+    {
+        Py_XDECREF(self->bulletin);
+        Py_TYPE(self)->tp_free(self);
+    }
+
+    static int _init(Impl* self, PyObject* args, PyObject* kw)
+    {
+        PyErr_SetString(PyExc_NotImplementedError, "__init__");
+        return -1;
+    }
+
+    static PyObject* _iter(Impl* self)
+    {
+        Py_INCREF(self);
+        return (PyObject*)self;
+    }
+
+    static PyObject* _iternext(Impl* self)
+    {
+        try
+        {
+            if (self->subset >= self->bulletin->bulletin->subsets.size())
+            {
+                PyErr_SetNone(PyExc_StopIteration);
+                return nullptr;
+            }
+
+            py_unique_ptr<wrpy_Subset> res(
+                throw_ifnull(PyObject_New(wrpy_Subset, wrpy_Subset_Type)));
+            Py_XINCREF(self->bulletin);
+            res->bulletin = self->bulletin;
+            res->subset   = self->subset;
+
+            ++(self->subset);
+            return (PyObject*)res.release();
+        }
+        WREPORT_CATCH_RETURN_PYO;
+    }
+};
+
+struct SubsetDef : public Type<SubsetDef, wrpy_Subset>
+{
+    constexpr static const char* name      = "Subset";
+    constexpr static const char* qual_name = "wreport.Subset";
+    constexpr static const char* doc       = R"(
+Data subset of a decoded BUFR or CREX message.
+
+It presents as a Sequence of :py:class:`wreport.Var` instances.
+)";
+    GetSetters<> getsetters;
+    Methods<> methods;
+
+    static void _dealloc(Impl* self)
+    {
+        Py_XDECREF(self->bulletin);
+        Py_TYPE(self)->tp_free(self);
+    }
+
+    static PyObject* _str(Impl* self)
+    {
+        std::string res;
+        py_unique_ptr py_str(PyObject_Str((PyObject*)self->bulletin));
+        if (!py_str)
+        {
+            PyErr_Clear();
+            res = "[bulletin]";
+        }
+        else
+            res = string_from_python(py_str);
+        res += "[";
+        res += std::to_string(self->subset);
+        res += "]";
+        return PyUnicode_FromStringAndSize(res.data(), res.size());
+    }
+
+    static PyObject* _repr(Impl* self)
+    {
+        std::string res;
+        py_unique_ptr py_str(PyObject_Repr((PyObject*)self->bulletin));
+        if (!py_str)
+        {
+            PyErr_Clear();
+            res = "[bulletin]";
+        }
+        else
+            res = string_from_python(py_str);
+        res += "[";
+        res += std::to_string(self->subset);
+        res += "]";
+        return PyUnicode_FromStringAndSize(res.data(), res.size());
+    }
+
+    static int _init(Impl* self, PyObject* args, PyObject* kw)
+    {
+        PyErr_SetString(PyExc_NotImplementedError, "__init__");
+        return -1;
+    }
+
+    static PyObject* _richcompare(Impl* a, Impl* b, int op)
+    {
+        PyObject* result;
+        bool cmp;
+
+        // Make sure both arguments are Vars.
+        if (!(wrpy_Subset_Check(a) && wrpy_Subset_Check(b)))
+        {
+            result = Py_NotImplemented;
+            goto out;
+        }
+
+        switch (op)
+        {
+            case Py_EQ:
+                cmp = a->bulletin == b->bulletin and a->subset == b->subset;
+                break;
+            case Py_NE:
+                cmp = a->bulletin != b->bulletin or a->subset != b->subset;
+                break;
+            default: result = Py_NotImplemented; goto out;
+        }
+        result = cmp ? Py_True : Py_False;
+
+    out:
+        Py_INCREF(result);
+        return result;
+    }
+
+    static Py_ssize_t sq_length(Impl* self)
+    {
+        return self->bulletin->bulletin->subsets[self->subset].size();
+    }
+
+    static PyObject* _iter(Impl* self)
+    {
+        try
+        {
+            py_unique_ptr<wrpy_SubsetVarIterator> res(throw_ifnull(PyObject_New(
+                wrpy_SubsetVarIterator, wrpy_SubsetVarIterator_Type)));
+            Py_XINCREF(self);
+            res->subset = self;
+            res->var    = 0;
+            return (PyObject*)res.release();
+        }
+        WREPORT_CATCH_RETURN_PYO;
+    }
+
+    static PyObject* mp_subscript(Impl* self, PyObject* key)
+    {
+        const auto& subset = self->bulletin->bulletin->subsets[self->subset];
+        if (PyLong_Check(key))
+        {
+            int pos = int_from_python(key);
+            if (pos < 0)
+                pos = subset.size() + pos;
+            if (pos < 0 or (unsigned) pos >= subset.size())
+            {
+                PyErr_SetString(PyExc_IndexError, "invalid var index");
+                return nullptr;
+            }
+            return var_create(subset[pos]);
+        }
+        else if (PySlice_Check(key))
+        {
+            Py_ssize_t start, stop, step;
+            if (PySlice_Unpack(key, &start, &stop, &step) < 0)
+                return nullptr;
+            Py_ssize_t slicelength =
+                PySlice_AdjustIndices(subset.size(), &start, &stop, step);
+
+            if (step == 0)
+
+            {
+                PyErr_SetString(PyExc_ValueError, "slice step cannot be zero");
+                return nullptr;
+            }
+
+            pyo_unique_ptr result(throw_ifnull(PyTuple_New(slicelength)));
+            // fprintf(stderr,
+            //         "SLICE len=%zd, start=%zd, stop=%zd, step=%zd, "
+            //         "slicelength=%zd\n",
+            //         subset.size(), start, stop, step, slicelength);
+            for (Py_ssize_t pos = 0; pos < slicelength; ++pos)
+            {
+                Py_ssize_t idx = start + pos * step;
+                // fprintf(stderr, "     res[%zd] = src[%zd]\n", pos, idx);
+
+                pyo_unique_ptr var(throw_ifnull(var_create(subset[idx])));
+                PyTuple_SET_ITEM(result, pos, var.release());
+            }
+
+            return result.release();
+        }
+        else
+        {
+            PyErr_Format(PyExc_TypeError,
+                         "invalid subscript %R: expecting int or slice", key);
+            return nullptr;
+        }
+    }
+
+    static int mp_ass_subscript(Impl* self, PyObject* key, PyObject* value)
+    {
+        auto& subset = self->bulletin->bulletin->subsets[self->subset];
+        if (PyLong_Check(key))
+        {
+            int pos = int_from_python(key);
+            if (pos < 0)
+                pos = subset.size() + pos;
+            if (pos < 0 or (unsigned) pos >= subset.size())
+            {
+                PyErr_SetString(PyExc_IndexError, "invalid var index");
+                return -1;
+            }
+
+            if (!wrpy_Var_Check(value))
+            {
+                PyErr_Format(PyExc_TypeError,
+                             "variable to assign is %R: expected wreport.Var",
+                             value);
+                return -1;
+            }
+            subset[pos] = ((const wrpy_Var*)value)->var;
+            return 0;
+        }
+        else if (PySlice_Check(key))
+        {
+            Py_ssize_t start, stop, step;
+            if (PySlice_Unpack(key, &start, &stop, &step) < 0)
+                return -1;
+            Py_ssize_t slicelength =
+                PySlice_AdjustIndices(subset.size(), &start, &stop, step);
+
+            // Ensure we only assign to contiguous regions
+            if (step != 1)
+            {
+                PyErr_SetString(
+                    PyExc_NotImplementedError,
+                    "slice assignment is only implemented for step=1");
+                return -1;
+            }
+
+            // Access the Var instances to assign
+            if (!PySequence_Check(value))
+            {
+                PyErr_Format(
+                    PyExc_TypeError,
+                    "value is %R: expecting a sequence %zd elements long",
+                    value, slicelength);
+                return -1;
+            }
+            Py_ssize_t size = PySequence_Size(value);
+            if (size == -1)
+                return -1;
+            std::vector<Var> value_vars;
+            value_vars.reserve(size);
+            for (Py_ssize_t pos = 0; pos < size; ++pos)
+            {
+                pyo_unique_ptr val(
+                    throw_ifnull(PySequence_GetItem(value, pos)));
+                if (!wrpy_Var_Check(val))
+                {
+                    PyErr_Format(PyExc_TypeError,
+                                 "value at position %zd is %R instead of "
+                                 "wreport.Var",
+                                 pos, val.get());
+                    return -1;
+                }
+                value_vars.emplace_back(((const wrpy_Var*)val.get())->var);
+            }
+
+            Py_ssize_t overlap = std::min(size, slicelength);
+            if (overlap > 0)
+            {
+                // fprintf(stderr, "SLICE ASSIGN assign %zd…%zd\n", start,
+                //         start + overlap);
+                for (unsigned pos = 0; pos < overlap; ++pos)
+                    subset[start + pos] = std::move(value_vars[pos]);
+            }
+
+            if (slicelength > size)
+            {
+                // fprintf(stderr, "SLICE ASSIGN erase %zd…%zd\n", start + size,
+                //         stop);
+                subset.erase(subset.begin() + start + size,
+                             subset.begin() + stop);
+            }
+            else if (slicelength < size)
+            {
+                // fprintf(stderr,
+                //         "SLICE ASSIGN insert remaining %zd "
+                //         "at %zd\n",
+                //         value_vars.size() - slicelength, start +
+                //         slicelength);
+                subset.insert(subset.begin() + start + slicelength,
+                              value_vars.begin() + slicelength,
+                              value_vars.end());
+            }
+
+            return 0;
+        }
+        else
+        {
+            PyErr_Format(PyExc_TypeError,
+                         "invalid subscript %R: expecting int or slice", key);
+            return -1;
+        }
+    }
+};
+struct SubsetVarIteratorDef
+    : public Type<SubsetVarIteratorDef, wrpy_SubsetVarIterator>
+{
+    constexpr static const char* name      = "SubsetVarIterator";
+    constexpr static const char* qual_name = "wreport.SubsetVarIterator";
+    constexpr static const char* doc       = R"(
+Iterate :py:class:`wreport.Var` entries from a :py:class:`wreport.Subset`.
+)";
+    GetSetters<> getsetters;
+    Methods<> methods;
+
+    static void _dealloc(Impl* self)
+    {
+        Py_XDECREF(self->subset);
+        Py_TYPE(self)->tp_free(self);
+    }
+
+    static int _init(Impl* self, PyObject* args, PyObject* kw)
+    {
+        PyErr_SetString(PyExc_NotImplementedError, "__init__");
+        return -1;
+    }
+
+    static PyObject* _iter(Impl* self)
+    {
+        Py_INCREF(self);
+        return (PyObject*)self;
+    }
+
+    static PyObject* _iternext(Impl* self)
+    {
+        const Subset& subset =
+            self->subset->bulletin->bulletin->subsets[self->subset->subset];
+        try
+        {
+            if (self->var >= subset.size())
+            {
+                PyErr_SetNone(PyExc_StopIteration);
+                return nullptr;
+            }
+
+            auto res = var_create(subset[self->var]);
+            ++(self->var);
+            return res;
+        }
+        WREPORT_CATCH_RETURN_PYO;
     }
 };
 
@@ -1005,6 +1445,15 @@ void register_bulletin(PyObject* m, wrpy_c_api& c_api)
 
     bulletin_def = new BulletinDef;
     bulletin_def->define(wrpy_Bulletin_Type, m);
+
+    bulletin_subset_iterator_def = new BulletinSubsetIteratorDef;
+    bulletin_subset_iterator_def->define(wrpy_BulletinSubsetIterator_Type, m);
+
+    subset_def = new SubsetDef;
+    subset_def->define(wrpy_Subset_Type, m);
+
+    subset_var_iterator_def = new SubsetVarIteratorDef;
+    subset_var_iterator_def->define(wrpy_SubsetVarIterator_Type, m);
 }
 
 } // namespace python

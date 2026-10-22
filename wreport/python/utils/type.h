@@ -16,7 +16,7 @@ template <typename Child, typename IMPL> struct Getter
 
     static PyObject* get(Impl* self, void* closure)
     {
-        PyErr_Format(PyExc_NotImplementedError, "getter %s is not implemented",
+        PyErr_Format(PyExc_NotImplementedError, "%s getter is not implemented",
                      Child::name);
         return nullptr;
     }
@@ -25,6 +25,35 @@ template <typename Child, typename IMPL> struct Getter
     {
         return PyGetSetDef{const_cast<char*>(Child::name), (getter)Child::get,
                            nullptr, const_cast<char*>(Child::doc),
+                           Child::closure};
+    }
+};
+
+template <typename Child, typename IMPL> struct GetSetter
+{
+    typedef IMPL Impl;
+    constexpr static const char* name = "TODO";
+    constexpr static const char* doc  = "TODO: write getsetter documentation";
+    constexpr static void* closure    = nullptr;
+
+    static PyObject* get(Impl* self, void* closure)
+    {
+        PyErr_Format(PyExc_NotImplementedError, "%s getter is not implemented",
+                     Child::name);
+        return nullptr;
+    }
+
+    static int set(Impl* self, PyObject* value, void* closure)
+    {
+        PyErr_Format(PyExc_NotImplementedError, "%s setter is not implemented",
+                     Child::name);
+        return -1;
+    }
+
+    static constexpr PyGetSetDef def()
+    {
+        return PyGetSetDef{const_cast<char*>(Child::name), (getter)Child::get,
+                           (setter)Child::set, const_cast<char*>(Child::doc),
                            Child::closure};
     }
 };
