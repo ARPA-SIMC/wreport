@@ -5,6 +5,7 @@ sphinx_doc_sources = [
     'index.rst',
     'tutorials/tutorial-template.md',
     'tutorials/cpp-read-files.md',
+    'tutorials/python-wigos.md',
     'explanations/concepts.rst',
     'references/python/wreport.rst',
     'references/cpp/wreport.rst',

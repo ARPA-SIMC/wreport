@@ -1,0 +1,5 @@
+#!/bin/sh
+set -ue
+$TOP_SRCDIR/examples/wigos $WREPORT_TESTDATA/bufr/MODE_12.bufr --series 1 --issuer 2 --issue 3 --ident test > annotated.bufr
+found=$(wrep --dump annotated.bufr | grep -c '001128 WIGOS LOCAL IDENTIFIER.\+: test')
+test $found = "14"

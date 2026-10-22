@@ -40,6 +40,7 @@ Documentation index
 
    tutorials/tutorial-template
    tutorials/cpp-read-files
+   tutorials/python-wigos
 
 .. toctree::
    :maxdepth: 2
