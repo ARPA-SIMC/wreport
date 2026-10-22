@@ -192,6 +192,8 @@ template <typename Child, typename IMPL> struct Type
     constexpr static binaryfunc mp_subscript        = nullptr;
     constexpr static objobjargproc mp_ass_subscript = nullptr;
 
+    constexpr static unsigned long tp_flags = Py_TPFLAGS_DEFAULT;
+
     static int _init(Impl* self, PyObject* args, PyObject* kw)
     {
         // Default implementation raising NotImplementedError
@@ -210,8 +212,6 @@ template <typename Child, typename IMPL> struct Type
     void define(PyTypeObject*& type_object, PyObject* module = nullptr)
     {
         Child* d = static_cast<Child*>(this);
-
-        unsigned long tp_flags = Py_TPFLAGS_DEFAULT;
 
         PySequenceMethods* tp_as_sequence = nullptr;
         if (Child::sq_length || Child::sq_concat || Child::sq_repeat ||
@@ -244,7 +244,7 @@ template <typename Child, typename IMPL> struct Type
             0,                                               // tp_getattro
             0,                                               // tp_setattro
             0,                                               // tp_as_buffer
-            tp_flags,                                        // tp_flags
+            (unsigned long)Child::tp_flags,                  // tp_flags
             Child::doc,                                      // tp_doc
             0,                                               // tp_traverse
             0,                                               // tp_clear

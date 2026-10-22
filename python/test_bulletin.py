@@ -106,6 +106,9 @@ class SampleBufrTestCase(TestCase):
         self.assertFalse(bulletin.has_check_digit)
         self.assertIsNone(bulletin.optional_section)
         self.assertEqual(bulletin.reftime, dt.datetime(2022, 2, 14, 9, 0, 3))
+        self.assertEqual(
+            Path(bulletin.btable.pathname).name, "B0000000000000033000.txt"
+        )
         self.assertEqual(bulletin.datadesc, self.sample_bufr_datadesc)
 
 
@@ -305,6 +308,19 @@ class BulletinTests(BulletinTestCase):
             count += 1
         self.assertEqual(count, 14)
 
+    def test_var(self) -> None:
+        var = self.bulletin.var("B01128", "Test value")
+        self.assertEqual(var.code, "B01128")
+        self.assertEqual(var.format(), "Test value")
+
+        var = self.bulletin.var("B01128")
+        self.assertEqual(var.code, "B01128")
+        self.assertFalse(var.isset)
+
+        var = self.bulletin.var("B01128", None)
+        self.assertEqual(var.code, "B01128")
+        self.assertFalse(var.isset)
+
 
 class SubsetTests(BulletinTestCase):
     subset: ClassVar[wreport.Subset]
@@ -460,3 +476,17 @@ class SubsetTests(BulletinTestCase):
             tuple(var.code for var in subset),
             varcodes[0:13] + varcodes[7:13] + varcodes[15:],
         )
+
+    def test_var(self) -> None:
+        subset = self.bulletin[0]
+        var = subset.var("B01128", "Test value")
+        self.assertEqual(var.code, "B01128")
+        self.assertEqual(var.format(), "Test value")
+
+        var = self.bulletin.var("B01128")
+        self.assertEqual(var.code, "B01128")
+        self.assertFalse(var.isset)
+
+        var = self.bulletin.var("B01128", None)
+        self.assertEqual(var.code, "B01128")
+        self.assertFalse(var.isset)

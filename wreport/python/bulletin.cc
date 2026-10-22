@@ -5,7 +5,9 @@
 #include "utils/type.h"
 #include "utils/values.h"
 #include "var.h"
+#include "vartable.h"
 #include "wreport/utils/string.h"
+#include "wreport/vartable.h"
 #include <algorithm>
 #include <datetime.h>
 
@@ -121,7 +123,7 @@ struct RawBufrIterator
     : public RawIterator<RawBufrIterator, wrpy_RawBufrIterator>
 {
     constexpr static const char* name      = "RawBufrIterator";
-    constexpr static const char* qual_name = "wreport.RawBufrIterator";
+    constexpr static const char* qual_name = "wreport.bulletin.RawBufrIterator";
     constexpr static const char* doc       = R"(
 Read a file, generating all BUFR messages that it contains.
 
@@ -141,7 +143,7 @@ struct RawCrexIterator
     : public RawIterator<RawCrexIterator, wrpy_RawCrexIterator>
 {
     constexpr static const char* name      = "RawCrexIterator";
-    constexpr static const char* qual_name = "wreport.RawCrexIterator";
+    constexpr static const char* qual_name = "wreport.bulletin.RawCrexIterator";
     constexpr static const char* doc       = R"(
 Read a file, generating all BUFR messages that it contains.
 
@@ -215,7 +217,7 @@ struct BulletinIterator : public Type<Child, Impl>
 struct BufrIterator : public BulletinIterator<BufrIterator, wrpy_BufrIterator>
 {
     constexpr static const char* name      = "BufrIterator";
-    constexpr static const char* qual_name = "wreport.BufrIterator";
+    constexpr static const char* qual_name = "wreport.bulletin.BufrIterator";
     constexpr static const char* doc       = R"(
 Read a file, generating all decoded BUFR bulletins that it contains.
 
@@ -235,7 +237,7 @@ It generates :py:class:`wreport.Bulletin` objects.
 struct CrexIterator : public BulletinIterator<CrexIterator, wrpy_CrexIterator>
 {
     constexpr static const char* name      = "CrexIterator";
-    constexpr static const char* qual_name = "wreport.CrexIterator";
+    constexpr static const char* qual_name = "wreport.bulletin.CrexIterator";
     constexpr static const char* doc       = R"(
 Read a file, generating all decoded CREX bulletins that it contains.
 
@@ -255,9 +257,10 @@ It generates :py:class:`wreport.Bulletin` objects.
 struct BufrHeaderIterator
     : public BulletinIterator<BufrHeaderIterator, wrpy_BufrHeaderIterator>
 {
-    constexpr static const char* name      = "BufrHeaderIterator";
-    constexpr static const char* qual_name = "wreport.BufrHeaderIterator";
-    constexpr static const char* doc       = R"(
+    constexpr static const char* name = "BufrHeaderIterator";
+    constexpr static const char* qual_name =
+        "wreport.bulletin.BufrHeaderIterator";
+    constexpr static const char* doc = R"(
 Read a file, decoding BUFR headers only, generating all bulletins that it contains.
 
 It generates :py:class:`wreport.Bulletin` objects.
@@ -276,9 +279,10 @@ It generates :py:class:`wreport.Bulletin` objects.
 struct CrexHeaderIterator
     : public BulletinIterator<CrexHeaderIterator, wrpy_CrexHeaderIterator>
 {
-    constexpr static const char* name      = "CrexHeaderIterator";
-    constexpr static const char* qual_name = "wreport.CrexHeaderIterator";
-    constexpr static const char* doc       = R"(
+    constexpr static const char* name = "CrexHeaderIterator";
+    constexpr static const char* qual_name =
+        "wreport.bulletin.CrexHeaderIterator";
+    constexpr static const char* doc = R"(
 Read a file, decoding CREX headers only, generating all bulletins that it contains.
 
 It generates :py:class:`wreport.Bulletin` objects.
@@ -734,6 +738,26 @@ struct optional_section : public Getter<optional_section, wrpy_Bulletin>
     }
 };
 
+struct btable : public Getter<btable, wrpy_Bulletin>
+{
+    constexpr static const char* name = "btable";
+    constexpr static const char* doc =
+        "Return the B table used (wreport.Vartable | None).\n\n"
+        ":returns: None if the tables have not yet been loaded";
+    constexpr static void* closure = nullptr;
+
+    static PyObject* get(Impl* self, void* closure)
+    {
+        try
+        {
+            if (const auto* table = self->bulletin->tables.btable)
+                return vartable_create(table);
+            Py_RETURN_NONE;
+        }
+        WREPORT_CATCH_RETURN_PYO;
+    }
+};
+
 struct datadesc : public GetSetter<datadesc, wrpy_Bulletin>
 {
     constexpr static const char* name = "datadesc";
@@ -900,11 +924,63 @@ struct decode_crex : public decode_base<decode_crex>
     }
 };
 
-// TODO:
-#if 0
-    /// Varcode and opcode tables used for encoding or decoding
-    Tables tables;
-#endif
+struct bulletin_var : public MethKwargs<bulletin_var, wrpy_Bulletin>
+{
+    constexpr static const char* name = "var";
+    constexpr static const char* signature =
+        "code: str, value: Union[None, int, float, str, bytes] = None";
+    constexpr static const char* returns = "wreport.Var";
+    constexpr static const char* summary =
+        "create a :py:class:`wreport.Var` using the bulletin's B table.";
+
+    static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
+    {
+        static const char* kwlist[] = {"code", "value", nullptr};
+        const char* code;
+        PyObject* arg_value = nullptr;
+        if (!PyArg_ParseTupleAndKeywords(
+                args, kw, "s|O", const_cast<char**>(kwlist), &code, &arg_value))
+            return nullptr;
+
+        try
+        {
+            const Vartable* btable = self->bulletin->tables.btable;
+            if (!btable)
+            {
+                PyErr_SetString(PyExc_AssertionError,
+                                "bulletin tables have not yet been loaded");
+                return nullptr;
+            }
+
+            Varinfo info = btable->query(varcode_parse(code));
+
+            if (arg_value and arg_value != Py_None)
+                return var_create(info, arg_value);
+            else
+                return var_create(info);
+        }
+        WREPORT_CATCH_RETURN_PYO
+    }
+};
+
+struct bulletin_encode : public MethNoargs<bulletin_encode, wrpy_Bulletin>
+{
+    constexpr static const char* name      = "encode";
+    constexpr static const char* signature = "";
+    constexpr static const char* returns   = "bytes";
+    constexpr static const char* summary =
+        "encode the bulletin back to its source format (BUFR or CREX)";
+
+    static PyObject* run(Impl* self)
+    {
+        try
+        {
+            std::string encoded = self->bulletin->encode();
+            return PyBytes_FromStringAndSize(encoded.data(), encoded.size());
+        }
+        WREPORT_CATCH_RETURN_PYO
+    }
+};
 
 struct BulletinDef : public Type<BulletinDef, wrpy_Bulletin>
 {
@@ -922,10 +998,14 @@ as a Sequence of subsets with data.
                edition_number, master_table_version_number,
                master_table_version_number_local,
                master_table_version_number_bufr, compression, has_check_digit,
-               optional_section, datadesc>
+               optional_section, btable, datadesc>
         getsetters;
-    Methods<decode_bufr_header, decode_bufr, decode_crex_header, decode_crex>
+    Methods<decode_bufr_header, decode_bufr, decode_crex_header, decode_crex,
+            bulletin_var, bulletin_encode>
         methods;
+
+    constexpr static unsigned long tp_flags =
+        Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE;
 
     static void _dealloc(Impl* self)
     {
@@ -1032,9 +1112,10 @@ as a Sequence of subsets with data.
 struct BulletinSubsetIteratorDef
     : public Type<BulletinSubsetIteratorDef, wrpy_BulletinSubsetIterator>
 {
-    constexpr static const char* name      = "BulletinSubsetIterator";
-    constexpr static const char* qual_name = "wreport.BulletinSubsetIterator";
-    constexpr static const char* doc       = R"(
+    constexpr static const char* name = "BulletinSubsetIterator";
+    constexpr static const char* qual_name =
+        "wreport.bulletin.BulletinSubsetIterator";
+    constexpr static const char* doc = R"(
 Iterate :py:class:`wreport.Subset` entries from a :py:class:`wreport.Bulletin`.
 )";
     GetSetters<> getsetters;
@@ -1081,6 +1162,45 @@ Iterate :py:class:`wreport.Subset` entries from a :py:class:`wreport.Bulletin`.
     }
 };
 
+struct subset_var : public MethKwargs<subset_var, wrpy_Subset>
+{
+    constexpr static const char* name = "var";
+    constexpr static const char* signature =
+        "code: str, value: Union[None, int, float, str, bytes] = None";
+    constexpr static const char* returns = "wreport.Var";
+    constexpr static const char* summary =
+        "create a :py:class:`wreport.Var` using the subset bulletin's B table.";
+
+    static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
+    {
+        static const char* kwlist[] = {"code", "value", nullptr};
+        const char* code;
+        PyObject* arg_value = nullptr;
+        if (!PyArg_ParseTupleAndKeywords(
+                args, kw, "s|O", const_cast<char**>(kwlist), &code, &arg_value))
+            return nullptr;
+
+        try
+        {
+            const Vartable* btable = self->bulletin->bulletin->tables.btable;
+            if (!btable)
+            {
+                PyErr_SetString(PyExc_AssertionError,
+                                "bulletin tables have not yet been loaded");
+                return nullptr;
+            }
+
+            Varinfo info = btable->query(varcode_parse(code));
+
+            if (arg_value and arg_value != Py_None)
+                return var_create(info, arg_value);
+            else
+                return var_create(info);
+        }
+        WREPORT_CATCH_RETURN_PYO
+    }
+};
+
 struct SubsetDef : public Type<SubsetDef, wrpy_Subset>
 {
     constexpr static const char* name      = "Subset";
@@ -1091,7 +1211,7 @@ Data subset of a decoded BUFR or CREX message.
 It presents as a Sequence of :py:class:`wreport.Var` instances.
 )";
     GetSetters<> getsetters;
-    Methods<> methods;
+    Methods<subset_var> methods;
 
     static void _dealloc(Impl* self)
     {
@@ -1352,9 +1472,10 @@ It presents as a Sequence of :py:class:`wreport.Var` instances.
 struct SubsetVarIteratorDef
     : public Type<SubsetVarIteratorDef, wrpy_SubsetVarIterator>
 {
-    constexpr static const char* name      = "SubsetVarIterator";
-    constexpr static const char* qual_name = "wreport.SubsetVarIterator";
-    constexpr static const char* doc       = R"(
+    constexpr static const char* name = "SubsetVarIterator";
+    constexpr static const char* qual_name =
+        "wreport.bulletin.SubsetVarIterator";
+    constexpr static const char* doc = R"(
 Iterate :py:class:`wreport.Var` entries from a :py:class:`wreport.Subset`.
 )";
     GetSetters<> getsetters;
