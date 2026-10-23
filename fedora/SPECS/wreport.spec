@@ -18,6 +18,7 @@ BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: python3-devel
 BuildRequires: python3-sphinx
 BuildRequires: python3-breathe
+BuildRequires: python3-myst-parser
 BuildRequires: /usr/bin/rst2html
 
 Summary: Tools for working with weather reports
