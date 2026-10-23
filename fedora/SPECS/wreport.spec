@@ -141,7 +141,6 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %doc %{_docdir}/%{name}/libwreport.doxytags
 %exclude %{_docdir}/%{name}/html/.doctrees/*
 %doc %{_docdir}/%{name}/html/*
-%doc %{_docdir}/%{name}/examples/*
 %exclude %{_docdir}/%{name}/xml/*
 %exclude %{_docdir}/%{name}/html/.buildinfo
 
