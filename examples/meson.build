@@ -9,3 +9,4 @@ ex_dump = executable('dump', 'dump.cc',
 test('dump', runtest, args: [files('test-dump')], depends: [ex_dump], suite: 'examples')
 
 test('wigos', runtest, args: [files('test-wigos')], suite: 'examples')
+test('coords', runtest, args: [files('test-coords')], suite: 'examples')

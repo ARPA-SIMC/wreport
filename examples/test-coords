@@ -1,0 +1,3 @@
+#!/bin/sh
+set -ue
+$TOP_SRCDIR/examples/coords $WREPORT_TESTDATA/bufr/obs0-1.22.bufr | grep -Fq 'obs0-1.22.bufr+0[1]: 33.88, -5.53'

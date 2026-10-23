@@ -41,6 +41,7 @@ Documentation index
    tutorials/tutorial-template
    tutorials/cpp-read-files
    tutorials/python-wigos
+   tutorials/python-coords
 
 .. toctree::
    :maxdepth: 2

@@ -1,0 +1,40 @@
+#!/usr/bin/python3
+
+import argparse
+from pathlib import Path
+from typing import Optional
+
+import wreport
+
+
+def show_coords(bulletin: wreport.Bulletin) -> None:
+    """Append WIGOS metadata to the bulletin."""
+    for idx, subset in enumerate(bulletin, start=1):
+        lat: Optional[float] = None
+        lon: Optional[float] = None
+        for var in subset:
+            if var.code in ("B05001", "B05002"):
+                lat = var.enqd()
+            elif var.code in ("B06001", "B06002"):
+                lon = var.enqd()
+        print(f"{bulletin.fname}+{bulletin.offset}[{idx}]: {lat}, {lon}")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Show coordinates of BUFR messages"
+    )
+    parser.add_argument(
+        "files", type=Path, nargs="+", help="Source messages to read"
+    )
+    args = parser.parse_args()
+
+    for file in args.files:
+        with file.open("rb") as fd:
+            # Use wreport.read_bufr to read and decode all messages from a file
+            for bulletin in wreport.read_bufr(fd):
+                show_coords(bulletin)
+
+
+if __name__ == "__main__":
+    main()
