@@ -1,4 +1,4 @@
-# Readomg BUFR from Python
+# Readimg BUFR from Python
 
 This code shows how to read BUFR messages and examine the data they contain.
 

@@ -481,7 +481,7 @@ struct originating_subcentre
 };
 
 struct update_sequence_number
-    : public Getter<update_sequence_number, wrpy_Bulletin>
+    : public GetSetter<update_sequence_number, wrpy_Bulletin>
 {
     constexpr static const char* name = "update_sequence_number";
     constexpr static const char* doc  = "Update sequence number (int).";
@@ -496,6 +496,16 @@ struct update_sequence_number
             return res.release();
         }
         WREPORT_CATCH_RETURN_PYO;
+    }
+
+    static int set(Impl* self, PyObject* value, void* closure)
+    {
+        try
+        {
+            self->bulletin->update_sequence_number = int_from_python(value);
+            return 0;
+        }
+        WREPORT_CATCH_RETURN_INT;
     }
 };
 

@@ -294,6 +294,14 @@ class BulletinTests(BulletinTestCase):
         with self.assertRaisesRegex(IndexError, "invalid subset index"):
             self.bulletin[-15]
 
+    def test_update_sequence_number(self) -> None:
+        bulletin = self.read_bulletin()
+        bulletin.update_sequence_number = 42
+        self.assertEqual(bulletin.update_sequence_number, 42)
+        encoded = bulletin.encode()
+        new_bulletin = bulletin.decode_bufr_header(encoded)
+        self.assertEqual(new_bulletin.update_sequence_number, 42)
+
     def test_change_datadesc(self) -> None:
         bulletin = self.read_bulletin()
         orig_datadesc = bulletin.datadesc
