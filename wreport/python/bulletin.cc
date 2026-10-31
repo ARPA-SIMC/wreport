@@ -431,7 +431,7 @@ struct data_subcategory_local
     }
 };
 
-struct originating_centre : public Getter<originating_centre, wrpy_Bulletin>
+struct originating_centre : public GetSetter<originating_centre, wrpy_Bulletin>
 {
     constexpr static const char* name = "originating_centre";
     constexpr static const char* doc =
@@ -453,10 +453,23 @@ struct originating_centre : public Getter<originating_centre, wrpy_Bulletin>
         }
         WREPORT_CATCH_RETURN_PYO;
     }
+
+    static int set(Impl* self, PyObject* value, void* closure)
+    {
+        try
+        {
+            if (value == Py_None)
+                self->bulletin->originating_centre = 0xffff;
+            else
+                self->bulletin->originating_centre = int_from_python(value);
+            return 0;
+        }
+        WREPORT_CATCH_RETURN_INT;
+    }
 };
 
 struct originating_subcentre
-    : public Getter<originating_subcentre, wrpy_Bulletin>
+    : public GetSetter<originating_subcentre, wrpy_Bulletin>
 {
     constexpr static const char* name = "originating_subcentre";
     constexpr static const char* doc =
@@ -477,6 +490,19 @@ struct originating_subcentre
             Py_RETURN_NONE;
         }
         WREPORT_CATCH_RETURN_PYO;
+    }
+
+    static int set(Impl* self, PyObject* value, void* closure)
+    {
+        try
+        {
+            if (value == Py_None)
+                self->bulletin->originating_subcentre = 0xffff;
+            else
+                self->bulletin->originating_subcentre = int_from_python(value);
+            return 0;
+        }
+        WREPORT_CATCH_RETURN_INT;
     }
 };
 
@@ -509,7 +535,7 @@ struct update_sequence_number
     }
 };
 
-struct reftime : public Getter<reftime, wrpy_Bulletin>
+struct reftime : public GetSetter<reftime, wrpy_Bulletin>
 {
     constexpr static const char* name = "reftime";
     constexpr static const char* doc  = "Reference time (datetime | None).";
@@ -527,6 +553,30 @@ struct reftime : public Getter<reftime, wrpy_Bulletin>
                 self->bulletin->rep_minute, self->bulletin->rep_second, 0);
         }
         WREPORT_CATCH_RETURN_PYO;
+    }
+
+    static int set(Impl* self, PyObject* value, void* closure)
+    {
+        try
+        {
+            if (!PyDate_Check(value))
+            {
+                PyErr_Format(PyExc_TypeError,
+                             "reftime is %R instead of a datetime instance",
+                             value);
+                return -1;
+            }
+
+            PyDateTime_Date* dt        = (PyDateTime_Date*)value;
+            self->bulletin->rep_year   = PyDateTime_GET_YEAR(dt);
+            self->bulletin->rep_month  = PyDateTime_GET_MONTH(dt);
+            self->bulletin->rep_day    = PyDateTime_GET_DAY(dt);
+            self->bulletin->rep_hour   = PyDateTime_DATE_GET_HOUR(dt);
+            self->bulletin->rep_minute = PyDateTime_DATE_GET_MINUTE(dt);
+            self->bulletin->rep_second = PyDateTime_DATE_GET_SECOND(dt);
+            return 0;
+        }
+        WREPORT_CATCH_RETURN_INT;
     }
 };
 
@@ -664,7 +714,7 @@ struct master_table_version_number_bufr
     }
 };
 
-struct compression : public Getter<compression, wrpy_Bulletin>
+struct compression : public GetSetter<compression, wrpy_Bulletin>
 {
     constexpr static const char* name = "compression";
     constexpr static const char* doc =
@@ -689,6 +739,24 @@ struct compression : public Getter<compression, wrpy_Bulletin>
             }
         }
         WREPORT_CATCH_RETURN_PYO;
+    }
+
+    static int set(Impl* self, PyObject* value, void* closure)
+    {
+        try
+        {
+            int val = PyObject_IsTrue(value);
+            if (val == -1)
+                return -1;
+
+            if (auto* bufr =
+                    dynamic_cast<wreport::BufrBulletin*>(self->bulletin))
+            {
+                bufr->compression = (val == 1);
+            }
+            return 0;
+        }
+        WREPORT_CATCH_RETURN_INT;
     }
 };
 
@@ -721,7 +789,7 @@ struct has_check_digit : public Getter<has_check_digit, wrpy_Bulletin>
     }
 };
 
-struct optional_section : public Getter<optional_section, wrpy_Bulletin>
+struct optional_section : public GetSetter<optional_section, wrpy_Bulletin>
 {
     constexpr static const char* name = "optional_section";
     constexpr static const char* doc =
@@ -745,6 +813,32 @@ struct optional_section : public Getter<optional_section, wrpy_Bulletin>
             Py_RETURN_NONE;
         }
         WREPORT_CATCH_RETURN_PYO;
+    }
+
+    static int set(Impl* self, PyObject* value, void* closure)
+    {
+        try
+        {
+            if (auto* bufr =
+                    dynamic_cast<wreport::BufrBulletin*>(self->bulletin))
+            {
+                if (value == Py_None)
+                    bufr->optional_section.clear();
+                else
+                {
+                    pyo_unique_ptr py_bytes(PyObject_Bytes(value));
+                    char* buffer;
+                    Py_ssize_t length;
+                    if (PyBytes_AsStringAndSize(py_bytes, &buffer, &length) ==
+                        -1)
+                        throw PythonException();
+
+                    bufr->optional_section = std::string(buffer, length);
+                }
+            }
+            return 0;
+        }
+        WREPORT_CATCH_RETURN_INT;
     }
 };
 
@@ -1179,7 +1273,8 @@ struct subset_var : public MethKwargs<subset_var, wrpy_Subset>
         "code: str, value: Union[None, int, float, str, bytes] = None";
     constexpr static const char* returns = "wreport.Var";
     constexpr static const char* summary =
-        "create a :py:class:`wreport.Var` using the subset bulletin's B table.";
+        "create a :py:class:`wreport.Var` using the subset bulletin's B "
+        "table.";
 
     static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
     {
@@ -1452,7 +1547,8 @@ It presents as a Sequence of :py:class:`wreport.Var` instances.
 
             if (slicelength > size)
             {
-                // fprintf(stderr, "SLICE ASSIGN erase %zd…%zd\n", start + size,
+                // fprintf(stderr, "SLICE ASSIGN erase %zd…%zd\n", start +
+                // size,
                 //         stop);
                 subset.erase(subset.begin() + start + size,
                              subset.begin() + stop);

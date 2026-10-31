@@ -294,13 +294,63 @@ class BulletinTests(BulletinTestCase):
         with self.assertRaisesRegex(IndexError, "invalid subset index"):
             self.bulletin[-15]
 
-    def test_update_sequence_number(self) -> None:
-        bulletin = self.read_bulletin()
-        bulletin.update_sequence_number = 42
-        self.assertEqual(bulletin.update_sequence_number, 42)
-        encoded = bulletin.encode()
-        new_bulletin = bulletin.decode_bufr_header(encoded)
-        self.assertEqual(new_bulletin.update_sequence_number, 42)
+    def test_getsetters(self) -> None:
+        for field, value, expected in (
+            ("originating_centre", 42, 42),
+            ("originating_centre", None, None),
+            ("originating_subcentre", 42, 42),
+            ("originating_subcentre", None, None),
+            ("update_sequence_number", 42, 42),
+            (
+                "reftime",
+                dt.datetime(2026, 6, 1, 12, 30, 45),
+                dt.datetime(2026, 6, 1, 12, 30, 45),
+            ),
+        ):
+            with self.subTest(field=field, value=str(value)):
+                bulletin = self.read_bulletin()
+                setattr(bulletin, field, value)
+                self.assertEqual(getattr(bulletin, field), expected)
+                encoded = bulletin.encode()
+                new_bulletin = bulletin.decode_bufr_header(encoded)
+                self.assertEqual(getattr(new_bulletin, field), expected)
+
+    def test_compression(self) -> None:
+        # This cannot use test_getsetters, as wreport still does not support
+        # encoding BUFR with compression, so compression is always False after
+        # reencoding
+        for value, expected in (
+            (True, True),
+            (42, True),
+            ("no", True),
+            (False, False),
+            (0, False),
+            (None, False),
+        ):
+            with self.subTest(value=str(value)):
+                bulletin = self.read_bulletin()
+                bulletin.compression = value
+                self.assertEqual(bulletin.compression, expected)
+                encoded = bulletin.encode()
+                new_bulletin = bulletin.decode_bufr_header(encoded)
+                self.assertFalse(new_bulletin.compression)
+
+    def test_optional_section(self) -> None:
+        # Optional sections are padded to an even number of bytes during
+        # encoding
+        for value, recoded in (
+            (None, None),
+            (b"123", b"123\0"),
+            (b"1234", b"1234"),
+            (b"12345", b"12345\0"),
+        ):
+            with self.subTest(value=str(value)):
+                bulletin = self.read_bulletin()
+                bulletin.optional_section = value
+                self.assertEqual(bulletin.optional_section, value)
+                encoded = bulletin.encode()
+                new_bulletin = bulletin.decode_bufr_header(encoded)
+                self.assertEqual(new_bulletin.optional_section, recoded)
 
     def test_change_datadesc(self) -> None:
         bulletin = self.read_bulletin()
