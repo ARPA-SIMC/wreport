@@ -6,10 +6,12 @@
 #include "utils/values.h"
 #include "var.h"
 #include "vartable.h"
+#include "wreport/notes.h"
 #include "wreport/utils/string.h"
 #include "wreport/vartable.h"
 #include <algorithm>
 #include <datetime.h>
+#include <sstream>
 
 using namespace std;
 using namespace wreport::python;
@@ -1086,6 +1088,146 @@ struct bulletin_encode : public MethNoargs<bulletin_encode, wrpy_Bulletin>
     }
 };
 
+struct copy_without_subsets
+    : public MethNoargs<copy_without_subsets, wrpy_Bulletin>
+{
+    constexpr static const char* name      = "copy_without_subsets";
+    constexpr static const char* signature = "";
+    constexpr static const char* returns   = "wreport.Bulletin";
+    constexpr static const char* summary =
+        "return a copy of the bulletin, without its subsets";
+
+    static PyObject* run(Impl* self)
+    {
+        try
+        {
+            auto bulletin = self->bulletin->copy_without_subsets();
+            return bulletin_to_python(std::move(bulletin));
+        }
+        WREPORT_CATCH_RETURN_PYO
+    }
+};
+
+struct append_subset : public MethKwargs<append_subset, wrpy_Bulletin>
+{
+    constexpr static const char* name      = "append";
+    constexpr static const char* signature = "subset: wreport.Subset";
+    constexpr static const char* returns   = "None";
+    constexpr static const char* summary =
+        "append a copy of the given subset to the bulletin";
+
+    static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
+    {
+        static const char* kwlist[] = {"subset", nullptr};
+        PyObject* arg_subset        = nullptr;
+        if (!PyArg_ParseTupleAndKeywords(
+                args, kw, "O", const_cast<char**>(kwlist), &arg_subset))
+            return nullptr;
+
+        try
+        {
+            if (!wrpy_Subset_Check(arg_subset))
+            {
+                PyErr_Format(PyExc_TypeError,
+                             "argument is %R instead of wreport.Subset",
+                             arg_subset);
+                return nullptr;
+            }
+            wrpy_Subset* py_subset = (wrpy_Subset*)arg_subset;
+            self->bulletin->append_subset(
+                py_subset->bulletin->bulletin->subset(py_subset->subset));
+            Py_RETURN_NONE;
+        }
+        WREPORT_CATCH_RETURN_PYO
+    }
+};
+
+struct diff : public MethKwargs<diff, wrpy_Bulletin>
+{
+    constexpr static const char* name      = "diff";
+    constexpr static const char* signature = "bulletin: wreport.Bulletin";
+    constexpr static const char* returns   = "(int, str)";
+    constexpr static const char* summary =
+        "compute the differences between two bulletins";
+    constexpr static const char* doc =
+        ":returns: a tuple with the number of differences and their textual "
+        "description";
+
+    static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
+    {
+        static const char* kwlist[] = {"bulletin", nullptr};
+        PyObject* arg_bulletin      = nullptr;
+        if (!PyArg_ParseTupleAndKeywords(
+                args, kw, "O", const_cast<char**>(kwlist), &arg_bulletin))
+            return nullptr;
+
+        try
+        {
+            if (!wrpy_Bulletin_Check(arg_bulletin))
+            {
+                PyErr_Format(PyExc_TypeError,
+                             "argument is %R instead of wreport.Bulletin",
+                             arg_bulletin);
+                return nullptr;
+            }
+            wrpy_Bulletin* py_bulletin = (wrpy_Bulletin*)arg_bulletin;
+            std::stringstream collected_notes;
+            int diffs;
+            {
+                notes::Collect collect(collected_notes);
+                diffs = self->bulletin->diff(*(py_bulletin->bulletin));
+            }
+            pyo_unique_ptr py_count(to_python(diffs));
+            pyo_unique_ptr py_desc(to_python(collected_notes.str()));
+            return PyTuple_Pack(2, py_count.get(), py_desc.get());
+        }
+        WREPORT_CATCH_RETURN_PYO
+    }
+};
+
+struct diff_header : public MethKwargs<diff_header, wrpy_Bulletin>
+{
+    constexpr static const char* name      = "diff_header";
+    constexpr static const char* signature = "bulletin: wreport.Bulletin";
+    constexpr static const char* returns   = "(int, str)";
+    constexpr static const char* summary =
+        "compute the differences between the headers of two bulletins";
+    constexpr static const char* doc =
+        ":returns: a tuple with the number of differences and their textual "
+        "description";
+
+    static PyObject* run(Impl* self, PyObject* args, PyObject* kw)
+    {
+        static const char* kwlist[] = {"bulletin", nullptr};
+        PyObject* arg_bulletin      = nullptr;
+        if (!PyArg_ParseTupleAndKeywords(
+                args, kw, "O", const_cast<char**>(kwlist), &arg_bulletin))
+            return nullptr;
+
+        try
+        {
+            if (!wrpy_Bulletin_Check(arg_bulletin))
+            {
+                PyErr_Format(PyExc_TypeError,
+                             "argument is %R instead of wreport.Bulletin",
+                             arg_bulletin);
+                return nullptr;
+            }
+            wrpy_Bulletin* py_bulletin = (wrpy_Bulletin*)arg_bulletin;
+            std::stringstream collected_notes;
+            int diffs;
+            {
+                notes::Collect collect(collected_notes);
+                diffs = self->bulletin->diff_header(*(py_bulletin->bulletin));
+            }
+            pyo_unique_ptr py_count(to_python(diffs));
+            pyo_unique_ptr py_desc(to_python(collected_notes.str()));
+            return PyTuple_Pack(2, py_count.get(), py_desc.get());
+        }
+        WREPORT_CATCH_RETURN_PYO
+    }
+};
+
 struct BulletinDef : public Type<BulletinDef, wrpy_Bulletin>
 {
     constexpr static const char* name      = "Bulletin";
@@ -1105,7 +1247,8 @@ as a Sequence of subsets with data.
                optional_section, btable, datadesc>
         getsetters;
     Methods<decode_bufr_header, decode_bufr, decode_crex_header, decode_crex,
-            bulletin_var, bulletin_encode>
+            bulletin_var, bulletin_encode, copy_without_subsets, append_subset,
+            diff, diff_header>
         methods;
 
     constexpr static unsigned long tp_flags =

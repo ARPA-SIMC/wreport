@@ -52,6 +52,17 @@ const Subset& Bulletin::subset(unsigned subsection) const
     return subsets[subsection];
 }
 
+Subset& Bulletin::append_subset(const Subset& subset)
+{
+    if (subset.tables->btable != tables.btable or
+        subset.tables->dtable != tables.dtable)
+        throw error_consistency(
+            "Cannot append subset with different tables than the bulletin");
+    auto& res  = subsets.emplace_back(subset);
+    res.tables = &tables;
+    return res;
+}
+
 void Bulletin::print(FILE* out) const
 {
     fprintf(out,
@@ -121,15 +132,29 @@ void Bulletin::print_datadesc(FILE* out, unsigned indent) const
 
 unsigned Bulletin::diff(const Bulletin& msg) const
 {
+    unsigned diffs = diff_header(msg);
+    if (subsets.size() != msg.subsets.size())
+    {
+        notes::logf("Number of subsets differ (first is %zu, second is %zu)\n",
+                    subsets.size(), msg.subsets.size());
+        ++diffs;
+    }
+    else
+        for (unsigned i = 0; i < subsets.size(); ++i)
+            diffs += subsets[i].diff(msg.subsets[i]);
+    return diffs;
+}
+
+unsigned Bulletin::diff_header(const Bulletin& msg) const
+{
     unsigned diffs = 0;
+
     if (string(encoding_name()) != string(msg.encoding_name()))
     {
         notes::logf("Encodings differ (first is %s, second is %s)\n",
                     encoding_name(), msg.encoding_name());
         ++diffs;
     }
-    else
-        diffs += diff_details(msg);
     if (master_table_number != msg.master_table_number)
     {
         notes::logf(
@@ -285,19 +310,8 @@ unsigned Bulletin::diff(const Bulletin& msg) const
             }
     }
 
-    if (subsets.size() != msg.subsets.size())
-    {
-        notes::logf("Number of subsets differ (first is %zu, second is %zu)\n",
-                    subsets.size(), msg.subsets.size());
-        ++diffs;
-    }
-    else
-        for (unsigned i = 0; i < subsets.size(); ++i)
-            diffs += subsets[i].diff(msg.subsets[i]);
     return diffs;
 }
-
-unsigned Bulletin::diff_details(const Bulletin& msg) const { return 0; }
 
 /*
  * BufrCodecOptions
@@ -415,13 +429,12 @@ void BufrBulletin::print_details(FILE* out) const
             optional_section.size());
 }
 
-unsigned BufrBulletin::diff_details(const Bulletin& bulletin) const
+unsigned BufrBulletin::diff_header(const Bulletin& bulletin) const
 {
-    unsigned diffs         = Bulletin::diff_details(bulletin);
+    unsigned diffs         = Bulletin::diff_header(bulletin);
     const BufrBulletin* bb = dynamic_cast<const BufrBulletin*>(&bulletin);
     if (!bb)
-        throw error_consistency("BufrBulletin::diff_details called with a "
-                                "non-BufrBulletin argument");
+        return diffs;
     const BufrBulletin& msg = *bb;
 
     if (edition_number != msg.edition_number)
@@ -538,6 +551,38 @@ void BufrBulletin::write(const std::string& buf, FILE* out, const char* fname)
     }
 }
 
+std::unique_ptr<Bulletin> BufrBulletin::copy_without_subsets() const
+{
+    std::unique_ptr<BufrBulletin> res(new BufrBulletin);
+    res->fname                  = fname;
+    res->offset                 = offset;
+    res->master_table_number    = master_table_number;
+    res->data_category          = data_category;
+    res->data_subcategory       = data_subcategory;
+    res->data_subcategory_local = data_subcategory_local;
+    res->originating_centre     = originating_centre;
+    res->originating_subcentre  = originating_subcentre;
+    res->update_sequence_number = update_sequence_number;
+    res->rep_year               = rep_year;
+    res->rep_month              = rep_month;
+    res->rep_day                = rep_day;
+    res->rep_hour               = rep_hour;
+    res->rep_minute             = rep_minute;
+    res->rep_second             = rep_second;
+    res->tables.btable          = tables.btable;
+    res->tables.dtable          = tables.dtable;
+    res->datadesc               = datadesc;
+
+    res->edition_number                    = edition_number;
+    res->master_table_version_number       = master_table_version_number;
+    res->master_table_version_number_local = master_table_version_number_local;
+    res->compression                       = compression;
+    res->optional_section                  = optional_section;
+    memcpy(res->section_end, section_end, sizeof(section_end));
+
+    return res;
+}
+
 /*
  * CrexBulletin
  */
@@ -575,13 +620,12 @@ void CrexBulletin::print_details(FILE* out) const
             has_check_digit ? 'C' : '-');
 }
 
-unsigned CrexBulletin::diff_details(const Bulletin& bulletin) const
+unsigned CrexBulletin::diff_header(const Bulletin& bulletin) const
 {
-    unsigned diffs         = Bulletin::diff_details(bulletin);
+    unsigned diffs         = Bulletin::diff_header(bulletin);
     const CrexBulletin* cb = dynamic_cast<const CrexBulletin*>(&bulletin);
     if (!cb)
-        throw error_consistency("CrexBulletin::diff_details called with a "
-                                "non-CrexBulletin argument");
+        return diffs;
     const CrexBulletin& msg = *cb;
 
     if (edition_number != msg.edition_number)
@@ -623,6 +667,37 @@ unsigned CrexBulletin::diff_details(const Bulletin& bulletin) const
         ++diffs;
     }
     return diffs;
+}
+
+std::unique_ptr<Bulletin> CrexBulletin::copy_without_subsets() const
+{
+    std::unique_ptr<CrexBulletin> res(new CrexBulletin);
+    res->fname                  = fname;
+    res->offset                 = offset;
+    res->master_table_number    = master_table_number;
+    res->data_category          = data_category;
+    res->data_subcategory       = data_subcategory;
+    res->data_subcategory_local = data_subcategory_local;
+    res->originating_centre     = originating_centre;
+    res->originating_subcentre  = originating_subcentre;
+    res->update_sequence_number = update_sequence_number;
+    res->rep_year               = rep_year;
+    res->rep_month              = rep_month;
+    res->rep_day                = rep_day;
+    res->rep_hour               = rep_hour;
+    res->rep_minute             = rep_minute;
+    res->rep_second             = rep_second;
+    res->tables.btable          = tables.btable;
+    res->tables.dtable          = tables.dtable;
+    res->datadesc               = datadesc;
+
+    res->edition_number                    = edition_number;
+    res->master_table_version_number       = master_table_version_number;
+    res->master_table_version_number_bufr  = master_table_version_number_bufr;
+    res->master_table_version_number_local = master_table_version_number_local;
+    res->has_check_digit                   = has_check_digit;
+
+    return res;
 }
 
 bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname,

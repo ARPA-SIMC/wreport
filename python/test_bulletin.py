@@ -379,6 +379,22 @@ class BulletinTests(BulletinTestCase):
         self.assertEqual(var.code, "B01128")
         self.assertFalse(var.isset)
 
+    def test_copy_without_subsets(self) -> None:
+        bulletin1 = self.bulletin.copy_without_subsets()
+        diffcount, difftext = bulletin1.diff_header(self.bulletin)
+        self.assertEqual((diffcount, difftext), (0, ""))
+
+    def test_append_subset(self) -> None:
+        # Take a bufy with only one subset
+        sample = testdata_path / "bufr" / "bufr1"
+        bulletin = wreport.Bulletin.decode_bufr(sample.read_bytes())
+        bulletin1 = bulletin.copy_without_subsets()
+        bulletin1.append(bulletin[0])
+        encoded = bulletin1.encode()
+        decoded = wreport.Bulletin.decode_bufr(encoded)
+        diffcount, difftext = decoded.diff(bulletin)
+        self.assertEqual((diffcount, difftext), (0, ""))
+
 
 class SubsetTests(BulletinTestCase):
     subset: ClassVar[wreport.Subset]
