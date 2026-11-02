@@ -938,12 +938,12 @@ template <typename Child> struct decode_base : public ClassMethKwargs<Child>
             std::string raw(arg_raw, (size_t)arg_raw_size);
             std::string fname;
             size_t offset = 0;
-            if (arg_fname)
+            if (arg_fname and arg_fname != Py_None)
             {
                 auto path = path_from_python(arg_fname);
                 fname     = path.native();
             }
-            if (arg_offset)
+            if (arg_offset and arg_offset != Py_None)
                 offset = int_from_python(arg_offset);
 
             return Child::decode(raw, fname.c_str(), offset);

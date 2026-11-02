@@ -110,6 +110,9 @@ class SampleBufrTestCase(TestCase):
     def assertSampleBufrHeader(self, bulletin: wreport.Bulletin) -> None:
         self.assertEqual(bulletin.fname, self.sample_bufr.as_posix())
         self.assertEqual(bulletin.offset, 0)
+        self.assertSampleBufrHeaderData(bulletin)
+
+    def assertSampleBufrHeaderData(self, bulletin: wreport.Bulletin) -> None:
         self.assertEqual(bulletin.master_table_number, 0)
         self.assertEqual(bulletin.data_category, 4)
         self.assertEqual(bulletin.data_subcategory, 2)
@@ -153,6 +156,25 @@ class DecodeTests(SampleBufrTestCase):
         self.assertIsNone(bulletin.optional_section)
         self.assertIsNone(bulletin.reftime)
         self.assertEqual(bulletin.datadesc, ("D07005", "B13023", "B13013"))
+
+    def test_decode_raw_bufr_header_provenance_is_none(self) -> None:
+        decoded: list[wreport.Bulletin] = []
+        with self.sample_bufr.open("rb") as fd:
+            for offset, data in wreport.read_bufr_raw(fd):
+                decoded.append(
+                    wreport.Bulletin.decode_bufr_header(
+                        data, fname=None, offset=None
+                    )
+                )
+
+        self.assertEqual(len(decoded), 1)
+        bulletin = decoded[0]
+        self.assertIsInstance(bulletin, wreport.Bulletin)
+
+        self.assertEqual(len(bulletin), 0)
+        self.assertIsNone(bulletin.fname)
+        self.assertEqual(bulletin.offset, 0)
+        self.assertSampleBufrHeaderData(bulletin)
 
     def test_decode_raw_bufr_header(self) -> None:
         decoded: list[wreport.Bulletin] = []
