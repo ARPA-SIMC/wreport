@@ -3,6 +3,7 @@
 #include "utils/methods.h"
 #include "utils/type.h"
 #include "utils/values.h"
+#include <cerrno>
 
 using namespace std;
 using namespace wreport::python;
@@ -49,17 +50,37 @@ off_t get_fd_pos(PyObject* o)
         return from_python<int>(o_pos);
     }
 
-    // If tell raised UnsupportedOperation, return 0
-    pyo_unique_ptr py_io(throw_ifnull(PyImport_ImportModule("io")));
-    pyo_unique_ptr unsupported_operation(
-        throw_ifnull(PyObject_GetAttrString(py_io, "UnsupportedOperation")));
-    if (PyErr_ExceptionMatches(unsupported_operation))
+    // Gracefully handle OSError for unseekable pipes
+    pyo_unique_ptr exc(PyErr_GetRaisedException());
+    if (PyErr_GivenExceptionMatches(exc, PyExc_OSError))
     {
-        return 0;
-    }
+        PyObject* py_errno_untracked;
+        if (PyObject_GetOptionalAttrString(exc, "errno", &py_errno_untracked) ==
+            -1)
+            throw PythonException();
 
-    // Else reraise
-    throw PythonException();
+        // The exception has `errno`: check it
+        if (py_errno_untracked != Py_None)
+        {
+            pyo_unique_ptr py_errno(py_errno_untracked);
+            if (int_from_python(py_errno) == ESPIPE)
+                return 0;
+            PyErr_SetRaisedException(exc.release());
+            throw PythonException();
+        }
+
+        // Check if the exception is io.UnsupportedOperation, which is also
+        // handled gracefully
+        pyo_unique_ptr py_io(throw_ifnull(PyImport_ImportModule("io")));
+        pyo_unique_ptr unsupported_operation(throw_ifnull(
+            PyObject_GetAttrString(py_io, "UnsupportedOperation")));
+        if (PyErr_GivenExceptionMatches(exc, unsupported_operation))
+            return 0;
+
+        // In all other cases, bubble the exception up
+        PyErr_SetRaisedException(exc.release());
+        throw PythonException();
+    }
 }
 
 } // namespace
@@ -180,7 +201,7 @@ void InputFilePython::read(char* buf, size_t size, const char* what)
         Py_ssize_t py_len;
         const char* py_buf =
             throw_ifnull(PyUnicode_AsUTF8AndSize(res, &py_len));
-        if (py_len != size)
+        if ((size_t)py_len != size)
         {
             if (name().empty())
                 error_consistency::throwf(

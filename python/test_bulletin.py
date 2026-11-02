@@ -1,6 +1,8 @@
 import wreport
 import datetime as dt
+import subprocess
 import unittest
+from unittest import mock
 from pathlib import Path
 from typing import ClassVar
 import io
@@ -14,6 +16,23 @@ class TestCase(unittest.TestCase):
 
 
 class IterationTests(TestCase):
+    def test_read_bufr_raw_from_pipe(self) -> None:
+        path = testdata_path / "bufr" / "gts-buoy1.bufr"
+        with path.open("rb") as fd:
+            with mock.patch.object(
+                fd, "tell", side_effect=io.UnsupportedOperation
+            ):
+                contents = list(wreport.read_bufr_raw(fd))
+        self.assertEqual(contents, [(0, path.read_bytes())])
+
+    def test_read_bufr_raw_from_actual_pipe(self) -> None:
+        path = testdata_path / "bufr" / "gts-buoy1.bufr"
+        with subprocess.Popen(
+            ["cat", path.as_posix()], stdout=subprocess.PIPE
+        ) as proc:
+            contents = list(wreport.read_bufr_raw(proc.stdout))
+        self.assertEqual(contents, [(0, path.read_bytes())])
+
     def test_read_bufr_raw(self) -> None:
         path = testdata_path / "bufr" / "gts-buoy1.bufr"
         with path.open("rb") as fd:
