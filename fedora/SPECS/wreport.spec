@@ -4,7 +4,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.43
+Version: 3.44
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -137,14 +137,6 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %{_includedir}/%{name}/*
 
 
-# %files -n lib%{name}-doc
-# %defattr(-,root,root,-)
-# %doc %{_docdir}/%{name}/libwreport.doxytags
-# %exclude %{_docdir}/%{name}/html/.doctrees/*
-# %doc %{_docdir}/%{name}/html/*
-# %exclude %{_docdir}/%{name}/xml/*
-# %exclude %{_docdir}/%{name}/html/.buildinfo
-
 %files -n python3-%{name}3
 %defattr(-,root,root,-)
 %dir %{python3_sitearch}/wreport/
@@ -152,6 +144,13 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %{python3_sitearch}/_wreport*.so
 
 %changelog
+* Tue Nov 03 2026 Daniele Branchini  <dbranchini@arpae.it> - 3.44-1
+- Restructured documentation using the Diátaxis method
+- Documentation is now not built by default, as it uses MyST which is not
+  available on all supported platforms. Documentation is built using an
+  explicit `doc` target for `ninja` (#68)
+- Extended python library to handle reading and writing bulletins
+
 * Mon Jun 22 2026 Daniele Branchini  <dbranchini@arpae.it> - 3.43-1
 - Build with Fedora 44 (#65)
 
