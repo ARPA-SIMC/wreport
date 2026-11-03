@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "decoder.h"
 #include "trace.h"
 #include "wreport/vartable.h"

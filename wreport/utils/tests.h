@@ -1,14 +1,15 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
 #ifndef WREPORT_TESTS_H
 #define WREPORT_TESTS_H
 
-/**
- * @author Enrico Zini <enrico@enricozini.org>, Peter Rockai (mornfall)
- * <me@mornfall.net>
- * @brief Utility functions for the unit tests
- *
- * Copyright (C) 2006--2007  Peter Rockai (mornfall) <me@mornfall.net>
- * Copyright (C) 2003--2025  Enrico Zini <enrico@debian.org>
- */
+// Copyright (C) 2003--2025  Enrico Zini <enrico@debian.org>
+// Copyright (C) 2006--2007  Peter Rockai (mornfall) <me@mornfall.net>
+//
+// SPDX-License-Identifier: BSD-3-Clause
 
 #include <cstdint>
 #include <exception>

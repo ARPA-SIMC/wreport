@@ -1,12 +1,14 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
 #ifndef WREPORT_STRING_H
 #define WREPORT_STRING_H
 
-/**
- * @author Enrico Zini <enrico@enricozini.org>
- * @brief String functions
- *
- * Copyright (C) 2007--2015  Enrico Zini <enrico@debian.org>
- */
+// Copyright (C) 2007--2015  Enrico Zini <enrico@debian.org>
+//
+// SPDX-License-Identifier: BSD-3-Clause
 
 #include <cctype>
 #include <functional>

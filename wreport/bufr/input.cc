@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "input.h"
 #include "trace.h"
 #include "utils/sys.h"

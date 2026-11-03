@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "wreport/options.h"
 #include "wreport/tests.h"
 #include <functional>

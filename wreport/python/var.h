@@ -1,3 +1,9 @@
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
+// SPDX-License-Identifier: GPL-2.0-only
+
 #ifndef WREPORT_PYTHON_VAR_H
 #define WREPORT_PYTHON_VAR_H
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "tables.h"
 #include "tests.h"
 #include "wreport/dtable.h"

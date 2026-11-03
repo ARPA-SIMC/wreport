@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 toplevel_inc = include_directories('../..')
 
 extra_warnings = cpp.get_supported_arguments([

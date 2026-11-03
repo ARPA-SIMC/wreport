@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "tableinfo.h"
 #include "error.h"
 #include <iostream>

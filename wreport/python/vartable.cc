@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "vartable.h"
 #include "common.h"
 #include "utils/methods.h"

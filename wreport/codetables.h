@@ -1,3 +1,9 @@
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
+// SPDX-License-Identifier: GPL-2.0-only
+
 #ifndef WREPORT_CODETABLES
 #define WREPORT_CODETABLES
 

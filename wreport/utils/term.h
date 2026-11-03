@@ -1,12 +1,14 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
 #ifndef WREPORT_TERM_H
 #define WREPORT_TERM_H
 
-/**
- * @author Enrico Zini <enrico@enricozini.org>
- * @brief Contrl terminal output
- *
- * Copyright (C) 2018  Enrico Zini <enrico@debian.org>
- */
+// Copyright (C) 2018  Enrico Zini <enrico@debian.org>
+//
+// SPDX-License-Identifier: BSD-3-Clause
 
 #include <cstdio>
 #include <string>

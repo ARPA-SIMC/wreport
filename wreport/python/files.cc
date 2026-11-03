@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "files.h"
 #include "common.h"
 #include "utils/methods.h"

@@ -1,12 +1,14 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
 #ifndef WREPORT_SYS_H
 #define WREPORT_SYS_H
 
-/**
- * @author Enrico Zini <enrico@enricozini.org>
- * @brief Operating system functions
- *
- * Copyright (C) 2007--2018  Enrico Zini <enrico@debian.org>
- */
+// Copyright (C) 2007--2018  Enrico Zini <enrico@debian.org>
+//
+// SPDX-License-Identifier: BSD-3-Clause
 
 #include <dirent.h>
 #include <fcntl.h>

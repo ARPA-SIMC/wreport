@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "subset.h"
 #include "config.h"
 #include "notes.h"

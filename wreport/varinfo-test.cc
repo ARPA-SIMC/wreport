@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "internals/varinfo.h"
 #include "tests.h"
 #include "varinfo.h"

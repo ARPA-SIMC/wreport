@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "wreport/bulletin/dds-printer.h"
 
 using namespace std;

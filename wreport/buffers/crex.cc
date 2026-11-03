@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "crex.h"
 #include "config.h"
 #include "wreport/var.h"

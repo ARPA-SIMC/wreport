@@ -1,3 +1,9 @@
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
+// SPDX-License-Identifier: GPL-2.0-only
+
 #ifndef WREPORT_BUFR_DECODER_H
 #define WREPORT_BUFR_DECODER_H
 

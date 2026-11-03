@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "dtable.h"
 #include "config.h"
 #include "error.h"

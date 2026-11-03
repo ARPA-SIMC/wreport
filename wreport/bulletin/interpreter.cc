@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "interpreter.h"
 #include "wreport/dtable.h"
 #include "wreport/error.h"

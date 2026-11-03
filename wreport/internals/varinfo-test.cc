@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "varinfo.h"
 #include "wreport/tests.h"
 #include "wreport/varinfo.h"

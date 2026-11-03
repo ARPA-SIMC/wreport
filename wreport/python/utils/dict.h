@@ -1,3 +1,9 @@
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
+// SPDX-License-Identifier: BSD-3-Clause
+
 #ifndef WREPORT_PYTHON_DICT_H
 #define WREPORT_PYTHON_DICT_H
 

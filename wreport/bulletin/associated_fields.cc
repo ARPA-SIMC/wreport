@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "associated_fields.h"
 #include "wreport/notes.h"
 #include "wreport/var.h"

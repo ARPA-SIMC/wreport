@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: BSD-3-Clause
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "term.h"
 #include "testrunner.h"
 #include "tests.h"

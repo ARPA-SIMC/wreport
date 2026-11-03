@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "test-utils-lua.h"
 #include "tests.h"
 #include "var.h"

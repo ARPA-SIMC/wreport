@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 /*
  * Future optimizations for dba_vartable can make use of string tables to store
  * varinfo descriptions and units instead of long fixed-length records.

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "var.h"
 #include "config.h"
 #include "conv.h"

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "buffers/crex.h"
 #include "bulletin.h"
 #include "bulletin/interpreter.h"

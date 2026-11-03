@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-only
+
 # Generate header with version information
 configure_file(output: 'version.h', configuration: {
         'WREPORT_VERSION_MAJOR': version_array[0],

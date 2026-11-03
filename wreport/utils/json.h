@@ -1,3 +1,9 @@
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
+// SPDX-License-Identifier: GPL-2.0-only
+
 #ifndef WREPORT_UTILS_JSON_H
 #define WREPORT_UTILS_JSON_H
 

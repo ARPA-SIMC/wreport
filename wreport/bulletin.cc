@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "bulletin.h"
 #include "bufr/decoder.h"
 #include "bulletin/dds-printer.h"

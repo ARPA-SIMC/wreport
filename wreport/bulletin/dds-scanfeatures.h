@@ -1,3 +1,9 @@
+/*
+ * SPDX-License-Identifier: GPL-2.0-only
+ */
+
+// SPDX-License-Identifier: GPL-2.0-only
+
 #ifndef WREPORT_BULLETIN_DDS_SCANFEATURES_H
 #define WREPORT_BULLETIN_DDS_SCANFEATURES_H
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-2.0-only
+
 #include "benchmark.h"
 #include "bulletin.h"
 #include <cassert>
