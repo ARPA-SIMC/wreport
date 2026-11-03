@@ -1,10 +1,8 @@
 #ifndef WREPORT_PYTHON_DICT_H
 #define WREPORT_PYTHON_DICT_H
 
-#define PY_SSIZE_T_CLEAN
 #include "core.h"
 #include "values.h"
-#include <Python.h>
 
 namespace wreport::python {
 
