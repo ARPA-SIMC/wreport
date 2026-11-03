@@ -1,6 +1,7 @@
 #!/usr/bin/make -f
 
 export DEB_PYTHON_INSTALL_LAYOUT = deb
+export PYBUILD_AFTER_BUILD = ninja -C {build_dir} doc
 
 %:
 	dh $@ --buildsystem=pybuild --without autoreconf
