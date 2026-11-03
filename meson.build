@@ -142,3 +142,9 @@ run_local_cfg = configure_file(output: 'run-local', input: 'run-local.in', confi
     'top_srcdir': meson.project_source_root(),
     'top_builddir': meson.project_build_root(),
 })
+
+# To avoid having to build depend on its prerequisites on all architectures,
+# documentation is only built when explicitly requested.
+# `built_docs` now has build_by_default: false, and we use this to add a 'ninja
+# doc' target that can will build the docs only
+run_target('doc', command: ['/bin/true'], depends: [built_docs])

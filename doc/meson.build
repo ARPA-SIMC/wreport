@@ -46,7 +46,7 @@ built_docs = custom_target('built_docs',
     output: ['libwreport.doxytags', 'xml', 'html'],
     depends: [libwreport, py_wreport],
     command: [build_docs],
-    build_by_default: true,
+    build_by_default: false,
     install_dir: docdir,
     install: true,
 )
