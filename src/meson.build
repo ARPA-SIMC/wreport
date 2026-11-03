@@ -1,6 +1,6 @@
 toplevel_inc = include_directories('..')
 
-executable('wrep', 'options.cc', 'wrep.cc',
+executable('wrep', 'wrep/options.cc', 'wrep/read_raw.cc', 'wrep/decoder.cc', 'wrep.cc',
     link_with: [libwreport],
     include_directories: toplevel_inc,
     install: true,

@@ -18,6 +18,8 @@ BuildRequires: pkgconfig(lua) >= 5.1.1
 BuildRequires: python3-devel
 BuildRequires: python3-sphinx
 BuildRequires: python3-breathe
+# Not available on all supported platforms
+# BuildRequires: python3-myst-parser
 BuildRequires: /usr/bin/rst2html
 
 Summary: Tools for working with weather reports
@@ -135,14 +137,13 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %{_includedir}/%{name}/*
 
 
-%files -n lib%{name}-doc
-%defattr(-,root,root,-)
-%doc %{_docdir}/%{name}/libwreport.doxytags
-%exclude %{_docdir}/%{name}/html/.doctrees/*
-%doc %{_docdir}/%{name}/html/*
-%doc %{_docdir}/%{name}/examples/*
-%exclude %{_docdir}/%{name}/xml/*
-%exclude %{_docdir}/%{name}/html/.buildinfo
+# %files -n lib%{name}-doc
+# %defattr(-,root,root,-)
+# %doc %{_docdir}/%{name}/libwreport.doxytags
+# %exclude %{_docdir}/%{name}/html/.doctrees/*
+# %doc %{_docdir}/%{name}/html/*
+# %exclude %{_docdir}/%{name}/xml/*
+# %exclude %{_docdir}/%{name}/html/.buildinfo
 
 %files -n python3-%{name}3
 %defattr(-,root,root,-)

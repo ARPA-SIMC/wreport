@@ -248,6 +248,14 @@ struct _Varinfo
     [[deprecated("Use varinfo_create_bufr")]] void
     set_bufr(Varcode code, const char* desc, const char* unit, int scale = 0,
              unsigned len = 0, int bit_ref = 0, int bit_len = 0);
+
+    /**
+     * Check if the other varinfo is equivalent to this one.
+     *
+     * Two varinfo are equivalent if they behave the same when encoding and
+     * decoding values
+     */
+    bool equivalent(const _Varinfo&) const;
 };
 
 /**

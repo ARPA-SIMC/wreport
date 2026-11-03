@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <wreport/fwd.h>
+#include <wreport/var.h>
 #include <wreport/varinfo.h>
 
 namespace wreport {
@@ -44,14 +45,19 @@ struct Tables
     /// Load CREX B and D tables
     void load_crex(const CrexTableID& id);
 
-    // Create a varinfo to store the bitmap
+    /// Create a varinfo to store the bitmap
     Varinfo get_bitmap(Varcode code, const std::string& bitmap) const;
 
-    // Create a varinfo to store character data
+    /// Create a varinfo to store character data
     Varinfo get_chardata(Varcode code, unsigned len) const;
 
-    // Create a varinfo to store a C06 unknown local descriptor
+    /// Create a varinfo to store a C06 unknown local descriptor
     Varinfo get_unknown(Varcode code, unsigned bit_len) const;
+
+    /**
+     * Make a copy of a variable defined using other tables.
+     */
+    Var copy_variable(const Tables& table, const Var& var);
 };
 
 } // namespace wreport

@@ -1,0 +1,50 @@
+#!/usr/bin/python3
+
+import argparse
+import sys
+from pathlib import Path
+
+import wreport
+
+
+def add_metadata(args: argparse.Namespace, bulletin: wreport.Bulletin) -> None:
+    """Append WIGOS metadata to the bulletin."""
+    # Prepend data descriptor D01150 that expands to the 4 WIGOS
+    # metadata variables
+    bulletin.datadesc = ("D01150",) + bulletin.datadesc
+    # Instantiate the corresponding new variables from the
+    # bulletin's B table
+    new_vars = [
+        bulletin.var("001125", args.series),
+        bulletin.var("001126", args.issuer),
+        bulletin.var("001127", args.issue),
+        bulletin.var("001128", args.ident),
+    ]
+    # Prepend the new variables to the bulletin
+    for subset in bulletin:
+        subset[0:0] = new_vars
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Annotate BUFR messages with WIGOS metadata"
+    )
+    parser.add_argument("--series", type=int, help="WIGOS identifier series")
+    parser.add_argument("--issuer", type=int, help="WIGOS issuer of identifier")
+    parser.add_argument("--issue", type=int, help="WIGOS issue number")
+    parser.add_argument("--ident", type=str, help="WIGOS local identifier")
+    parser.add_argument(
+        "files", type=Path, nargs="+", help="Source messages to read"
+    )
+    args = parser.parse_args()
+
+    for file in args.files:
+        with file.open("rb") as fd:
+            # Use wreport.read_bufr to read and decode all messages from a file
+            for bulletin in wreport.read_bufr(fd):
+                add_metadata(args, bulletin)
+                sys.stdout.buffer.write(bulletin.encode())
+
+
+if __name__ == "__main__":
+    main()

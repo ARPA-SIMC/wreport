@@ -1,3 +1,11 @@
+# New in verison UNRELEASED
+
+* Restructured documentation using the Diátaxis method
+* Documentation is now not built by default, as it uses MyST which is not
+  available on all supported platforms. Documentation is built using an
+  explicit `doc` target for `ninja` (#68)
+* Extended python library to handle reading and writing bulletins
+
 # New in verison 3.43
 
 * Build with Fedora 44 (#65)

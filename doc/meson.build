@@ -1,16 +1,19 @@
-## Process this file with automake to produce Makefile.in
-
 doxygen_doc_sources = ['../wreport/main.dox',  '../wreport/style.dox', '../wreport/features.dox']
 
 sphinx_doc_sources = [
-    'src/conf.py',
-    'src/index.rst',
-    'src/python/wreport.rst',
-    'src/cpp/wreport.rst',
-    'src/cpp/errors.rst',
-    'src/cpp/conv.rst',
-    'src/cpp/var.rst',
-    'src/cpp/bulletin.rst',
+    'conf.py',
+    'index.rst',
+    'tutorials/tutorial-template.md',
+    'tutorials/cpp-read-files.md',
+    'tutorials/python-wigos.md',
+    'explanations/concepts.rst',
+    'references/python/wreport.rst',
+    'references/cpp/wreport.rst',
+    'references/cpp/errors.rst',
+    'references/cpp/conv.rst',
+    'references/cpp/var.rst',
+    'references/cpp/bulletin.rst',
+    ex_dump
 ]
 
 # Generate doxygen configuration
@@ -35,7 +38,7 @@ build_docs = configure_file(output: 'build-docs', input: 'build-docs.in', config
     'doc_build': meson.current_build_dir(),
     'top_builddir': meson.project_build_root(),
     'pythonpath_src': meson.project_source_root() / 'python',
-    'pythonpath_build': meson.project_build_root() / 'python',
+    'pythonpath_build': meson.project_build_root() / 'wreport' / 'python',
 })
 
 built_docs = custom_target('built_docs',
@@ -43,9 +46,7 @@ built_docs = custom_target('built_docs',
     output: ['libwreport.doxytags', 'xml', 'html'],
     depends: [libwreport, py_wreport],
     command: [build_docs],
-    build_by_default: true,
+    build_by_default: false,
     install_dir: docdir,
     install: true,
 )
-
-install_subdir('examples', install_dir: docdir)

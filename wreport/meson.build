@@ -9,6 +9,7 @@ libwreport_sources = [
         'error.cc',
         'notes.cc',
         'conv.cc',
+        'files.cc',
         'tableinfo.cc',
         'varinfo.cc',
         'vartable.cc',
@@ -72,6 +73,7 @@ install_headers(
         'conv.h',
         'dtable.h',
         'error.h',
+        'files.h',
         'notes.h',
         'bulletin.h',
         'opcodes.h',
@@ -137,6 +139,7 @@ test_wreport_sources = [
         'options-test.cc',
         'error-test.cc',
         'conv-test.cc',
+        'files-test.cc',
         'tableinfo-test.cc',
         'varinfo-test.cc',
         'vartable-test.cc',
@@ -183,3 +186,5 @@ test_wreport = executable('test-wreport', test_wreport_sources,
 runtest = find_program('../runtest')
 
 test('wreport', runtest, args: [test_wreport])
+
+subdir('python')

@@ -1,0 +1,16 @@
+.. _cpp-api:
+
+C++ API
+=======
+
+.. toctree::
+    :maxdepth: 2
+
+    errors
+    conv
+    var
+    bulletin
+
+
+The C++ API documentation is also available as `doxgen documentation
+<../doxygen/index.html>`_.

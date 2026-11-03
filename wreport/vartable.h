@@ -115,6 +115,10 @@ public:
 
     /// Return the pathname of the file from which this table has been loaded
     virtual std::filesystem::path path() const = 0;
+
+    /// Check if this varinfo is contained in the table, either as an entry or
+    /// an alteration
+    virtual bool contains_varinfo(Varinfo info) const = 0;
 };
 
 } // namespace wreport

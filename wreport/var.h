@@ -27,7 +27,12 @@ protected:
     /// Metadata about the variable
     Varinfo m_info;
 
-    /// True if the variable is set, false otherwise
+    /**
+     * True if the variable is set, false otherwise.
+     *
+     * Unsetting a string variable leaves m_value.c allocated, so it can be
+     * reused by a further set
+     */
     bool m_isset;
 
     /**
@@ -40,6 +45,10 @@ protected:
      *
      * For binary values, it is a raw buffer where the first m_info->bit_len
      * bits are the binary value, and the rest is set to 0.
+     *
+     * The \a c buffer allocation is controlled by the Varinfo structure of the
+     * variable: if the Varinfo indicates a string or binary value, then c is
+     * allocated to hold one byte more than the Varinfo length
      */
     union {
         int32_t i;
@@ -51,6 +60,8 @@ protected:
 
     /// Make sure that m_value is allocated. It does nothing if it already is.
     void allocate();
+    /// Deallocate and clear m_value
+    void deallocate();
 
     /// Copy the value from var. var is assumed to have the same varinfo as us.
     void copy_value(const Var& var);

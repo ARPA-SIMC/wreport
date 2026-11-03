@@ -14,43 +14,6 @@ using namespace std;
 
 namespace wreport {
 
-namespace {
-
-bool seek_past_signature(FILE* fd, const char* sig, unsigned sig_len,
-                         const char* fname)
-{
-    unsigned got = 0;
-    int c;
-
-    errno = 0;
-
-    while (got < sig_len && (c = getc(fd)) != EOF)
-    {
-        if (c == sig[got])
-            got++;
-        else
-            got = 0;
-    }
-
-    if (errno != 0)
-    {
-        if (fname)
-            error_system::throwf("looking for start of %.4s data in %s:", sig,
-                                 fname);
-        else
-            error_system::throwf("looking for start of %.4s data", sig);
-    }
-
-    if (got != sig_len)
-    {
-        /* End of file: return accordingly */
-        return false;
-    }
-    return true;
-}
-
-} // namespace
-
 /*
  * Bulletin
  */
@@ -87,6 +50,20 @@ const Subset& Bulletin::subset(unsigned subsection) const
             "Requested subset %u but there are only %zu available", subsection,
             subsets.size());
     return subsets[subsection];
+}
+
+Subset& Bulletin::append_subset(const Subset& subset)
+{
+    if (subset.tables->btable != tables.btable or
+        subset.tables->dtable != tables.dtable)
+        throw error_consistency(
+            "Cannot append subset with different tables than the bulletin");
+
+    // Port over all variables to our tables
+    auto& res = subsets.emplace_back(tables);
+    for (const auto& var : subset)
+        res.emplace_back(tables.copy_variable(*subset.tables, var));
+    return res;
 }
 
 void Bulletin::print(FILE* out) const
@@ -158,15 +135,29 @@ void Bulletin::print_datadesc(FILE* out, unsigned indent) const
 
 unsigned Bulletin::diff(const Bulletin& msg) const
 {
+    unsigned diffs = diff_header(msg);
+    if (subsets.size() != msg.subsets.size())
+    {
+        notes::logf("Number of subsets differ (first is %zu, second is %zu)\n",
+                    subsets.size(), msg.subsets.size());
+        ++diffs;
+    }
+    else
+        for (unsigned i = 0; i < subsets.size(); ++i)
+            diffs += subsets[i].diff(msg.subsets[i]);
+    return diffs;
+}
+
+unsigned Bulletin::diff_header(const Bulletin& msg) const
+{
     unsigned diffs = 0;
+
     if (string(encoding_name()) != string(msg.encoding_name()))
     {
         notes::logf("Encodings differ (first is %s, second is %s)\n",
                     encoding_name(), msg.encoding_name());
         ++diffs;
     }
-    else
-        diffs += diff_details(msg);
     if (master_table_number != msg.master_table_number)
     {
         notes::logf(
@@ -322,19 +313,8 @@ unsigned Bulletin::diff(const Bulletin& msg) const
             }
     }
 
-    if (subsets.size() != msg.subsets.size())
-    {
-        notes::logf("Number of subsets differ (first is %zu, second is %zu)\n",
-                    subsets.size(), msg.subsets.size());
-        ++diffs;
-    }
-    else
-        for (unsigned i = 0; i < subsets.size(); ++i)
-            diffs += subsets[i].diff(msg.subsets[i]);
     return diffs;
 }
-
-unsigned Bulletin::diff_details(const Bulletin& msg) const { return 0; }
 
 /*
  * BufrCodecOptions
@@ -452,13 +432,12 @@ void BufrBulletin::print_details(FILE* out) const
             optional_section.size());
 }
 
-unsigned BufrBulletin::diff_details(const Bulletin& bulletin) const
+unsigned BufrBulletin::diff_header(const Bulletin& bulletin) const
 {
-    unsigned diffs         = Bulletin::diff_details(bulletin);
+    unsigned diffs         = Bulletin::diff_header(bulletin);
     const BufrBulletin* bb = dynamic_cast<const BufrBulletin*>(&bulletin);
     if (!bb)
-        throw error_consistency("BufrBulletin::diff_details called with a "
-                                "non-BufrBulletin argument");
+        return diffs;
     const BufrBulletin& msg = *bb;
 
     if (edition_number != msg.edition_number)
@@ -512,28 +491,29 @@ unsigned BufrBulletin::diff_details(const Bulletin& bulletin) const
 bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname,
                         off_t* offset)
 {
+    InputFileStdio in(fd, ftello(fd), fname ? fname : std::string());
+    return read_file(in, buf, offset);
+}
+
+bool BufrBulletin::read_file(InputFile& in, std::string& buf, off_t* offset)
+{
     /// A BUFR message starts with "BUFR", then the message length encoded in 3
     /// bytes
 
     // Reset bufr_message data in case this message has been used before
     buf.clear();
 
-    // Seek to start of BUFR data
-    if (!seek_past_signature(fd, "BUFR", 4, fname))
+    off_t sig_offset = in.seek_past_signature("BUFR", 4);
+    if (sig_offset < 0)
         return false;
+
     buf += "BUFR";
     if (offset)
-        *offset = ftello(fd) - 4;
+        *offset = sig_offset;
 
     // Read the remaining 4 bytes of section 0
     buf.resize(8);
-    if (fread(buf.data() + 4, 4, 1, fd) != 1)
-    {
-        if (fname)
-            error_system::throwf("cannot read BUFR section 0 from %s", fname);
-        else
-            throw error_system("cannot read BUFR section 0");
-    }
+    in.read(buf.data() + 4, 4, "BUFR section 0");
 
     // Read the message length
     uint32_t hl_length;
@@ -541,41 +521,23 @@ bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname,
     int bufrlen = ntohl(hl_length) >> 8;
     if (bufrlen < 12)
     {
-        if (fname)
-            error_consistency::throwf(
-                "%s: the size declared by the BUFR message (%d) is less than "
-                "the minimum of 12",
-                fname, bufrlen);
-        else
+        if (in.name().empty())
             error_consistency::throwf("the size declared by the BUFR message "
                                       "(%d) is less than the minimum of 12",
                                       bufrlen);
+        else
+            error_consistency::throwf(
+
+                "%s: the size declared by the BUFR message (%d) is less than "
+                "the minimum of 12",
+                in.name().c_str(), bufrlen);
     }
 
     // Allocate enough space to fit the message
     buf.resize(bufrlen);
 
     // Read the rest of the BUFR message
-    if (fread(buf.data() + 8, bufrlen - 8, 1, fd) != 1)
-    {
-        if (ferror(fd))
-        {
-            if (fname)
-                error_system::throwf("cannot read BUFR message from %s", fname);
-            else
-                throw error_system("cannot read BUFR message");
-        }
-        else
-        {
-            if (fname)
-                error_consistency::throwf(
-                    "cannot read BUFR message from %s: end of file reached",
-                    fname);
-            else
-                throw error_consistency(
-                    "cannot read BUFR message: end of file reached");
-        }
-    }
+    in.read(buf.data() + 8, bufrlen - 8, "BUFR message");
 
     return true;
 }
@@ -590,6 +552,38 @@ void BufrBulletin::write(const std::string& buf, FILE* out, const char* fname)
         else
             error_system::throwf("cannot write %zu bytes", buf.size());
     }
+}
+
+std::unique_ptr<Bulletin> BufrBulletin::copy_without_subsets() const
+{
+    std::unique_ptr<BufrBulletin> res(new BufrBulletin);
+    res->fname                  = fname;
+    res->offset                 = offset;
+    res->master_table_number    = master_table_number;
+    res->data_category          = data_category;
+    res->data_subcategory       = data_subcategory;
+    res->data_subcategory_local = data_subcategory_local;
+    res->originating_centre     = originating_centre;
+    res->originating_subcentre  = originating_subcentre;
+    res->update_sequence_number = update_sequence_number;
+    res->rep_year               = rep_year;
+    res->rep_month              = rep_month;
+    res->rep_day                = rep_day;
+    res->rep_hour               = rep_hour;
+    res->rep_minute             = rep_minute;
+    res->rep_second             = rep_second;
+    res->tables.btable          = tables.btable;
+    res->tables.dtable          = tables.dtable;
+    res->datadesc               = datadesc;
+
+    res->edition_number                    = edition_number;
+    res->master_table_version_number       = master_table_version_number;
+    res->master_table_version_number_local = master_table_version_number_local;
+    res->compression                       = compression;
+    res->optional_section                  = optional_section;
+    memcpy(res->section_end, section_end, sizeof(section_end));
+
+    return res;
 }
 
 /*
@@ -629,13 +623,12 @@ void CrexBulletin::print_details(FILE* out) const
             has_check_digit ? 'C' : '-');
 }
 
-unsigned CrexBulletin::diff_details(const Bulletin& bulletin) const
+unsigned CrexBulletin::diff_header(const Bulletin& bulletin) const
 {
-    unsigned diffs         = Bulletin::diff_details(bulletin);
+    unsigned diffs         = Bulletin::diff_header(bulletin);
     const CrexBulletin* cb = dynamic_cast<const CrexBulletin*>(&bulletin);
     if (!cb)
-        throw error_consistency("CrexBulletin::diff_details called with a "
-                                "non-CrexBulletin argument");
+        return diffs;
     const CrexBulletin& msg = *cb;
 
     if (edition_number != msg.edition_number)
@@ -679,67 +672,65 @@ unsigned CrexBulletin::diff_details(const Bulletin& bulletin) const
     return diffs;
 }
 
+std::unique_ptr<Bulletin> CrexBulletin::copy_without_subsets() const
+{
+    std::unique_ptr<CrexBulletin> res(new CrexBulletin);
+    res->fname                  = fname;
+    res->offset                 = offset;
+    res->master_table_number    = master_table_number;
+    res->data_category          = data_category;
+    res->data_subcategory       = data_subcategory;
+    res->data_subcategory_local = data_subcategory_local;
+    res->originating_centre     = originating_centre;
+    res->originating_subcentre  = originating_subcentre;
+    res->update_sequence_number = update_sequence_number;
+    res->rep_year               = rep_year;
+    res->rep_month              = rep_month;
+    res->rep_day                = rep_day;
+    res->rep_hour               = rep_hour;
+    res->rep_minute             = rep_minute;
+    res->rep_second             = rep_second;
+    res->tables.btable          = tables.btable;
+    res->tables.dtable          = tables.dtable;
+    res->datadesc               = datadesc;
+
+    res->edition_number                    = edition_number;
+    res->master_table_version_number       = master_table_version_number;
+    res->master_table_version_number_bufr  = master_table_version_number_bufr;
+    res->master_table_version_number_local = master_table_version_number_local;
+    res->has_check_digit                   = has_check_digit;
+
+    return res;
+}
+
 bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname,
                         off_t* offset)
 {
+    InputFileStdio in(fd, ftello(fd), fname ? fname : std::string());
+    return read_file(in, buf, offset);
+}
+
+bool CrexBulletin::read_file(InputFile& in, std::string& buf, off_t* offset)
+{
     /*
-     * A CREX message starts with "CREX" and ends with "++\r\r\n7777".  Ideally
-     * any combination of \r and \n should be supported.
+     * A CREX message starts with "CREX" and ends with "++\r\r\n7777".
+     * Ideally any combination of \r and \n should be supported.
      */
 
     // Reset crex_message data in case this message has been used before
     buf.clear();
 
     // Seek to start of CREX data
-    if (!seek_past_signature(fd, "CREX++", 6, fname))
+    off_t sig_offset = in.seek_past_signature("CREX++", 6);
+    if (sig_offset < 0)
         return false;
+
     buf += "CREX++";
     if (offset)
-        *offset = ftello(fd) - 6;
+        *offset = sig_offset;
 
     // Read until "\+\+(\r|\n)+7777"
-    {
-        const char* target           = "++\r\n7777";
-        static const int target_size = 8;
-        int got                      = 0;
-        int c;
-
-        errno = 0;
-        while (got < 8 && (c = getc(fd)) != EOF)
-        {
-            if (target[got] == '\r' && (c == '\n' || c == '\r'))
-                got++;
-            else if (target[got] == '\n' && (c == '\n' || c == '\r'))
-                ;
-            else if (target[got] == '\n' && c == '7')
-                got += 2;
-            else if (c == target[got])
-                got++;
-            else
-                got = 0;
-
-            buf += (char)c;
-        }
-        if (ferror(fd))
-        {
-            if (fname)
-                error_system::throwf("cannot find end of CREX data in %s",
-                                     fname);
-            else
-                throw error_system("cannot find end of CREX data");
-        }
-
-        if (got != target_size)
-        {
-            if (fname)
-                throw error_parse(fname, static_cast<int>(ftell(fd)),
-                                  "CREX message is incomplete");
-            else
-                throw error_parse("(unknown)", static_cast<int>(ftell(fd)),
-                                  "CREX message is incomplete");
-        }
-    }
-
+    in.read_until_crex_terminator(buf);
     return true;
 }
 

@@ -163,6 +163,16 @@ Var& Var::operator=(const Var& var)
     if (&var == this)
         return *this;
 
+    if (m_info != var.m_info)
+    {
+        // Deallocate using the existing Varinfo
+        deallocate();
+        m_isset = false;
+    }
+
+    delete m_attrs;
+    m_attrs = nullptr;
+
     // Copy info
     m_info = var.m_info;
 
@@ -178,22 +188,33 @@ Var& Var::operator=(Var&& var)
 {
     if (&var == this)
         return *this;
-    move_value(var);
+
+    if (m_info != var.m_info)
+    {
+        // Deallocate using the existing Varinfo
+        deallocate();
+        m_isset = false;
+    }
+
     delete m_attrs;
+    m_attrs = nullptr;
+
+    // Copy info
+    m_info = var.m_info;
+
+    // Move value
+    move_value(var);
+
+    // Move attributes
     m_attrs     = var.m_attrs;
     var.m_attrs = nullptr;
+
     return *this;
 }
 
 Var::~Var()
 {
-    switch (m_info->type)
-    {
-        case Vartype::Binary:
-        case Vartype::String:  delete[] m_value.c; break;
-        case Vartype::Integer:
-        case Vartype::Decimal: break;
-    }
+    deallocate();
     delete m_attrs;
 }
 
@@ -216,6 +237,18 @@ void Var::allocate()
 {
     if (!m_value.c && !(m_value.c = new char[m_info->len + 1]))
         throw error_alloc("allocating space for Var value");
+}
+
+void Var::deallocate()
+{
+    switch (m_info->type)
+    {
+        case Vartype::Binary:
+        case Vartype::String:  delete[] m_value.c; break;
+        case Vartype::Integer:
+        case Vartype::Decimal: break;
+    }
+    m_value.c = nullptr;
 }
 
 void Var::copy_value(const Var& var)

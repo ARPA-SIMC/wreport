@@ -158,6 +158,70 @@ void Tests::register_tests()
     }
 #endif
     });
+    add_method("copy", [] {
+        const Vartable* table = Vartable::get_bufr("B0000000000000014000");
+        Varinfo info          = table->query(WR_VAR(0, 6, 1));
+        Var var(info, 44.12);
+        Var var1(var);
+
+        wassert(actual(var.code()) == WR_VAR(0, 6, 1));
+        wassert(actual(var.isset()).istrue());
+        wassert(actual(var) == 44.12);
+
+        wassert(actual(var1.code()) == WR_VAR(0, 6, 1));
+        wassert(actual(var1.isset()).istrue());
+        wassert(actual(var1) == 44.12);
+    });
+    add_method("move", [] {
+        const Vartable* table = Vartable::get_bufr("B0000000000000014000");
+        Varinfo info          = table->query(WR_VAR(0, 6, 1));
+        Var var(info, 44.12);
+        Var var1(std::move(var));
+
+        wassert(actual(var.code()) == WR_VAR(0, 6, 1));
+        wassert(actual(var.isset()).isfalse());
+
+        wassert(actual(var1.code()) == WR_VAR(0, 6, 1));
+        wassert(actual(var1.isset()).istrue());
+        wassert(actual(var1) == 44.12);
+
+        Var var2(info);
+        var2 = std::move(var1);
+
+        wassert(actual(var1.code()) == WR_VAR(0, 6, 1));
+        wassert(actual(var1.isset()).isfalse());
+
+        wassert(actual(var2.code()) == WR_VAR(0, 6, 1));
+        wassert(actual(var2.isset()).istrue());
+        wassert(actual(var2) == 44.12);
+    });
+    add_method("copy_with_different_varcode", [] {
+        const Vartable* table = Vartable::get_bufr("B0000000000000014000");
+        Varinfo info1         = table->query(WR_VAR(0, 1, 15));
+        Varinfo info2         = table->query(WR_VAR(0, 6, 1));
+        Var var1(info1, "Test");
+        Var var2(info2, 44.12);
+
+        var2 = var1;
+        wassert(actual(var1.code()) == WR_VAR(0, 1, 15));
+        wassert(actual(var1) == "Test");
+        wassert(actual(var2.code()) == WR_VAR(0, 1, 15));
+        wassert(actual(var2) == "Test");
+    });
+    add_method("move_with_different_varcode", [] {
+        const Vartable* table = Vartable::get_bufr("B0000000000000014000");
+        Varinfo info1         = table->query(WR_VAR(0, 1, 15));
+        Varinfo info2         = table->query(WR_VAR(0, 6, 1));
+        Var var1(info1, "Test");
+        Var var2(info2, 44.12);
+
+        var2 = std::move(var1);
+        wassert(actual(var1.code()) == WR_VAR(0, 1, 15));
+        wassert(actual(var1.isset()).isfalse());
+        wassert(actual(var2.code()) == WR_VAR(0, 1, 15));
+        wassert(actual(var2.isset()).istrue());
+        wassert(actual(var2) == "Test");
+    });
     add_method("get_set", []() {
         // Get and set values
         const Vartable* table = Vartable::get_bufr("B0000000000000014000");
