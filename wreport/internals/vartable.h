@@ -79,6 +79,7 @@ public:
     const Entry* query_entry(Varcode code) const;
     Varinfo query(Varcode code) const override;
     bool contains(Varcode code) const override;
+    bool contains_varinfo(Varinfo info) const override;
     Varinfo query_altered(Varcode code, int new_scale, unsigned new_bit_len,
                           int new_bit_ref) const override;
     bool iterate(std::function<bool(Varinfo)> dest) const override;

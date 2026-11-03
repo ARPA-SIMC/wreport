@@ -141,6 +141,18 @@ Varinfo Base::query(Varcode code) const
 
 bool Base::contains(Varcode code) const { return query_entry(code) != nullptr; }
 
+bool Base::contains_varinfo(Varinfo info) const
+{
+    const Entry* e = query_entry(info->code);
+    while (e)
+    {
+        if (&(e->varinfo) == info)
+            return true;
+        e = e->alterations;
+    }
+    return false;
+}
+
 Varinfo Base::query_altered(Varcode code, int new_scale, unsigned new_bit_len,
                             int new_bit_ref) const
 {

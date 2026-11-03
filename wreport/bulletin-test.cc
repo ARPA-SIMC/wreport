@@ -55,6 +55,56 @@ void Tests::register_tests()
         auto decoded = BufrBulletin::decode(encoded);
         wassert(actual(decoded->diff(*bufr)) == 0u);
     });
+
+    add_method("append_subset_with_bitmaps", [] {
+        auto orig  = sys::read_file(datafile("bufr/bufr1"));
+        auto bufr  = BufrBulletin::decode(orig);
+        auto bufr1 = bufr->copy_without_subsets();
+        bufr1->append_subset(bufr->subset(0));
+        auto encoded = bufr1->encode();
+        auto decoded = BufrBulletin::decode(encoded);
+        wassert(actual(decoded->diff(*bufr)) == 0u);
+    });
+
+    add_method("append_subset_with_alterations", [] {
+        auto orig  = sys::read_file(datafile("bufr/ascat1.bufr"));
+        auto bufr  = BufrBulletin::decode(orig);
+        auto bufr1 = bufr->copy_without_subsets();
+        bufr1->append_subset(bufr->subset(0));
+        auto encoded = bufr1->encode();
+        auto decoded = BufrBulletin::decode(encoded);
+        wassert(actual(decoded->subset(0).diff(bufr->subset(0))) == 0u);
+    });
+
+    add_method("append_subset_with_chardata", [] {
+        auto orig  = sys::read_file(datafile("bufr/C05060.bufr"));
+        auto bufr  = BufrBulletin::decode(orig);
+        auto bufr1 = bufr->copy_without_subsets();
+        bufr1->append_subset(bufr->subset(0));
+        auto encoded = bufr1->encode();
+        auto decoded = BufrBulletin::decode(encoded);
+        wassert(actual(decoded->diff(*bufr)) == 0u);
+    });
+
+    add_method("append_subset_with_substituted_data", [] {
+        auto orig  = sys::read_file(datafile("bufr/C23000.bufr"));
+        auto bufr  = BufrBulletin::decode(orig);
+        auto bufr1 = bufr->copy_without_subsets();
+        bufr1->append_subset(bufr->subset(0));
+        auto encoded = bufr1->encode();
+        auto decoded = BufrBulletin::decode(encoded);
+        wassert(actual(decoded->diff(*bufr)) == 0u);
+    });
+
+    add_method("append_subset_with_unknown_local_descriptor", [] {
+        auto orig  = sys::read_file(datafile("bufr/C06006.bufr"));
+        auto bufr  = BufrBulletin::decode(orig);
+        auto bufr1 = bufr->copy_without_subsets();
+        bufr1->append_subset(bufr->subset(0));
+        auto encoded = bufr1->encode();
+        auto decoded = BufrBulletin::decode(encoded);
+        wassert(actual(decoded->diff(*bufr)) == 0u);
+    });
 }
 
 } // namespace

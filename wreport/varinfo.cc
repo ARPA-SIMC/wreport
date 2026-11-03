@@ -176,6 +176,12 @@ void _Varinfo::set_bufr(Varcode code, const char* desc, const char* unit,
     varinfo::set_bufr(*this, code, desc, unit, bit_len, bit_ref, scale);
 }
 
+bool _Varinfo::equivalent(const _Varinfo& o) const
+{
+    return code == o.code and type == o.type and scale == o.scale and
+           len == o.len and bit_ref == o.bit_ref and bit_len == o.bit_len;
+}
+
 Varinfo varinfo_create_bufr(Varcode code, const char* desc, const char* unit,
                             unsigned bit_len, uint32_t bit_ref, int scale)
 {

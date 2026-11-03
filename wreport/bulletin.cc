@@ -58,8 +58,11 @@ Subset& Bulletin::append_subset(const Subset& subset)
         subset.tables->dtable != tables.dtable)
         throw error_consistency(
             "Cannot append subset with different tables than the bulletin");
-    auto& res  = subsets.emplace_back(subset);
-    res.tables = &tables;
+
+    // Port over all variables to our tables
+    auto& res = subsets.emplace_back(tables);
+    for (const auto& var : subset)
+        res.emplace_back(tables.copy_variable(*subset.tables, var));
     return res;
 }
 

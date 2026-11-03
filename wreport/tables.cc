@@ -130,4 +130,131 @@ Varinfo Tables::get_unknown(Varcode code, unsigned bit_len) const
     return &vi;
 }
 
+Var Tables::copy_variable(const Tables& table, const Var& var)
+{
+    auto code = var.code();
+    switch (WR_VAR_F(code))
+    {
+        case 0: {
+            if (table.btable->contains(code))
+            {
+                /// The variable uses our same tables: return a copy
+                if (btable->contains_varinfo(var.info()))
+                    return var;
+
+                Varinfo local = btable->query(code);
+
+                // The varinfos are equivalent: copy but use our table
+                if (var.info()->equivalent(*local))
+                    return Var(local, var);
+
+                // TODO: lookup in unknown_table?
+                // TODO: query an altered version?
+
+                error_unimplemented::throwf(
+                    "copying %01d%02d%03d with non equivalent varinfo",
+                    WR_VAR_FXY(code));
+            }
+            else
+            {
+                // Try using unknown_table
+                auto theirs = table.unknown_table.find(var.info()->bit_len);
+                if (theirs == table.unknown_table.end())
+                {
+                    error_consistency::throwf(
+                        "variable %01d%02d%03d is not defined in its "
+                        "B table nor in its unknown entry table",
+                        WR_VAR_FXY(code));
+                }
+                auto inserted = unknown_table.emplace(*theirs);
+                if (not inserted.second)
+                {
+                    // We had one already defined locally
+                    if (not var.info()->equivalent(inserted.first->second))
+                        error_consistency::throwf(
+                            "variable %01d%02d%03d defines an "
+                            "unkonw entry which is alredy defined, "
+                            "in a different way, in the destination "
+                            "bulletin",
+                            WR_VAR_FXY(code));
+                }
+                return Var(&(inserted.first->second), var);
+            }
+            break;
+        }
+        case 2:
+            switch (WR_VAR_X(code))
+            {
+                case 5: {
+                    // Raw character data
+                    auto theirs = table.chardata_table.find(code);
+                    if (theirs == table.chardata_table.end())
+                    {
+                        error_consistency::throwf(
+                            "variable %01d%02d%03d is not defined in its "
+                            "character data tables",
+                            WR_VAR_FXY(code));
+                    }
+                    auto inserted = chardata_table.emplace(*theirs);
+                    if (not inserted.second)
+                    {
+                        // We had one already defined locally
+                        if (not var.info()->equivalent(inserted.first->second))
+                            error_consistency::throwf(
+                                "variable %01d%02d%03d defines a "
+                                "character data entry which is alredy defined, "
+                                "in a different way, in the destination "
+                                "bulletin",
+                                WR_VAR_FXY(code));
+                    }
+                    return Var(&(inserted.first->second), var);
+                    break;
+                }
+                case 22:
+                case 23: {
+                    // Bitmaps
+                    for (const auto& bitmap : table.bitmap_table)
+                    {
+                        if (var.info() == &(bitmap.second))
+                        {
+                            // Define the same bitmap locally
+                            auto inserted = bitmap_table.emplace(bitmap);
+                            if (not inserted.second)
+                            {
+                                // We had one already defined locally
+                                if (not var.info()->equivalent(
+                                        inserted.first->second))
+                                    error_consistency::throwf(
+                                        "variable %01d%02d%03d defines a "
+                                        "bitmap which is alredy defined, in a "
+                                        "different way, in the destination "
+                                        "bulletin",
+                                        WR_VAR_FXY(code));
+                            }
+                            return Var(&(inserted.first->second), var);
+                        }
+                    }
+                    error_consistency::throwf(
+                        "variable %01d%02d%03d defines a bitmap which is not "
+                        "found in its bulletin tables",
+                        WR_VAR_FXY(code));
+                }
+                break;
+                default:
+                    error_unimplemented::throwf("copying %01d%02d%03d",
+                                                WR_VAR_FXY(code));
+            }
+            break;
+        case 1:
+        case 3:
+        default:
+            error_consistency::throwf(
+                "Cannot copy variable with unsupported code %01d%02d%03d",
+                WR_VAR_FXY(code));
+    }
+    // A B (variant?)
+    // C05: raw character data
+    // a varcode in unknown_table indexed by bit len?
+}
+
 } // namespace wreport
