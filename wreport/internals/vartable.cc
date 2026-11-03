@@ -71,8 +71,8 @@ Entry::Entry(const Entry& other, int new_scale, unsigned new_bit_len,
 #endif
 
     // Apply the alterations
-    varinfo::set_bufr(varinfo, varinfo.code, varinfo.desc, varinfo.unit,
-                      new_bit_len, new_bit_ref, new_scale);
+    varinfo::set_bufr(varinfo, varinfo.code, other.varinfo.desc,
+                      other.varinfo.unit, new_bit_len, new_bit_ref, new_scale);
 
 #if 0
         fprintf(stderr, "After alteration(w:%d,s:%d): bl %d len %d scale %d\n",
