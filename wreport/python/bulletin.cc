@@ -73,7 +73,7 @@ struct RawIterator : public Type<Child, Impl>
             delete self->file;
             self->file = nullptr;
         }
-        Py_TYPE(self)->tp_free(self);
+        PyObject_Free(self);
     }
 
     static int _init(wrpy_RawBufrIterator* self, PyObject* args, PyObject* kw)
@@ -174,7 +174,7 @@ struct BulletinIterator : public Type<Child, Impl>
             delete self->file;
             self->file = nullptr;
         }
-        Py_TYPE(self)->tp_free(self);
+        PyObject_Free(self);
     }
 
     static int _init(wrpy_RawBufrIterator* self, PyObject* args, PyObject* kw)
@@ -881,7 +881,7 @@ struct datadesc : public GetSetter<datadesc, wrpy_Bulletin>
             {
                 pyo_unique_ptr code(throw_ifnull(
                     wrpy_varcode_format(self->bulletin->datadesc[pos])));
-                PyTuple_SET_ITEM(res, pos, code.release());
+                PyTuple_SET_ITEM(res.get(), pos, code.release());
             }
             return res.release();
         }
@@ -1257,7 +1257,7 @@ as a Sequence of subsets with data.
     static void _dealloc(Impl* self)
     {
         delete self->bulletin;
-        Py_TYPE(self)->tp_free(self);
+        PyObject_Free(self);
     }
 
     static PyObject* _str(Impl* self)
@@ -1371,7 +1371,7 @@ Iterate :py:class:`wreport.Subset` entries from a :py:class:`wreport.Bulletin`.
     static void _dealloc(Impl* self)
     {
         Py_XDECREF(self->bulletin);
-        Py_TYPE(self)->tp_free(self);
+        PyObject_Free(self);
     }
 
     static int _init(Impl* self, PyObject* args, PyObject* kw)
@@ -1464,7 +1464,7 @@ It presents as a Sequence of :py:class:`wreport.Var` instances.
     static void _dealloc(Impl* self)
     {
         Py_XDECREF(self->bulletin);
-        Py_TYPE(self)->tp_free(self);
+        PyObject_Free(self);
     }
 
     static PyObject* _str(Impl* self)
@@ -1596,7 +1596,7 @@ It presents as a Sequence of :py:class:`wreport.Var` instances.
                 // fprintf(stderr, "     res[%zd] = src[%zd]\n", pos, idx);
 
                 pyo_unique_ptr var(throw_ifnull(var_create(subset[idx])));
-                PyTuple_SET_ITEM(result, pos, var.release());
+                PyTuple_SET_ITEM(result.get(), pos, var.release());
             }
 
             return result.release();
@@ -1733,7 +1733,7 @@ Iterate :py:class:`wreport.Var` entries from a :py:class:`wreport.Subset`.
     static void _dealloc(Impl* self)
     {
         Py_XDECREF(self->subset);
-        Py_TYPE(self)->tp_free(self);
+        PyObject_Free(self);
     }
 
     static int _init(Impl* self, PyObject* args, PyObject* kw)

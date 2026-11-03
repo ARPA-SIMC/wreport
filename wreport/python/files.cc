@@ -51,22 +51,17 @@ off_t get_fd_pos(PyObject* o)
     }
 
     // Gracefully handle OSError for unseekable pipes
-    pyo_unique_ptr exc(PyErr_GetRaisedException());
+    Except exc;
     if (PyErr_GivenExceptionMatches(exc, PyExc_OSError))
     {
-        PyObject* py_errno_untracked;
-        if (PyObject_GetOptionalAttrString(exc, "errno", &py_errno_untracked) ==
-            -1)
-            throw PythonException();
+        pyo_unique_ptr py_errno(get_optional_attr(exc, "errno"));
 
-        // The exception has `errno`: check it
-        if (py_errno_untracked != Py_None)
+        if (py_errno.get() and py_errno.get() != Py_None)
         {
-            pyo_unique_ptr py_errno(py_errno_untracked);
+            // The exception has `errno`: check it
             if (int_from_python(py_errno) == ESPIPE)
                 return 0;
-            PyErr_SetRaisedException(exc.release());
-            throw PythonException();
+            exc.raise();
         }
 
         // Check if the exception is io.UnsupportedOperation, which is also
@@ -76,11 +71,10 @@ off_t get_fd_pos(PyObject* o)
             PyObject_GetAttrString(py_io, "UnsupportedOperation")));
         if (PyErr_GivenExceptionMatches(exc, unsupported_operation))
             return 0;
-
-        // In all other cases, bubble the exception up
-        PyErr_SetRaisedException(exc.release());
-        throw PythonException();
     }
+
+    // In all other cases, bubble the exception up
+    exc.raise();
 }
 
 } // namespace
