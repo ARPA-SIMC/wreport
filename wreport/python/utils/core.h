@@ -1,7 +1,3 @@
-/*
- * SPDX-License-Identifier: GPL-2.0-only
- */
-
 // SPDX-License-Identifier: BSD-3-Clause
 
 #ifndef WREPORT_PYTHON_CORE_H
@@ -24,6 +20,22 @@ namespace wreport::python {
 template <typename Obj> class py_unique_ptr;
 
 /**
+ * Call repr() on the object.
+ *
+ * In case a Python exception is raised, it is cleared and the return string is
+ * an error message
+ */
+std::string repr(PyObject* o);
+
+/**
+ * Call str() on the object
+ *
+ * In case a Python exception is raised, it is cleared and the return string is
+ * an error message
+ */
+std::string str(PyObject* o);
+
+/**
  * Wrapper for PyObject_HasAttrStringWithError(), or a polyfill implementation
  * for older pythons
  */
@@ -34,6 +46,11 @@ bool hasattr(PyObject* obj, const char* name);
  * pythons
  */
 py_unique_ptr<PyObject> get_optional_attr(PyObject* obj, const char* name);
+
+/**
+ * Invoke PyObject_CallNoArgs, or a polyfill if not available
+ */
+py_unique_ptr<PyObject> call_noargs(PyObject* obj);
 
 /**
  * unique_ptr-like object that contains PyObject pointers, and that calls
@@ -89,15 +106,7 @@ public:
     {
         if (!ptr)
             return "(null)";
-        py_unique_ptr<PyObject> py_repr(PyObject_Repr(ptr));
-        if (!py_repr)
-        {
-            PyErr_Clear();
-            return "(repr failed)";
-        }
-        Py_ssize_t size;
-        const char* res = PyUnicode_AsUTF8AndSize(py_repr, &size);
-        return std::string(res, size);
+        return wreport::python::repr(ptr);
     }
 
     /// Call str() on the object
@@ -105,19 +114,11 @@ public:
     {
         if (!ptr)
             return "(null)";
-        py_unique_ptr<PyObject> py_repr(PyObject_Str(ptr));
-        if (!py_repr)
-        {
-            PyErr_Clear();
-            return "(str failed)";
-        }
-        Py_ssize_t size;
-        const char* res = PyUnicode_AsUTF8AndSize(py_repr, &size);
-        return std::string(res, size);
+        return wreport::python::str(ptr);
     }
 
     /// Call hasattr(self, name)
-    bool hasattr(const char* name) { return hasattr(ptr, name); }
+    bool hasattr(const char* name) { return wreport::python::hasattr(ptr, name); }
 
     /**
      * Calls getattr, returning nullptr if the object does not have the
@@ -125,8 +126,13 @@ public:
      */
     py_unique_ptr<PyObject> get_optional_attr(const char* name)
     {
-        return get_optional_attr(ptr, name);
+        return wreport::python::get_optional_attr(ptr, name);
     }
+
+    /**
+     * Invoke PyObject_CallNoArgs, or a polyfill if not available
+     */
+    py_unique_ptr<PyObject> call_noargs() { return wreport::python::call_noargs(ptr); }
 
     /// Use it as a Obj
     operator Obj*() { return ptr; }
@@ -254,7 +260,7 @@ public:
      */
     operator PyObject*() const { return exc_value; }
 
-    /// Explicitly get the PyObject
+    /// Explicitly get the exception PyObject
     PyObject* get() const { return exc_value; }
 
     /**

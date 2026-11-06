@@ -1,9 +1,38 @@
 // SPDX-License-Identifier: BSD-3-Clause
-// SPDX-License-Identifier: GPL-2.0-only
 
 #include "core.h"
 
 namespace wreport::python {
+
+std::string repr(PyObject* o)
+{
+    if (!o)
+        return "(null)";
+    py_unique_ptr<PyObject> py_repr(PyObject_Repr(o));
+    if (!py_repr)
+    {
+        PyErr_Clear();
+        return "(repr failed)";
+    }
+    Py_ssize_t size;
+    const char* res = PyUnicode_AsUTF8AndSize(py_repr, &size);
+    return std::string(res, size);
+}
+
+std::string str(PyObject* o)
+{
+    if (!o)
+        return "(null)";
+    py_unique_ptr<PyObject> py_repr(PyObject_Str(o));
+    if (!py_repr)
+    {
+        PyErr_Clear();
+        return "(str failed)";
+    }
+    Py_ssize_t size;
+    const char* res = PyUnicode_AsUTF8AndSize(py_repr, &size);
+    return std::string(res, size);
+}
 
 bool hasattr(PyObject* obj, const char* name)
 {
@@ -29,6 +58,16 @@ py_unique_ptr<PyObject> get_optional_attr(PyObject* obj, const char* name)
     if (!hasattr(obj, name))
         return pyo_unique_ptr();
     return pyo_unique_ptr(throw_ifnull(PyObject_GetAttrString(obj, name)));
+#endif
+}
+
+py_unique_ptr<PyObject> call_noargs(PyObject* obj)
+{
+#if PY_VERSION_HEX >= 0x03090000
+    return throw_ifnull(PyObject_CallNoArgs(obj));
+#else
+    pyo_unique_ptr empty_tuple(throw_ifnull(PyTuple_New(0)));
+    return throw_ifnull(PyObject_Call(obj, empty_tuple, nullptr));
 #endif
 }
 
