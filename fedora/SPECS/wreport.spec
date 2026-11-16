@@ -4,7 +4,7 @@
 %{!?srcarchivename: %global srcarchivename %{name}-%{version}-%{releaseno}}
 
 Name: wreport
-Version: 3.44
+Version: 3.45
 Release: %{releaseno}%{?dist}
 License: GPL2
 URL: https://github.com/arpa-simc/%{name}
@@ -144,6 +144,9 @@ libwreport is a C++ library to read and write weather reports in BUFR and CREX
 %{python3_sitearch}/_wreport*.so
 
 %changelog
+* Mon Nov 16 2026 Daniele Branchini  <dbranchini@arpae.it> - 3.45-1
+- Fix reading BUFR and CREX files from an unseekable pipe (#70)
+
 * Tue Nov 03 2026 Daniele Branchini  <dbranchini@arpae.it> - 3.44-1
 - Restructured documentation using the Diátaxis method
 - Documentation is now not built by default, as it uses MyST which is not

@@ -1,4 +1,4 @@
-# New in version UNRELEASED
+# New in version 3.45
 
 * Fix reading BUFR and CREX files from an unseekable pipe (#70)
 
