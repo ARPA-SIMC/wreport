@@ -62,6 +62,38 @@ void dump_jsonl(const Bulletin& bulletin, std::stringstream& out);
 void track_bulletin(Bulletin& b, const char* tag,
                     const std::filesystem::path& fname);
 
+/**
+ * Create a nameless temporary file initialized with the given contents
+ */
+class Tempfile
+{
+    FILE* fd;
+
+public:
+    explicit Tempfile(const std::string& contents);
+    ~Tempfile();
+
+    operator FILE*() { return fd; }
+
+    std::string peek();
+};
+
+/**
+ * Open a pipe with the given command
+ */
+class Popen
+{
+    FILE* fd;
+
+public:
+    explicit Popen(const std::string& command);
+    ~Popen();
+
+    operator FILE*() { return fd; }
+
+    std::string read();
+};
+
 template <typename BULLETIN>
 std::unique_ptr<BULLETIN> decode_checked(const std::string& buf,
                                          const char* name)

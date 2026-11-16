@@ -2,7 +2,6 @@
 
 #include "files.h"
 #include "tests.h"
-#include <cassert>
 #include <cstdio>
 
 using namespace wreport;
@@ -17,54 +16,6 @@ class Tests : public TestCase
 
     void register_tests() override;
 } test("files");
-
-class Tempfile
-{
-    FILE* fd;
-
-public:
-    explicit Tempfile(const std::string& contents) : fd(tmpfile())
-    {
-        int res = fputs(contents.c_str(), fd);
-        assert(res > 0);
-        res = fseek(fd, 0, SEEK_SET);
-        assert(res == 0);
-    }
-    ~Tempfile() { fclose(fd); }
-
-    operator FILE*() { return fd; }
-
-    std::string peek()
-    {
-        long pos = ftell(fd);
-        char buf[512];
-        wassert(actual(fgets(buf, 511, fd)) != nullptr);
-        fseek(fd, pos, SEEK_SET);
-        return buf;
-    }
-};
-
-class Popen
-{
-    FILE* fd;
-
-public:
-    explicit Popen(const std::string& command)
-    {
-        fd = popen(command.c_str(), "r");
-        assert(fd != nullptr);
-    }
-    ~Popen() { pclose(fd); }
-
-    operator FILE*() { return fd; }
-
-    std::string read()
-    {
-        char buf[512];
-        wassert(actual(fgets(buf, 511, fd)) != nullptr);
-        return buf;
-    }
-};
 
 void Tests::register_tests()
 {
