@@ -35,6 +35,7 @@ export WREPORT_TESTDATA=$TOP_SRCDIR/testdata
 export PYTHONPATH="$TOP_SRCDIR/python:$TOP_BUILDDIR/wreport/python"
 # See https://docs.python.org/3/library/devmode.html
 export PYTHONDEVMODE=1
+export PYTHONWARNINGS=default
 export PATH="$TOP_BUILDDIR/src:$PATH"
 
 ORIGDIR=`pwd`

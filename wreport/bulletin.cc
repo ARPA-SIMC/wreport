@@ -14,6 +14,28 @@
 
 using namespace std;
 
+namespace {
+// Return the current file position, if possible. Return 0 otherwise
+off_t maybe_ftello(FILE* fd, const char* fname)
+{
+    off_t cur_offset = ftello(fd);
+    if (cur_offset == -1)
+    {
+        if (errno == ESPIPE)
+        {
+            errno = 0;
+            return 0;
+        }
+        else
+        {
+            wreport::error_system::throwf("%s: cannot query current position",
+                                          fname);
+        }
+    }
+    return cur_offset;
+}
+} // namespace
+
 namespace wreport {
 
 /*
@@ -493,7 +515,8 @@ unsigned BufrBulletin::diff_header(const Bulletin& bulletin) const
 bool BufrBulletin::read(FILE* fd, std::string& buf, const char* fname,
                         off_t* offset)
 {
-    InputFileStdio in(fd, ftello(fd), fname ? fname : std::string());
+    InputFileStdio in(fd, maybe_ftello(fd, fname),
+                      fname ? fname : std::string());
     return read_file(in, buf, offset);
 }
 
@@ -708,7 +731,8 @@ std::unique_ptr<Bulletin> CrexBulletin::copy_without_subsets() const
 bool CrexBulletin::read(FILE* fd, std::string& buf, const char* fname,
                         off_t* offset)
 {
-    InputFileStdio in(fd, ftello(fd), fname ? fname : std::string());
+    InputFileStdio in(fd, maybe_ftello(fd, fname),
+                      fname ? fname : std::string());
     return read_file(in, buf, offset);
 }
 

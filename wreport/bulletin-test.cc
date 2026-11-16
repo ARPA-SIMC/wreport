@@ -107,6 +107,54 @@ void Tests::register_tests()
         auto decoded = BufrBulletin::decode(encoded);
         wassert(actual(decoded->diff(*bufr)) == 0u);
     });
+
+    add_method("read_bufr_from_pipe", [] {
+        // TODO: we have a path here that is not shell quoted
+        auto src = datafile("bufr/C06006.bufr");
+        Popen in(("cat " + src.native()).c_str());
+
+        off_t offset;
+        std::string res;
+        wassert_true(BufrBulletin::read(in, res, src.c_str(), &offset));
+        wassert(actual(offset) == 0);
+        wassert(actual(res.size()) == 136u);
+    });
+
+    add_method("read_bufr_from_forward_in_pipe", [] {
+        // TODO: we have a path here that is not shell quoted
+        auto src = datafile("bufr/C06006.bufr");
+        Popen in(("echo '12345'; cat " + src.native()).c_str());
+
+        off_t offset;
+        std::string res;
+        wassert_true(BufrBulletin::read(in, res, src.c_str(), &offset));
+        wassert(actual(offset) == 6);
+        wassert(actual(res.size()) == 136u);
+    });
+
+    add_method("read_crex_from_pipe", [] {
+        // TODO: we have a path here that is not shell quoted
+        auto src = datafile("crex/test-synop0.crex");
+        Popen in(("cat " + src.native()).c_str());
+
+        off_t offset;
+        std::string res;
+        wassert_true(CrexBulletin::read(in, res, src.c_str(), &offset));
+        wassert(actual(offset) == 0);
+        wassert(actual(res.size()) == 251u);
+    });
+
+    add_method("read_crex_from_forward_in_pipe", [] {
+        // TODO: we have a path here that is not shell quoted
+        auto src = datafile("crex/test-synop0.crex");
+        Popen in(("echo '12345'; cat " + src.native()).c_str());
+
+        off_t offset;
+        std::string res;
+        wassert_true(CrexBulletin::read(in, res, src.c_str(), &offset));
+        wassert(actual(offset) == 6);
+        wassert(actual(res.size()) == 251u);
+    });
 }
 
 } // namespace

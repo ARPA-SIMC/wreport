@@ -4,6 +4,8 @@
 #include "utils/json.h"
 #include "utils/string.h"
 #include "utils/sys.h"
+#include <cassert>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <pwd.h>
@@ -148,6 +150,37 @@ void track_bulletin(Bulletin& b, const char* tag,
     fclose(out);
     fprintf(stderr, "%s %s dumped as %s\n", fname.c_str(), tag,
             dumpfname.c_str());
+}
+
+Tempfile::Tempfile(const std::string& contents) : fd(tmpfile())
+{
+    int res = fputs(contents.c_str(), fd);
+    assert(res > 0);
+    res = fseek(fd, 0, SEEK_SET);
+    assert(res == 0);
+}
+Tempfile::~Tempfile() { fclose(fd); }
+
+std::string Tempfile::peek()
+{
+    long pos = ftell(fd);
+    char buf[512];
+    wassert(actual(fgets(buf, 511, fd)) != nullptr);
+    fseek(fd, pos, SEEK_SET);
+    return buf;
+}
+Popen::Popen(const std::string& command)
+{
+    fd = popen(command.c_str(), "r");
+    assert(fd != nullptr);
+}
+Popen::~Popen() { pclose(fd); }
+
+std::string Popen::read()
+{
+    char buf[512];
+    wassert(actual(fgets(buf, 511, fd)) != nullptr);
+    return buf;
 }
 
 namespace {
