@@ -1,3 +1,7 @@
+# New in version UNRELEASED
+
+* Fix reading BUFR and CREX files from an unseekable pipe (#70)
+
 # New in version 3.44
 
 * Restructured documentation using the Diátaxis method
